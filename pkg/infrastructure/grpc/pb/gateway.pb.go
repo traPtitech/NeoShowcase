@@ -26,8 +26,9 @@ const (
 type DeployType int32
 
 const (
-	DeployType_RUNTIME DeployType = 0
-	DeployType_STATIC  DeployType = 1
+	DeployType_RUNTIME  DeployType = 0
+	DeployType_STATIC   DeployType = 1
+	DeployType_FUNCTION DeployType = 2
 )
 
 // Enum value maps for DeployType.
@@ -35,10 +36,12 @@ var (
 	DeployType_name = map[int32]string{
 		0: "RUNTIME",
 		1: "STATIC",
+		2: "FUNCTION",
 	}
 	DeployType_value = map[string]int32{
-		"RUNTIME": 0,
-		"STATIC":  1,
+		"RUNTIME":  0,
+		"STATIC":   1,
+		"FUNCTION": 2,
 	}
 )
 
@@ -378,7 +381,7 @@ func (x Application_ContainerState) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use Application_ContainerState.Descriptor instead.
 func (Application_ContainerState) EnumDescriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{21, 0}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{25, 0}
 }
 
 type GetRepositoriesRequest_Scope int32
@@ -431,7 +434,7 @@ func (x GetRepositoriesRequest_Scope) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use GetRepositoriesRequest_Scope.Descriptor instead.
 func (GetRepositoriesRequest_Scope) EnumDescriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{44, 0}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{48, 0}
 }
 
 type GetApplicationsRequest_Scope int32
@@ -480,7 +483,7 @@ func (x GetApplicationsRequest_Scope) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use GetApplicationsRequest_Scope.Descriptor instead.
 func (GetApplicationsRequest_Scope) EnumDescriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{52, 0}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{56, 0}
 }
 
 type SSHInfo struct {
@@ -1463,6 +1466,50 @@ func (x *StaticConfig) GetSpa() bool {
 	return false
 }
 
+type FunctionConfig struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ArtifactPath  string                 `protobuf:"bytes,1,opt,name=artifact_path,json=artifactPath,proto3" json:"artifact_path,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *FunctionConfig) Reset() {
+	*x = FunctionConfig{}
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FunctionConfig) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FunctionConfig) ProtoMessage() {}
+
+func (x *FunctionConfig) ProtoReflect() protoreflect.Message {
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FunctionConfig.ProtoReflect.Descriptor instead.
+func (*FunctionConfig) Descriptor() ([]byte, []int) {
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *FunctionConfig) GetArtifactPath() string {
+	if x != nil {
+		return x.ArtifactPath
+	}
+	return ""
+}
+
 type BuildConfigStaticBuildpack struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	StaticConfig  *StaticConfig          `protobuf:"bytes,1,opt,name=static_config,json=staticConfig,proto3" json:"static_config,omitempty"`
@@ -1473,7 +1520,7 @@ type BuildConfigStaticBuildpack struct {
 
 func (x *BuildConfigStaticBuildpack) Reset() {
 	*x = BuildConfigStaticBuildpack{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[15]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1485,7 +1532,7 @@ func (x *BuildConfigStaticBuildpack) String() string {
 func (*BuildConfigStaticBuildpack) ProtoMessage() {}
 
 func (x *BuildConfigStaticBuildpack) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[15]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1498,7 +1545,7 @@ func (x *BuildConfigStaticBuildpack) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BuildConfigStaticBuildpack.ProtoReflect.Descriptor instead.
 func (*BuildConfigStaticBuildpack) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{15}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *BuildConfigStaticBuildpack) GetStaticConfig() *StaticConfig {
@@ -1526,7 +1573,7 @@ type BuildConfigStaticCmd struct {
 
 func (x *BuildConfigStaticCmd) Reset() {
 	*x = BuildConfigStaticCmd{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[16]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1538,7 +1585,7 @@ func (x *BuildConfigStaticCmd) String() string {
 func (*BuildConfigStaticCmd) ProtoMessage() {}
 
 func (x *BuildConfigStaticCmd) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[16]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1551,7 +1598,7 @@ func (x *BuildConfigStaticCmd) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BuildConfigStaticCmd.ProtoReflect.Descriptor instead.
 func (*BuildConfigStaticCmd) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{16}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *BuildConfigStaticCmd) GetStaticConfig() *StaticConfig {
@@ -1586,7 +1633,7 @@ type BuildConfigStaticDockerfile struct {
 
 func (x *BuildConfigStaticDockerfile) Reset() {
 	*x = BuildConfigStaticDockerfile{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[17]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1598,7 +1645,7 @@ func (x *BuildConfigStaticDockerfile) String() string {
 func (*BuildConfigStaticDockerfile) ProtoMessage() {}
 
 func (x *BuildConfigStaticDockerfile) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[17]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1611,7 +1658,7 @@ func (x *BuildConfigStaticDockerfile) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BuildConfigStaticDockerfile.ProtoReflect.Descriptor instead.
 func (*BuildConfigStaticDockerfile) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{17}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *BuildConfigStaticDockerfile) GetStaticConfig() *StaticConfig {
@@ -1635,6 +1682,178 @@ func (x *BuildConfigStaticDockerfile) GetContext() string {
 	return ""
 }
 
+type BuildConfigFunctionBuildpack struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	FunctionConfig *FunctionConfig        `protobuf:"bytes,1,opt,name=function_config,json=functionConfig,proto3" json:"function_config,omitempty"`
+	Context        string                 `protobuf:"bytes,2,opt,name=context,proto3" json:"context,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *BuildConfigFunctionBuildpack) Reset() {
+	*x = BuildConfigFunctionBuildpack{}
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BuildConfigFunctionBuildpack) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BuildConfigFunctionBuildpack) ProtoMessage() {}
+
+func (x *BuildConfigFunctionBuildpack) ProtoReflect() protoreflect.Message {
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BuildConfigFunctionBuildpack.ProtoReflect.Descriptor instead.
+func (*BuildConfigFunctionBuildpack) Descriptor() ([]byte, []int) {
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *BuildConfigFunctionBuildpack) GetFunctionConfig() *FunctionConfig {
+	if x != nil {
+		return x.FunctionConfig
+	}
+	return nil
+}
+
+func (x *BuildConfigFunctionBuildpack) GetContext() string {
+	if x != nil {
+		return x.Context
+	}
+	return ""
+}
+
+type BuildConfigFunctionCmd struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	FunctionConfig *FunctionConfig        `protobuf:"bytes,1,opt,name=function_config,json=functionConfig,proto3" json:"function_config,omitempty"`
+	BaseImage      string                 `protobuf:"bytes,2,opt,name=base_image,json=baseImage,proto3" json:"base_image,omitempty"`
+	BuildCmd       string                 `protobuf:"bytes,3,opt,name=build_cmd,json=buildCmd,proto3" json:"build_cmd,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *BuildConfigFunctionCmd) Reset() {
+	*x = BuildConfigFunctionCmd{}
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BuildConfigFunctionCmd) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BuildConfigFunctionCmd) ProtoMessage() {}
+
+func (x *BuildConfigFunctionCmd) ProtoReflect() protoreflect.Message {
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BuildConfigFunctionCmd.ProtoReflect.Descriptor instead.
+func (*BuildConfigFunctionCmd) Descriptor() ([]byte, []int) {
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *BuildConfigFunctionCmd) GetFunctionConfig() *FunctionConfig {
+	if x != nil {
+		return x.FunctionConfig
+	}
+	return nil
+}
+
+func (x *BuildConfigFunctionCmd) GetBaseImage() string {
+	if x != nil {
+		return x.BaseImage
+	}
+	return ""
+}
+
+func (x *BuildConfigFunctionCmd) GetBuildCmd() string {
+	if x != nil {
+		return x.BuildCmd
+	}
+	return ""
+}
+
+type BuildConfigFunctionDockerfile struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	FunctionConfig *FunctionConfig        `protobuf:"bytes,1,opt,name=function_config,json=functionConfig,proto3" json:"function_config,omitempty"`
+	DockerfileName string                 `protobuf:"bytes,2,opt,name=dockerfile_name,json=dockerfileName,proto3" json:"dockerfile_name,omitempty"`
+	Context        string                 `protobuf:"bytes,3,opt,name=context,proto3" json:"context,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *BuildConfigFunctionDockerfile) Reset() {
+	*x = BuildConfigFunctionDockerfile{}
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BuildConfigFunctionDockerfile) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BuildConfigFunctionDockerfile) ProtoMessage() {}
+
+func (x *BuildConfigFunctionDockerfile) ProtoReflect() protoreflect.Message {
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BuildConfigFunctionDockerfile.ProtoReflect.Descriptor instead.
+func (*BuildConfigFunctionDockerfile) Descriptor() ([]byte, []int) {
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *BuildConfigFunctionDockerfile) GetFunctionConfig() *FunctionConfig {
+	if x != nil {
+		return x.FunctionConfig
+	}
+	return nil
+}
+
+func (x *BuildConfigFunctionDockerfile) GetDockerfileName() string {
+	if x != nil {
+		return x.DockerfileName
+	}
+	return ""
+}
+
+func (x *BuildConfigFunctionDockerfile) GetContext() string {
+	if x != nil {
+		return x.Context
+	}
+	return ""
+}
+
 type ApplicationConfig struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Types that are valid to be assigned to BuildConfig:
@@ -1645,6 +1864,9 @@ type ApplicationConfig struct {
 	//	*ApplicationConfig_StaticBuildpack
 	//	*ApplicationConfig_StaticCmd
 	//	*ApplicationConfig_StaticDockerfile
+	//	*ApplicationConfig_FunctionBuildpack
+	//	*ApplicationConfig_FunctionCmd
+	//	*ApplicationConfig_FunctionDockerfile
 	BuildConfig   isApplicationConfig_BuildConfig `protobuf_oneof:"build_config"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -1652,7 +1874,7 @@ type ApplicationConfig struct {
 
 func (x *ApplicationConfig) Reset() {
 	*x = ApplicationConfig{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[18]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1664,7 +1886,7 @@ func (x *ApplicationConfig) String() string {
 func (*ApplicationConfig) ProtoMessage() {}
 
 func (x *ApplicationConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[18]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1677,7 +1899,7 @@ func (x *ApplicationConfig) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ApplicationConfig.ProtoReflect.Descriptor instead.
 func (*ApplicationConfig) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{18}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *ApplicationConfig) GetBuildConfig() isApplicationConfig_BuildConfig {
@@ -1741,6 +1963,33 @@ func (x *ApplicationConfig) GetStaticDockerfile() *BuildConfigStaticDockerfile {
 	return nil
 }
 
+func (x *ApplicationConfig) GetFunctionBuildpack() *BuildConfigFunctionBuildpack {
+	if x != nil {
+		if x, ok := x.BuildConfig.(*ApplicationConfig_FunctionBuildpack); ok {
+			return x.FunctionBuildpack
+		}
+	}
+	return nil
+}
+
+func (x *ApplicationConfig) GetFunctionCmd() *BuildConfigFunctionCmd {
+	if x != nil {
+		if x, ok := x.BuildConfig.(*ApplicationConfig_FunctionCmd); ok {
+			return x.FunctionCmd
+		}
+	}
+	return nil
+}
+
+func (x *ApplicationConfig) GetFunctionDockerfile() *BuildConfigFunctionDockerfile {
+	if x != nil {
+		if x, ok := x.BuildConfig.(*ApplicationConfig_FunctionDockerfile); ok {
+			return x.FunctionDockerfile
+		}
+	}
+	return nil
+}
+
 type isApplicationConfig_BuildConfig interface {
 	isApplicationConfig_BuildConfig()
 }
@@ -1769,6 +2018,18 @@ type ApplicationConfig_StaticDockerfile struct {
 	StaticDockerfile *BuildConfigStaticDockerfile `protobuf:"bytes,6,opt,name=static_dockerfile,json=staticDockerfile,proto3,oneof"`
 }
 
+type ApplicationConfig_FunctionBuildpack struct {
+	FunctionBuildpack *BuildConfigFunctionBuildpack `protobuf:"bytes,7,opt,name=function_buildpack,json=functionBuildpack,proto3,oneof"`
+}
+
+type ApplicationConfig_FunctionCmd struct {
+	FunctionCmd *BuildConfigFunctionCmd `protobuf:"bytes,8,opt,name=function_cmd,json=functionCmd,proto3,oneof"`
+}
+
+type ApplicationConfig_FunctionDockerfile struct {
+	FunctionDockerfile *BuildConfigFunctionDockerfile `protobuf:"bytes,9,opt,name=function_dockerfile,json=functionDockerfile,proto3,oneof"`
+}
+
 func (*ApplicationConfig_RuntimeBuildpack) isApplicationConfig_BuildConfig() {}
 
 func (*ApplicationConfig_RuntimeCmd) isApplicationConfig_BuildConfig() {}
@@ -1780,6 +2041,12 @@ func (*ApplicationConfig_StaticBuildpack) isApplicationConfig_BuildConfig() {}
 func (*ApplicationConfig_StaticCmd) isApplicationConfig_BuildConfig() {}
 
 func (*ApplicationConfig_StaticDockerfile) isApplicationConfig_BuildConfig() {}
+
+func (*ApplicationConfig_FunctionBuildpack) isApplicationConfig_BuildConfig() {}
+
+func (*ApplicationConfig_FunctionCmd) isApplicationConfig_BuildConfig() {}
+
+func (*ApplicationConfig_FunctionDockerfile) isApplicationConfig_BuildConfig() {}
 
 type Website struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
@@ -1797,7 +2064,7 @@ type Website struct {
 
 func (x *Website) Reset() {
 	*x = Website{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[19]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1809,7 +2076,7 @@ func (x *Website) String() string {
 func (*Website) ProtoMessage() {}
 
 func (x *Website) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[19]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1822,7 +2089,7 @@ func (x *Website) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Website.ProtoReflect.Descriptor instead.
 func (*Website) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{19}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *Website) GetId() string {
@@ -1892,7 +2159,7 @@ type PortPublication struct {
 
 func (x *PortPublication) Reset() {
 	*x = PortPublication{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[20]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1904,7 +2171,7 @@ func (x *PortPublication) String() string {
 func (*PortPublication) ProtoMessage() {}
 
 func (x *PortPublication) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[20]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1917,7 +2184,7 @@ func (x *PortPublication) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PortPublication.ProtoReflect.Descriptor instead.
 func (*PortPublication) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{20}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *PortPublication) GetInternetPort() int32 {
@@ -1966,7 +2233,7 @@ type Application struct {
 
 func (x *Application) Reset() {
 	*x = Application{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[21]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1978,7 +2245,7 @@ func (x *Application) String() string {
 func (*Application) ProtoMessage() {}
 
 func (x *Application) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[21]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1991,7 +2258,7 @@ func (x *Application) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Application.ProtoReflect.Descriptor instead.
 func (*Application) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{21}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *Application) GetId() string {
@@ -2125,7 +2392,7 @@ type ApplicationEnvVar struct {
 
 func (x *ApplicationEnvVar) Reset() {
 	*x = ApplicationEnvVar{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[22]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2137,7 +2404,7 @@ func (x *ApplicationEnvVar) String() string {
 func (*ApplicationEnvVar) ProtoMessage() {}
 
 func (x *ApplicationEnvVar) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[22]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2150,7 +2417,7 @@ func (x *ApplicationEnvVar) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ApplicationEnvVar.ProtoReflect.Descriptor instead.
 func (*ApplicationEnvVar) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{22}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *ApplicationEnvVar) GetApplicationId() string {
@@ -2190,7 +2457,7 @@ type ApplicationEnvVars struct {
 
 func (x *ApplicationEnvVars) Reset() {
 	*x = ApplicationEnvVars{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[23]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2202,7 +2469,7 @@ func (x *ApplicationEnvVars) String() string {
 func (*ApplicationEnvVars) ProtoMessage() {}
 
 func (x *ApplicationEnvVars) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[23]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2215,7 +2482,7 @@ func (x *ApplicationEnvVars) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ApplicationEnvVars.ProtoReflect.Descriptor instead.
 func (*ApplicationEnvVars) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{23}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *ApplicationEnvVars) GetVariables() []*ApplicationEnvVar {
@@ -2239,7 +2506,7 @@ type Artifact struct {
 
 func (x *Artifact) Reset() {
 	*x = Artifact{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[24]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2251,7 +2518,7 @@ func (x *Artifact) String() string {
 func (*Artifact) ProtoMessage() {}
 
 func (x *Artifact) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[24]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2264,7 +2531,7 @@ func (x *Artifact) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Artifact.ProtoReflect.Descriptor instead.
 func (*Artifact) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{24}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *Artifact) GetId() string {
@@ -2319,7 +2586,7 @@ type ArtifactContent struct {
 
 func (x *ArtifactContent) Reset() {
 	*x = ArtifactContent{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[25]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2331,7 +2598,7 @@ func (x *ArtifactContent) String() string {
 func (*ArtifactContent) ProtoMessage() {}
 
 func (x *ArtifactContent) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[25]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2344,7 +2611,7 @@ func (x *ArtifactContent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ArtifactContent.ProtoReflect.Descriptor instead.
 func (*ArtifactContent) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{25}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *ArtifactContent) GetFilename() string {
@@ -2373,7 +2640,7 @@ type RuntimeImage struct {
 
 func (x *RuntimeImage) Reset() {
 	*x = RuntimeImage{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[26]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2385,7 +2652,7 @@ func (x *RuntimeImage) String() string {
 func (*RuntimeImage) ProtoMessage() {}
 
 func (x *RuntimeImage) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[26]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2398,7 +2665,7 @@ func (x *RuntimeImage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RuntimeImage.ProtoReflect.Descriptor instead.
 func (*RuntimeImage) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{26}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *RuntimeImage) GetId() string {
@@ -2438,7 +2705,7 @@ type AvailableMetrics struct {
 
 func (x *AvailableMetrics) Reset() {
 	*x = AvailableMetrics{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[27]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2450,7 +2717,7 @@ func (x *AvailableMetrics) String() string {
 func (*AvailableMetrics) ProtoMessage() {}
 
 func (x *AvailableMetrics) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[27]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2463,7 +2730,7 @@ func (x *AvailableMetrics) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AvailableMetrics.ProtoReflect.Descriptor instead.
 func (*AvailableMetrics) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{27}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *AvailableMetrics) GetMetricsNames() []string {
@@ -2483,7 +2750,7 @@ type ApplicationMetric struct {
 
 func (x *ApplicationMetric) Reset() {
 	*x = ApplicationMetric{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[28]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2495,7 +2762,7 @@ func (x *ApplicationMetric) String() string {
 func (*ApplicationMetric) ProtoMessage() {}
 
 func (x *ApplicationMetric) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[28]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2508,7 +2775,7 @@ func (x *ApplicationMetric) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ApplicationMetric.ProtoReflect.Descriptor instead.
 func (*ApplicationMetric) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{28}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *ApplicationMetric) GetTime() *timestamppb.Timestamp {
@@ -2534,7 +2801,7 @@ type ApplicationMetrics struct {
 
 func (x *ApplicationMetrics) Reset() {
 	*x = ApplicationMetrics{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[29]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2546,7 +2813,7 @@ func (x *ApplicationMetrics) String() string {
 func (*ApplicationMetrics) ProtoMessage() {}
 
 func (x *ApplicationMetrics) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[29]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2559,7 +2826,7 @@ func (x *ApplicationMetrics) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ApplicationMetrics.ProtoReflect.Descriptor instead.
 func (*ApplicationMetrics) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{29}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *ApplicationMetrics) GetMetrics() []*ApplicationMetric {
@@ -2579,7 +2846,7 @@ type ApplicationOutput struct {
 
 func (x *ApplicationOutput) Reset() {
 	*x = ApplicationOutput{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[30]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2591,7 +2858,7 @@ func (x *ApplicationOutput) String() string {
 func (*ApplicationOutput) ProtoMessage() {}
 
 func (x *ApplicationOutput) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[30]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2604,7 +2871,7 @@ func (x *ApplicationOutput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ApplicationOutput.ProtoReflect.Descriptor instead.
 func (*ApplicationOutput) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{30}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *ApplicationOutput) GetTime() *timestamppb.Timestamp {
@@ -2630,7 +2897,7 @@ type ApplicationOutputs struct {
 
 func (x *ApplicationOutputs) Reset() {
 	*x = ApplicationOutputs{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[31]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2642,7 +2909,7 @@ func (x *ApplicationOutputs) String() string {
 func (*ApplicationOutputs) ProtoMessage() {}
 
 func (x *ApplicationOutputs) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[31]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2655,7 +2922,7 @@ func (x *ApplicationOutputs) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ApplicationOutputs.ProtoReflect.Descriptor instead.
 func (*ApplicationOutputs) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{31}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *ApplicationOutputs) GetOutputs() []*ApplicationOutput {
@@ -2684,7 +2951,7 @@ type Build struct {
 
 func (x *Build) Reset() {
 	*x = Build{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[32]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2696,7 +2963,7 @@ func (x *Build) String() string {
 func (*Build) ProtoMessage() {}
 
 func (x *Build) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[32]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2709,7 +2976,7 @@ func (x *Build) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Build.ProtoReflect.Descriptor instead.
 func (*Build) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{32}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *Build) GetId() string {
@@ -2798,7 +3065,7 @@ type BuildLog struct {
 
 func (x *BuildLog) Reset() {
 	*x = BuildLog{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[33]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2810,7 +3077,7 @@ func (x *BuildLog) String() string {
 func (*BuildLog) ProtoMessage() {}
 
 func (x *BuildLog) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[33]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2823,7 +3090,7 @@ func (x *BuildLog) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BuildLog.ProtoReflect.Descriptor instead.
 func (*BuildLog) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{33}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *BuildLog) GetLog() []byte {
@@ -2843,7 +3110,7 @@ type GitRef struct {
 
 func (x *GitRef) Reset() {
 	*x = GitRef{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[34]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[38]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2855,7 +3122,7 @@ func (x *GitRef) String() string {
 func (*GitRef) ProtoMessage() {}
 
 func (x *GitRef) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[34]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[38]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2868,7 +3135,7 @@ func (x *GitRef) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GitRef.ProtoReflect.Descriptor instead.
 func (*GitRef) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{34}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{38}
 }
 
 func (x *GitRef) GetRefName() string {
@@ -2895,7 +3162,7 @@ type GenerateKeyPairResponse struct {
 
 func (x *GenerateKeyPairResponse) Reset() {
 	*x = GenerateKeyPairResponse{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[35]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[39]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2907,7 +3174,7 @@ func (x *GenerateKeyPairResponse) String() string {
 func (*GenerateKeyPairResponse) ProtoMessage() {}
 
 func (x *GenerateKeyPairResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[35]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[39]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2920,7 +3187,7 @@ func (x *GenerateKeyPairResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GenerateKeyPairResponse.ProtoReflect.Descriptor instead.
 func (*GenerateKeyPairResponse) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{35}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{39}
 }
 
 func (x *GenerateKeyPairResponse) GetKeyId() string {
@@ -2946,7 +3213,7 @@ type GetUsersResponse struct {
 
 func (x *GetUsersResponse) Reset() {
 	*x = GetUsersResponse{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[36]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[40]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2958,7 +3225,7 @@ func (x *GetUsersResponse) String() string {
 func (*GetUsersResponse) ProtoMessage() {}
 
 func (x *GetUsersResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[36]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[40]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2971,7 +3238,7 @@ func (x *GetUsersResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUsersResponse.ProtoReflect.Descriptor instead.
 func (*GetUsersResponse) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{36}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{40}
 }
 
 func (x *GetUsersResponse) GetUsers() []*User {
@@ -2990,7 +3257,7 @@ type GetUserKeysResponse struct {
 
 func (x *GetUserKeysResponse) Reset() {
 	*x = GetUserKeysResponse{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[37]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[41]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3002,7 +3269,7 @@ func (x *GetUserKeysResponse) String() string {
 func (*GetUserKeysResponse) ProtoMessage() {}
 
 func (x *GetUserKeysResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[37]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[41]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3015,7 +3282,7 @@ func (x *GetUserKeysResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserKeysResponse.ProtoReflect.Descriptor instead.
 func (*GetUserKeysResponse) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{37}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{41}
 }
 
 func (x *GetUserKeysResponse) GetKeys() []*UserKey {
@@ -3035,7 +3302,7 @@ type CreateUserKeyRequest struct {
 
 func (x *CreateUserKeyRequest) Reset() {
 	*x = CreateUserKeyRequest{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[38]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[42]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3047,7 +3314,7 @@ func (x *CreateUserKeyRequest) String() string {
 func (*CreateUserKeyRequest) ProtoMessage() {}
 
 func (x *CreateUserKeyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[38]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[42]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3060,7 +3327,7 @@ func (x *CreateUserKeyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateUserKeyRequest.ProtoReflect.Descriptor instead.
 func (*CreateUserKeyRequest) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{38}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{42}
 }
 
 func (x *CreateUserKeyRequest) GetPublicKey() string {
@@ -3086,7 +3353,7 @@ type DeleteUserKeyRequest struct {
 
 func (x *DeleteUserKeyRequest) Reset() {
 	*x = DeleteUserKeyRequest{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[39]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[43]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3098,7 +3365,7 @@ func (x *DeleteUserKeyRequest) String() string {
 func (*DeleteUserKeyRequest) ProtoMessage() {}
 
 func (x *DeleteUserKeyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[39]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[43]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3111,7 +3378,7 @@ func (x *DeleteUserKeyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteUserKeyRequest.ProtoReflect.Descriptor instead.
 func (*DeleteUserKeyRequest) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{39}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{43}
 }
 
 func (x *DeleteUserKeyRequest) GetKeyId() string {
@@ -3131,7 +3398,7 @@ type CreateRepositoryAuthBasic struct {
 
 func (x *CreateRepositoryAuthBasic) Reset() {
 	*x = CreateRepositoryAuthBasic{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[40]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[44]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3143,7 +3410,7 @@ func (x *CreateRepositoryAuthBasic) String() string {
 func (*CreateRepositoryAuthBasic) ProtoMessage() {}
 
 func (x *CreateRepositoryAuthBasic) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[40]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[44]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3156,7 +3423,7 @@ func (x *CreateRepositoryAuthBasic) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateRepositoryAuthBasic.ProtoReflect.Descriptor instead.
 func (*CreateRepositoryAuthBasic) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{40}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{44}
 }
 
 func (x *CreateRepositoryAuthBasic) GetUsername() string {
@@ -3182,7 +3449,7 @@ type CreateRepositoryAuthSSH struct {
 
 func (x *CreateRepositoryAuthSSH) Reset() {
 	*x = CreateRepositoryAuthSSH{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[41]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[45]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3194,7 +3461,7 @@ func (x *CreateRepositoryAuthSSH) String() string {
 func (*CreateRepositoryAuthSSH) ProtoMessage() {}
 
 func (x *CreateRepositoryAuthSSH) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[41]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[45]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3207,7 +3474,7 @@ func (x *CreateRepositoryAuthSSH) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateRepositoryAuthSSH.ProtoReflect.Descriptor instead.
 func (*CreateRepositoryAuthSSH) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{41}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{45}
 }
 
 func (x *CreateRepositoryAuthSSH) GetKeyId() string {
@@ -3231,7 +3498,7 @@ type CreateRepositoryAuth struct {
 
 func (x *CreateRepositoryAuth) Reset() {
 	*x = CreateRepositoryAuth{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[42]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[46]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3243,7 +3510,7 @@ func (x *CreateRepositoryAuth) String() string {
 func (*CreateRepositoryAuth) ProtoMessage() {}
 
 func (x *CreateRepositoryAuth) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[42]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[46]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3256,7 +3523,7 @@ func (x *CreateRepositoryAuth) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateRepositoryAuth.ProtoReflect.Descriptor instead.
 func (*CreateRepositoryAuth) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{42}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{46}
 }
 
 func (x *CreateRepositoryAuth) GetAuth() isCreateRepositoryAuth_Auth {
@@ -3326,7 +3593,7 @@ type CreateRepositoryRequest struct {
 
 func (x *CreateRepositoryRequest) Reset() {
 	*x = CreateRepositoryRequest{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[43]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[47]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3338,7 +3605,7 @@ func (x *CreateRepositoryRequest) String() string {
 func (*CreateRepositoryRequest) ProtoMessage() {}
 
 func (x *CreateRepositoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[43]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[47]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3351,7 +3618,7 @@ func (x *CreateRepositoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateRepositoryRequest.ProtoReflect.Descriptor instead.
 func (*CreateRepositoryRequest) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{43}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{47}
 }
 
 func (x *CreateRepositoryRequest) GetName() string {
@@ -3384,7 +3651,7 @@ type GetRepositoriesRequest struct {
 
 func (x *GetRepositoriesRequest) Reset() {
 	*x = GetRepositoriesRequest{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[44]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[48]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3396,7 +3663,7 @@ func (x *GetRepositoriesRequest) String() string {
 func (*GetRepositoriesRequest) ProtoMessage() {}
 
 func (x *GetRepositoriesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[44]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[48]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3409,7 +3676,7 @@ func (x *GetRepositoriesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRepositoriesRequest.ProtoReflect.Descriptor instead.
 func (*GetRepositoriesRequest) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{44}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{48}
 }
 
 func (x *GetRepositoriesRequest) GetScope() GetRepositoriesRequest_Scope {
@@ -3432,7 +3699,7 @@ type UpdateRepositoryRequest struct {
 
 func (x *UpdateRepositoryRequest) Reset() {
 	*x = UpdateRepositoryRequest{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[45]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[49]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3444,7 +3711,7 @@ func (x *UpdateRepositoryRequest) String() string {
 func (*UpdateRepositoryRequest) ProtoMessage() {}
 
 func (x *UpdateRepositoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[45]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[49]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3457,7 +3724,7 @@ func (x *UpdateRepositoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateRepositoryRequest.ProtoReflect.Descriptor instead.
 func (*UpdateRepositoryRequest) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{45}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{49}
 }
 
 func (x *UpdateRepositoryRequest) GetId() string {
@@ -3504,7 +3771,7 @@ type RepositoryIdRequest struct {
 
 func (x *RepositoryIdRequest) Reset() {
 	*x = RepositoryIdRequest{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[46]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[50]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3516,7 +3783,7 @@ func (x *RepositoryIdRequest) String() string {
 func (*RepositoryIdRequest) ProtoMessage() {}
 
 func (x *RepositoryIdRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[46]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[50]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3529,7 +3796,7 @@ func (x *RepositoryIdRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RepositoryIdRequest.ProtoReflect.Descriptor instead.
 func (*RepositoryIdRequest) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{46}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{50}
 }
 
 func (x *RepositoryIdRequest) GetRepositoryId() string {
@@ -3548,7 +3815,7 @@ type GetRepositoryCommitsRequest struct {
 
 func (x *GetRepositoryCommitsRequest) Reset() {
 	*x = GetRepositoryCommitsRequest{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[47]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[51]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3560,7 +3827,7 @@ func (x *GetRepositoryCommitsRequest) String() string {
 func (*GetRepositoryCommitsRequest) ProtoMessage() {}
 
 func (x *GetRepositoryCommitsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[47]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[51]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3573,7 +3840,7 @@ func (x *GetRepositoryCommitsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRepositoryCommitsRequest.ProtoReflect.Descriptor instead.
 func (*GetRepositoryCommitsRequest) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{47}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{51}
 }
 
 func (x *GetRepositoryCommitsRequest) GetHashes() []string {
@@ -3592,7 +3859,7 @@ type GetRepositoryCommitsResponse struct {
 
 func (x *GetRepositoryCommitsResponse) Reset() {
 	*x = GetRepositoryCommitsResponse{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[48]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[52]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3604,7 +3871,7 @@ func (x *GetRepositoryCommitsResponse) String() string {
 func (*GetRepositoryCommitsResponse) ProtoMessage() {}
 
 func (x *GetRepositoryCommitsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[48]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[52]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3617,7 +3884,7 @@ func (x *GetRepositoryCommitsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRepositoryCommitsResponse.ProtoReflect.Descriptor instead.
 func (*GetRepositoryCommitsResponse) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{48}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{52}
 }
 
 func (x *GetRepositoryCommitsResponse) GetCommits() []*SimpleCommit {
@@ -3642,7 +3909,7 @@ type CreateWebsiteRequest struct {
 
 func (x *CreateWebsiteRequest) Reset() {
 	*x = CreateWebsiteRequest{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[49]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[53]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3654,7 +3921,7 @@ func (x *CreateWebsiteRequest) String() string {
 func (*CreateWebsiteRequest) ProtoMessage() {}
 
 func (x *CreateWebsiteRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[49]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[53]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3667,7 +3934,7 @@ func (x *CreateWebsiteRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateWebsiteRequest.ProtoReflect.Descriptor instead.
 func (*CreateWebsiteRequest) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{49}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{53}
 }
 
 func (x *CreateWebsiteRequest) GetFqdn() string {
@@ -3728,7 +3995,7 @@ type DeleteWebsiteRequest struct {
 
 func (x *DeleteWebsiteRequest) Reset() {
 	*x = DeleteWebsiteRequest{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[50]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[54]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3740,7 +4007,7 @@ func (x *DeleteWebsiteRequest) String() string {
 func (*DeleteWebsiteRequest) ProtoMessage() {}
 
 func (x *DeleteWebsiteRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[50]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[54]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3753,7 +4020,7 @@ func (x *DeleteWebsiteRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteWebsiteRequest.ProtoReflect.Descriptor instead.
 func (*DeleteWebsiteRequest) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{50}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{54}
 }
 
 func (x *DeleteWebsiteRequest) GetId() string {
@@ -3778,7 +4045,7 @@ type CreateApplicationRequest struct {
 
 func (x *CreateApplicationRequest) Reset() {
 	*x = CreateApplicationRequest{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[51]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[55]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3790,7 +4057,7 @@ func (x *CreateApplicationRequest) String() string {
 func (*CreateApplicationRequest) ProtoMessage() {}
 
 func (x *CreateApplicationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[51]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[55]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3803,7 +4070,7 @@ func (x *CreateApplicationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateApplicationRequest.ProtoReflect.Descriptor instead.
 func (*CreateApplicationRequest) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{51}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{55}
 }
 
 func (x *CreateApplicationRequest) GetName() string {
@@ -3865,7 +4132,7 @@ type GetApplicationsRequest struct {
 
 func (x *GetApplicationsRequest) Reset() {
 	*x = GetApplicationsRequest{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[52]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[56]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3877,7 +4144,7 @@ func (x *GetApplicationsRequest) String() string {
 func (*GetApplicationsRequest) ProtoMessage() {}
 
 func (x *GetApplicationsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[52]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[56]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3890,7 +4157,7 @@ func (x *GetApplicationsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetApplicationsRequest.ProtoReflect.Descriptor instead.
 func (*GetApplicationsRequest) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{52}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{56}
 }
 
 func (x *GetApplicationsRequest) GetScope() GetApplicationsRequest_Scope {
@@ -3923,7 +4190,7 @@ type UpdateApplicationRequest struct {
 
 func (x *UpdateApplicationRequest) Reset() {
 	*x = UpdateApplicationRequest{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[53]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[57]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3935,7 +4202,7 @@ func (x *UpdateApplicationRequest) String() string {
 func (*UpdateApplicationRequest) ProtoMessage() {}
 
 func (x *UpdateApplicationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[53]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[57]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3948,7 +4215,7 @@ func (x *UpdateApplicationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateApplicationRequest.ProtoReflect.Descriptor instead.
 func (*UpdateApplicationRequest) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{53}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{57}
 }
 
 func (x *UpdateApplicationRequest) GetId() string {
@@ -4016,7 +4283,7 @@ type GetRepositoriesResponse struct {
 
 func (x *GetRepositoriesResponse) Reset() {
 	*x = GetRepositoriesResponse{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[54]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[58]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4028,7 +4295,7 @@ func (x *GetRepositoriesResponse) String() string {
 func (*GetRepositoriesResponse) ProtoMessage() {}
 
 func (x *GetRepositoriesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[54]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[58]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4041,7 +4308,7 @@ func (x *GetRepositoriesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRepositoriesResponse.ProtoReflect.Descriptor instead.
 func (*GetRepositoriesResponse) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{54}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{58}
 }
 
 func (x *GetRepositoriesResponse) GetRepositories() []*Repository {
@@ -4060,7 +4327,7 @@ type GetApplicationsResponse struct {
 
 func (x *GetApplicationsResponse) Reset() {
 	*x = GetApplicationsResponse{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[55]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[59]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4072,7 +4339,7 @@ func (x *GetApplicationsResponse) String() string {
 func (*GetApplicationsResponse) ProtoMessage() {}
 
 func (x *GetApplicationsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[55]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[59]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4085,7 +4352,7 @@ func (x *GetApplicationsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetApplicationsResponse.ProtoReflect.Descriptor instead.
 func (*GetApplicationsResponse) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{55}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{59}
 }
 
 func (x *GetApplicationsResponse) GetApplications() []*Application {
@@ -4104,7 +4371,7 @@ type ApplicationIdRequest struct {
 
 func (x *ApplicationIdRequest) Reset() {
 	*x = ApplicationIdRequest{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[56]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[60]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4116,7 +4383,7 @@ func (x *ApplicationIdRequest) String() string {
 func (*ApplicationIdRequest) ProtoMessage() {}
 
 func (x *ApplicationIdRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[56]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[60]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4129,7 +4396,7 @@ func (x *ApplicationIdRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ApplicationIdRequest.ProtoReflect.Descriptor instead.
 func (*ApplicationIdRequest) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{56}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{60}
 }
 
 func (x *ApplicationIdRequest) GetId() string {
@@ -4150,7 +4417,7 @@ type GetAllBuildsRequest struct {
 
 func (x *GetAllBuildsRequest) Reset() {
 	*x = GetAllBuildsRequest{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[57]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[61]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4162,7 +4429,7 @@ func (x *GetAllBuildsRequest) String() string {
 func (*GetAllBuildsRequest) ProtoMessage() {}
 
 func (x *GetAllBuildsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[57]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[61]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4175,7 +4442,7 @@ func (x *GetAllBuildsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAllBuildsRequest.ProtoReflect.Descriptor instead.
 func (*GetAllBuildsRequest) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{57}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{61}
 }
 
 func (x *GetAllBuildsRequest) GetPage() int32 {
@@ -4201,7 +4468,7 @@ type BuildIdRequest struct {
 
 func (x *BuildIdRequest) Reset() {
 	*x = BuildIdRequest{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[58]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[62]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4213,7 +4480,7 @@ func (x *BuildIdRequest) String() string {
 func (*BuildIdRequest) ProtoMessage() {}
 
 func (x *BuildIdRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[58]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[62]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4226,7 +4493,7 @@ func (x *BuildIdRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BuildIdRequest.ProtoReflect.Descriptor instead.
 func (*BuildIdRequest) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{58}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{62}
 }
 
 func (x *BuildIdRequest) GetBuildId() string {
@@ -4245,7 +4512,7 @@ type ArtifactIdRequest struct {
 
 func (x *ArtifactIdRequest) Reset() {
 	*x = ArtifactIdRequest{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[59]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[63]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4257,7 +4524,7 @@ func (x *ArtifactIdRequest) String() string {
 func (*ArtifactIdRequest) ProtoMessage() {}
 
 func (x *ArtifactIdRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[59]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[63]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4270,7 +4537,7 @@ func (x *ArtifactIdRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ArtifactIdRequest.ProtoReflect.Descriptor instead.
 func (*ArtifactIdRequest) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{59}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{63}
 }
 
 func (x *ArtifactIdRequest) GetArtifactId() string {
@@ -4289,7 +4556,7 @@ type GetBuildsResponse struct {
 
 func (x *GetBuildsResponse) Reset() {
 	*x = GetBuildsResponse{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[60]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[64]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4301,7 +4568,7 @@ func (x *GetBuildsResponse) String() string {
 func (*GetBuildsResponse) ProtoMessage() {}
 
 func (x *GetBuildsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[60]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[64]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4314,7 +4581,7 @@ func (x *GetBuildsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetBuildsResponse.ProtoReflect.Descriptor instead.
 func (*GetBuildsResponse) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{60}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{64}
 }
 
 func (x *GetBuildsResponse) GetBuilds() []*Build {
@@ -4335,7 +4602,7 @@ type SetApplicationEnvVarRequest struct {
 
 func (x *SetApplicationEnvVarRequest) Reset() {
 	*x = SetApplicationEnvVarRequest{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[61]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[65]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4347,7 +4614,7 @@ func (x *SetApplicationEnvVarRequest) String() string {
 func (*SetApplicationEnvVarRequest) ProtoMessage() {}
 
 func (x *SetApplicationEnvVarRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[61]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[65]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4360,7 +4627,7 @@ func (x *SetApplicationEnvVarRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetApplicationEnvVarRequest.ProtoReflect.Descriptor instead.
 func (*SetApplicationEnvVarRequest) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{61}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{65}
 }
 
 func (x *SetApplicationEnvVarRequest) GetApplicationId() string {
@@ -4394,7 +4661,7 @@ type DeleteApplicationEnvVarRequest struct {
 
 func (x *DeleteApplicationEnvVarRequest) Reset() {
 	*x = DeleteApplicationEnvVarRequest{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[62]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[66]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4406,7 +4673,7 @@ func (x *DeleteApplicationEnvVarRequest) String() string {
 func (*DeleteApplicationEnvVarRequest) ProtoMessage() {}
 
 func (x *DeleteApplicationEnvVarRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[62]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[66]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4419,7 +4686,7 @@ func (x *DeleteApplicationEnvVarRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteApplicationEnvVarRequest.ProtoReflect.Descriptor instead.
 func (*DeleteApplicationEnvVarRequest) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{62}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{66}
 }
 
 func (x *DeleteApplicationEnvVarRequest) GetApplicationId() string {
@@ -4448,7 +4715,7 @@ type GetApplicationMetricsRequest struct {
 
 func (x *GetApplicationMetricsRequest) Reset() {
 	*x = GetApplicationMetricsRequest{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[63]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[67]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4460,7 +4727,7 @@ func (x *GetApplicationMetricsRequest) String() string {
 func (*GetApplicationMetricsRequest) ProtoMessage() {}
 
 func (x *GetApplicationMetricsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[63]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[67]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4473,7 +4740,7 @@ func (x *GetApplicationMetricsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetApplicationMetricsRequest.ProtoReflect.Descriptor instead.
 func (*GetApplicationMetricsRequest) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{63}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{67}
 }
 
 func (x *GetApplicationMetricsRequest) GetApplicationId() string {
@@ -4515,7 +4782,7 @@ type GetOutputRequest struct {
 
 func (x *GetOutputRequest) Reset() {
 	*x = GetOutputRequest{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[64]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[68]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4527,7 +4794,7 @@ func (x *GetOutputRequest) String() string {
 func (*GetOutputRequest) ProtoMessage() {}
 
 func (x *GetOutputRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[64]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[68]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4540,7 +4807,7 @@ func (x *GetOutputRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetOutputRequest.ProtoReflect.Descriptor instead.
 func (*GetOutputRequest) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{64}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{68}
 }
 
 func (x *GetOutputRequest) GetApplicationId() string {
@@ -4574,7 +4841,7 @@ type GetOutputStreamRequest struct {
 
 func (x *GetOutputStreamRequest) Reset() {
 	*x = GetOutputStreamRequest{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[65]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[69]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4586,7 +4853,7 @@ func (x *GetOutputStreamRequest) String() string {
 func (*GetOutputStreamRequest) ProtoMessage() {}
 
 func (x *GetOutputStreamRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[65]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[69]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4599,7 +4866,7 @@ func (x *GetOutputStreamRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetOutputStreamRequest.ProtoReflect.Descriptor instead.
 func (*GetOutputStreamRequest) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{65}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{69}
 }
 
 func (x *GetOutputStreamRequest) GetApplicationId() string {
@@ -4626,7 +4893,7 @@ type RetryCommitBuildRequest struct {
 
 func (x *RetryCommitBuildRequest) Reset() {
 	*x = RetryCommitBuildRequest{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[66]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[70]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4638,7 +4905,7 @@ func (x *RetryCommitBuildRequest) String() string {
 func (*RetryCommitBuildRequest) ProtoMessage() {}
 
 func (x *RetryCommitBuildRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[66]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[70]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4651,7 +4918,7 @@ func (x *RetryCommitBuildRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RetryCommitBuildRequest.ProtoReflect.Descriptor instead.
 func (*RetryCommitBuildRequest) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{66}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{70}
 }
 
 func (x *RetryCommitBuildRequest) GetApplicationId() string {
@@ -4677,7 +4944,7 @@ type GetRepositoryRefsResponse struct {
 
 func (x *GetRepositoryRefsResponse) Reset() {
 	*x = GetRepositoryRefsResponse{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[67]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[71]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4689,7 +4956,7 @@ func (x *GetRepositoryRefsResponse) String() string {
 func (*GetRepositoryRefsResponse) ProtoMessage() {}
 
 func (x *GetRepositoryRefsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[67]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[71]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4702,7 +4969,7 @@ func (x *GetRepositoryRefsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRepositoryRefsResponse.ProtoReflect.Descriptor instead.
 func (*GetRepositoryRefsResponse) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{67}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{71}
 }
 
 func (x *GetRepositoryRefsResponse) GetRefs() []*GitRef {
@@ -4721,7 +4988,7 @@ type UpdateRepositoryRequest_UpdateOwners struct {
 
 func (x *UpdateRepositoryRequest_UpdateOwners) Reset() {
 	*x = UpdateRepositoryRequest_UpdateOwners{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[68]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[72]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4733,7 +5000,7 @@ func (x *UpdateRepositoryRequest_UpdateOwners) String() string {
 func (*UpdateRepositoryRequest_UpdateOwners) ProtoMessage() {}
 
 func (x *UpdateRepositoryRequest_UpdateOwners) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[68]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[72]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4746,7 +5013,7 @@ func (x *UpdateRepositoryRequest_UpdateOwners) ProtoReflect() protoreflect.Messa
 
 // Deprecated: Use UpdateRepositoryRequest_UpdateOwners.ProtoReflect.Descriptor instead.
 func (*UpdateRepositoryRequest_UpdateOwners) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{45, 0}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{49, 0}
 }
 
 func (x *UpdateRepositoryRequest_UpdateOwners) GetOwnerIds() []string {
@@ -4765,7 +5032,7 @@ type UpdateApplicationRequest_UpdateWebsites struct {
 
 func (x *UpdateApplicationRequest_UpdateWebsites) Reset() {
 	*x = UpdateApplicationRequest_UpdateWebsites{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[69]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[73]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4777,7 +5044,7 @@ func (x *UpdateApplicationRequest_UpdateWebsites) String() string {
 func (*UpdateApplicationRequest_UpdateWebsites) ProtoMessage() {}
 
 func (x *UpdateApplicationRequest_UpdateWebsites) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[69]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[73]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4790,7 +5057,7 @@ func (x *UpdateApplicationRequest_UpdateWebsites) ProtoReflect() protoreflect.Me
 
 // Deprecated: Use UpdateApplicationRequest_UpdateWebsites.ProtoReflect.Descriptor instead.
 func (*UpdateApplicationRequest_UpdateWebsites) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{53, 0}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{57, 0}
 }
 
 func (x *UpdateApplicationRequest_UpdateWebsites) GetWebsites() []*CreateWebsiteRequest {
@@ -4809,7 +5076,7 @@ type UpdateApplicationRequest_UpdatePorts struct {
 
 func (x *UpdateApplicationRequest_UpdatePorts) Reset() {
 	*x = UpdateApplicationRequest_UpdatePorts{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[70]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[74]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4821,7 +5088,7 @@ func (x *UpdateApplicationRequest_UpdatePorts) String() string {
 func (*UpdateApplicationRequest_UpdatePorts) ProtoMessage() {}
 
 func (x *UpdateApplicationRequest_UpdatePorts) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[70]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[74]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4834,7 +5101,7 @@ func (x *UpdateApplicationRequest_UpdatePorts) ProtoReflect() protoreflect.Messa
 
 // Deprecated: Use UpdateApplicationRequest_UpdatePorts.ProtoReflect.Descriptor instead.
 func (*UpdateApplicationRequest_UpdatePorts) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{53, 1}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{57, 1}
 }
 
 func (x *UpdateApplicationRequest_UpdatePorts) GetPortPublications() []*PortPublication {
@@ -4853,7 +5120,7 @@ type UpdateApplicationRequest_UpdateOwners struct {
 
 func (x *UpdateApplicationRequest_UpdateOwners) Reset() {
 	*x = UpdateApplicationRequest_UpdateOwners{}
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[71]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[75]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4865,7 +5132,7 @@ func (x *UpdateApplicationRequest_UpdateOwners) String() string {
 func (*UpdateApplicationRequest_UpdateOwners) ProtoMessage() {}
 
 func (x *UpdateApplicationRequest_UpdateOwners) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[71]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[75]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4878,7 +5145,7 @@ func (x *UpdateApplicationRequest_UpdateOwners) ProtoReflect() protoreflect.Mess
 
 // Deprecated: Use UpdateApplicationRequest_UpdateOwners.ProtoReflect.Descriptor instead.
 func (*UpdateApplicationRequest_UpdateOwners) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{53, 2}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{57, 2}
 }
 
 func (x *UpdateApplicationRequest_UpdateOwners) GetOwnerIds() []string {
@@ -4985,7 +5252,9 @@ const file_neoshowcase_protobuf_gateway_proto_rawDesc = "" +
 	"\acontext\x18\x03 \x01(\tR\acontext\"E\n" +
 	"\fStaticConfig\x12#\n" +
 	"\rartifact_path\x18\x01 \x01(\tR\fartifactPath\x12\x10\n" +
-	"\x03spa\x18\x02 \x01(\bR\x03spa\"\x7f\n" +
+	"\x03spa\x18\x02 \x01(\bR\x03spa\"5\n" +
+	"\x0eFunctionConfig\x12#\n" +
+	"\rartifact_path\x18\x01 \x01(\tR\fartifactPath\"\x7f\n" +
 	"\x1aBuildConfigStaticBuildpack\x12G\n" +
 	"\rstatic_config\x18\x01 \x01(\v2\".neoshowcase.protobuf.StaticConfigR\fstaticConfig\x12\x18\n" +
 	"\acontext\x18\x02 \x01(\tR\acontext\"\x9b\x01\n" +
@@ -4997,7 +5266,19 @@ const file_neoshowcase_protobuf_gateway_proto_rawDesc = "" +
 	"\x1bBuildConfigStaticDockerfile\x12G\n" +
 	"\rstatic_config\x18\x01 \x01(\v2\".neoshowcase.protobuf.StaticConfigR\fstaticConfig\x12'\n" +
 	"\x0fdockerfile_name\x18\x02 \x01(\tR\x0edockerfileName\x12\x18\n" +
-	"\acontext\x18\x03 \x01(\tR\acontext\"\xc8\x04\n" +
+	"\acontext\x18\x03 \x01(\tR\acontext\"\x87\x01\n" +
+	"\x1cBuildConfigFunctionBuildpack\x12M\n" +
+	"\x0ffunction_config\x18\x01 \x01(\v2$.neoshowcase.protobuf.FunctionConfigR\x0efunctionConfig\x12\x18\n" +
+	"\acontext\x18\x02 \x01(\tR\acontext\"\xa3\x01\n" +
+	"\x16BuildConfigFunctionCmd\x12M\n" +
+	"\x0ffunction_config\x18\x01 \x01(\v2$.neoshowcase.protobuf.FunctionConfigR\x0efunctionConfig\x12\x1d\n" +
+	"\n" +
+	"base_image\x18\x02 \x01(\tR\tbaseImage\x12\x1b\n" +
+	"\tbuild_cmd\x18\x03 \x01(\tR\bbuildCmd\"\xb1\x01\n" +
+	"\x1dBuildConfigFunctionDockerfile\x12M\n" +
+	"\x0ffunction_config\x18\x01 \x01(\v2$.neoshowcase.protobuf.FunctionConfigR\x0efunctionConfig\x12'\n" +
+	"\x0fdockerfile_name\x18\x02 \x01(\tR\x0edockerfileName\x12\x18\n" +
+	"\acontext\x18\x03 \x01(\tR\acontext\"\xe8\x06\n" +
 	"\x11ApplicationConfig\x12`\n" +
 	"\x11runtime_buildpack\x18\x01 \x01(\v21.neoshowcase.protobuf.BuildConfigRuntimeBuildpackH\x00R\x10runtimeBuildpack\x12N\n" +
 	"\vruntime_cmd\x18\x02 \x01(\v2+.neoshowcase.protobuf.BuildConfigRuntimeCmdH\x00R\n" +
@@ -5006,7 +5287,10 @@ const file_neoshowcase_protobuf_gateway_proto_rawDesc = "" +
 	"\x10static_buildpack\x18\x04 \x01(\v20.neoshowcase.protobuf.BuildConfigStaticBuildpackH\x00R\x0fstaticBuildpack\x12K\n" +
 	"\n" +
 	"static_cmd\x18\x05 \x01(\v2*.neoshowcase.protobuf.BuildConfigStaticCmdH\x00R\tstaticCmd\x12`\n" +
-	"\x11static_dockerfile\x18\x06 \x01(\v21.neoshowcase.protobuf.BuildConfigStaticDockerfileH\x00R\x10staticDockerfileB\x0e\n" +
+	"\x11static_dockerfile\x18\x06 \x01(\v21.neoshowcase.protobuf.BuildConfigStaticDockerfileH\x00R\x10staticDockerfile\x12c\n" +
+	"\x12function_buildpack\x18\a \x01(\v22.neoshowcase.protobuf.BuildConfigFunctionBuildpackH\x00R\x11functionBuildpack\x12Q\n" +
+	"\ffunction_cmd\x18\b \x01(\v2,.neoshowcase.protobuf.BuildConfigFunctionCmdH\x00R\vfunctionCmd\x12f\n" +
+	"\x13function_dockerfile\x18\t \x01(\v23.neoshowcase.protobuf.BuildConfigFunctionDockerfileH\x00R\x12functionDockerfileB\x0e\n" +
 	"\fbuild_config\"\x88\x02\n" +
 	"\aWebsite\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
@@ -5259,12 +5543,13 @@ const file_neoshowcase_protobuf_gateway_proto_rawDesc = "" +
 	"\x0eapplication_id\x18\x01 \x01(\tR\rapplicationId\x12\x16\n" +
 	"\x06commit\x18\x02 \x01(\tR\x06commit\"M\n" +
 	"\x19GetRepositoryRefsResponse\x120\n" +
-	"\x04refs\x18\x01 \x03(\v2\x1c.neoshowcase.protobuf.GitRefR\x04refs*%\n" +
+	"\x04refs\x18\x01 \x03(\v2\x1c.neoshowcase.protobuf.GitRefR\x04refs*3\n" +
 	"\n" +
 	"DeployType\x12\v\n" +
 	"\aRUNTIME\x10\x00\x12\n" +
 	"\n" +
-	"\x06STATIC\x10\x01*1\n" +
+	"\x06STATIC\x10\x01\x12\f\n" +
+	"\bFUNCTION\x10\x02*1\n" +
 	"\x12AuthenticationType\x12\a\n" +
 	"\x03OFF\x10\x00\x12\b\n" +
 	"\x04SOFT\x10\x01\x12\b\n" +
@@ -5336,7 +5621,7 @@ func file_neoshowcase_protobuf_gateway_proto_rawDescGZIP() []byte {
 }
 
 var file_neoshowcase_protobuf_gateway_proto_enumTypes = make([]protoimpl.EnumInfo, 9)
-var file_neoshowcase_protobuf_gateway_proto_msgTypes = make([]protoimpl.MessageInfo, 72)
+var file_neoshowcase_protobuf_gateway_proto_msgTypes = make([]protoimpl.MessageInfo, 76)
 var file_neoshowcase_protobuf_gateway_proto_goTypes = []any{
 	(DeployType)(0),                                 // 0: neoshowcase.protobuf.DeployType
 	(AuthenticationType)(0),                         // 1: neoshowcase.protobuf.AuthenticationType
@@ -5362,66 +5647,70 @@ var file_neoshowcase_protobuf_gateway_proto_goTypes = []any{
 	(*BuildConfigRuntimeCmd)(nil),                   // 21: neoshowcase.protobuf.BuildConfigRuntimeCmd
 	(*BuildConfigRuntimeDockerfile)(nil),            // 22: neoshowcase.protobuf.BuildConfigRuntimeDockerfile
 	(*StaticConfig)(nil),                            // 23: neoshowcase.protobuf.StaticConfig
-	(*BuildConfigStaticBuildpack)(nil),              // 24: neoshowcase.protobuf.BuildConfigStaticBuildpack
-	(*BuildConfigStaticCmd)(nil),                    // 25: neoshowcase.protobuf.BuildConfigStaticCmd
-	(*BuildConfigStaticDockerfile)(nil),             // 26: neoshowcase.protobuf.BuildConfigStaticDockerfile
-	(*ApplicationConfig)(nil),                       // 27: neoshowcase.protobuf.ApplicationConfig
-	(*Website)(nil),                                 // 28: neoshowcase.protobuf.Website
-	(*PortPublication)(nil),                         // 29: neoshowcase.protobuf.PortPublication
-	(*Application)(nil),                             // 30: neoshowcase.protobuf.Application
-	(*ApplicationEnvVar)(nil),                       // 31: neoshowcase.protobuf.ApplicationEnvVar
-	(*ApplicationEnvVars)(nil),                      // 32: neoshowcase.protobuf.ApplicationEnvVars
-	(*Artifact)(nil),                                // 33: neoshowcase.protobuf.Artifact
-	(*ArtifactContent)(nil),                         // 34: neoshowcase.protobuf.ArtifactContent
-	(*RuntimeImage)(nil),                            // 35: neoshowcase.protobuf.RuntimeImage
-	(*AvailableMetrics)(nil),                        // 36: neoshowcase.protobuf.AvailableMetrics
-	(*ApplicationMetric)(nil),                       // 37: neoshowcase.protobuf.ApplicationMetric
-	(*ApplicationMetrics)(nil),                      // 38: neoshowcase.protobuf.ApplicationMetrics
-	(*ApplicationOutput)(nil),                       // 39: neoshowcase.protobuf.ApplicationOutput
-	(*ApplicationOutputs)(nil),                      // 40: neoshowcase.protobuf.ApplicationOutputs
-	(*Build)(nil),                                   // 41: neoshowcase.protobuf.Build
-	(*BuildLog)(nil),                                // 42: neoshowcase.protobuf.BuildLog
-	(*GitRef)(nil),                                  // 43: neoshowcase.protobuf.GitRef
-	(*GenerateKeyPairResponse)(nil),                 // 44: neoshowcase.protobuf.GenerateKeyPairResponse
-	(*GetUsersResponse)(nil),                        // 45: neoshowcase.protobuf.GetUsersResponse
-	(*GetUserKeysResponse)(nil),                     // 46: neoshowcase.protobuf.GetUserKeysResponse
-	(*CreateUserKeyRequest)(nil),                    // 47: neoshowcase.protobuf.CreateUserKeyRequest
-	(*DeleteUserKeyRequest)(nil),                    // 48: neoshowcase.protobuf.DeleteUserKeyRequest
-	(*CreateRepositoryAuthBasic)(nil),               // 49: neoshowcase.protobuf.CreateRepositoryAuthBasic
-	(*CreateRepositoryAuthSSH)(nil),                 // 50: neoshowcase.protobuf.CreateRepositoryAuthSSH
-	(*CreateRepositoryAuth)(nil),                    // 51: neoshowcase.protobuf.CreateRepositoryAuth
-	(*CreateRepositoryRequest)(nil),                 // 52: neoshowcase.protobuf.CreateRepositoryRequest
-	(*GetRepositoriesRequest)(nil),                  // 53: neoshowcase.protobuf.GetRepositoriesRequest
-	(*UpdateRepositoryRequest)(nil),                 // 54: neoshowcase.protobuf.UpdateRepositoryRequest
-	(*RepositoryIdRequest)(nil),                     // 55: neoshowcase.protobuf.RepositoryIdRequest
-	(*GetRepositoryCommitsRequest)(nil),             // 56: neoshowcase.protobuf.GetRepositoryCommitsRequest
-	(*GetRepositoryCommitsResponse)(nil),            // 57: neoshowcase.protobuf.GetRepositoryCommitsResponse
-	(*CreateWebsiteRequest)(nil),                    // 58: neoshowcase.protobuf.CreateWebsiteRequest
-	(*DeleteWebsiteRequest)(nil),                    // 59: neoshowcase.protobuf.DeleteWebsiteRequest
-	(*CreateApplicationRequest)(nil),                // 60: neoshowcase.protobuf.CreateApplicationRequest
-	(*GetApplicationsRequest)(nil),                  // 61: neoshowcase.protobuf.GetApplicationsRequest
-	(*UpdateApplicationRequest)(nil),                // 62: neoshowcase.protobuf.UpdateApplicationRequest
-	(*GetRepositoriesResponse)(nil),                 // 63: neoshowcase.protobuf.GetRepositoriesResponse
-	(*GetApplicationsResponse)(nil),                 // 64: neoshowcase.protobuf.GetApplicationsResponse
-	(*ApplicationIdRequest)(nil),                    // 65: neoshowcase.protobuf.ApplicationIdRequest
-	(*GetAllBuildsRequest)(nil),                     // 66: neoshowcase.protobuf.GetAllBuildsRequest
-	(*BuildIdRequest)(nil),                          // 67: neoshowcase.protobuf.BuildIdRequest
-	(*ArtifactIdRequest)(nil),                       // 68: neoshowcase.protobuf.ArtifactIdRequest
-	(*GetBuildsResponse)(nil),                       // 69: neoshowcase.protobuf.GetBuildsResponse
-	(*SetApplicationEnvVarRequest)(nil),             // 70: neoshowcase.protobuf.SetApplicationEnvVarRequest
-	(*DeleteApplicationEnvVarRequest)(nil),          // 71: neoshowcase.protobuf.DeleteApplicationEnvVarRequest
-	(*GetApplicationMetricsRequest)(nil),            // 72: neoshowcase.protobuf.GetApplicationMetricsRequest
-	(*GetOutputRequest)(nil),                        // 73: neoshowcase.protobuf.GetOutputRequest
-	(*GetOutputStreamRequest)(nil),                  // 74: neoshowcase.protobuf.GetOutputStreamRequest
-	(*RetryCommitBuildRequest)(nil),                 // 75: neoshowcase.protobuf.RetryCommitBuildRequest
-	(*GetRepositoryRefsResponse)(nil),               // 76: neoshowcase.protobuf.GetRepositoryRefsResponse
-	(*UpdateRepositoryRequest_UpdateOwners)(nil),    // 77: neoshowcase.protobuf.UpdateRepositoryRequest.UpdateOwners
-	(*UpdateApplicationRequest_UpdateWebsites)(nil), // 78: neoshowcase.protobuf.UpdateApplicationRequest.UpdateWebsites
-	(*UpdateApplicationRequest_UpdatePorts)(nil),    // 79: neoshowcase.protobuf.UpdateApplicationRequest.UpdatePorts
-	(*UpdateApplicationRequest_UpdateOwners)(nil),   // 80: neoshowcase.protobuf.UpdateApplicationRequest.UpdateOwners
-	(*timestamppb.Timestamp)(nil),                   // 81: google.protobuf.Timestamp
-	(*NullTimestamp)(nil),                           // 82: neoshowcase.protobuf.NullTimestamp
-	(*emptypb.Empty)(nil),                           // 83: google.protobuf.Empty
+	(*FunctionConfig)(nil),                          // 24: neoshowcase.protobuf.FunctionConfig
+	(*BuildConfigStaticBuildpack)(nil),              // 25: neoshowcase.protobuf.BuildConfigStaticBuildpack
+	(*BuildConfigStaticCmd)(nil),                    // 26: neoshowcase.protobuf.BuildConfigStaticCmd
+	(*BuildConfigStaticDockerfile)(nil),             // 27: neoshowcase.protobuf.BuildConfigStaticDockerfile
+	(*BuildConfigFunctionBuildpack)(nil),            // 28: neoshowcase.protobuf.BuildConfigFunctionBuildpack
+	(*BuildConfigFunctionCmd)(nil),                  // 29: neoshowcase.protobuf.BuildConfigFunctionCmd
+	(*BuildConfigFunctionDockerfile)(nil),           // 30: neoshowcase.protobuf.BuildConfigFunctionDockerfile
+	(*ApplicationConfig)(nil),                       // 31: neoshowcase.protobuf.ApplicationConfig
+	(*Website)(nil),                                 // 32: neoshowcase.protobuf.Website
+	(*PortPublication)(nil),                         // 33: neoshowcase.protobuf.PortPublication
+	(*Application)(nil),                             // 34: neoshowcase.protobuf.Application
+	(*ApplicationEnvVar)(nil),                       // 35: neoshowcase.protobuf.ApplicationEnvVar
+	(*ApplicationEnvVars)(nil),                      // 36: neoshowcase.protobuf.ApplicationEnvVars
+	(*Artifact)(nil),                                // 37: neoshowcase.protobuf.Artifact
+	(*ArtifactContent)(nil),                         // 38: neoshowcase.protobuf.ArtifactContent
+	(*RuntimeImage)(nil),                            // 39: neoshowcase.protobuf.RuntimeImage
+	(*AvailableMetrics)(nil),                        // 40: neoshowcase.protobuf.AvailableMetrics
+	(*ApplicationMetric)(nil),                       // 41: neoshowcase.protobuf.ApplicationMetric
+	(*ApplicationMetrics)(nil),                      // 42: neoshowcase.protobuf.ApplicationMetrics
+	(*ApplicationOutput)(nil),                       // 43: neoshowcase.protobuf.ApplicationOutput
+	(*ApplicationOutputs)(nil),                      // 44: neoshowcase.protobuf.ApplicationOutputs
+	(*Build)(nil),                                   // 45: neoshowcase.protobuf.Build
+	(*BuildLog)(nil),                                // 46: neoshowcase.protobuf.BuildLog
+	(*GitRef)(nil),                                  // 47: neoshowcase.protobuf.GitRef
+	(*GenerateKeyPairResponse)(nil),                 // 48: neoshowcase.protobuf.GenerateKeyPairResponse
+	(*GetUsersResponse)(nil),                        // 49: neoshowcase.protobuf.GetUsersResponse
+	(*GetUserKeysResponse)(nil),                     // 50: neoshowcase.protobuf.GetUserKeysResponse
+	(*CreateUserKeyRequest)(nil),                    // 51: neoshowcase.protobuf.CreateUserKeyRequest
+	(*DeleteUserKeyRequest)(nil),                    // 52: neoshowcase.protobuf.DeleteUserKeyRequest
+	(*CreateRepositoryAuthBasic)(nil),               // 53: neoshowcase.protobuf.CreateRepositoryAuthBasic
+	(*CreateRepositoryAuthSSH)(nil),                 // 54: neoshowcase.protobuf.CreateRepositoryAuthSSH
+	(*CreateRepositoryAuth)(nil),                    // 55: neoshowcase.protobuf.CreateRepositoryAuth
+	(*CreateRepositoryRequest)(nil),                 // 56: neoshowcase.protobuf.CreateRepositoryRequest
+	(*GetRepositoriesRequest)(nil),                  // 57: neoshowcase.protobuf.GetRepositoriesRequest
+	(*UpdateRepositoryRequest)(nil),                 // 58: neoshowcase.protobuf.UpdateRepositoryRequest
+	(*RepositoryIdRequest)(nil),                     // 59: neoshowcase.protobuf.RepositoryIdRequest
+	(*GetRepositoryCommitsRequest)(nil),             // 60: neoshowcase.protobuf.GetRepositoryCommitsRequest
+	(*GetRepositoryCommitsResponse)(nil),            // 61: neoshowcase.protobuf.GetRepositoryCommitsResponse
+	(*CreateWebsiteRequest)(nil),                    // 62: neoshowcase.protobuf.CreateWebsiteRequest
+	(*DeleteWebsiteRequest)(nil),                    // 63: neoshowcase.protobuf.DeleteWebsiteRequest
+	(*CreateApplicationRequest)(nil),                // 64: neoshowcase.protobuf.CreateApplicationRequest
+	(*GetApplicationsRequest)(nil),                  // 65: neoshowcase.protobuf.GetApplicationsRequest
+	(*UpdateApplicationRequest)(nil),                // 66: neoshowcase.protobuf.UpdateApplicationRequest
+	(*GetRepositoriesResponse)(nil),                 // 67: neoshowcase.protobuf.GetRepositoriesResponse
+	(*GetApplicationsResponse)(nil),                 // 68: neoshowcase.protobuf.GetApplicationsResponse
+	(*ApplicationIdRequest)(nil),                    // 69: neoshowcase.protobuf.ApplicationIdRequest
+	(*GetAllBuildsRequest)(nil),                     // 70: neoshowcase.protobuf.GetAllBuildsRequest
+	(*BuildIdRequest)(nil),                          // 71: neoshowcase.protobuf.BuildIdRequest
+	(*ArtifactIdRequest)(nil),                       // 72: neoshowcase.protobuf.ArtifactIdRequest
+	(*GetBuildsResponse)(nil),                       // 73: neoshowcase.protobuf.GetBuildsResponse
+	(*SetApplicationEnvVarRequest)(nil),             // 74: neoshowcase.protobuf.SetApplicationEnvVarRequest
+	(*DeleteApplicationEnvVarRequest)(nil),          // 75: neoshowcase.protobuf.DeleteApplicationEnvVarRequest
+	(*GetApplicationMetricsRequest)(nil),            // 76: neoshowcase.protobuf.GetApplicationMetricsRequest
+	(*GetOutputRequest)(nil),                        // 77: neoshowcase.protobuf.GetOutputRequest
+	(*GetOutputStreamRequest)(nil),                  // 78: neoshowcase.protobuf.GetOutputStreamRequest
+	(*RetryCommitBuildRequest)(nil),                 // 79: neoshowcase.protobuf.RetryCommitBuildRequest
+	(*GetRepositoryRefsResponse)(nil),               // 80: neoshowcase.protobuf.GetRepositoryRefsResponse
+	(*UpdateRepositoryRequest_UpdateOwners)(nil),    // 81: neoshowcase.protobuf.UpdateRepositoryRequest.UpdateOwners
+	(*UpdateApplicationRequest_UpdateWebsites)(nil), // 82: neoshowcase.protobuf.UpdateApplicationRequest.UpdateWebsites
+	(*UpdateApplicationRequest_UpdatePorts)(nil),    // 83: neoshowcase.protobuf.UpdateApplicationRequest.UpdatePorts
+	(*UpdateApplicationRequest_UpdateOwners)(nil),   // 84: neoshowcase.protobuf.UpdateApplicationRequest.UpdateOwners
+	(*timestamppb.Timestamp)(nil),                   // 85: google.protobuf.Timestamp
+	(*NullTimestamp)(nil),                           // 86: neoshowcase.protobuf.NullTimestamp
+	(*emptypb.Empty)(nil),                           // 87: google.protobuf.Empty
 }
 var file_neoshowcase_protobuf_gateway_proto_depIdxs = []int32{
 	2,   // 0: neoshowcase.protobuf.AvailablePort.protocol:type_name -> neoshowcase.protobuf.PortPublicationProtocol
@@ -5429,9 +5718,9 @@ var file_neoshowcase_protobuf_gateway_proto_depIdxs = []int32{
 	10,  // 2: neoshowcase.protobuf.SystemInfo.domains:type_name -> neoshowcase.protobuf.AvailableDomain
 	11,  // 3: neoshowcase.protobuf.SystemInfo.ports:type_name -> neoshowcase.protobuf.AvailablePort
 	12,  // 4: neoshowcase.protobuf.SystemInfo.additional_links:type_name -> neoshowcase.protobuf.AdditionalLink
-	81,  // 5: neoshowcase.protobuf.UserKey.created_at:type_name -> google.protobuf.Timestamp
+	85,  // 5: neoshowcase.protobuf.UserKey.created_at:type_name -> google.protobuf.Timestamp
 	4,   // 6: neoshowcase.protobuf.Repository.auth_method:type_name -> neoshowcase.protobuf.Repository.AuthMethod
-	81,  // 7: neoshowcase.protobuf.SimpleCommit.commit_date:type_name -> google.protobuf.Timestamp
+	85,  // 7: neoshowcase.protobuf.SimpleCommit.commit_date:type_name -> google.protobuf.Timestamp
 	5,   // 8: neoshowcase.protobuf.AutoShutdownConfig.startup:type_name -> neoshowcase.protobuf.AutoShutdownConfig.StartupBehavior
 	18,  // 9: neoshowcase.protobuf.RuntimeConfig.auto_shutdown:type_name -> neoshowcase.protobuf.AutoShutdownConfig
 	19,  // 10: neoshowcase.protobuf.BuildConfigRuntimeBuildpack.runtime_config:type_name -> neoshowcase.protobuf.RuntimeConfig
@@ -5440,144 +5729,150 @@ var file_neoshowcase_protobuf_gateway_proto_depIdxs = []int32{
 	23,  // 13: neoshowcase.protobuf.BuildConfigStaticBuildpack.static_config:type_name -> neoshowcase.protobuf.StaticConfig
 	23,  // 14: neoshowcase.protobuf.BuildConfigStaticCmd.static_config:type_name -> neoshowcase.protobuf.StaticConfig
 	23,  // 15: neoshowcase.protobuf.BuildConfigStaticDockerfile.static_config:type_name -> neoshowcase.protobuf.StaticConfig
-	20,  // 16: neoshowcase.protobuf.ApplicationConfig.runtime_buildpack:type_name -> neoshowcase.protobuf.BuildConfigRuntimeBuildpack
-	21,  // 17: neoshowcase.protobuf.ApplicationConfig.runtime_cmd:type_name -> neoshowcase.protobuf.BuildConfigRuntimeCmd
-	22,  // 18: neoshowcase.protobuf.ApplicationConfig.runtime_dockerfile:type_name -> neoshowcase.protobuf.BuildConfigRuntimeDockerfile
-	24,  // 19: neoshowcase.protobuf.ApplicationConfig.static_buildpack:type_name -> neoshowcase.protobuf.BuildConfigStaticBuildpack
-	25,  // 20: neoshowcase.protobuf.ApplicationConfig.static_cmd:type_name -> neoshowcase.protobuf.BuildConfigStaticCmd
-	26,  // 21: neoshowcase.protobuf.ApplicationConfig.static_dockerfile:type_name -> neoshowcase.protobuf.BuildConfigStaticDockerfile
-	1,   // 22: neoshowcase.protobuf.Website.authentication:type_name -> neoshowcase.protobuf.AuthenticationType
-	2,   // 23: neoshowcase.protobuf.PortPublication.protocol:type_name -> neoshowcase.protobuf.PortPublicationProtocol
-	0,   // 24: neoshowcase.protobuf.Application.deploy_type:type_name -> neoshowcase.protobuf.DeployType
-	6,   // 25: neoshowcase.protobuf.Application.container:type_name -> neoshowcase.protobuf.Application.ContainerState
-	81,  // 26: neoshowcase.protobuf.Application.created_at:type_name -> google.protobuf.Timestamp
-	81,  // 27: neoshowcase.protobuf.Application.updated_at:type_name -> google.protobuf.Timestamp
-	27,  // 28: neoshowcase.protobuf.Application.config:type_name -> neoshowcase.protobuf.ApplicationConfig
-	28,  // 29: neoshowcase.protobuf.Application.websites:type_name -> neoshowcase.protobuf.Website
-	29,  // 30: neoshowcase.protobuf.Application.port_publications:type_name -> neoshowcase.protobuf.PortPublication
-	3,   // 31: neoshowcase.protobuf.Application.latest_build_status:type_name -> neoshowcase.protobuf.BuildStatus
-	31,  // 32: neoshowcase.protobuf.ApplicationEnvVars.variables:type_name -> neoshowcase.protobuf.ApplicationEnvVar
-	81,  // 33: neoshowcase.protobuf.Artifact.created_at:type_name -> google.protobuf.Timestamp
-	82,  // 34: neoshowcase.protobuf.Artifact.deleted_at:type_name -> neoshowcase.protobuf.NullTimestamp
-	81,  // 35: neoshowcase.protobuf.RuntimeImage.created_at:type_name -> google.protobuf.Timestamp
-	81,  // 36: neoshowcase.protobuf.ApplicationMetric.time:type_name -> google.protobuf.Timestamp
-	37,  // 37: neoshowcase.protobuf.ApplicationMetrics.metrics:type_name -> neoshowcase.protobuf.ApplicationMetric
-	81,  // 38: neoshowcase.protobuf.ApplicationOutput.time:type_name -> google.protobuf.Timestamp
-	39,  // 39: neoshowcase.protobuf.ApplicationOutputs.outputs:type_name -> neoshowcase.protobuf.ApplicationOutput
-	3,   // 40: neoshowcase.protobuf.Build.status:type_name -> neoshowcase.protobuf.BuildStatus
-	81,  // 41: neoshowcase.protobuf.Build.queued_at:type_name -> google.protobuf.Timestamp
-	82,  // 42: neoshowcase.protobuf.Build.started_at:type_name -> neoshowcase.protobuf.NullTimestamp
-	82,  // 43: neoshowcase.protobuf.Build.updated_at:type_name -> neoshowcase.protobuf.NullTimestamp
-	82,  // 44: neoshowcase.protobuf.Build.finished_at:type_name -> neoshowcase.protobuf.NullTimestamp
-	33,  // 45: neoshowcase.protobuf.Build.artifacts:type_name -> neoshowcase.protobuf.Artifact
-	35,  // 46: neoshowcase.protobuf.Build.runtime_image:type_name -> neoshowcase.protobuf.RuntimeImage
-	14,  // 47: neoshowcase.protobuf.GetUsersResponse.users:type_name -> neoshowcase.protobuf.User
-	15,  // 48: neoshowcase.protobuf.GetUserKeysResponse.keys:type_name -> neoshowcase.protobuf.UserKey
-	83,  // 49: neoshowcase.protobuf.CreateRepositoryAuth.none:type_name -> google.protobuf.Empty
-	49,  // 50: neoshowcase.protobuf.CreateRepositoryAuth.basic:type_name -> neoshowcase.protobuf.CreateRepositoryAuthBasic
-	50,  // 51: neoshowcase.protobuf.CreateRepositoryAuth.ssh:type_name -> neoshowcase.protobuf.CreateRepositoryAuthSSH
-	51,  // 52: neoshowcase.protobuf.CreateRepositoryRequest.auth:type_name -> neoshowcase.protobuf.CreateRepositoryAuth
-	7,   // 53: neoshowcase.protobuf.GetRepositoriesRequest.scope:type_name -> neoshowcase.protobuf.GetRepositoriesRequest.Scope
-	51,  // 54: neoshowcase.protobuf.UpdateRepositoryRequest.auth:type_name -> neoshowcase.protobuf.CreateRepositoryAuth
-	77,  // 55: neoshowcase.protobuf.UpdateRepositoryRequest.owner_ids:type_name -> neoshowcase.protobuf.UpdateRepositoryRequest.UpdateOwners
-	17,  // 56: neoshowcase.protobuf.GetRepositoryCommitsResponse.commits:type_name -> neoshowcase.protobuf.SimpleCommit
-	1,   // 57: neoshowcase.protobuf.CreateWebsiteRequest.authentication:type_name -> neoshowcase.protobuf.AuthenticationType
-	27,  // 58: neoshowcase.protobuf.CreateApplicationRequest.config:type_name -> neoshowcase.protobuf.ApplicationConfig
-	58,  // 59: neoshowcase.protobuf.CreateApplicationRequest.websites:type_name -> neoshowcase.protobuf.CreateWebsiteRequest
-	29,  // 60: neoshowcase.protobuf.CreateApplicationRequest.port_publications:type_name -> neoshowcase.protobuf.PortPublication
-	8,   // 61: neoshowcase.protobuf.GetApplicationsRequest.scope:type_name -> neoshowcase.protobuf.GetApplicationsRequest.Scope
-	27,  // 62: neoshowcase.protobuf.UpdateApplicationRequest.config:type_name -> neoshowcase.protobuf.ApplicationConfig
-	78,  // 63: neoshowcase.protobuf.UpdateApplicationRequest.websites:type_name -> neoshowcase.protobuf.UpdateApplicationRequest.UpdateWebsites
-	79,  // 64: neoshowcase.protobuf.UpdateApplicationRequest.port_publications:type_name -> neoshowcase.protobuf.UpdateApplicationRequest.UpdatePorts
-	80,  // 65: neoshowcase.protobuf.UpdateApplicationRequest.owner_ids:type_name -> neoshowcase.protobuf.UpdateApplicationRequest.UpdateOwners
-	16,  // 66: neoshowcase.protobuf.GetRepositoriesResponse.repositories:type_name -> neoshowcase.protobuf.Repository
-	30,  // 67: neoshowcase.protobuf.GetApplicationsResponse.applications:type_name -> neoshowcase.protobuf.Application
-	41,  // 68: neoshowcase.protobuf.GetBuildsResponse.builds:type_name -> neoshowcase.protobuf.Build
-	81,  // 69: neoshowcase.protobuf.GetApplicationMetricsRequest.before:type_name -> google.protobuf.Timestamp
-	81,  // 70: neoshowcase.protobuf.GetOutputRequest.before:type_name -> google.protobuf.Timestamp
-	81,  // 71: neoshowcase.protobuf.GetOutputStreamRequest.begin:type_name -> google.protobuf.Timestamp
-	43,  // 72: neoshowcase.protobuf.GetRepositoryRefsResponse.refs:type_name -> neoshowcase.protobuf.GitRef
-	58,  // 73: neoshowcase.protobuf.UpdateApplicationRequest.UpdateWebsites.websites:type_name -> neoshowcase.protobuf.CreateWebsiteRequest
-	29,  // 74: neoshowcase.protobuf.UpdateApplicationRequest.UpdatePorts.port_publications:type_name -> neoshowcase.protobuf.PortPublication
-	83,  // 75: neoshowcase.protobuf.APIService.GetSystemInfo:input_type -> google.protobuf.Empty
-	83,  // 76: neoshowcase.protobuf.APIService.GenerateKeyPair:input_type -> google.protobuf.Empty
-	83,  // 77: neoshowcase.protobuf.APIService.GetMe:input_type -> google.protobuf.Empty
-	83,  // 78: neoshowcase.protobuf.APIService.GetUsers:input_type -> google.protobuf.Empty
-	47,  // 79: neoshowcase.protobuf.APIService.CreateUserKey:input_type -> neoshowcase.protobuf.CreateUserKeyRequest
-	83,  // 80: neoshowcase.protobuf.APIService.GetUserKeys:input_type -> google.protobuf.Empty
-	48,  // 81: neoshowcase.protobuf.APIService.DeleteUserKey:input_type -> neoshowcase.protobuf.DeleteUserKeyRequest
-	52,  // 82: neoshowcase.protobuf.APIService.CreateRepository:input_type -> neoshowcase.protobuf.CreateRepositoryRequest
-	53,  // 83: neoshowcase.protobuf.APIService.GetRepositories:input_type -> neoshowcase.protobuf.GetRepositoriesRequest
-	56,  // 84: neoshowcase.protobuf.APIService.GetRepositoryCommits:input_type -> neoshowcase.protobuf.GetRepositoryCommitsRequest
-	55,  // 85: neoshowcase.protobuf.APIService.GetRepository:input_type -> neoshowcase.protobuf.RepositoryIdRequest
-	55,  // 86: neoshowcase.protobuf.APIService.GetRepositoryRefs:input_type -> neoshowcase.protobuf.RepositoryIdRequest
-	54,  // 87: neoshowcase.protobuf.APIService.UpdateRepository:input_type -> neoshowcase.protobuf.UpdateRepositoryRequest
-	55,  // 88: neoshowcase.protobuf.APIService.RefreshRepository:input_type -> neoshowcase.protobuf.RepositoryIdRequest
-	55,  // 89: neoshowcase.protobuf.APIService.DeleteRepository:input_type -> neoshowcase.protobuf.RepositoryIdRequest
-	60,  // 90: neoshowcase.protobuf.APIService.CreateApplication:input_type -> neoshowcase.protobuf.CreateApplicationRequest
-	61,  // 91: neoshowcase.protobuf.APIService.GetApplications:input_type -> neoshowcase.protobuf.GetApplicationsRequest
-	65,  // 92: neoshowcase.protobuf.APIService.GetApplication:input_type -> neoshowcase.protobuf.ApplicationIdRequest
-	62,  // 93: neoshowcase.protobuf.APIService.UpdateApplication:input_type -> neoshowcase.protobuf.UpdateApplicationRequest
-	65,  // 94: neoshowcase.protobuf.APIService.DeleteApplication:input_type -> neoshowcase.protobuf.ApplicationIdRequest
-	83,  // 95: neoshowcase.protobuf.APIService.GetAvailableMetrics:input_type -> google.protobuf.Empty
-	72,  // 96: neoshowcase.protobuf.APIService.GetApplicationMetrics:input_type -> neoshowcase.protobuf.GetApplicationMetricsRequest
-	73,  // 97: neoshowcase.protobuf.APIService.GetOutput:input_type -> neoshowcase.protobuf.GetOutputRequest
-	74,  // 98: neoshowcase.protobuf.APIService.GetOutputStream:input_type -> neoshowcase.protobuf.GetOutputStreamRequest
-	65,  // 99: neoshowcase.protobuf.APIService.GetEnvVars:input_type -> neoshowcase.protobuf.ApplicationIdRequest
-	70,  // 100: neoshowcase.protobuf.APIService.SetEnvVar:input_type -> neoshowcase.protobuf.SetApplicationEnvVarRequest
-	71,  // 101: neoshowcase.protobuf.APIService.DeleteEnvVar:input_type -> neoshowcase.protobuf.DeleteApplicationEnvVarRequest
-	65,  // 102: neoshowcase.protobuf.APIService.StartApplication:input_type -> neoshowcase.protobuf.ApplicationIdRequest
-	65,  // 103: neoshowcase.protobuf.APIService.StopApplication:input_type -> neoshowcase.protobuf.ApplicationIdRequest
-	66,  // 104: neoshowcase.protobuf.APIService.GetAllBuilds:input_type -> neoshowcase.protobuf.GetAllBuildsRequest
-	65,  // 105: neoshowcase.protobuf.APIService.GetBuilds:input_type -> neoshowcase.protobuf.ApplicationIdRequest
-	67,  // 106: neoshowcase.protobuf.APIService.GetBuild:input_type -> neoshowcase.protobuf.BuildIdRequest
-	75,  // 107: neoshowcase.protobuf.APIService.RetryCommitBuild:input_type -> neoshowcase.protobuf.RetryCommitBuildRequest
-	67,  // 108: neoshowcase.protobuf.APIService.CancelBuild:input_type -> neoshowcase.protobuf.BuildIdRequest
-	67,  // 109: neoshowcase.protobuf.APIService.GetBuildLog:input_type -> neoshowcase.protobuf.BuildIdRequest
-	67,  // 110: neoshowcase.protobuf.APIService.GetBuildLogStream:input_type -> neoshowcase.protobuf.BuildIdRequest
-	68,  // 111: neoshowcase.protobuf.APIService.GetBuildArtifact:input_type -> neoshowcase.protobuf.ArtifactIdRequest
-	13,  // 112: neoshowcase.protobuf.APIService.GetSystemInfo:output_type -> neoshowcase.protobuf.SystemInfo
-	44,  // 113: neoshowcase.protobuf.APIService.GenerateKeyPair:output_type -> neoshowcase.protobuf.GenerateKeyPairResponse
-	14,  // 114: neoshowcase.protobuf.APIService.GetMe:output_type -> neoshowcase.protobuf.User
-	45,  // 115: neoshowcase.protobuf.APIService.GetUsers:output_type -> neoshowcase.protobuf.GetUsersResponse
-	15,  // 116: neoshowcase.protobuf.APIService.CreateUserKey:output_type -> neoshowcase.protobuf.UserKey
-	46,  // 117: neoshowcase.protobuf.APIService.GetUserKeys:output_type -> neoshowcase.protobuf.GetUserKeysResponse
-	83,  // 118: neoshowcase.protobuf.APIService.DeleteUserKey:output_type -> google.protobuf.Empty
-	16,  // 119: neoshowcase.protobuf.APIService.CreateRepository:output_type -> neoshowcase.protobuf.Repository
-	63,  // 120: neoshowcase.protobuf.APIService.GetRepositories:output_type -> neoshowcase.protobuf.GetRepositoriesResponse
-	57,  // 121: neoshowcase.protobuf.APIService.GetRepositoryCommits:output_type -> neoshowcase.protobuf.GetRepositoryCommitsResponse
-	16,  // 122: neoshowcase.protobuf.APIService.GetRepository:output_type -> neoshowcase.protobuf.Repository
-	76,  // 123: neoshowcase.protobuf.APIService.GetRepositoryRefs:output_type -> neoshowcase.protobuf.GetRepositoryRefsResponse
-	83,  // 124: neoshowcase.protobuf.APIService.UpdateRepository:output_type -> google.protobuf.Empty
-	83,  // 125: neoshowcase.protobuf.APIService.RefreshRepository:output_type -> google.protobuf.Empty
-	83,  // 126: neoshowcase.protobuf.APIService.DeleteRepository:output_type -> google.protobuf.Empty
-	30,  // 127: neoshowcase.protobuf.APIService.CreateApplication:output_type -> neoshowcase.protobuf.Application
-	64,  // 128: neoshowcase.protobuf.APIService.GetApplications:output_type -> neoshowcase.protobuf.GetApplicationsResponse
-	30,  // 129: neoshowcase.protobuf.APIService.GetApplication:output_type -> neoshowcase.protobuf.Application
-	83,  // 130: neoshowcase.protobuf.APIService.UpdateApplication:output_type -> google.protobuf.Empty
-	83,  // 131: neoshowcase.protobuf.APIService.DeleteApplication:output_type -> google.protobuf.Empty
-	36,  // 132: neoshowcase.protobuf.APIService.GetAvailableMetrics:output_type -> neoshowcase.protobuf.AvailableMetrics
-	38,  // 133: neoshowcase.protobuf.APIService.GetApplicationMetrics:output_type -> neoshowcase.protobuf.ApplicationMetrics
-	40,  // 134: neoshowcase.protobuf.APIService.GetOutput:output_type -> neoshowcase.protobuf.ApplicationOutputs
-	39,  // 135: neoshowcase.protobuf.APIService.GetOutputStream:output_type -> neoshowcase.protobuf.ApplicationOutput
-	32,  // 136: neoshowcase.protobuf.APIService.GetEnvVars:output_type -> neoshowcase.protobuf.ApplicationEnvVars
-	83,  // 137: neoshowcase.protobuf.APIService.SetEnvVar:output_type -> google.protobuf.Empty
-	83,  // 138: neoshowcase.protobuf.APIService.DeleteEnvVar:output_type -> google.protobuf.Empty
-	83,  // 139: neoshowcase.protobuf.APIService.StartApplication:output_type -> google.protobuf.Empty
-	83,  // 140: neoshowcase.protobuf.APIService.StopApplication:output_type -> google.protobuf.Empty
-	69,  // 141: neoshowcase.protobuf.APIService.GetAllBuilds:output_type -> neoshowcase.protobuf.GetBuildsResponse
-	69,  // 142: neoshowcase.protobuf.APIService.GetBuilds:output_type -> neoshowcase.protobuf.GetBuildsResponse
-	41,  // 143: neoshowcase.protobuf.APIService.GetBuild:output_type -> neoshowcase.protobuf.Build
-	83,  // 144: neoshowcase.protobuf.APIService.RetryCommitBuild:output_type -> google.protobuf.Empty
-	83,  // 145: neoshowcase.protobuf.APIService.CancelBuild:output_type -> google.protobuf.Empty
-	42,  // 146: neoshowcase.protobuf.APIService.GetBuildLog:output_type -> neoshowcase.protobuf.BuildLog
-	42,  // 147: neoshowcase.protobuf.APIService.GetBuildLogStream:output_type -> neoshowcase.protobuf.BuildLog
-	34,  // 148: neoshowcase.protobuf.APIService.GetBuildArtifact:output_type -> neoshowcase.protobuf.ArtifactContent
-	112, // [112:149] is the sub-list for method output_type
-	75,  // [75:112] is the sub-list for method input_type
-	75,  // [75:75] is the sub-list for extension type_name
-	75,  // [75:75] is the sub-list for extension extendee
-	0,   // [0:75] is the sub-list for field type_name
+	24,  // 16: neoshowcase.protobuf.BuildConfigFunctionBuildpack.function_config:type_name -> neoshowcase.protobuf.FunctionConfig
+	24,  // 17: neoshowcase.protobuf.BuildConfigFunctionCmd.function_config:type_name -> neoshowcase.protobuf.FunctionConfig
+	24,  // 18: neoshowcase.protobuf.BuildConfigFunctionDockerfile.function_config:type_name -> neoshowcase.protobuf.FunctionConfig
+	20,  // 19: neoshowcase.protobuf.ApplicationConfig.runtime_buildpack:type_name -> neoshowcase.protobuf.BuildConfigRuntimeBuildpack
+	21,  // 20: neoshowcase.protobuf.ApplicationConfig.runtime_cmd:type_name -> neoshowcase.protobuf.BuildConfigRuntimeCmd
+	22,  // 21: neoshowcase.protobuf.ApplicationConfig.runtime_dockerfile:type_name -> neoshowcase.protobuf.BuildConfigRuntimeDockerfile
+	25,  // 22: neoshowcase.protobuf.ApplicationConfig.static_buildpack:type_name -> neoshowcase.protobuf.BuildConfigStaticBuildpack
+	26,  // 23: neoshowcase.protobuf.ApplicationConfig.static_cmd:type_name -> neoshowcase.protobuf.BuildConfigStaticCmd
+	27,  // 24: neoshowcase.protobuf.ApplicationConfig.static_dockerfile:type_name -> neoshowcase.protobuf.BuildConfigStaticDockerfile
+	28,  // 25: neoshowcase.protobuf.ApplicationConfig.function_buildpack:type_name -> neoshowcase.protobuf.BuildConfigFunctionBuildpack
+	29,  // 26: neoshowcase.protobuf.ApplicationConfig.function_cmd:type_name -> neoshowcase.protobuf.BuildConfigFunctionCmd
+	30,  // 27: neoshowcase.protobuf.ApplicationConfig.function_dockerfile:type_name -> neoshowcase.protobuf.BuildConfigFunctionDockerfile
+	1,   // 28: neoshowcase.protobuf.Website.authentication:type_name -> neoshowcase.protobuf.AuthenticationType
+	2,   // 29: neoshowcase.protobuf.PortPublication.protocol:type_name -> neoshowcase.protobuf.PortPublicationProtocol
+	0,   // 30: neoshowcase.protobuf.Application.deploy_type:type_name -> neoshowcase.protobuf.DeployType
+	6,   // 31: neoshowcase.protobuf.Application.container:type_name -> neoshowcase.protobuf.Application.ContainerState
+	85,  // 32: neoshowcase.protobuf.Application.created_at:type_name -> google.protobuf.Timestamp
+	85,  // 33: neoshowcase.protobuf.Application.updated_at:type_name -> google.protobuf.Timestamp
+	31,  // 34: neoshowcase.protobuf.Application.config:type_name -> neoshowcase.protobuf.ApplicationConfig
+	32,  // 35: neoshowcase.protobuf.Application.websites:type_name -> neoshowcase.protobuf.Website
+	33,  // 36: neoshowcase.protobuf.Application.port_publications:type_name -> neoshowcase.protobuf.PortPublication
+	3,   // 37: neoshowcase.protobuf.Application.latest_build_status:type_name -> neoshowcase.protobuf.BuildStatus
+	35,  // 38: neoshowcase.protobuf.ApplicationEnvVars.variables:type_name -> neoshowcase.protobuf.ApplicationEnvVar
+	85,  // 39: neoshowcase.protobuf.Artifact.created_at:type_name -> google.protobuf.Timestamp
+	86,  // 40: neoshowcase.protobuf.Artifact.deleted_at:type_name -> neoshowcase.protobuf.NullTimestamp
+	85,  // 41: neoshowcase.protobuf.RuntimeImage.created_at:type_name -> google.protobuf.Timestamp
+	85,  // 42: neoshowcase.protobuf.ApplicationMetric.time:type_name -> google.protobuf.Timestamp
+	41,  // 43: neoshowcase.protobuf.ApplicationMetrics.metrics:type_name -> neoshowcase.protobuf.ApplicationMetric
+	85,  // 44: neoshowcase.protobuf.ApplicationOutput.time:type_name -> google.protobuf.Timestamp
+	43,  // 45: neoshowcase.protobuf.ApplicationOutputs.outputs:type_name -> neoshowcase.protobuf.ApplicationOutput
+	3,   // 46: neoshowcase.protobuf.Build.status:type_name -> neoshowcase.protobuf.BuildStatus
+	85,  // 47: neoshowcase.protobuf.Build.queued_at:type_name -> google.protobuf.Timestamp
+	86,  // 48: neoshowcase.protobuf.Build.started_at:type_name -> neoshowcase.protobuf.NullTimestamp
+	86,  // 49: neoshowcase.protobuf.Build.updated_at:type_name -> neoshowcase.protobuf.NullTimestamp
+	86,  // 50: neoshowcase.protobuf.Build.finished_at:type_name -> neoshowcase.protobuf.NullTimestamp
+	37,  // 51: neoshowcase.protobuf.Build.artifacts:type_name -> neoshowcase.protobuf.Artifact
+	39,  // 52: neoshowcase.protobuf.Build.runtime_image:type_name -> neoshowcase.protobuf.RuntimeImage
+	14,  // 53: neoshowcase.protobuf.GetUsersResponse.users:type_name -> neoshowcase.protobuf.User
+	15,  // 54: neoshowcase.protobuf.GetUserKeysResponse.keys:type_name -> neoshowcase.protobuf.UserKey
+	87,  // 55: neoshowcase.protobuf.CreateRepositoryAuth.none:type_name -> google.protobuf.Empty
+	53,  // 56: neoshowcase.protobuf.CreateRepositoryAuth.basic:type_name -> neoshowcase.protobuf.CreateRepositoryAuthBasic
+	54,  // 57: neoshowcase.protobuf.CreateRepositoryAuth.ssh:type_name -> neoshowcase.protobuf.CreateRepositoryAuthSSH
+	55,  // 58: neoshowcase.protobuf.CreateRepositoryRequest.auth:type_name -> neoshowcase.protobuf.CreateRepositoryAuth
+	7,   // 59: neoshowcase.protobuf.GetRepositoriesRequest.scope:type_name -> neoshowcase.protobuf.GetRepositoriesRequest.Scope
+	55,  // 60: neoshowcase.protobuf.UpdateRepositoryRequest.auth:type_name -> neoshowcase.protobuf.CreateRepositoryAuth
+	81,  // 61: neoshowcase.protobuf.UpdateRepositoryRequest.owner_ids:type_name -> neoshowcase.protobuf.UpdateRepositoryRequest.UpdateOwners
+	17,  // 62: neoshowcase.protobuf.GetRepositoryCommitsResponse.commits:type_name -> neoshowcase.protobuf.SimpleCommit
+	1,   // 63: neoshowcase.protobuf.CreateWebsiteRequest.authentication:type_name -> neoshowcase.protobuf.AuthenticationType
+	31,  // 64: neoshowcase.protobuf.CreateApplicationRequest.config:type_name -> neoshowcase.protobuf.ApplicationConfig
+	62,  // 65: neoshowcase.protobuf.CreateApplicationRequest.websites:type_name -> neoshowcase.protobuf.CreateWebsiteRequest
+	33,  // 66: neoshowcase.protobuf.CreateApplicationRequest.port_publications:type_name -> neoshowcase.protobuf.PortPublication
+	8,   // 67: neoshowcase.protobuf.GetApplicationsRequest.scope:type_name -> neoshowcase.protobuf.GetApplicationsRequest.Scope
+	31,  // 68: neoshowcase.protobuf.UpdateApplicationRequest.config:type_name -> neoshowcase.protobuf.ApplicationConfig
+	82,  // 69: neoshowcase.protobuf.UpdateApplicationRequest.websites:type_name -> neoshowcase.protobuf.UpdateApplicationRequest.UpdateWebsites
+	83,  // 70: neoshowcase.protobuf.UpdateApplicationRequest.port_publications:type_name -> neoshowcase.protobuf.UpdateApplicationRequest.UpdatePorts
+	84,  // 71: neoshowcase.protobuf.UpdateApplicationRequest.owner_ids:type_name -> neoshowcase.protobuf.UpdateApplicationRequest.UpdateOwners
+	16,  // 72: neoshowcase.protobuf.GetRepositoriesResponse.repositories:type_name -> neoshowcase.protobuf.Repository
+	34,  // 73: neoshowcase.protobuf.GetApplicationsResponse.applications:type_name -> neoshowcase.protobuf.Application
+	45,  // 74: neoshowcase.protobuf.GetBuildsResponse.builds:type_name -> neoshowcase.protobuf.Build
+	85,  // 75: neoshowcase.protobuf.GetApplicationMetricsRequest.before:type_name -> google.protobuf.Timestamp
+	85,  // 76: neoshowcase.protobuf.GetOutputRequest.before:type_name -> google.protobuf.Timestamp
+	85,  // 77: neoshowcase.protobuf.GetOutputStreamRequest.begin:type_name -> google.protobuf.Timestamp
+	47,  // 78: neoshowcase.protobuf.GetRepositoryRefsResponse.refs:type_name -> neoshowcase.protobuf.GitRef
+	62,  // 79: neoshowcase.protobuf.UpdateApplicationRequest.UpdateWebsites.websites:type_name -> neoshowcase.protobuf.CreateWebsiteRequest
+	33,  // 80: neoshowcase.protobuf.UpdateApplicationRequest.UpdatePorts.port_publications:type_name -> neoshowcase.protobuf.PortPublication
+	87,  // 81: neoshowcase.protobuf.APIService.GetSystemInfo:input_type -> google.protobuf.Empty
+	87,  // 82: neoshowcase.protobuf.APIService.GenerateKeyPair:input_type -> google.protobuf.Empty
+	87,  // 83: neoshowcase.protobuf.APIService.GetMe:input_type -> google.protobuf.Empty
+	87,  // 84: neoshowcase.protobuf.APIService.GetUsers:input_type -> google.protobuf.Empty
+	51,  // 85: neoshowcase.protobuf.APIService.CreateUserKey:input_type -> neoshowcase.protobuf.CreateUserKeyRequest
+	87,  // 86: neoshowcase.protobuf.APIService.GetUserKeys:input_type -> google.protobuf.Empty
+	52,  // 87: neoshowcase.protobuf.APIService.DeleteUserKey:input_type -> neoshowcase.protobuf.DeleteUserKeyRequest
+	56,  // 88: neoshowcase.protobuf.APIService.CreateRepository:input_type -> neoshowcase.protobuf.CreateRepositoryRequest
+	57,  // 89: neoshowcase.protobuf.APIService.GetRepositories:input_type -> neoshowcase.protobuf.GetRepositoriesRequest
+	60,  // 90: neoshowcase.protobuf.APIService.GetRepositoryCommits:input_type -> neoshowcase.protobuf.GetRepositoryCommitsRequest
+	59,  // 91: neoshowcase.protobuf.APIService.GetRepository:input_type -> neoshowcase.protobuf.RepositoryIdRequest
+	59,  // 92: neoshowcase.protobuf.APIService.GetRepositoryRefs:input_type -> neoshowcase.protobuf.RepositoryIdRequest
+	58,  // 93: neoshowcase.protobuf.APIService.UpdateRepository:input_type -> neoshowcase.protobuf.UpdateRepositoryRequest
+	59,  // 94: neoshowcase.protobuf.APIService.RefreshRepository:input_type -> neoshowcase.protobuf.RepositoryIdRequest
+	59,  // 95: neoshowcase.protobuf.APIService.DeleteRepository:input_type -> neoshowcase.protobuf.RepositoryIdRequest
+	64,  // 96: neoshowcase.protobuf.APIService.CreateApplication:input_type -> neoshowcase.protobuf.CreateApplicationRequest
+	65,  // 97: neoshowcase.protobuf.APIService.GetApplications:input_type -> neoshowcase.protobuf.GetApplicationsRequest
+	69,  // 98: neoshowcase.protobuf.APIService.GetApplication:input_type -> neoshowcase.protobuf.ApplicationIdRequest
+	66,  // 99: neoshowcase.protobuf.APIService.UpdateApplication:input_type -> neoshowcase.protobuf.UpdateApplicationRequest
+	69,  // 100: neoshowcase.protobuf.APIService.DeleteApplication:input_type -> neoshowcase.protobuf.ApplicationIdRequest
+	87,  // 101: neoshowcase.protobuf.APIService.GetAvailableMetrics:input_type -> google.protobuf.Empty
+	76,  // 102: neoshowcase.protobuf.APIService.GetApplicationMetrics:input_type -> neoshowcase.protobuf.GetApplicationMetricsRequest
+	77,  // 103: neoshowcase.protobuf.APIService.GetOutput:input_type -> neoshowcase.protobuf.GetOutputRequest
+	78,  // 104: neoshowcase.protobuf.APIService.GetOutputStream:input_type -> neoshowcase.protobuf.GetOutputStreamRequest
+	69,  // 105: neoshowcase.protobuf.APIService.GetEnvVars:input_type -> neoshowcase.protobuf.ApplicationIdRequest
+	74,  // 106: neoshowcase.protobuf.APIService.SetEnvVar:input_type -> neoshowcase.protobuf.SetApplicationEnvVarRequest
+	75,  // 107: neoshowcase.protobuf.APIService.DeleteEnvVar:input_type -> neoshowcase.protobuf.DeleteApplicationEnvVarRequest
+	69,  // 108: neoshowcase.protobuf.APIService.StartApplication:input_type -> neoshowcase.protobuf.ApplicationIdRequest
+	69,  // 109: neoshowcase.protobuf.APIService.StopApplication:input_type -> neoshowcase.protobuf.ApplicationIdRequest
+	70,  // 110: neoshowcase.protobuf.APIService.GetAllBuilds:input_type -> neoshowcase.protobuf.GetAllBuildsRequest
+	69,  // 111: neoshowcase.protobuf.APIService.GetBuilds:input_type -> neoshowcase.protobuf.ApplicationIdRequest
+	71,  // 112: neoshowcase.protobuf.APIService.GetBuild:input_type -> neoshowcase.protobuf.BuildIdRequest
+	79,  // 113: neoshowcase.protobuf.APIService.RetryCommitBuild:input_type -> neoshowcase.protobuf.RetryCommitBuildRequest
+	71,  // 114: neoshowcase.protobuf.APIService.CancelBuild:input_type -> neoshowcase.protobuf.BuildIdRequest
+	71,  // 115: neoshowcase.protobuf.APIService.GetBuildLog:input_type -> neoshowcase.protobuf.BuildIdRequest
+	71,  // 116: neoshowcase.protobuf.APIService.GetBuildLogStream:input_type -> neoshowcase.protobuf.BuildIdRequest
+	72,  // 117: neoshowcase.protobuf.APIService.GetBuildArtifact:input_type -> neoshowcase.protobuf.ArtifactIdRequest
+	13,  // 118: neoshowcase.protobuf.APIService.GetSystemInfo:output_type -> neoshowcase.protobuf.SystemInfo
+	48,  // 119: neoshowcase.protobuf.APIService.GenerateKeyPair:output_type -> neoshowcase.protobuf.GenerateKeyPairResponse
+	14,  // 120: neoshowcase.protobuf.APIService.GetMe:output_type -> neoshowcase.protobuf.User
+	49,  // 121: neoshowcase.protobuf.APIService.GetUsers:output_type -> neoshowcase.protobuf.GetUsersResponse
+	15,  // 122: neoshowcase.protobuf.APIService.CreateUserKey:output_type -> neoshowcase.protobuf.UserKey
+	50,  // 123: neoshowcase.protobuf.APIService.GetUserKeys:output_type -> neoshowcase.protobuf.GetUserKeysResponse
+	87,  // 124: neoshowcase.protobuf.APIService.DeleteUserKey:output_type -> google.protobuf.Empty
+	16,  // 125: neoshowcase.protobuf.APIService.CreateRepository:output_type -> neoshowcase.protobuf.Repository
+	67,  // 126: neoshowcase.protobuf.APIService.GetRepositories:output_type -> neoshowcase.protobuf.GetRepositoriesResponse
+	61,  // 127: neoshowcase.protobuf.APIService.GetRepositoryCommits:output_type -> neoshowcase.protobuf.GetRepositoryCommitsResponse
+	16,  // 128: neoshowcase.protobuf.APIService.GetRepository:output_type -> neoshowcase.protobuf.Repository
+	80,  // 129: neoshowcase.protobuf.APIService.GetRepositoryRefs:output_type -> neoshowcase.protobuf.GetRepositoryRefsResponse
+	87,  // 130: neoshowcase.protobuf.APIService.UpdateRepository:output_type -> google.protobuf.Empty
+	87,  // 131: neoshowcase.protobuf.APIService.RefreshRepository:output_type -> google.protobuf.Empty
+	87,  // 132: neoshowcase.protobuf.APIService.DeleteRepository:output_type -> google.protobuf.Empty
+	34,  // 133: neoshowcase.protobuf.APIService.CreateApplication:output_type -> neoshowcase.protobuf.Application
+	68,  // 134: neoshowcase.protobuf.APIService.GetApplications:output_type -> neoshowcase.protobuf.GetApplicationsResponse
+	34,  // 135: neoshowcase.protobuf.APIService.GetApplication:output_type -> neoshowcase.protobuf.Application
+	87,  // 136: neoshowcase.protobuf.APIService.UpdateApplication:output_type -> google.protobuf.Empty
+	87,  // 137: neoshowcase.protobuf.APIService.DeleteApplication:output_type -> google.protobuf.Empty
+	40,  // 138: neoshowcase.protobuf.APIService.GetAvailableMetrics:output_type -> neoshowcase.protobuf.AvailableMetrics
+	42,  // 139: neoshowcase.protobuf.APIService.GetApplicationMetrics:output_type -> neoshowcase.protobuf.ApplicationMetrics
+	44,  // 140: neoshowcase.protobuf.APIService.GetOutput:output_type -> neoshowcase.protobuf.ApplicationOutputs
+	43,  // 141: neoshowcase.protobuf.APIService.GetOutputStream:output_type -> neoshowcase.protobuf.ApplicationOutput
+	36,  // 142: neoshowcase.protobuf.APIService.GetEnvVars:output_type -> neoshowcase.protobuf.ApplicationEnvVars
+	87,  // 143: neoshowcase.protobuf.APIService.SetEnvVar:output_type -> google.protobuf.Empty
+	87,  // 144: neoshowcase.protobuf.APIService.DeleteEnvVar:output_type -> google.protobuf.Empty
+	87,  // 145: neoshowcase.protobuf.APIService.StartApplication:output_type -> google.protobuf.Empty
+	87,  // 146: neoshowcase.protobuf.APIService.StopApplication:output_type -> google.protobuf.Empty
+	73,  // 147: neoshowcase.protobuf.APIService.GetAllBuilds:output_type -> neoshowcase.protobuf.GetBuildsResponse
+	73,  // 148: neoshowcase.protobuf.APIService.GetBuilds:output_type -> neoshowcase.protobuf.GetBuildsResponse
+	45,  // 149: neoshowcase.protobuf.APIService.GetBuild:output_type -> neoshowcase.protobuf.Build
+	87,  // 150: neoshowcase.protobuf.APIService.RetryCommitBuild:output_type -> google.protobuf.Empty
+	87,  // 151: neoshowcase.protobuf.APIService.CancelBuild:output_type -> google.protobuf.Empty
+	46,  // 152: neoshowcase.protobuf.APIService.GetBuildLog:output_type -> neoshowcase.protobuf.BuildLog
+	46,  // 153: neoshowcase.protobuf.APIService.GetBuildLogStream:output_type -> neoshowcase.protobuf.BuildLog
+	38,  // 154: neoshowcase.protobuf.APIService.GetBuildArtifact:output_type -> neoshowcase.protobuf.ArtifactContent
+	118, // [118:155] is the sub-list for method output_type
+	81,  // [81:118] is the sub-list for method input_type
+	81,  // [81:81] is the sub-list for extension type_name
+	81,  // [81:81] is the sub-list for extension extendee
+	0,   // [0:81] is the sub-list for field type_name
 }
 
 func init() { file_neoshowcase_protobuf_gateway_proto_init() }
@@ -5586,31 +5881,34 @@ func file_neoshowcase_protobuf_gateway_proto_init() {
 		return
 	}
 	file_neoshowcase_protobuf_null_proto_init()
-	file_neoshowcase_protobuf_gateway_proto_msgTypes[18].OneofWrappers = []any{
+	file_neoshowcase_protobuf_gateway_proto_msgTypes[22].OneofWrappers = []any{
 		(*ApplicationConfig_RuntimeBuildpack)(nil),
 		(*ApplicationConfig_RuntimeCmd)(nil),
 		(*ApplicationConfig_RuntimeDockerfile)(nil),
 		(*ApplicationConfig_StaticBuildpack)(nil),
 		(*ApplicationConfig_StaticCmd)(nil),
 		(*ApplicationConfig_StaticDockerfile)(nil),
+		(*ApplicationConfig_FunctionBuildpack)(nil),
+		(*ApplicationConfig_FunctionCmd)(nil),
+		(*ApplicationConfig_FunctionDockerfile)(nil),
 	}
-	file_neoshowcase_protobuf_gateway_proto_msgTypes[21].OneofWrappers = []any{}
-	file_neoshowcase_protobuf_gateway_proto_msgTypes[32].OneofWrappers = []any{}
-	file_neoshowcase_protobuf_gateway_proto_msgTypes[42].OneofWrappers = []any{
+	file_neoshowcase_protobuf_gateway_proto_msgTypes[25].OneofWrappers = []any{}
+	file_neoshowcase_protobuf_gateway_proto_msgTypes[36].OneofWrappers = []any{}
+	file_neoshowcase_protobuf_gateway_proto_msgTypes[46].OneofWrappers = []any{
 		(*CreateRepositoryAuth_None)(nil),
 		(*CreateRepositoryAuth_Basic)(nil),
 		(*CreateRepositoryAuth_Ssh)(nil),
 	}
-	file_neoshowcase_protobuf_gateway_proto_msgTypes[45].OneofWrappers = []any{}
-	file_neoshowcase_protobuf_gateway_proto_msgTypes[52].OneofWrappers = []any{}
-	file_neoshowcase_protobuf_gateway_proto_msgTypes[53].OneofWrappers = []any{}
+	file_neoshowcase_protobuf_gateway_proto_msgTypes[49].OneofWrappers = []any{}
+	file_neoshowcase_protobuf_gateway_proto_msgTypes[56].OneofWrappers = []any{}
+	file_neoshowcase_protobuf_gateway_proto_msgTypes[57].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_neoshowcase_protobuf_gateway_proto_rawDesc), len(file_neoshowcase_protobuf_gateway_proto_rawDesc)),
 			NumEnums:      9,
-			NumMessages:   72,
+			NumMessages:   76,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
