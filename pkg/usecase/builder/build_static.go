@@ -44,10 +44,3 @@ func (s *ServiceImpl) buildStaticExtract(
 	}, ch)
 	return err
 }
-
-func (s *ServiceImpl) buildStaticCleanup(
-	ctx context.Context,
-	st *state,
-) error {
-	return s.regclient.DeleteImage(ctx, s.imageConfig.TmpImageName(st.app.ID), s.imageTag(st.build))
-}

@@ -97,7 +97,7 @@ func (s *ServiceImpl) buildSteps(st *state) ([]buildStep, error) {
 			})
 		}})
 		steps = append(steps, buildStep{"Cleanup Temporary Image", func(ctx context.Context) error {
-			return s.buildStaticCleanup(ctx, st)
+			return s.buildRegistryCleanup(ctx, st)
 		}})
 		steps = append(steps, buildStep{"Save Artifact", func(ctx context.Context) error {
 			return s.saveArtifact(ctx, st)
@@ -114,7 +114,7 @@ func (s *ServiceImpl) buildSteps(st *state) ([]buildStep, error) {
 			})
 		}})
 		steps = append(steps, buildStep{"Cleanup Temporary Image", func(ctx context.Context) error {
-			return s.buildStaticCleanup(ctx, st)
+			return s.buildRegistryCleanup(ctx, st)
 		}})
 		steps = append(steps, buildStep{"Save Artifact", func(ctx context.Context) error {
 			return s.saveArtifact(ctx, st)
@@ -131,7 +131,7 @@ func (s *ServiceImpl) buildSteps(st *state) ([]buildStep, error) {
 			})
 		}})
 		steps = append(steps, buildStep{"Cleanup Temporary Image", func(ctx context.Context) error {
-			return s.buildStaticCleanup(ctx, st)
+			return s.buildRegistryCleanup(ctx, st)
 		}})
 		steps = append(steps, buildStep{"Save Artifact", func(ctx context.Context) error {
 			return s.saveArtifact(ctx, st)
@@ -146,7 +146,7 @@ func (s *ServiceImpl) buildSteps(st *state) ([]buildStep, error) {
 			})
 		}})
 		steps = append(steps, buildStep{"Cleanup Temporary Image", func(ctx context.Context) error {
-			return s.buildStaticCleanup(ctx, st)
+			return s.buildRegistryCleanup(ctx, st)
 		}})
 		steps = append(steps, buildStep{"Save Artifact", func(ctx context.Context) error {
 			return s.saveArtifact(ctx, st)
@@ -163,7 +163,7 @@ func (s *ServiceImpl) buildSteps(st *state) ([]buildStep, error) {
 			})
 		}})
 		steps = append(steps, buildStep{"Cleanup Temporary Image", func(ctx context.Context) error {
-			return s.buildStaticCleanup(ctx, st)
+			return s.buildRegistryCleanup(ctx, st)
 		}})
 		steps = append(steps, buildStep{"Save Artifact", func(ctx context.Context) error {
 			return s.saveArtifact(ctx, st)
@@ -180,7 +180,7 @@ func (s *ServiceImpl) buildSteps(st *state) ([]buildStep, error) {
 			})
 		}})
 		steps = append(steps, buildStep{"Cleanup Temporary Image", func(ctx context.Context) error {
-			return s.buildStaticCleanup(ctx, st)
+			return s.buildRegistryCleanup(ctx, st)
 		}})
 		steps = append(steps, buildStep{"Save Artifact", func(ctx context.Context) error {
 			return s.saveArtifact(ctx, st)
