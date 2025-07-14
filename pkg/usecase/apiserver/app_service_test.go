@@ -74,7 +74,7 @@ func TestCreateApplication(t *testing.T) {
 				apiserver.WithMariaDBManagerMock(dbManagerMock),
 			)
 			svc := testhelper.Resolve[*apiserver.Service](c)
-			ctx := context.Background()
+			ctx := t.Context()
 
 			user := apiserver.CreateUser(c, "test-user")
 			web.SetUser(&ctx, user)
@@ -198,7 +198,7 @@ func TestCreateApplication_DuplicateURL(t *testing.T) {
 				apiserver.WithMariaDBManagerMock(dbManagerMock),
 			)
 			svc := testhelper.Resolve[*apiserver.Service](c)
-			ctx := context.Background()
+			ctx := t.Context()
 
 			user := apiserver.CreateUser(c, "test-user")
 			web.SetUser(&ctx, user)
@@ -354,7 +354,7 @@ func TestDeleteApplication(t *testing.T) {
 			)
 
 			svc := testhelper.Resolve[*apiserver.Service](c)
-			ctx := context.Background()
+			ctx := t.Context()
 
 			user := apiserver.CreateUser(c, "test-user")
 			web.SetUser(&ctx, user)
@@ -455,7 +455,7 @@ func TestUpdateApplication(t *testing.T) {
 				apiserver.WithRegistryMock(registrymock),
 			)
 			svc := testhelper.Resolve[*apiserver.Service](c)
-			ctx := context.Background()
+			ctx := t.Context()
 
 			user := apiserver.CreateUser(c, "test-user")
 			web.SetUser(&ctx, user)
@@ -571,7 +571,7 @@ func TestUpdateApplication_UpdateMariaDBConfigIsNotAllowed(t *testing.T) {
 				apiserver.WithRegistryMock(registrymock),
 			)
 			svc := testhelper.Resolve[*apiserver.Service](c)
-			ctx := context.Background()
+			ctx := t.Context()
 
 			user := apiserver.CreateUser(c, "test-user")
 			web.SetUser(&ctx, user)
