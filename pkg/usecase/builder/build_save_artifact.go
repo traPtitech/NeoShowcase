@@ -65,14 +65,17 @@ func (s *ServiceImpl) saveFunctionArtifact(ctx context.Context, st *state) error
 	if err != nil {
 		return errors.Wrap(err, "opening artifact")
 	}
+	defer file.Close()
+
 	var artifactBytes bytes.Buffer
-	_, err = io.Copy(&artifactBytes, file)
+	gzipWriter := gzip.NewWriter(&artifactBytes)
+	_, err = io.Copy(gzipWriter, file)
 	if err != nil {
-		return errors.Wrap(err, "copying file to buffer")
+		return errors.Wrap(err, "copying file to gzip writer")
 	}
-	err = file.Close()
+	err = gzipWriter.Close()
 	if err != nil {
-		return errors.Wrap(err, "closing artifact file")
+		return errors.Wrap(err, "flushing gzip writer")
 	}
 
 	// Save artifact by requesting to controller
