@@ -25,7 +25,7 @@ var container *mysqlContainer
 
 func init() {
 	req := testcontainers.ContainerRequest{
-		Image: "mysql:8",
+		Image: "mariadb:11",
 		Env: map[string]string{
 			"MYSQL_ROOT_PASSWORD": "password",
 		},
@@ -71,7 +71,7 @@ func OpenDB(t *testing.T) *sql.DB {
 	cmd := exec.Command(migrationScript, filepath.Join(getProjectRoot(), "migrations", "schema.sql"))
 	envs := map[string]string{
 		"DB_HOST": container.host,
-		"DB_PORT": string(container.port),
+		"DB_PORT": container.port,
 		"DB_NAME": dbName,
 	}
 	cmd.Env = append(cmd.Env, os.Environ()...)
