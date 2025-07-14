@@ -26,8 +26,6 @@ const autoShutdownSchema = v.optional(
   }),
 )
 
-type a = v.InferOutput<typeof autoShutdownSchema>
-
 const runtimeConfigSchema = v.object({
   useMariadb: v.optional(v.boolean(), false),
   useMongodb: v.optional(v.boolean(), false),
