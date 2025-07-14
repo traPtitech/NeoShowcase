@@ -13,9 +13,9 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
 	"github.com/traPtitech/neoshowcase/pkg/test/mocks"
+	"github.com/traPtitech/neoshowcase/pkg/test/testhelper"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/apiserver"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
-	"github.com/traPtitech/neoshowcase/pkg/util/testhelper"
 )
 
 const exampleCommitHash = "0123456789abcdef0123456789abcdef01234567"

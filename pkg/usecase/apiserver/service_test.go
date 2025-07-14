@@ -9,7 +9,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
 	"github.com/traPtitech/neoshowcase/pkg/test/mocks"
-	"github.com/traPtitech/neoshowcase/pkg/util/testhelper"
+	"github.com/traPtitech/neoshowcase/pkg/test/testhelper"
 )
 
 func DefaultOption(t *testing.T) testhelper.ContainerOption {

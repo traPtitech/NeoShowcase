@@ -27,7 +27,7 @@ func init() {
 	req := testcontainers.ContainerRequest{
 		Image: "mariadb:11",
 		Env: map[string]string{
-			"MYSQL_ROOT_PASSWORD": "password",
+			"MARIADB_ROOT_PASSWORD": "password",
 		},
 		ExposedPorts: []string{"3306/tcp"},
 	}
@@ -61,7 +61,7 @@ func init() {
 func OpenDB(t *testing.T) *sql.DB {
 	// create database
 	dbName := randomDBName()
-	_, _, err := container.Exec(t.Context(), []string{"mysql", "-u", "root", "-ppassword", "-e", "CREATE DATABASE " + dbName})
+	_, _, err := container.Exec(t.Context(), []string{"mariadb", "-u", "root", "-ppassword", "-e", "CREATE DATABASE " + dbName})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -85,12 +85,13 @@ func OpenDB(t *testing.T) *sql.DB {
 	}
 
 	cfg := mysql.Config{
-		User:      "root",
-		Passwd:    "password",
-		Addr:      net.JoinHostPort(container.host, container.port),
-		Net:       "tcp",
-		DBName:    dbName,
-		ParseTime: true,
+		User:                 "root",
+		Passwd:               "password",
+		Addr:                 net.JoinHostPort(container.host, container.port),
+		Net:                  "tcp",
+		DBName:               dbName,
+		ParseTime:            true,
+		AllowNativePasswords: true,
 	}
 	db, err := sql.Open("mysql", cfg.FormatDSN())
 	if err != nil {
@@ -133,17 +134,18 @@ func getProjectRoot() string {
 func ensureHealthy(host string, port string) {
 	mysql.SetLogger(&mysql.NopLogger{})
 	cfg := mysql.Config{
-		User:   "root",
-		Passwd: "password",
-		Addr:   net.JoinHostPort(host, port),
-		Net:    "tcp",
+		User:                 "root",
+		Passwd:               "password",
+		Addr:                 net.JoinHostPort(host, port),
+		Net:                  "tcp",
+		AllowNativePasswords: true,
 	}
 	db, err := sql.Open("mysql", cfg.FormatDSN())
 	if err != nil {
 		panic(err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 	ticker := time.NewTicker(500 * time.Millisecond)
 	for {
