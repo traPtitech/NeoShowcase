@@ -24,28 +24,22 @@ func TestCreateApplication(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name            string
-		useMariaDB      bool
-		appName         string
-		fqdn            string
-		expectedDBCalls int
-		checkEnvVars    bool
+		name       string
+		useMariaDB bool
+		appName    string
+		fqdn       string
 	}{
 		{
-			name:            "create application with MariaDB",
-			useMariaDB:      true,
-			appName:         "test-app-with-db",
-			fqdn:            "create-application-test-db.example.com",
-			expectedDBCalls: 1,
-			checkEnvVars:    true,
+			name:       "create application with MariaDB",
+			useMariaDB: true,
+			appName:    "test-app-with-db",
+			fqdn:       "create-application-test-db.example.com",
 		},
 		{
-			name:            "create application without MariaDB",
-			useMariaDB:      false,
-			appName:         "test-app-no-db",
-			fqdn:            "create-application-test-no-db.example.com",
-			expectedDBCalls: 0,
-			checkEnvVars:    false,
+			name:       "create application without MariaDB",
+			useMariaDB: false,
+			appName:    "test-app-no-db",
+			fqdn:       "create-application-test-no-db.example.com",
 		},
 	}
 
@@ -54,14 +48,14 @@ func TestCreateApplication(t *testing.T) {
 			t.Parallel()
 
 			// Arrange
-			gitmock := &mocks.GitServiceMock{
+			gitMock := &mocks.GitServiceMock{
 				ResolveRefsFunc: func(ctx context.Context, repo *domain.Repository) (map[string]string, error) {
 					return map[string]string{
 						"main": exampleCommitHash,
 					}, nil
 				},
 			}
-			registrymock := &mocks.RegistryClientMock{
+			registryMock := &mocks.RegistryClientMock{
 				GetTagsFunc: func(ctx context.Context, image string) ([]string, error) {
 					return []string{"latest"}, nil
 				},
@@ -69,8 +63,8 @@ func TestCreateApplication(t *testing.T) {
 			dbManagerMock := &mocks.MariaDBManagerMock{}
 			c := testhelper.NewContainer(
 				apiserver.DefaultOption(t),
-				apiserver.WithGitMock(gitmock),
-				apiserver.WithRegistryMock(registrymock),
+				apiserver.WithGitMock(gitMock),
+				apiserver.WithRegistryMock(registryMock),
 				apiserver.WithMariaDBManagerMock(dbManagerMock),
 			)
 			svc := testhelper.Resolve[*apiserver.Service](c)
@@ -129,9 +123,10 @@ func TestCreateApplication(t *testing.T) {
 			if diff != "" {
 				t.Errorf("created application should be equal to the input (-want +got):\n%s", diff)
 			}
-			assert.Len(t, dbManagerMock.CreateCalls(), tt.expectedDBCalls, "mariaDB create calls should match expected")
+			expectedDBCalls := lo.Ternary(tt.useMariaDB, 1, 0)
+			assert.Len(t, dbManagerMock.CreateCalls(), expectedDBCalls, "mariaDB create calls should match expected")
 
-			if tt.checkEnvVars {
+			if tt.useMariaDB {
 				envs, err := svc.GetEnvironmentVariables(ctx, app.ID)
 				if err != nil {
 					t.Fatal(err)
@@ -178,14 +173,14 @@ func TestCreateApplication_DuplicateURL(t *testing.T) {
 			t.Parallel()
 
 			// Arrange
-			gitmock := &mocks.GitServiceMock{
+			gitMock := &mocks.GitServiceMock{
 				ResolveRefsFunc: func(ctx context.Context, repo *domain.Repository) (map[string]string, error) {
 					return map[string]string{
 						"main": exampleCommitHash,
 					}, nil
 				},
 			}
-			registrymock := &mocks.RegistryClientMock{
+			registryMock := &mocks.RegistryClientMock{
 				GetTagsFunc: func(ctx context.Context, image string) ([]string, error) {
 					return []string{"latest"}, nil
 				},
@@ -193,8 +188,8 @@ func TestCreateApplication_DuplicateURL(t *testing.T) {
 			dbManagerMock := &mocks.MariaDBManagerMock{}
 			c := testhelper.NewContainer(
 				apiserver.DefaultOption(t),
-				apiserver.WithGitMock(gitmock),
-				apiserver.WithRegistryMock(registrymock),
+				apiserver.WithGitMock(gitMock),
+				apiserver.WithRegistryMock(registryMock),
 				apiserver.WithMariaDBManagerMock(dbManagerMock),
 			)
 			svc := testhelper.Resolve[*apiserver.Service](c)
@@ -329,14 +324,14 @@ func TestDeleteApplication(t *testing.T) {
 			t.Parallel()
 
 			// Arrange
-			gitmock := &mocks.GitServiceMock{
+			gitMock := &mocks.GitServiceMock{
 				ResolveRefsFunc: func(ctx context.Context, repo *domain.Repository) (map[string]string, error) {
 					return map[string]string{
 						"main": exampleCommitHash,
 					}, nil
 				},
 			}
-			registrymock := &mocks.RegistryClientMock{
+			registryMock := &mocks.RegistryClientMock{
 				GetTagsFunc: func(ctx context.Context, image string) ([]string, error) {
 					return tt.tags, nil
 				},
@@ -348,8 +343,8 @@ func TestDeleteApplication(t *testing.T) {
 			}
 			c := testhelper.NewContainer(
 				apiserver.DefaultOption(t),
-				apiserver.WithGitMock(gitmock),
-				apiserver.WithRegistryMock(registrymock),
+				apiserver.WithGitMock(gitMock),
+				apiserver.WithRegistryMock(registryMock),
 				apiserver.WithMariaDBManagerMock(dbManagerMock),
 			)
 
@@ -410,7 +405,7 @@ func TestDeleteApplication(t *testing.T) {
 			assert.ErrorIs(t, err, repository.ErrNotFound, "application should be deleted")
 
 			assert.Len(t, dbManagerMock.DeleteCalls(), tt.expectedDBDeletes, "mariaDB delete calls should match expected")
-			assert.Len(t, registrymock.DeleteImageCalls(), tt.expectedImageDeletes, "image delete calls should match expected")
+			assert.Len(t, registryMock.DeleteImageCalls(), tt.expectedImageDeletes, "image delete calls should match expected")
 		})
 	}
 }
@@ -437,22 +432,22 @@ func TestUpdateApplication(t *testing.T) {
 			t.Parallel()
 
 			// Arrange
-			gitmock := &mocks.GitServiceMock{
+			gitMock := &mocks.GitServiceMock{
 				ResolveRefsFunc: func(ctx context.Context, repo *domain.Repository) (map[string]string, error) {
 					return map[string]string{
 						"main": exampleCommitHash,
 					}, nil
 				},
 			}
-			registrymock := &mocks.RegistryClientMock{
+			registryMock := &mocks.RegistryClientMock{
 				GetTagsFunc: func(ctx context.Context, image string) ([]string, error) {
 					return []string{"latest"}, nil
 				},
 			}
 			c := testhelper.NewContainer(
 				apiserver.DefaultOption(t),
-				apiserver.WithGitMock(gitmock),
-				apiserver.WithRegistryMock(registrymock),
+				apiserver.WithGitMock(gitMock),
+				apiserver.WithRegistryMock(registryMock),
 			)
 			svc := testhelper.Resolve[*apiserver.Service](c)
 			ctx := t.Context()
@@ -553,22 +548,22 @@ func TestUpdateApplication_UpdateMariaDBConfigIsNotAllowed(t *testing.T) {
 			t.Parallel()
 
 			// Arrange
-			gitmock := &mocks.GitServiceMock{
+			gitMock := &mocks.GitServiceMock{
 				ResolveRefsFunc: func(ctx context.Context, repo *domain.Repository) (map[string]string, error) {
 					return map[string]string{
 						"main": exampleCommitHash,
 					}, nil
 				},
 			}
-			registrymock := &mocks.RegistryClientMock{
+			registryMock := &mocks.RegistryClientMock{
 				GetTagsFunc: func(ctx context.Context, image string) ([]string, error) {
 					return []string{"latest"}, nil
 				},
 			}
 			c := testhelper.NewContainer(
 				apiserver.DefaultOption(t),
-				apiserver.WithGitMock(gitmock),
-				apiserver.WithRegistryMock(registrymock),
+				apiserver.WithGitMock(gitMock),
+				apiserver.WithRegistryMock(registryMock),
 			)
 			svc := testhelper.Resolve[*apiserver.Service](c)
 			ctx := t.Context()
