@@ -163,12 +163,12 @@ func (s *ServiceImpl) solveDockerfile(
 	return err
 }
 
-func (s *ServiceImpl) buildRuntimeCmd(
-	ctx context.Context,
-	st *state,
-	ch chan *buildkit.SolveStatus,
-	bc *domain.BuildConfigRuntimeCmd,
-) error {
+type BuildCmdOption struct {
+	BaseImage string
+	BuildCmd  string
+}
+
+func generateBuildCmdDockerfile(st *state, bc BuildCmdOption) (string, error) {
 	// If .dockerignore exists, rename to prevent it from being picked up by buildkitd,
 	// as this is not the behavior we want in 'Command' build which is supposed to execute commands against raw repository files.
 	// See https://github.com/traPtitech/NeoShowcase/issues/877 for more details.
@@ -176,7 +176,7 @@ func (s *ServiceImpl) buildRuntimeCmd(
 	if dockerignoreExists {
 		err := os.Rename(filepath.Join(st.repositoryTempDir, ".dockerignore"), filepath.Join(st.repositoryTempDir, temporaryDockerignoreName))
 		if err != nil {
-			return errors.Wrap(err, "renaming .dockerignore")
+			return "", errors.Wrap(err, "renaming .dockerignore")
 		}
 	}
 
@@ -201,13 +201,30 @@ func (s *ServiceImpl) buildRuntimeCmd(
 	if bc.BuildCmd != "" {
 		err := createScriptFile(filepath.Join(st.repositoryTempDir, buildScriptName), bc.BuildCmd)
 		if err != nil {
-			return err
+			return "", err
 		}
 		dockerfile.WriteString(fmt.Sprintf("RUN ./%v\n", buildScriptName))
 		dockerfile.WriteString(fmt.Sprintf("RUN rm ./%v\n", buildScriptName))
 	}
 
-	tmpName, cleanup, err := createTempFile("dockerfile-*", dockerfile.String())
+	return dockerfile.String(), nil
+}
+
+func (s *ServiceImpl) buildRuntimeCmd(
+	ctx context.Context,
+	st *state,
+	ch chan *buildkit.SolveStatus,
+	bc *domain.BuildConfigRuntimeCmd,
+) error {
+	dockerfile, err := generateBuildCmdDockerfile(st, BuildCmdOption{
+		BaseImage: bc.BaseImage,
+		BuildCmd:  bc.BuildCmd,
+	})
+	if err != nil {
+		return err
+	}
+
+	tmpName, cleanup, err := createTempFile("dockerfile-*", dockerfile)
 	if err != nil {
 		return err
 	}
@@ -248,45 +265,15 @@ func (s *ServiceImpl) buildStaticCmd(
 	ch chan *buildkit.SolveStatus,
 	bc *domain.BuildConfigStaticCmd,
 ) error {
-	// If .dockerignore exists, rename to prevent it from being picked up by buildkitd,
-	// as this is not the behavior we want in 'Command' build which is supposed to execute commands against raw repository files.
-	// See https://github.com/traPtitech/NeoShowcase/issues/877 for more details.
-	dockerignoreExists := dockerignoreExists(st.repositoryTempDir)
-	if dockerignoreExists {
-		err := os.Rename(filepath.Join(st.repositoryTempDir, ".dockerignore"), filepath.Join(st.repositoryTempDir, temporaryDockerignoreName))
-		if err != nil {
-			return errors.Wrap(err, "renaming .dockerignore")
-		}
+	dockerfile, err := generateBuildCmdDockerfile(st, BuildCmdOption{
+		BaseImage: bc.BaseImage,
+		BuildCmd:  bc.BuildCmd,
+	})
+	if err != nil {
+		return err
 	}
 
-	var dockerfile strings.Builder
-
-	dockerfile.WriteString(fmt.Sprintf(
-		"FROM %s\n",
-		lo.Ternary(bc.BaseImage == "", "scratch", bc.BaseImage),
-	))
-
-	for key := range st.appEnv() {
-		dockerfile.WriteString(fmt.Sprintf("ARG %v\n", key))
-		dockerfile.WriteString(fmt.Sprintf("ENV %v=$%v\n", key, key))
-	}
-
-	dockerfile.WriteString("WORKDIR /srv\n")
-	dockerfile.WriteString("COPY . .\n")
-	if dockerignoreExists {
-		dockerfile.WriteString(fmt.Sprintf("RUN mv %s .dockerignore\n", temporaryDockerignoreName))
-	}
-
-	if bc.BuildCmd != "" {
-		err := createScriptFile(filepath.Join(st.repositoryTempDir, buildScriptName), bc.BuildCmd)
-		if err != nil {
-			return err
-		}
-		dockerfile.WriteString("RUN ./" + buildScriptName + "\n")
-		dockerfile.WriteString("RUN rm ./" + buildScriptName + "\n")
-	}
-
-	tmpName, cleanup, err := createTempFile("dockerfile-*", dockerfile.String())
+	tmpName, cleanup, err := createTempFile("dockerfile-*", dockerfile)
 	if err != nil {
 		return err
 	}
@@ -312,6 +299,57 @@ func (s *ServiceImpl) buildStaticDockerfile(
 ) error {
 	contextDir := lo.Ternary(bc.Context != "", bc.Context, ".")
 	st.staticDest = bc.ArtifactPath
+	return s.solveDockerfile(
+		ctx,
+		s.tmpDestImage(st.app, st.build),
+		filepath.Join(st.repositoryTempDir, contextDir),
+		filepath.Join(st.repositoryTempDir, contextDir),
+		bc.DockerfileName,
+		st.appEnv(),
+		ch,
+	)
+}
+
+func (s *ServiceImpl) buildFunctionCmd(
+	ctx context.Context,
+	st *state,
+	ch chan *buildkit.SolveStatus,
+	bc *domain.BuildConfigFunctionCmd,
+) error {
+	dockerfile, err := generateBuildCmdDockerfile(st, BuildCmdOption{
+		BaseImage: bc.BaseImage,
+		BuildCmd:  bc.BuildCmd,
+	})
+	if err != nil {
+		return err
+	}
+
+	tmpName, cleanup, err := createTempFile("dockerfile-*", dockerfile)
+	if err != nil {
+		return err
+	}
+	defer cleanup()
+
+	st.functionDest = filepath.Join("/srv", bc.ArtifactPath)
+	return s.solveDockerfile(
+		ctx,
+		s.tmpDestImage(st.app, st.build),
+		st.repositoryTempDir,
+		filepath.Dir(tmpName),
+		filepath.Base(tmpName),
+		st.appEnv(),
+		ch,
+	)
+}
+
+func (s *ServiceImpl) buildFunctionDockerfile(
+	ctx context.Context,
+	st *state,
+	ch chan *buildkit.SolveStatus,
+	bc *domain.BuildConfigFunctionDockerfile,
+) error {
+	contextDir := lo.Ternary(bc.Context != "", bc.Context, ".")
+	st.functionDest = bc.ArtifactPath
 	return s.solveDockerfile(
 		ctx,
 		s.tmpDestImage(st.app, st.build),

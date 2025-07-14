@@ -12,7 +12,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
-func (s *ServiceImpl) saveArtifact(ctx context.Context, st *state) error {
+func (s *ServiceImpl) saveTarGzArtifact(ctx context.Context, st *state) error {
 	// Open artifact
 	filename := st.artifactTempFile.Name()
 	stat, err := os.Stat(filename)
@@ -39,6 +39,40 @@ func (s *ServiceImpl) saveArtifact(ctx context.Context, st *state) error {
 	err = gzipWriter.Close()
 	if err != nil {
 		return errors.Wrap(err, "flushing gzip write")
+	}
+
+	// Save artifact by requesting to controller
+	err = s.client.SaveArtifact(ctx, artifact, artifactBytes.Bytes())
+	if err != nil {
+		return errors.Wrap(err, "saving artifact")
+	}
+
+	return nil
+}
+
+func (s *ServiceImpl) saveFunctionArtifact(ctx context.Context, st *state) error {
+	// Open artifact
+	filename := st.artifactTempFile.Name()
+	stat, err := os.Stat(filename)
+	if err != nil {
+		return errors.Wrap(err, "opening artifact")
+	}
+
+	// Create artifact meta
+	artifact := domain.NewArtifact(st.build.ID, domain.BuilderFunctionArtifactName, stat.Size())
+
+	file, err := os.Open(filename)
+	if err != nil {
+		return errors.Wrap(err, "opening artifact")
+	}
+	var artifactBytes bytes.Buffer
+	_, err = io.Copy(&artifactBytes, file)
+	if err != nil {
+		return errors.Wrap(err, "copying file to buffer")
+	}
+	err = file.Close()
+	if err != nil {
+		return errors.Wrap(err, "closing artifact file")
 	}
 
 	// Save artifact by requesting to controller
