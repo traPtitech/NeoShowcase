@@ -45,7 +45,12 @@ func (b *Backend) ssHeaderMiddleware(ss *domain.StaticSite) *traefikv1alpha1.Mid
 
 func (b *Backend) ssResources(next *resources, sites []*domain.StaticSite) {
 	for _, site := range sites {
-		ingressRoute, mw, certs := b.ingressRoute(site.Application, site.Website, b.ssServiceRef())
+		// Filter to sharded apps
+		if !b.cluster.IsAssigned(site.Application.ID) {
+			continue
+		}
+
+		ingressRoute, mw := b.ingressRoute(site.Application, site.Website, b.ssServiceRef())
 
 		ssHeaderMW := b.ssHeaderMiddleware(site)
 		ingressRoute.Spec.Routes[0].Middlewares = append(ingressRoute.Spec.Routes[0].Middlewares, traefikv1alpha1.MiddlewareRef{Name: ssHeaderMW.Name})
@@ -53,6 +58,5 @@ func (b *Backend) ssResources(next *resources, sites []*domain.StaticSite) {
 
 		next.middlewares = append(next.middlewares, mw...)
 		next.ingressRoutes = append(next.ingressRoutes, ingressRoute)
-		next.certificates = append(next.certificates, certs...)
 	}
 }

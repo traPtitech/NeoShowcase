@@ -211,6 +211,11 @@ func (b *Backend) runtimePortService(app *domain.Application, port *domain.PortP
 
 func (b *Backend) runtimeResources(next *resources, apps []*domain.RuntimeDesiredState) {
 	for _, app := range apps {
+		// Filter to sharded apps
+		if !b.cluster.IsAssigned(app.App.ID) {
+			continue
+		}
+
 		ss, svc, secret := b.runtimeSpec(app)
 		next.statefulSets = append(next.statefulSets, ss)
 		if svc != nil {
@@ -220,10 +225,9 @@ func (b *Backend) runtimeResources(next *resources, apps []*domain.RuntimeDesire
 			next.secrets = append(next.secrets, secret)
 		}
 		for _, website := range app.App.Websites {
-			ingressRoute, mw, certs := b.ingressRoute(app.App, website, b.runtimeServiceRef(app.App, website))
+			ingressRoute, mw := b.ingressRoute(app.App, website, b.runtimeServiceRef(app.App, website))
 			next.middlewares = append(next.middlewares, mw...)
 			next.ingressRoutes = append(next.ingressRoutes, ingressRoute)
-			next.certificates = append(next.certificates, certs...)
 		}
 		for _, p := range app.App.PortPublications {
 			next.services = append(next.services, b.runtimePortService(app.App, p))

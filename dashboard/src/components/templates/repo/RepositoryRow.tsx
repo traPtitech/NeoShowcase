@@ -1,9 +1,9 @@
 import { A } from '@solidjs/router'
 import { type Component, Show } from 'solid-js'
 import type { Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { styled } from '/@/components/styled-components'
 import { Button } from '/@/components/UI/Button'
 import Skeleton from '/@/components/UI/Skeleton'
-import { styled } from '/@/components/styled-components'
 import { user } from '/@/libs/api'
 import { originToIcon, repositoryURLToOrigin } from '/@/libs/application'
 

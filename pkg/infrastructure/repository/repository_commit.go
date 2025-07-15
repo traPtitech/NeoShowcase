@@ -4,8 +4,8 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/aarondl/sqlboiler/v4/boil"
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/sqlboiler/v4/boil"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository/models"

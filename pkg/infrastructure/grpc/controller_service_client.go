@@ -2,8 +2,10 @@ package grpc
 
 import (
 	"context"
+	"time"
 
 	"connectrpc.com/connect"
+	"github.com/motoki317/sc"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/types/known/emptypb"
 
@@ -19,7 +21,8 @@ type ControllerServiceClientConfig struct {
 }
 
 type ControllerServiceClient struct {
-	client pbconnect.ControllerServiceClient
+	client      pbconnect.ControllerServiceClient
+	clientCache *sc.Cache[string, pbconnect.ControllerServiceClient]
 }
 
 func NewControllerServiceClient(
@@ -27,6 +30,9 @@ func NewControllerServiceClient(
 ) domain.ControllerServiceClient {
 	return &ControllerServiceClient{
 		client: pbconnect.NewControllerServiceClient(web.NewH2CClient(), c.URL),
+		clientCache: sc.NewMust(func(ctx context.Context, address string) (pbconnect.ControllerServiceClient, error) {
+			return pbconnect.NewControllerServiceClient(web.NewH2CClient(), address), nil
+		}, time.Hour, time.Hour),
 	}
 }
 
@@ -57,9 +63,19 @@ func (c *ControllerServiceClient) SyncDeployments(ctx context.Context) error {
 	return err
 }
 
-func (c *ControllerServiceClient) StreamBuildLog(ctx context.Context, buildID string) (<-chan *pb.BuildLog, error) {
+func (c *ControllerServiceClient) DiscoverBuildLogInstance(ctx context.Context, buildID string) (*pb.AddressInfo, error) {
 	req := connect.NewRequest(&pb.BuildIdRequest{BuildId: buildID})
-	st, err := c.client.StreamBuildLog(ctx, req)
+	res, err := c.client.DiscoverBuildLogInstance(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return res.Msg, nil
+}
+
+func (c *ControllerServiceClient) StreamBuildLog(ctx context.Context, address string, buildID string) (<-chan *pb.BuildLog, error) {
+	req := connect.NewRequest(&pb.BuildIdRequest{BuildId: buildID})
+	client, _ := c.clientCache.Get(ctx, address)
+	st, err := client.StreamBuildLog(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -79,8 +95,41 @@ func (c *ControllerServiceClient) StreamBuildLog(ctx context.Context, buildID st
 	return ch, nil
 }
 
+func (c *ControllerServiceClient) StartBuild(ctx context.Context) error {
+	req := connect.NewRequest(&emptypb.Empty{})
+	_, err := c.client.StartBuild(ctx, req)
+	return err
+}
+
 func (c *ControllerServiceClient) CancelBuild(ctx context.Context, buildID string) error {
 	req := connect.NewRequest(&pb.BuildIdRequest{BuildId: buildID})
 	_, err := c.client.CancelBuild(ctx, req)
+	return err
+}
+
+func (c *ControllerServiceClient) DiscoverBuildLogLocal(ctx context.Context, buildID string) (*pb.AddressInfo, error) {
+	req := connect.NewRequest(&pb.BuildIdRequest{BuildId: buildID})
+	res, err := c.client.DiscoverBuildLogLocal(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return res.Msg, nil
+}
+
+func (c *ControllerServiceClient) StartBuildLocal(ctx context.Context) error {
+	req := connect.NewRequest(&emptypb.Empty{})
+	_, err := c.client.StartBuildLocal(ctx, req)
+	return err
+}
+
+func (c *ControllerServiceClient) SyncDeploymentsLocal(ctx context.Context) error {
+	req := connect.NewRequest(&emptypb.Empty{})
+	_, err := c.client.SyncDeploymentsLocal(ctx, req)
+	return err
+}
+
+func (c *ControllerServiceClient) CancelBuildLocal(ctx context.Context, buildID string) error {
+	req := connect.NewRequest(&pb.BuildIdRequest{BuildId: buildID})
+	_, err := c.client.CancelBuildLocal(ctx, req)
 	return err
 }

@@ -1,15 +1,15 @@
 import { A } from '@solidjs/router'
-import { type Component, For, createMemo, createResource, createSignal } from 'solid-js'
+import { type Component, createMemo, createResource, createSignal, For } from 'solid-js'
 import {
   GetApplicationsRequest_Scope,
   GetRepositoriesRequest_Scope,
   type Repository,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { TextField } from '/@/components/UI/TextField'
 import { List } from '/@/components/templates/List'
 import ReposFilter from '/@/components/templates/repo/ReposFilter'
+import { TextField } from '/@/components/UI/TextField'
 import { client } from '/@/libs/api'
-import { type RepositoryOrigin, originToIcon, repositoryURLToOrigin } from '/@/libs/application'
+import { originToIcon, type RepositoryOrigin, repositoryURLToOrigin } from '/@/libs/application'
 import { clsx } from '/@/libs/clsx'
 
 const RepositoryStep: Component<{

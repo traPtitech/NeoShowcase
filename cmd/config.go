@@ -60,9 +60,9 @@ type BuilderConfig struct {
 }
 
 type ControllerConfig struct {
-	Port        int                    `mapstructure:"port" yaml:"port"`
-	TokenHeader string                 `mapstructure:"token" yaml:"port"`
-	Token       string                 `mapstructure:"token" yaml:"port"`
+	Port        grpc.ControllerPort    `mapstructure:"port" yaml:"port"`
+	TokenHeader string                 `mapstructure:"tokenHeader" yaml:"tokenHeader"`
+	Token       string                 `mapstructure:"token" yaml:"token"`
 	Mode        string                 `mapstructure:"mode" yaml:"mode"`
 	Docker      dockerimpl.Config      `mapstructure:"docker" yaml:"docker"`
 	K8s         k8simpl.Config         `mapstructure:"k8s" yaml:"k8s"`
@@ -186,6 +186,7 @@ func init() {
 	viper.SetDefault("components.controller.docker.resources.memorySwap", -1 /* unlimited swap */)
 	viper.SetDefault("components.controller.docker.resources.memoryReservation", 256*1e6 /* 256MB */)
 
+	viper.SetDefault("components.controller.k8s.serviceName", "ns-controller")
 	viper.SetDefault("components.controller.k8s.domains", nil)
 	viper.SetDefault("components.controller.k8s.ports", nil)
 

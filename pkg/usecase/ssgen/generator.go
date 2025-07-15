@@ -14,6 +14,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
+	"github.com/traPtitech/neoshowcase/pkg/util/discovery"
 	"github.com/traPtitech/neoshowcase/pkg/util/retry"
 	"github.com/traPtitech/neoshowcase/pkg/util/scutil"
 	"github.com/traPtitech/neoshowcase/pkg/util/tarfs"
@@ -31,6 +32,7 @@ type GeneratorService interface {
 }
 
 type generatorService struct {
+	cluster   *discovery.Cluster
 	client    domain.ControllerSSGenServiceClient
 	appRepo   domain.ApplicationRepository
 	buildRepo domain.BuildRepository
@@ -52,6 +54,7 @@ func NewGeneratorService(
 	path domain.StaticServerDocumentRootPath,
 ) GeneratorService {
 	g := &generatorService{
+		cluster:   discovery.NewCluster(discovery.NewSingleDiscoverer("127.0.0.1")), // No sharding for now
 		client:    client,
 		appRepo:   appRepo,
 		buildRepo: buildRepo,
@@ -67,6 +70,12 @@ func (s *generatorService) Start(_ context.Context) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	s.cancel = cancel
 
+	go func() {
+		err := s.cluster.Start(ctx)
+		if err != nil {
+			log.Errorf("failed to start cluster: %+v", err)
+		}
+	}()
 	go retry.Do(ctx, func(ctx context.Context) error {
 		return s.client.ConnectSSGen(ctx, s.onRequest)
 	}, "connect to controller")
@@ -109,7 +118,7 @@ func (s *generatorService) reload() {
 func (s *generatorService) _reload(ctx context.Context) error {
 	start := time.Now()
 	// Calculate active sites
-	sites, err := domain.GetActiveStaticSites(ctx, s.appRepo, s.buildRepo)
+	sites, err := domain.GetActiveStaticSites(ctx, s.cluster, s.appRepo, s.buildRepo)
 	if err != nil {
 		return err
 	}

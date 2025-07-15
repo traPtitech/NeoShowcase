@@ -81,7 +81,14 @@ func (s *Service) GetBuildLogStream(ctx context.Context, buildID string) (<-chan
 		return nil, err
 	}
 
-	ch, err := s.controller.StreamBuildLog(ctx, buildID)
+	addr, err := s.controller.DiscoverBuildLogInstance(ctx, buildID)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to discover build log instance")
+	}
+	if addr.Address == nil {
+		return nil, newError(ErrorTypeBadRequest, "build log instance not found", nil)
+	}
+	ch, err := s.controller.StreamBuildLog(ctx, *addr.Address, buildID)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to connect to build log stream")
 	}

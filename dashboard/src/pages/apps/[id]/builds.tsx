@@ -1,6 +1,5 @@
 import { timestampDate } from '@bufbuild/protobuf/wkt'
-import { createMemo, onCleanup, useTransition } from 'solid-js'
-import { Show } from 'solid-js'
+import { createMemo, onCleanup, Show, useTransition } from 'solid-js'
 import { DataTable } from '/@/components/layouts/DataTable'
 import { MainViewContainer } from '/@/components/layouts/MainView'
 import SuspenseContainer from '/@/components/layouts/SuspenseContainer'

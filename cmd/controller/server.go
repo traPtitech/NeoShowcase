@@ -10,11 +10,11 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/webhook"
-	"github.com/traPtitech/neoshowcase/pkg/usecase/cdservice"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/cleaner"
 	commitfetcher "github.com/traPtitech/neoshowcase/pkg/usecase/commit-fetcher"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/repofetcher"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/sshserver"
+	"github.com/traPtitech/neoshowcase/pkg/util/discovery"
 )
 
 type APIServer struct {
@@ -25,10 +25,11 @@ type Server struct {
 	APIServer *APIServer
 
 	DB             *sql.DB
+	Cluster        *discovery.Cluster
 	Backend        domain.Backend
 	SSHServer      sshserver.SSHServer
 	Webhook        *webhook.Receiver
-	CDService      cdservice.Service
+	CDService      domain.CDService
 	CommitFetcher  commitfetcher.Service
 	FetcherService repofetcher.Service
 	CleanerService cleaner.Service
@@ -37,6 +38,9 @@ type Server struct {
 func (s *Server) Start(ctx context.Context) error {
 	eg, ctx := errgroup.WithContext(ctx)
 
+	eg.Go(func() error {
+		return s.Cluster.Start(ctx)
+	})
 	eg.Go(func() error {
 		return s.Backend.Start(ctx)
 	})

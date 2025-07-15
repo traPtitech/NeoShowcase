@@ -1,11 +1,11 @@
-import { type Component, For, createSignal } from 'solid-js'
+import { type Component, createSignal, For } from 'solid-js'
 
 import type { Application, Build, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
 
 import { useApplicationData } from '/@/routes'
-import { List } from '../List'
 import { BuildRow } from '../build/BuildRow'
+import { List } from '../List'
 
 const AppLatestBuilds: Component<{
   app: Application

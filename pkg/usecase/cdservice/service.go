@@ -3,6 +3,7 @@ package cdservice
 import (
 	"context"
 	"slices"
+	"strconv"
 	"sync"
 	"time"
 
@@ -11,20 +12,16 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
+	"github.com/traPtitech/neoshowcase/pkg/util/discovery"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/loop"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 	"github.com/traPtitech/neoshowcase/pkg/util/scutil"
 )
 
-type Service interface {
-	Run()
-	RegisterBuild(appID string)
-	SyncDeployments()
-	Stop(ctx context.Context) error
-}
-
 type service struct {
+	cluster   *discovery.Cluster
 	appRepo   domain.ApplicationRepository
 	buildRepo domain.BuildRepository
 	envRepo   domain.EnvironmentRepository
@@ -33,15 +30,21 @@ type service struct {
 	deployer  *AppDeployHelper
 	mutator   *ContainerStateMutator
 
-	doStartBuild func()
-	doSyncDeploy func()
-	run          func()
-	runOnce      sync.Once
-	close        func()
-	closeOnce    sync.Once
+	localClient domain.ControllerServiceClient
+
+	doLocalStartBuild   func()
+	doClusterStartBuild func()
+	doLocalSyncDeploy   func()
+	doClusterSyncDeploy func()
+	run                 func()
+	runOnce             sync.Once
+	close               func()
+	closeOnce           sync.Once
 }
 
 func NewService(
+	cluster *discovery.Cluster,
+	port grpc.ControllerPort,
 	appRepo domain.ApplicationRepository,
 	buildRepo domain.BuildRepository,
 	envRepo domain.EnvironmentRepository,
@@ -49,8 +52,9 @@ func NewService(
 	builder domain.ControllerBuilderService,
 	deployer *AppDeployHelper,
 	mutator *ContainerStateMutator,
-) (Service, error) {
+) (domain.CDService, error) {
 	cd := &service{
+		cluster:   cluster,
 		appRepo:   appRepo,
 		buildRepo: buildRepo,
 		envRepo:   envRepo,
@@ -58,13 +62,19 @@ func NewService(
 		builder:   builder,
 		deployer:  deployer,
 		mutator:   mutator,
+
+		// そのまま現在のgRPCレイヤーを参照すると循環参照になってしまうため、ネットワークから呼び出しする
+		// https://github.com/traPtitech/NeoShowcase/pull/1071#discussion_r2193711878
+		localClient: grpc.NewControllerServiceClient(grpc.ControllerServiceClientConfig{
+			URL: "http://127.0.0.1:" + strconv.Itoa(int(port)),
+		}),
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
 
-	doStartBuild := scutil.NewCoalescer(func(ctx context.Context) error {
+	doLocalStartBuild := scutil.NewCoalescer(func(ctx context.Context) error {
 		start := time.Now()
-		if err := cd.startBuilds(ctx); err != nil {
+		if err := cd.startBuildsLocal(ctx); err != nil {
 			log.Errorf("failed to start builds: %+v", err)
 			return nil
 		}
@@ -72,11 +82,17 @@ func NewService(
 		time.Sleep(1 * time.Second) // 1 second throttle between build checks to account for quick succession of repo checks
 		return nil
 	})
-	cd.doStartBuild = func() {
-		_ = doStartBuild.Do(context.Background())
+	cd.doLocalStartBuild = func() {
+		_ = doLocalStartBuild.Do(context.Background())
+	}
+	cd.doClusterStartBuild = func() {
+		err := cd.localClient.StartBuild(context.Background())
+		if err != nil {
+			log.Errorf("failed to broadcast StartBuild: %+v", err)
+		}
 	}
 
-	doSyncDeploy := scutil.NewCoalescer(func(ctx context.Context) error {
+	doLocalSyncDeploy := scutil.NewCoalescer(func(ctx context.Context) error {
 		start := time.Now()
 		if err := cd.syncDeployments(ctx); err != nil {
 			log.Errorf("failed to sync deployments: %+v", err)
@@ -85,8 +101,14 @@ func NewService(
 		log.Infof("Synced deployments in %v", time.Since(start))
 		return nil
 	})
-	cd.doSyncDeploy = func() {
-		_ = doSyncDeploy.Do(context.Background())
+	cd.doLocalSyncDeploy = func() {
+		_ = doLocalSyncDeploy.Do(context.Background())
+	}
+	cd.doClusterSyncDeploy = func() {
+		err := cd.localClient.SyncDeployments(context.Background())
+		if err != nil {
+			log.Errorf("failed to broadcast SyncDeployments: %+v", err)
+		}
 	}
 
 	doDetectBuildCrash := func(ctx context.Context) {
@@ -101,17 +123,17 @@ func NewService(
 		go func() {
 			sub, _ := builder.ListenBuilderIdle()
 			for range sub {
-				go cd.doStartBuild()
+				go cd.doLocalStartBuild()
 			}
 		}()
 		go func() {
 			sub, _ := builder.ListenBuildSettled()
 			for range sub {
-				go cd.doSyncDeploy()
+				go cd.doClusterSyncDeploy()
 			}
 		}()
 		go loop.Loop(ctx, func(ctx context.Context) {
-			_ = doSyncDeploy.Do(ctx)
+			_ = doLocalSyncDeploy.Do(ctx)
 		}, 3*time.Minute, true)
 		go loop.Loop(ctx, doDetectBuildCrash, 1*time.Minute, true)
 	}
@@ -130,12 +152,16 @@ func (cd *service) RegisterBuild(appID string) {
 			log.Errorf("failed to kickoff build for app %v: %+v", appID, err)
 			return
 		}
-		go cd.doStartBuild()
+		go cd.doClusterStartBuild()
 	}()
 }
 
-func (cd *service) SyncDeployments() {
-	go cd.doSyncDeploy()
+func (cd *service) StartBuildLocal() {
+	go cd.doLocalStartBuild()
+}
+
+func (cd *service) SyncDeploymentsLocal() {
+	go cd.doLocalSyncDeploy()
 }
 
 func (cd *service) Stop(_ context.Context) error {
@@ -194,7 +220,7 @@ func (cd *service) registerBuild(ctx context.Context, appID string) error {
 	return cd.buildRepo.CreateBuild(ctx, domain.NewBuild(app, env))
 }
 
-func (cd *service) startBuilds(ctx context.Context) error {
+func (cd *service) startBuildsLocal(ctx context.Context) error {
 	builds, err := cd.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{Status: optional.From(domain.BuildStatusQueued)})
 	if err != nil {
 		return err
@@ -239,6 +265,10 @@ func (cd *service) _syncAppFields(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	// Shard by app ID
+	apps = lo.Filter(apps, func(app *domain.Application, _ int) bool {
+		return cd.cluster.IsAssigned(app.ID)
+	})
 
 	commits := lo.Map(apps, func(app *domain.Application, _ int) string { return app.Commit })
 	builds, err := cd.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{

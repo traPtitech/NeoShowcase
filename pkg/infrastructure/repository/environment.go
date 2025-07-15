@@ -4,9 +4,9 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/aarondl/sqlboiler/v4/boil"
+	"github.com/aarondl/sqlboiler/v4/queries/qm"
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/sqlboiler/v4/boil"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository/models"
@@ -45,7 +45,7 @@ func (r *environmentRepository) GetEnv(ctx context.Context, cond domain.GetEnvCo
 }
 
 func (r *environmentRepository) SetEnv(ctx context.Context, env *domain.Environment) error {
-	// NOTE: sqlboiler does not recognize multiple column unique keys: https://github.com/volatiletech/sqlboiler/issues/328
+	// NOTE: sqlboiler does not recognize multiple column unique keys: https://github.com/aarondl/sqlboiler/issues/328
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return errors.Wrap(err, "failed to start transaction")

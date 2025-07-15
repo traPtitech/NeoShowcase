@@ -11,6 +11,10 @@ type DesiredState struct {
 	StaticSites []*StaticSite
 }
 
+type DesiredStateLeader struct {
+	TLSTargetDomains []string
+}
+
 type RuntimeDesiredState struct {
 	App       *Application
 	ImageName string
@@ -74,9 +78,11 @@ type Backend interface {
 	Dispose(ctx context.Context) error
 
 	AvailableDomains() AvailableDomainSlice
+	TLSTargetDomain(website *Website) (host string, ok bool)
 	AvailablePorts() AvailablePortSlice
 	ListenContainerEvents() (sub <-chan *ContainerEvent, unsub func())
 	Synchronize(ctx context.Context, s *DesiredState) error
+	SynchronizeShared(ctx context.Context, s *DesiredStateLeader) error
 	GetContainer(ctx context.Context, appID string) (*Container, error)
 	ListContainers(ctx context.Context) ([]*Container, error)
 	AttachContainer(ctx context.Context, appID string, stdin io.Reader, stdout, stderr io.Writer) error
