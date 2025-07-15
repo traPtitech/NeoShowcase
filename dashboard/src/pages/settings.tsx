@@ -43,9 +43,7 @@ const SshKeyRow: Component<{ key: UserKey; refetchKeys: () => void }> = (props) 
             when={props.key.createdAt && props.key.createdAt?.seconds !== 0n ? props.key.createdAt : false}
             fallback={<SshKeyAddedAt>Added on ----</SshKeyAddedAt>}
           >
-            {(createdAt) => (
-              <SshKeyAddedAt>Added on {dateHuman(createdAt())}</SshKeyAddedAt>
-            )}
+            {(createdAt) => <SshKeyAddedAt>Added on {dateHuman(createdAt())}</SshKeyAddedAt>}
           </Show>
         </div>
         <Button variants="textError" size="medium" onClick={open}>
@@ -60,14 +58,10 @@ const SshKeyRow: Component<{ key: UserKey; refetchKeys: () => void }> = (props) 
               <SshKeyName>{props.key.name === '' ? '(Name not set)' : props.key.name}</SshKeyName>
               {props.key.publicKey}
               <Show
-                when={ props.key.createdAt?.seconds !==0n ? props.key.createdAt : false}
+                when={props.key.createdAt?.seconds !== 0n ? props.key.createdAt : false}
                 fallback={<SshKeyAddedAt>Added on ----</SshKeyAddedAt>}
               >
-                {(createdAt) => (
-                  <SshKeyAddedAt>
-                    Added on {dateHuman(createdAt())}
-                  </SshKeyAddedAt> 
-                )}
+                {(createdAt) => <SshKeyAddedAt>Added on {dateHuman(createdAt())}</SshKeyAddedAt>}
               </Show>
             </div>
           </ModalDeleteConfirm>
@@ -152,6 +146,7 @@ export default () => {
                       <DataTable.SubTitle>
                         SSH鍵はruntimeアプリケーションのコンテナにssh接続するときに使います
                       </DataTable.SubTitle>
+                      dateHuman(createdAt())
                     </DataTable.Titles>
                     <Show when={userKeys()?.keys.length !== 0}>
                       <AddNewSSHKeyButton />
