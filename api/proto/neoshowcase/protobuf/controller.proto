@@ -156,7 +156,7 @@ service ControllerBuilderService {
   rpc GetBuilderSystemInfo(google.protobuf.Empty) returns (BuilderSystemInfo);
   rpc PingBuild(BuildIdRequest) returns (google.protobuf.Empty);
   rpc StreamBuildLog(stream BuildLogPortion) returns (google.protobuf.Empty);
-  rpc SaveArtifact(stream SaveArtifactRequest) returns (google.protobuf.Empty);
+  rpc SaveArtifact(SaveArtifactRequest) returns (google.protobuf.Empty);
   rpc SaveBuildLog(SaveBuildLogRequest) returns (google.protobuf.Empty);
   rpc SaveRuntimeImage(SaveRuntimeImageRequest) returns (google.protobuf.Empty);
   rpc ConnectBuilder(stream BuilderResponse) returns (stream BuilderRequest);
