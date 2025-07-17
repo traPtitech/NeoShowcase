@@ -52,14 +52,8 @@ updates:
 
   - package-ecosystem: "docker"
     directory: "/sablier"
-    open-pull-requests-limit: 50
     schedule:
       interval: "monthly"
-    groups:
-      non-majors:
-        update-types:
-          - "patch"
-          - "minor"
 
   - package-ecosystem: "github-actions"
     directory: "/"
