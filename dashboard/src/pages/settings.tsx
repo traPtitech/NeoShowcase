@@ -40,10 +40,10 @@ const SshKeyRow: Component<{ key: UserKey; refetchKeys: () => void }> = (props) 
           <SshKeyName>{props.key.name === '' ? '(Name not set)' : props.key.name}</SshKeyName>
           <SshKeyRowValue>{props.key.publicKey}</SshKeyRowValue>
           <Show
-            when={props.key.createdAt && props.key.createdAt?.seconds !== 0n}
+            when={props.key.createdAt && props.key.createdAt?.seconds !== 0n ? props.key.createdAt : false}
             fallback={<SshKeyAddedAt>Added on ----</SshKeyAddedAt>}
           >
-            <SshKeyAddedAt>Added on {dateHuman(props.key.createdAt!)}</SshKeyAddedAt>
+            {(createdAt) => <SshKeyAddedAt>Added on {dateHuman(createdAt())}</SshKeyAddedAt>}
           </Show>
         </div>
         <Button variants="textError" size="medium" onClick={open}>
@@ -58,10 +58,10 @@ const SshKeyRow: Component<{ key: UserKey; refetchKeys: () => void }> = (props) 
               <SshKeyName>{props.key.name === '' ? '(Name not set)' : props.key.name}</SshKeyName>
               {props.key.publicKey}
               <Show
-                when={props.key.createdAt && props.key.createdAt?.seconds !== 0n}
+                when={props.key.createdAt?.seconds !== 0n ? props.key.createdAt : false}
                 fallback={<SshKeyAddedAt>Added on ----</SshKeyAddedAt>}
               >
-                <SshKeyAddedAt>Added on {dateHuman(props.key.createdAt!)}</SshKeyAddedAt>
+                {(createdAt) => <SshKeyAddedAt>Added on {dateHuman(createdAt())}</SshKeyAddedAt>}
               </Show>
             </div>
           </ModalDeleteConfirm>
@@ -136,36 +136,39 @@ export default () => {
           <Nav title="Settings" />
         </WithNav.Navs>
         <WithNav.Body>
-          <Show when={userKeys.state === 'ready'}>
-            <MainViewContainer>
-              <DataTable.Container>
-                <div class="flex w-full items-end justify-between">
-                  <DataTable.Titles>
-                    <DataTable.Title>SSH Public Keys</DataTable.Title>
-                    <DataTable.SubTitle>
-                      SSH鍵はruntimeアプリケーションのコンテナにssh接続するときに使います
-                    </DataTable.SubTitle>
-                  </DataTable.Titles>
-                  <Show when={userKeys()?.keys.length !== 0}>
-                    <AddNewSSHKeyButton />
+          <Show when={userKeys()}>
+            {(keysData) => (
+              <MainViewContainer>
+                <DataTable.Container>
+                  <div class="flex w-full items-end justify-between">
+                    <DataTable.Titles>
+                      <DataTable.Title>SSH Public Keys</DataTable.Title>
+                      <DataTable.SubTitle>
+                        SSH鍵はruntimeアプリケーションのコンテナにssh接続するときに使います
+                      </DataTable.SubTitle>
+                      dateHuman(createdAt())
+                    </DataTable.Titles>
+                    <Show when={userKeys()?.keys.length !== 0}>
+                      <AddNewSSHKeyButton />
+                    </Show>
+                  </div>
+                  <Show
+                    when={keysData().keys.length > 0}
+                    fallback={
+                      <List.Container>
+                        <List.PlaceHolder>
+                          <div class="i-material-symbols:key-off-outline shrink-0 text-20/20" />
+                          No Keys Registered
+                          <AddNewSSHKeyButton />
+                        </List.PlaceHolder>
+                      </List.Container>
+                    }
+                  >
+                    <SshKeys keys={keysData().keys} refetchKeys={refetchKeys} />
                   </Show>
-                </div>
-                <Show
-                  when={userKeys()!.keys.length > 0}
-                  fallback={
-                    <List.Container>
-                      <List.PlaceHolder>
-                        <div class="i-material-symbols:key-off-outline shrink-0 text-20/20" />
-                        No Keys Registered
-                        <AddNewSSHKeyButton />
-                      </List.PlaceHolder>
-                    </List.Container>
-                  }
-                >
-                  <SshKeys keys={userKeys()?.keys!} refetchKeys={refetchKeys} />
-                </Show>
-              </DataTable.Container>
-            </MainViewContainer>
+                </DataTable.Container>
+              </MainViewContainer>
+            )}
           </Show>
         </WithNav.Body>
       </WithNav.Container>
