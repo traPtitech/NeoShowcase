@@ -10,16 +10,16 @@ import (
 	"github.com/tonistiigi/fsutil"
 )
 
-func (s *ServiceImpl) buildStaticExtract(
+func (s *ServiceImpl) buildExtractFolderToTar(
 	ctx context.Context,
 	st *state,
 	ch chan *buildkit.SolveStatus,
+	path string,
 ) error {
 	ls := llb.Image(s.tmpDestImage(st.app, st.build))
-	// ビルドで生成された静的ファイルのみを含むScratchイメージを構成
 	def, err := llb.
 		Scratch().
-		File(llb.Copy(ls, st.staticDest, "/", &llb.CopyInfo{
+		File(llb.Copy(ls, path, "/", &llb.CopyInfo{
 			CopyDirContentsOnly: true,
 			CreateDestPath:      true,
 			AllowWildcard:       true,
@@ -43,4 +43,20 @@ func (s *ServiceImpl) buildStaticExtract(
 		Session: s.authSessions(),
 	}, ch)
 	return err
+}
+
+func (s *ServiceImpl) buildStaticExtract(
+	ctx context.Context,
+	st *state,
+	ch chan *buildkit.SolveStatus,
+) error {
+	return s.buildExtractFolderToTar(ctx, st, ch, st.staticDest)
+}
+
+func (s *ServiceImpl) extractFunctionArtifact(
+	ctx context.Context,
+	st *state,
+	ch chan *buildkit.SolveStatus,
+) error {
+	return s.buildExtractFolderToTar(ctx, st, ch, st.functionDest)
 }

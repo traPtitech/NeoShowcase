@@ -12,7 +12,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
-func (s *ServiceImpl) saveTarGzArtifact(ctx context.Context, st *state) error {
+func (s *ServiceImpl) saveGzArtifact(ctx context.Context, st *state, artifactName string) error {
 	// Open artifact
 	filename := st.artifactTempFile.Name()
 	stat, err := os.Stat(filename)
@@ -21,7 +21,7 @@ func (s *ServiceImpl) saveTarGzArtifact(ctx context.Context, st *state) error {
 	}
 
 	// Create artifact meta
-	artifact := domain.NewArtifact(st.build.ID, domain.BuilderStaticArtifactName, stat.Size())
+	artifact := domain.NewArtifact(st.build.ID, artifactName, stat.Size())
 
 	// Create artifact .tar.gz
 	file, err := os.Open(filename)
@@ -50,39 +50,10 @@ func (s *ServiceImpl) saveTarGzArtifact(ctx context.Context, st *state) error {
 	return nil
 }
 
+func (s *ServiceImpl) saveTarGzArtifact(ctx context.Context, st *state) error {
+	return s.saveGzArtifact(ctx, st, domain.BuilderStaticArtifactName)
+}
+
 func (s *ServiceImpl) saveFunctionArtifact(ctx context.Context, st *state) error {
-	// Open artifact
-	filename := st.artifactTempFile.Name()
-	stat, err := os.Stat(filename)
-	if err != nil {
-		return errors.Wrap(err, "opening artifact")
-	}
-
-	// Create artifact meta
-	artifact := domain.NewArtifact(st.build.ID, domain.BuilderFunctionArtifactName, stat.Size())
-
-	file, err := os.Open(filename)
-	if err != nil {
-		return errors.Wrap(err, "opening artifact")
-	}
-	defer file.Close()
-
-	var artifactBytes bytes.Buffer
-	gzipWriter := gzip.NewWriter(&artifactBytes)
-	_, err = io.Copy(gzipWriter, file)
-	if err != nil {
-		return errors.Wrap(err, "copying file to gzip writer")
-	}
-	err = gzipWriter.Close()
-	if err != nil {
-		return errors.Wrap(err, "flushing gzip writer")
-	}
-
-	// Save artifact by requesting to controller
-	err = s.client.SaveArtifact(ctx, artifact, artifactBytes.Bytes())
-	if err != nil {
-		return errors.Wrap(err, "saving artifact")
-	}
-
-	return nil
+	return s.saveGzArtifact(ctx, st, domain.BuilderFunctionArtifactName)
 }
