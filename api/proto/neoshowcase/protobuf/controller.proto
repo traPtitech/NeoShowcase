@@ -95,7 +95,7 @@ message BuilderResponse {
 
 message CopyFileTreeRequest {
   string destination = 1;
-  bytes tar_content = 2; // TODO: stream contents?
+  bytes tar_content = 2;
 }
 
 message HelperExecEnv {
@@ -163,7 +163,7 @@ service ControllerBuilderService {
 }
 
 service BuildpackHelperService {
-  rpc CopyFileTree(CopyFileTreeRequest) returns (google.protobuf.Empty);
+  rpc CopyFileTree(stream CopyFileTreeRequest) returns (google.protobuf.Empty);
   rpc Exec(HelperExecRequest) returns (stream HelperExecResponse);
 }
 
