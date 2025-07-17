@@ -16,7 +16,7 @@ updates:
         update-types:
           - "patch"
           - "minor"
-  
+
   - package-ecosystem: "docker"
     directory: "/"
     open-pull-requests-limit: 50
@@ -27,7 +27,7 @@ updates:
         update-types:
           - "patch"
           - "minor"
-  
+
   - package-ecosystem: "npm"
     directory: "/dashboard"
     open-pull-requests-limit: 50
@@ -38,7 +38,7 @@ updates:
         update-types:
           - "patch"
           - "minor"
-  
+
   - package-ecosystem: "docker"
     directory: "/dashboard"
     open-pull-requests-limit: 50
@@ -49,6 +49,11 @@ updates:
         update-types:
           - "patch"
           - "minor"
+
+  - package-ecosystem: "docker"
+    directory: "/sablier"
+    schedule:
+      interval: "monthly"
 
   - package-ecosystem: "github-actions"
     directory: "/"
