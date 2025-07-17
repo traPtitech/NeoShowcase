@@ -1542,12 +1542,12 @@ const file_neoshowcase_protobuf_controller_proto_rawDesc = "" +
 	"\x15DiscoverBuildLogLocal\x12$.neoshowcase.protobuf.BuildIdRequest\x1a!.neoshowcase.protobuf.AddressInfo\x12A\n" +
 	"\x0fStartBuildLocal\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\x12F\n" +
 	"\x14SyncDeploymentsLocal\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\x12P\n" +
-	"\x10CancelBuildLocal\x12$.neoshowcase.protobuf.BuildIdRequest\x1a\x16.google.protobuf.Empty2\xf5\x04\n" +
+	"\x10CancelBuildLocal\x12$.neoshowcase.protobuf.BuildIdRequest\x1a\x16.google.protobuf.Empty2\xf7\x04\n" +
 	"\x18ControllerBuilderService\x12W\n" +
 	"\x14GetBuilderSystemInfo\x12\x16.google.protobuf.Empty\x1a'.neoshowcase.protobuf.BuilderSystemInfo\x12I\n" +
 	"\tPingBuild\x12$.neoshowcase.protobuf.BuildIdRequest\x1a\x16.google.protobuf.Empty\x12Q\n" +
-	"\x0eStreamBuildLog\x12%.neoshowcase.protobuf.BuildLogPortion\x1a\x16.google.protobuf.Empty(\x01\x12Q\n" +
-	"\fSaveArtifact\x12).neoshowcase.protobuf.SaveArtifactRequest\x1a\x16.google.protobuf.Empty\x12Q\n" +
+	"\x0eStreamBuildLog\x12%.neoshowcase.protobuf.BuildLogPortion\x1a\x16.google.protobuf.Empty(\x01\x12S\n" +
+	"\fSaveArtifact\x12).neoshowcase.protobuf.SaveArtifactRequest\x1a\x16.google.protobuf.Empty(\x01\x12Q\n" +
 	"\fSaveBuildLog\x12).neoshowcase.protobuf.SaveBuildLogRequest\x1a\x16.google.protobuf.Empty\x12Y\n" +
 	"\x10SaveRuntimeImage\x12-.neoshowcase.protobuf.SaveRuntimeImageRequest\x1a\x16.google.protobuf.Empty\x12a\n" +
 	"\x0eConnectBuilder\x12%.neoshowcase.protobuf.BuilderResponse\x1a$.neoshowcase.protobuf.BuilderRequest(\x010\x012\xc8\x01\n" +

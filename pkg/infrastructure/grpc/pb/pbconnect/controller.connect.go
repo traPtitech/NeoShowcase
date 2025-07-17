@@ -477,7 +477,7 @@ type ControllerBuilderServiceClient interface {
 	GetBuilderSystemInfo(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[pb.BuilderSystemInfo], error)
 	PingBuild(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error)
 	StreamBuildLog(context.Context) *connect.ClientStreamForClient[pb.BuildLogPortion, emptypb.Empty]
-	SaveArtifact(context.Context, *connect.Request[pb.SaveArtifactRequest]) (*connect.Response[emptypb.Empty], error)
+	SaveArtifact(context.Context) *connect.ClientStreamForClient[pb.SaveArtifactRequest, emptypb.Empty]
 	SaveBuildLog(context.Context, *connect.Request[pb.SaveBuildLogRequest]) (*connect.Response[emptypb.Empty], error)
 	SaveRuntimeImage(context.Context, *connect.Request[pb.SaveRuntimeImageRequest]) (*connect.Response[emptypb.Empty], error)
 	ConnectBuilder(context.Context) *connect.BidiStreamForClient[pb.BuilderResponse, pb.BuilderRequest]
@@ -567,8 +567,8 @@ func (c *controllerBuilderServiceClient) StreamBuildLog(ctx context.Context) *co
 }
 
 // SaveArtifact calls neoshowcase.protobuf.ControllerBuilderService.SaveArtifact.
-func (c *controllerBuilderServiceClient) SaveArtifact(ctx context.Context, req *connect.Request[pb.SaveArtifactRequest]) (*connect.Response[emptypb.Empty], error) {
-	return c.saveArtifact.CallUnary(ctx, req)
+func (c *controllerBuilderServiceClient) SaveArtifact(ctx context.Context) *connect.ClientStreamForClient[pb.SaveArtifactRequest, emptypb.Empty] {
+	return c.saveArtifact.CallClientStream(ctx)
 }
 
 // SaveBuildLog calls neoshowcase.protobuf.ControllerBuilderService.SaveBuildLog.
@@ -592,7 +592,7 @@ type ControllerBuilderServiceHandler interface {
 	GetBuilderSystemInfo(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[pb.BuilderSystemInfo], error)
 	PingBuild(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error)
 	StreamBuildLog(context.Context, *connect.ClientStream[pb.BuildLogPortion]) (*connect.Response[emptypb.Empty], error)
-	SaveArtifact(context.Context, *connect.Request[pb.SaveArtifactRequest]) (*connect.Response[emptypb.Empty], error)
+	SaveArtifact(context.Context, *connect.ClientStream[pb.SaveArtifactRequest]) (*connect.Response[emptypb.Empty], error)
 	SaveBuildLog(context.Context, *connect.Request[pb.SaveBuildLogRequest]) (*connect.Response[emptypb.Empty], error)
 	SaveRuntimeImage(context.Context, *connect.Request[pb.SaveRuntimeImageRequest]) (*connect.Response[emptypb.Empty], error)
 	ConnectBuilder(context.Context, *connect.BidiStream[pb.BuilderResponse, pb.BuilderRequest]) error
@@ -623,7 +623,7 @@ func NewControllerBuilderServiceHandler(svc ControllerBuilderServiceHandler, opt
 		connect.WithSchema(controllerBuilderServiceMethods.ByName("StreamBuildLog")),
 		connect.WithHandlerOptions(opts...),
 	)
-	controllerBuilderServiceSaveArtifactHandler := connect.NewUnaryHandler(
+	controllerBuilderServiceSaveArtifactHandler := connect.NewClientStreamHandler(
 		ControllerBuilderServiceSaveArtifactProcedure,
 		svc.SaveArtifact,
 		connect.WithSchema(controllerBuilderServiceMethods.ByName("SaveArtifact")),
@@ -684,7 +684,7 @@ func (UnimplementedControllerBuilderServiceHandler) StreamBuildLog(context.Conte
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerBuilderService.StreamBuildLog is not implemented"))
 }
 
-func (UnimplementedControllerBuilderServiceHandler) SaveArtifact(context.Context, *connect.Request[pb.SaveArtifactRequest]) (*connect.Response[emptypb.Empty], error) {
+func (UnimplementedControllerBuilderServiceHandler) SaveArtifact(context.Context, *connect.ClientStream[pb.SaveArtifactRequest]) (*connect.Response[emptypb.Empty], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerBuilderService.SaveArtifact is not implemented"))
 }
 
