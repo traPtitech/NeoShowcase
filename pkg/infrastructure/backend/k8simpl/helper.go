@@ -47,7 +47,7 @@ type syncer[T apiResource] interface {
 	Delete(ctx context.Context, name string, opts metav1.DeleteOptions) error
 }
 
-func syncResources[T apiResource](ctx context.Context, rcName string, existing []T, next []T, s syncer[T]) error {
+func syncResources[T apiResource](ctx context.Context, rcName string, existing []T, next []T, s syncer[T], replace bool) error {
 	var patched, pruned int
 	oldHashes := lo.SliceToMap(existing, func(rc T) (string, string) {
 		return rc.GetName(), rc.GetLabels()[resourceHashAnnotation]
@@ -78,8 +78,16 @@ func syncResources[T apiResource](ctx context.Context, rcName string, existing [
 			return err
 		}
 		_, err = s.Patch(ctx, rc.GetName(), types.ApplyPatchType, b, metav1.PatchOptions{Force: lo.ToPtr(true), FieldManager: fieldManager})
+		// For StatefulSets, delete the resource before applying again - StatefulSet has many immutable fields
+		// Example: StatefulSet.apps "nsapp-add177a080c4c78936e192" is invalid: spec: Forbidden: updates to statefulset spec for fields other than 'replicas', 'ordinals', 'template', 'updateStrategy', 'revisionHistoryLimit', 'persistentVolumeClaimRetentionPolicy' and 'minReadySeconds' are forbidden
+		if replace && err != nil {
+			_ = s.Delete(ctx, rc.GetName(), metav1.DeleteOptions{PropagationPolicy: lo.ToPtr(metav1.DeletePropagationForeground)})
+			// Try again
+			_, err = s.Patch(ctx, rc.GetName(), types.ApplyPatchType, b, metav1.PatchOptions{Force: lo.ToPtr(true), FieldManager: fieldManager})
+		}
 		if err != nil {
-			return err
+			log.WithError(err).Errorf("failed to apply %s/%s", rcName, rc.GetName())
+			continue // Skip this resource if failed to apply
 		}
 
 		patched++
@@ -89,7 +97,8 @@ func syncResources[T apiResource](ctx context.Context, rcName string, existing [
 	for _, rc := range diff(existing, next) {
 		err := s.Delete(ctx, rc.GetName(), metav1.DeleteOptions{PropagationPolicy: lo.ToPtr(metav1.DeletePropagationForeground)})
 		if err != nil {
-			return err
+			log.WithError(err).Errorf("failed to delete %s/%s", rcName, rc.GetName())
+			continue // Skip this resource if failed to delete
 		}
 		pruned++
 	}
