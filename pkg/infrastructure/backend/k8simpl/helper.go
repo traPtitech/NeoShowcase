@@ -87,7 +87,8 @@ func syncResources[T apiResource](ctx context.Context, cluster *discovery.Cluste
 			_, err = s.Patch(ctx, rc.GetName(), types.ApplyPatchType, b, metav1.PatchOptions{Force: lo.ToPtr(true), FieldManager: fieldManager})
 		}
 		if err != nil {
-			return err
+			log.WithError(err).Errorf("failed to patch %s/%s", rcName, rc.GetName())
+			continue // Skip if error occurred
 		}
 
 		patched++
@@ -103,7 +104,8 @@ func syncResources[T apiResource](ctx context.Context, cluster *discovery.Cluste
 
 		err := s.Delete(ctx, rc.GetName(), metav1.DeleteOptions{PropagationPolicy: lo.ToPtr(metav1.DeletePropagationForeground)})
 		if err != nil {
-			return err
+			log.WithError(err).Errorf("failed to delete %s/%s", rcName, rc.GetName())
+			continue // Skip if error occurred
 		}
 		pruned++
 	}
