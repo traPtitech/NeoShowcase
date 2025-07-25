@@ -7,9 +7,12 @@ rules:
   - apiGroups:
       - ""
     resources:
-      - services
-      - secrets
       - nodes
+      - pods
+      - services
+      - endpoints
+      - configmaps
+      - secrets
     verbs:
       - get
       - list
@@ -33,6 +36,7 @@ rules:
       - update
   - apiGroups:
       - traefik.io
+      - traefik.containo.us
     resources:
       - middlewares
       - middlewaretcps
