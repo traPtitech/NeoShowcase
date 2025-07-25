@@ -1,0 +1,157 @@
+{{- with $.Values.builder }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $.Release.Name }}-builder
+  namespace: {{ $.Release.Namespace }}
+
+spec:
+  replicas: {{ .replicas }}
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      app: {{ $.Release.Name }}-builder
+  template:
+    metadata:
+      labels:
+        app: {{ $.Release.Name }}-builder
+      annotations:
+        checksum/config: {{ include "config-hash" $ | quote }}
+        checksum/buildkit-config: {{ include "buildkit-config-hash" $ | quote }}
+        checksum/known-hosts: {{ include "known-hosts-hash" $ | quote }}
+        container.apparmor.security.beta.kubernetes.io/buildkit: unconfined
+    spec:
+      enableServiceLinks: false
+      {{- if .nodeSelector }}
+      nodeSelector:
+        {{- .nodeSelector | toYaml | nindent 8 }}
+      {{- end }}
+      {{- if .tolerations }}
+      tolerations:
+        {{- .tolerations | toYaml | nindent 8 }}
+      {{- end }}
+      {{- if .topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- .topologySpreadConstraints | toYaml | nindent 8 }}
+      {{- end }}
+
+      volumes:
+        - name: ns-bin
+          emptyDir: {}
+        - name: socket
+          emptyDir: {}
+        - name: config
+          configMap:
+            name: ns-config
+        - name: buildkit-config
+          configMap:
+            name: buildkit
+        - name: known-hosts
+          configMap:
+            name: known-hosts
+        {{- if $.Values.common.additionalVolumes }}
+        {{- $.Values.common.additionalVolumes | toYaml | nindent 8 }}
+        {{- end }}
+
+      initContainers:
+        - name: buildpack-install
+          image: {{ include "image.builder" $ }}
+          imagePullPolicy: Always
+          command:
+            - cp
+            - /app/ns
+            - /ns-bin
+          volumeMounts:
+            - mountPath: /ns-bin
+              name: ns-bin
+
+      containers:
+        - name: buildpack
+          image: {{ .buildpack.image }}
+          imagePullPolicy: Always
+          command:
+            - /ns-bin/ns
+            - buildpack-helper
+          args:
+            - --loglevel=debug
+            - --config=/opt/config/ns.yaml
+          volumeMounts:
+            - mountPath: /ns-bin
+              name: ns-bin
+            - mountPath: /opt/config/ns.yaml
+              name: config
+              subPath: ns.yaml
+          {{- if .buildpack.resources }}
+          resources:
+            {{- .buildpack.resources | toYaml | nindent 12 }}
+          {{- end }}
+
+        - name: buildkit
+          image: {{ .buildkit.image }}
+          imagePullPolicy: Always
+          args:
+            - --addr
+            - unix:///run/user/1000/buildkit/buildkitd.sock
+            - --oci-worker-no-process-sandbox
+          readinessProbe:
+            exec:
+              command:
+                - buildctl
+                - debug
+                - workers
+            initialDelaySeconds: 5
+            periodSeconds: 30
+          livenessProbe:
+            exec:
+              command:
+                - buildctl
+                - debug
+                - workers
+            initialDelaySeconds: 5
+            periodSeconds: 30
+          securityContext:
+            seccompProfile:
+              type: Unconfined
+            runAsUser: 1000
+            runAsGroup: 1000
+          volumeMounts:
+            - name: socket
+              mountPath: /run/user/1000/buildkit
+            - name: buildkit-config
+              subPath: buildkitd.toml
+              mountPath: /home/user/.config/buildkit/buildkitd.toml
+          {{- if .buildkit.resources }}
+          resources:
+            {{- .buildkit.resources | toYaml | nindent 12 }}
+          {{- end }}
+
+        - name: builder
+          image: {{ include "image.builder" $ }}
+          imagePullPolicy: Always
+          args:
+            - --loglevel={{ $.Values.common.logLevel }}
+            - --config=/opt/config/ns.yaml
+          env:
+            - name: NS_COMPONENTS_CONTROLLER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.secret.ns.existingName }}
+                  key: controller-token
+          volumeMounts:
+            - mountPath: /run/buildkit
+              name: socket
+            - mountPath: /opt/config/ns.yaml
+              name: config
+              subPath: ns.yaml
+            - mountPath: /root/.ssh/known_hosts
+              name: known-hosts
+              subPath: known_hosts
+            {{- if $.Values.common.additionalVolumeMounts }}
+            {{- $.Values.common.additionalVolumeMounts | toYaml | nindent 12 }}
+            {{- end }}
+          {{- if .resources }}
+          resources:
+            {{- .resources | toYaml | nindent 12 }}
+          {{- end }}
+
+{{- end }}

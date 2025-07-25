@@ -1,7 +1,10 @@
+{{- with $.Values.sablier }}
+{{- if .enabled }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: sablier
+  name: {{ $.Release.Name }}-sablier
+
 rules:
   - apiGroups:
       - apps
@@ -25,3 +28,6 @@ rules:
       - get     # Retrieve info about specific dep
       - list    # Events
       - watch   # Events
+
+{{- end }}
+{{- end }}

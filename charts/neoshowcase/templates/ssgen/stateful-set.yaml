@@ -1,0 +1,140 @@
+{{- with $.Values.ssgen }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ $.Release.Name }}-ssgen
+  namespace: {{ $.Release.Namespace }}
+
+spec:
+  serviceName: {{ $.Release.Name }}-ssgen
+  podManagementPolicy: Parallel
+  replicas: {{ .replicas }}
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      app: {{ $.Release.Name }}-ssgen
+
+  # Persistence is not strictly required - only for performance between container restarts
+  persistentVolumeClaimRetentionPolicy:
+    whenScaled: Delete
+    whenDeleted: Delete
+  volumeClaimTemplates:
+    - metadata:
+        name: artifacts
+      spec:
+        {{- if .pvc.storageClassName }}
+        storageClassName: {{ .pvc.storageClassName }}
+        {{- end }}
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: {{ .pvc.storage }}
+
+  template:
+    metadata:
+      labels:
+        app: {{ $.Release.Name }}-ssgen
+      annotations:
+        checksum/config: {{ include "config-hash" $ | quote }}
+    spec:
+      enableServiceLinks: false
+      {{- if .nodeSelector }}
+      nodeSelector:
+        {{- .nodeSelector | toYaml | nindent 8 }}
+      {{- end }}
+      {{- if .tolerations }}
+      tolerations:
+        {{- .tolerations | toYaml | nindent 8 }}
+      {{- end }}
+      {{- if .topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- .topologySpreadConstraints | toYaml | nindent 8 }}
+      {{- end }}
+
+      volumes:
+        - name: config
+          configMap:
+            name: ns-config
+        {{- if $.Values.common.additionalVolumes }}
+        {{- $.Values.common.additionalVolumes | toYaml | nindent 8 }}
+        {{- end }}
+
+      containers:
+        - name: ssgen
+          image: {{ include "image.ssgen" $ }}
+          imagePullPolicy: Always
+          args:
+            - --loglevel={{ $.Values.common.logLevel }}
+            - --config=/opt/config/ns.yaml
+          env:
+            - name: NS_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.secret.ns.existingName }}
+                  key: db-password
+            {{- if eq $.Values.common.storage.type "s3" }}
+            - name: NS_STORAGE_S3_ACCESSKEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.secret.ns.existingName }}
+                  key: s3-access-key
+            - name: NS_STORAGE_S3_ACCESSSECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.secret.ns.existingName }}
+                  key: s3-access-secret
+            {{- end }}
+            - name: NS_IMAGE_REGISTRY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.secret.ns.existingName }}
+                  key: registry-password
+          volumeMounts:
+            - mountPath: /artifacts
+              name: artifacts
+            - mountPath: /opt/config/ns.yaml
+              name: config
+              subPath: ns.yaml
+            {{- if $.Values.common.additionalVolumeMounts }}
+            {{- $.Values.common.additionalVolumeMounts | toYaml | nindent 12 }}
+            {{- end }}
+          ports:
+            - name: probe
+              containerPort: 8081
+          startupProbe:
+            httpGet:
+              port: probe
+              path: /healthz
+            periodSeconds: 1
+            failureThreshold: 300
+          readinessProbe:
+            httpGet:
+              port: probe
+              path: /healthz
+            periodSeconds: 1
+            failureThreshold: 60
+          livenessProbe:
+            httpGet:
+              port: probe
+              path: /healthz
+          {{- if .resources }}
+          resources:
+            {{- .resources | toYaml | nindent 12 }}
+          {{- end }}
+
+        - name: caddy
+          image: {{ .caddy.image }}
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 80
+          volumeMounts:
+            - mountPath: /artifacts
+              name: artifacts
+          {{- if .caddy.resources }}
+          resources:
+            {{- .caddy.resources | toYaml | nindent 12 }}
+          {{- end }}
+
+{{- end }}

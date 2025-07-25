@@ -1,0 +1,52 @@
+{{- with $.Values.ingressRoute }}
+{{- if .enabled }}
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ $.Release.Name }}
+  namespace: {{ $.Release.Namespace }}
+
+spec:
+  entryPoints:
+    {{- .entrypoints | toYaml | nindent 4 }}
+
+  {{- if .tls.secretName }}
+  tls:
+    secretName: {{ .tls.secretName }}
+  {{- end }}
+
+  routes:
+    - kind: Rule
+      match: Host(`{{ .host }}`)
+      {{- if .middlewares }}
+      middlewares:
+        {{- .middlewares | toYaml | nindent 8 }}
+      {{- end }}
+      services:
+        - kind: Service
+          name: {{ $.Release.Name }}-dashboard
+          port: http
+          scheme: http
+
+    - kind: Rule
+      match: Host(`{{ .host }}`) && PathPrefix(`/api/webhook`)
+      services:
+        - kind: Service
+          name: {{ $.Release.Name }}-controller
+          port: webhook
+          scheme: http
+
+    - kind: Rule
+      match: Host(`{{ .host }}`) && PathPrefix(`/neoshowcase.protobuf.APIService`)
+      {{- if .middlewares }}
+      middlewares:
+        {{- .middlewares | toYaml | nindent 8 }}
+      {{- end }}
+      services:
+        - kind: Service
+          name: {{ $.Release.Name }}-gateway
+          port: http
+          scheme: h2c
+
+{{- end }}
+{{- end }}

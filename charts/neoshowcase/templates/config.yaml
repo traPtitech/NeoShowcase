@@ -1,0 +1,128 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ns-config
+  namespace: {{ $.Release.Namespace }}
+
+data:
+  ns.yaml: |
+    {{- with $.Values.common }}
+    privateKeyFile: /keys/{{ $.Values.secret.keys.keyName }}
+    additionalLinks:
+      {{- .additionalLinks | toYaml | nindent 6 }}
+
+    db:
+      {{- .db | toYaml | nindent 6 }}
+
+    storage:
+      {{- .storage | toYaml | nindent 6 }}
+
+    image:
+      {{- .image | toYaml | nindent 6 }}
+
+    {{- end }}
+
+    components:
+      builder:
+        buildkit:
+          address: unix:///run/buildkit/buildkitd.sock
+        buildpack:
+          helper:
+            address: http://localhost:1235
+            listenPort: 1235
+          remoteDir: /workspace
+          platformAPI: "0.11"
+        controller:
+          url: http://{{ $.Release.Name }}-controller.{{ $.Release.Namespace }}.svc.cluster.local:10000
+
+      controller:
+        port: 10000
+        # token: <env secret>
+        mode: k8s
+        k8s:
+          domains:
+            {{- $.Values.domains | toYaml | nindent 12 }}
+          middleware:
+            {{- with $.Values.sablier }}
+            sablier:
+              enable: {{ .enabled }}
+              url: http://{{ $.Release.Name }}-sablier.{{ $.Release.Namespace }}.svc.cluster.local
+              sessionDuration: {{ .sessionDuration }}
+              dynamic:
+                theme: {{ .dynamic.theme }}
+              blocking:
+                timeout: {{ .blocking.timeout }}
+            {{- end }}
+          ports:
+            {{- $.Values.ports | toYaml | nindent 12 }}
+          ss:
+            namespace: {{ $.Release.Namespace }}
+            kind: Service
+            name: {{ $.Release.Name }}-ssgen
+            port: 80
+            scheme: http
+          routing:
+            {{- $.Values.app.routing | toYaml | nindent 12 }}
+          namespace: {{ $.Values.app.namespace }}
+          labels:
+            {{- $.Values.app.labels | toYaml | nindent 12 }}
+          tls:
+            {{- $.Values.tls | toYaml | nindent 12 }}
+          imagePullSecret: {{ $.Values.app.imagePullSecret }}
+          scheduling:
+            nodeSelector:
+              {{- $.Values.app.nodeSelector | toYaml | nindent 14 }}
+            tolerations:
+              {{- $.Values.app.tolerations | toYaml | nindent 14 }}
+            spreadConstraints:
+              {{- $.Values.app.topologySpreadConstraints | toYaml | nindent 14 }}
+          resources:
+            {{- $.Values.app.resources | toYaml | nindent 12 }}
+          {{- with $.Values.app.service }}
+          service:
+            {{- if .ipFamilies }}
+            ipFamilies:
+              {{- .ipFamilies | toYaml | nindent 14 }}
+            {{- end }}
+            {{- if .ipFamilyPolicy }}
+            ipFamilyPolicy: {{ .ipFamilyPolicy }}
+            {{- end }}
+          {{- end }}
+        ssh:
+          host: {{ $.Values.controller.ssh.host }}
+          port: {{ $.Values.controller.ssh.port }}
+        webhook:
+          basePath: /api/webhook
+          port: 8080
+
+      gateway:
+        port: 8080
+        avatarBaseURL: {{ $.Values.auth.avatarBaseURL }}
+        authHeader: {{ $.Values.auth.header }}
+        controller:
+          url: http://{{ $.Release.Name }}-controller.{{ $.Release.Namespace }}.svc.cluster.local:10000
+        mariadb:
+          {{- $.Values.userMariaDB | toYaml | nindent 10 }}
+        mongodb:
+          {{- $.Values.userMongoDB | toYaml | nindent 10 }}
+        log:
+          {{- $.Values.observability.log | toYaml | nindent 10 }}
+        metrics:
+          {{- $.Values.observability.metrics | toYaml | nindent 10 }}
+
+      giteaIntegration:
+        url: {{ $.Values.giteaIntegration.url }}
+        # token: <env secret>
+        controller:
+          url: http://{{ $.Release.Name }}-controller.{{ $.Release.Namespace }}.svc.cluster.local:10000
+
+      ssgen:
+        artifactsRoot: /artifacts
+        healthPort: 8081
+        server:
+          type: caddy
+          caddy:
+            adminAPI: http://localhost:2019
+            docsRoot: /artifacts
+        controller:
+          url: http://{{ $.Release.Name }}-controller.{{ $.Release.Namespace }}.svc.cluster.local:10000
