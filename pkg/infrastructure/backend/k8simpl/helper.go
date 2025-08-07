@@ -86,12 +86,18 @@ func syncResources[T apiResource](ctx context.Context, cluster *discovery.Cluste
 		_, err = s.Patch(ctx, rc.GetName(), types.ApplyPatchType, b, metav1.PatchOptions{Force: lo.ToPtr(true), FieldManager: fieldManager})
 		// For StatefulSets, delete the resource before applying again - StatefulSet has many immutable fields
 		// Example: StatefulSet.apps "nsapp-add177a080c4c78936e192" is invalid: spec: Forbidden: updates to statefulset spec for fields other than 'replicas', 'ordinals', 'template', 'updateStrategy', 'revisionHistoryLimit', 'persistentVolumeClaimRetentionPolicy' and 'minReadySeconds' are forbidden
-		if err != nil && replace {
-			err = replaceResource(ctx, rc, b, s)
-		}
 		if err != nil {
-			log.WithError(err).Errorf("failed to patch %s/%s", rcName, rc.GetName())
-			continue // Skip if error occurred
+			if replace {
+				// replace may take a while, so run it in a goroutine
+				go func() {
+					if err := replaceResource(ctx, rc, b, s); err != nil {
+						log.WithError(err).Errorf("failed to replace %s/%s", rcName, rc.GetName())
+					}
+				}()
+			} else {
+				log.WithError(err).Errorf("failed to patch %s/%s", rcName, rc.GetName())
+				continue // Skip if error occurred
+			}
 		}
 
 		patched++
