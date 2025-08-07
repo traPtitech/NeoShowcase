@@ -3,11 +3,13 @@ package k8simpl
 import (
 	"context"
 	"encoding/json"
+	"sync/atomic"
 	"time"
 
 	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
+	"github.com/sourcegraph/conc/pool"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -55,6 +57,8 @@ type syncer[T apiResource] interface {
 
 func syncResources[T apiResource](ctx context.Context, cluster *discovery.Cluster, rcName string, existing []T, next []T, s syncer[T], replace bool) error {
 	var patched, pruned int
+	var replaced atomic.Int64
+	replacePool := pool.New().WithMaxGoroutines(10)
 	oldHashes := lo.SliceToMap(existing, func(rc T) (string, string) {
 		return rc.GetName(), rc.GetLabels()[resourceHashAnnotation]
 	})
@@ -89,19 +93,21 @@ func syncResources[T apiResource](ctx context.Context, cluster *discovery.Cluste
 		if err != nil {
 			if replace {
 				// replace may take a while, so run it in a goroutine
-				go func() {
+				replacePool.Go(func() {
 					if err := replaceResource(ctx, rc, b, s); err != nil {
 						log.WithError(err).Errorf("failed to replace %s/%s", rcName, rc.GetName())
 					}
-				}()
+					replaced.Add(1)
+				})
 			} else {
 				log.WithError(err).Errorf("failed to patch %s/%s", rcName, rc.GetName())
-				continue // Skip if error occurred
 			}
+		} else {
+			patched++
 		}
-
-		patched++
 	}
+
+	replacePool.Wait()
 
 	// Prune old resources
 	for _, rc := range diff(existing, next) {
@@ -119,8 +125,8 @@ func syncResources[T apiResource](ctx context.Context, cluster *discovery.Cluste
 		pruned++
 	}
 
-	if patched > 0 || pruned > 0 {
-		log.Debugf("patched %v %v, pruned %v %v", patched, rcName, pruned, rcName)
+	if patched > 0 || replaced.Load() > 0 || pruned > 0 {
+		log.Debugf("patched %v %v, replaced %v %v, pruned %v %v", patched, rcName, replaced.Load(), rcName, pruned, rcName)
 	}
 	return nil
 }
