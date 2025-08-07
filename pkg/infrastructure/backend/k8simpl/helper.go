@@ -3,11 +3,17 @@ package k8simpl
 import (
 	"context"
 	"encoding/json"
+	"sync/atomic"
+	"time"
 
+	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
+	"github.com/sourcegraph/conc/pool"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/wait"
 
 	"github.com/traPtitech/neoshowcase/pkg/util/discovery"
 	"github.com/traPtitech/neoshowcase/pkg/util/hash"
@@ -44,12 +50,15 @@ func hashResource(rc apiResource) (string, error) {
 }
 
 type syncer[T apiResource] interface {
+	Get(ctx context.Context, name string, opts metav1.GetOptions) (T, error)
 	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subResources ...string) (result T, err error)
 	Delete(ctx context.Context, name string, opts metav1.DeleteOptions) error
 }
 
 func syncResources[T apiResource](ctx context.Context, cluster *discovery.Cluster, rcName string, existing []T, next []T, s syncer[T], replace bool) error {
 	var patched, pruned int
+	var replaced atomic.Int64
+	replacePool := pool.New().WithMaxGoroutines(10)
 	oldHashes := lo.SliceToMap(existing, func(rc T) (string, string) {
 		return rc.GetName(), rc.GetLabels()[resourceHashAnnotation]
 	})
@@ -81,18 +90,24 @@ func syncResources[T apiResource](ctx context.Context, cluster *discovery.Cluste
 		_, err = s.Patch(ctx, rc.GetName(), types.ApplyPatchType, b, metav1.PatchOptions{Force: lo.ToPtr(true), FieldManager: fieldManager})
 		// For StatefulSets, delete the resource before applying again - StatefulSet has many immutable fields
 		// Example: StatefulSet.apps "nsapp-add177a080c4c78936e192" is invalid: spec: Forbidden: updates to statefulset spec for fields other than 'replicas', 'ordinals', 'template', 'updateStrategy', 'revisionHistoryLimit', 'persistentVolumeClaimRetentionPolicy' and 'minReadySeconds' are forbidden
-		if replace && err != nil {
-			_ = s.Delete(ctx, rc.GetName(), metav1.DeleteOptions{PropagationPolicy: lo.ToPtr(metav1.DeletePropagationForeground)})
-			// Try again
-			_, err = s.Patch(ctx, rc.GetName(), types.ApplyPatchType, b, metav1.PatchOptions{Force: lo.ToPtr(true), FieldManager: fieldManager})
-		}
 		if err != nil {
-			log.WithError(err).Errorf("failed to patch %s/%s", rcName, rc.GetName())
-			continue // Skip if error occurred
+			if replace {
+				// replace may take a while, so run it in a goroutine
+				replacePool.Go(func() {
+					if err := replaceResource(ctx, rc, b, s); err != nil {
+						log.WithError(err).Errorf("failed to replace %s/%s", rcName, rc.GetName())
+					}
+					replaced.Add(1)
+				})
+			} else {
+				log.WithError(err).Errorf("failed to patch %s/%s", rcName, rc.GetName())
+			}
+		} else {
+			patched++
 		}
-
-		patched++
 	}
+
+	replacePool.Wait()
 
 	// Prune old resources
 	for _, rc := range diff(existing, next) {
@@ -110,8 +125,37 @@ func syncResources[T apiResource](ctx context.Context, cluster *discovery.Cluste
 		pruned++
 	}
 
-	if patched > 0 || pruned > 0 {
-		log.Debugf("patched %v %v, pruned %v %v", patched, rcName, pruned, rcName)
+	if patched > 0 || replaced.Load() > 0 || pruned > 0 {
+		log.Debugf("patched %v %v, replaced %v %v, pruned %v %v", patched, rcName, replaced.Load(), rcName, pruned, rcName)
 	}
+	return nil
+}
+
+func replaceResource[T apiResource](ctx context.Context, rc T, data []byte, s syncer[T]) error {
+	err := s.Delete(ctx, rc.GetName(), metav1.DeleteOptions{PropagationPolicy: lo.ToPtr(metav1.DeletePropagationForeground)})
+	if err != nil {
+		return errors.Wrapf(err, "delete %s/%s before re-apply", rc.GetName(), rc.GetLabels()[resourceHashAnnotation])
+	}
+
+	// Wait for the resource to be deleted
+	interval := 100 * time.Millisecond
+	timeout := 30 * time.Second
+	err = wait.PollUntilContextTimeout(ctx, interval, timeout, true, func(ctx context.Context) (bool, error) {
+		_, err := s.Get(ctx, rc.GetName(), metav1.GetOptions{})
+		if apierrors.IsNotFound(err) {
+			return true, nil // Resource is deleted
+		}
+		return false, err
+	})
+	if err != nil {
+		return errors.Wrapf(err, "waiting for %s/%s to be deleted", rc.GetName(), rc.GetLabels()[resourceHashAnnotation])
+	}
+
+	// Try again
+	_, err = s.Patch(ctx, rc.GetName(), types.ApplyPatchType, data, metav1.PatchOptions{Force: lo.ToPtr(true), FieldManager: fieldManager})
+	if err != nil {
+		return errors.Wrapf(err, "re-apply %s/%s after deletion", rc.GetName(), rc.GetLabels()[resourceHashAnnotation])
+	}
+
 	return nil
 }
