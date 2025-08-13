@@ -46,7 +46,7 @@ jobs:
             type=ref,event=pr
             type=sha
             ${{ inputs.ref_name != '' && format('type=raw,value={0}', inputs.ref_name) || '' }}
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=latest,enable=${{ github.event_name == 'push' && github.ref_type == 'tag' || inputs.ref_name != '' }}
           sep-tags: ","
 
       - name: Build
