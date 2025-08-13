@@ -139,13 +139,14 @@ debug-controller: ## Connect to controller service
 
 # ---- All in one commands ----
 
-.PHONY: build-dashboard
-build-dashboard:
-	@docker build -t ghcr.io/traptitech/ns-dashboard:main dashboard
-
 .PHONY: build
 build:
-	@docker compose build --build-arg APP_VERSION=$(APP_VERSION) --build-arg APP_REVISION=$(APP_REVISION)
+	@case $$(uname -m) in \
+	  x86_64|amd64) arch=amd64;; \
+	  aarch64|arm64) arch=arm64;; \
+	  *) echo "unknown arch: $$(uname -m)" && exit 1;; \
+	esac; \
+	APP_VERSION=$(APP_VERSION) APP_REVISION=$(APP_REVISION) docker bake --set=*.platform=linux/"$$arch" --load
 
 .PHONY: up
 up: ensure-network ensure-mounts build ## Start development environment

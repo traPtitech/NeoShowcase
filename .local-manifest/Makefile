@@ -26,14 +26,14 @@ ensure-context:
 
 .PHONY: import
 import: ensure-context ## Import ns images into the cluster
-	sh -c 'cd ../ && make build-dashboard && make build'
+	sh -c 'cd ../ && make build'
 	k3d image import --cluster $(CLUSTER_NAME) ghcr.io/traptitech/ns-dashboard:main
+	k3d image import --cluster $(CLUSTER_NAME) ghcr.io/traptitech/ns-sablier:main
 	k3d image import --cluster $(CLUSTER_NAME) ghcr.io/traptitech/ns-auth-dev:main
 	k3d image import --cluster $(CLUSTER_NAME) ghcr.io/traptitech/ns-builder:main
 	k3d image import --cluster $(CLUSTER_NAME) ghcr.io/traptitech/ns-controller:main
 	k3d image import --cluster $(CLUSTER_NAME) ghcr.io/traptitech/ns-gateway:main
-	# Uncomment if testing gitea integration
-	# k3d image import --cluster $(CLUSTER_NAME) ghcr.io/traptitech/ns-gitea-integration:main
+	k3d image import --cluster $(CLUSTER_NAME) ghcr.io/traptitech/ns-gitea-integration:main
 	k3d image import --cluster $(CLUSTER_NAME) ghcr.io/traptitech/ns-migrate:main
 	k3d image import --cluster $(CLUSTER_NAME) ghcr.io/traptitech/ns-ssgen:main
 
