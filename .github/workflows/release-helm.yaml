@@ -25,7 +25,6 @@ on:
         description: Helm chart name
         type: string
         default: neoshowcase
-        required: true
       strategy:
         description: Semver release strategy
         type: string
