@@ -1,30 +1,61 @@
 name: Release helm chart
+run-name: Release helm chart (${{ inputs.strategy }})
 
 on:
-  push:
-    tags:
-      - helm/v*.*.*
-    branches-ignore:
-      - '**'
+  workflow_dispatch:
+    inputs:
+      chart:
+        description: Helm chart name
+        type: choice
+        default: neoshowcase
+        options:
+          - neoshowcase
+      strategy:
+        description: Semver release strategy
+        type: choice
+        default: patch
+        options:
+          - patch
+          - minor
+          - major
 
   workflow_call:
     inputs:
-      ref_name:
-        description: Git ref to checkout (tag or branch)
+      chart:
+        description: Helm chart name
+        type: string
+        default: neoshowcase
+        required: true
+      strategy:
+        description: Semver release strategy
         type: string
         required: true
 
 env:
   REGISTRY_USER: traptitech
-  CHART: neoshowcase
 
 jobs:
-  release-helm:
+  release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-        with:
-          ref: ${{ inputs.ref_name || github.ref_name }}
+
+      - name: Git config
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Update helm Chart.yaml
+        run: |
+          cd charts
+          ./bump.sh ${{ inputs.chart }} ${{ github.event.inputs.strategy }}
+          cd ..
+
+      - name: Commit and push helm changes
+        run: |
+          git add charts/${{ inputs.chart }}/Chart.yaml
+          git commit -m "Update charts/${{ inputs.chart }} to ${{ steps.calc-tag.outputs.new-raw }}"
+          git push
 
       - uses: docker/login-action@v3
         with:
@@ -35,21 +66,4 @@ jobs:
       - name: Publish chart
         run: |
           cd charts
-          ./publish.sh ${{ env.CHART }} oci://ghcr.io/${{ env.REGISTRY_USER }}/charts
-
-  dispatch-renovate:
-    name: Dispatch Renovate
-    runs-on: ubuntu-latest
-    needs:
-      - release-helm
-    steps:
-      - uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.DISPATCH_PAT }}
-          script: |
-            await github.rest.actions.createWorkflowDispatch({
-              owner: 'traPtitech',
-              repo: 'manifest',
-              workflow_id: 'renovate.yaml',
-              ref: 'main'
-            })
+          ./publish.sh ${{ inputs.chart }} oci://ghcr.io/${{ env.REGISTRY_USER }}/charts

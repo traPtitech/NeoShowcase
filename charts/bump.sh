@@ -11,7 +11,7 @@ STRATEGY=$2
 next_version() {
   local VERSION=$1
   # Get number parts
-  local MAJOR="${VERSION%%.*}"; local VERSION="${VERSION#*.}"; local MAJOR="${MAJOR#helm/v}"
+  local MAJOR="${VERSION%%.*}"; local VERSION="${VERSION#*.}"
   local MINOR="${VERSION%%.*}"; local VERSION="${VERSION#*.}"
   local PATCH="${VERSION%%.*}"; local VERSION="${VERSION#*.}"
 
