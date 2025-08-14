@@ -1,4 +1,5 @@
 name: Create new tag
+run-name: Create new tag (${{ inputs.strategy }})
 
 on:
   workflow_dispatch:
