@@ -42,7 +42,7 @@ jobs:
           fi
 
       - uses: actions/checkout@v5
-      - run: echo "APP_VERSION=$(echo ${GITHUB_REF:11})" >> $GITHUB_ENV
+      - run: echo "APP_VERSION=${{ steps.calc-tag.outputs.tag || github.ref_name }}" >> $GITHUB_ENV
       - run: echo "APP_REVISION=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
       - uses: docker/setup-qemu-action@v3
