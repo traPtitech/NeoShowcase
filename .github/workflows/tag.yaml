@@ -77,6 +77,7 @@ jobs:
     uses: ./.github/workflows/release.yaml
     with:
       ref_name: ${{ needs.tag.outputs.new-tag }}
+    secrets: inherit
 
   # Bump and release helm chart on app release
   helm-tag:
@@ -84,3 +85,4 @@ jobs:
     uses: ./.github/workflows/release-helm.yaml
     with:
       strategy: ${{ inputs.strategy }}
+    secrets: inherit
