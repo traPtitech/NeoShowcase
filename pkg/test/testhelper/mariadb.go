@@ -55,16 +55,12 @@ func init() {
 	}
 
 	ensureHealthy(container.host, container.port)
-
 }
 
 func OpenDB(t *testing.T) *sql.DB {
 	// create database
 	dbName := randomDBName()
-	_, _, err := container.Exec(t.Context(), []string{"mariadb", "-u", "root", "-ppassword", "-e", "CREATE DATABASE " + dbName})
-	if err != nil {
-		t.Fatal(err)
-	}
+	createDatabase(t, dbName)
 
 	// migration
 	migrationScript := filepath.Join(getProjectRoot(), "migrations", "entrypoint.sh")
@@ -129,6 +125,25 @@ func getProjectRoot() string {
 	}
 
 	panic("go.mod not found in any parent directory")
+}
+
+func createDatabase(t *testing.T, dbName string) {
+	cfg := mysql.Config{
+		User:                 "root",
+		Passwd:               "password",
+		Addr:                 net.JoinHostPort(container.host, container.port),
+		Net:                  "tcp",
+		AllowNativePasswords: true,
+	}
+	db, err := sql.Open("mysql", cfg.FormatDSN())
+	if err != nil {
+		t.Fatalf("failed to open admin database connection: %v", err)
+	}
+	defer db.Close()
+	_, err = db.ExecContext(t.Context(), "CREATE DATABASE "+dbName)
+	if err != nil {
+		t.Fatalf("failed to create database: %v", err)
+	}
 }
 
 func ensureHealthy(host string, port string) {
