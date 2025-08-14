@@ -53,6 +53,12 @@ jobs:
           ./bump.sh ${{ inputs.chart }} ${{ github.event.inputs.strategy }}
           cd ..
 
+      - id: calc-tag
+        name: Calculate tag
+        run: |
+          VERSION=$(grep '^version:' ./charts/${{ inputs.chart }}/Chart.yaml | cut -d ' ' -f 2 | tr -d '"')
+          echo "new-raw=${VERSION}" >> $GITHUB_OUTPUT
+
       - name: Commit and push helm changes
         run: |
           git add charts/${{ inputs.chart }}/Chart.yaml
