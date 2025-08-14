@@ -97,19 +97,3 @@ jobs:
           # tag_name will default in the current branch name for workflow_dispatch via workflow_call, so we're passing tag value via inputs manually.
           tag_name: ${{ inputs.ref_name || github.ref_name }}
           generate_release_notes: true
-
-  dispatch-renovate:
-    name: Dispatch Renovate
-    runs-on: ubuntu-latest
-    needs: [ image, release ]
-    steps:
-      - uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.DISPATCH_PAT }}
-          script: |
-            await github.rest.actions.createWorkflowDispatch({
-              owner: 'traPtitech',
-              repo: 'manifest',
-              workflow_id: 'renovate.yaml',
-              ref: 'main'
-            })
