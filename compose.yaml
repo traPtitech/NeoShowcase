@@ -3,7 +3,6 @@ services:
     build:
       context: .
       target: ns-gateway
-    image: ghcr.io/traptitech/ns-gateway:main
     command: --debug --loglevel=trace --config=/config.yaml
     restart: always
     volumes:
@@ -30,7 +29,6 @@ services:
     build:
       context: ./dashboard
       target: dev
-    image: ghcr.io/traptitech/ns-dashboard:main-dev
     restart: always
     volumes:
       - ./dashboard:/work
@@ -49,7 +47,6 @@ services:
     build:
       context: .
       target: ns-controller
-    image: ghcr.io/traptitech/ns-controller:main
     command: --debug --loglevel=trace --config=/config.yaml
     restart: always
     volumes:
@@ -84,7 +81,6 @@ services:
   #    build:
   #      context: .
   #      target: ns-gitea-integration
-  #    image: ghcr.io/traptitech/ns-gitea-integration:main
   #    command: --config=/config.yaml
   #    restart: always
   #    volumes:
@@ -116,7 +112,6 @@ services:
     build:
       context: .
       target: ns-auth-dev
-    image: ghcr.io/traptitech/ns-auth-dev:main
     restart: always
     environment:
       HEADER: X-Showcase-User
@@ -128,7 +123,6 @@ services:
     build:
       context: .
       target: ns-builder
-    image: ghcr.io/traptitech/ns-builder:main
     command: --debug --loglevel=trace --config=/config.yaml
     restart: always
     volumes:
@@ -151,7 +145,6 @@ services:
     build:
       context: .
       target: ns
-    image: ghcr.io/traptitech/ns:main
     restart: 'no'
     entrypoint: cp /app/ns /ns-bin
     volumes:
@@ -205,7 +198,6 @@ services:
     build:
       context: .
       target: ns-ssgen
-    image: ghcr.io/traptitech/ns-ssgen:main
     command: --debug --loglevel=trace --config=/config.yaml
     restart: always
     volumes:
@@ -224,7 +216,6 @@ services:
     build:
       context: .
       target: ns-migrate
-    image: ghcr.io/traptitech/ns-migrate:main
     restart: 'no'
     environment:
       DB_HOST: 'mysql'

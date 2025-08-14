@@ -1,17 +1,39 @@
-name: release
+name: Release
 
 on:
   push:
+    branches:
+      - main
     tags:
       - v*.*.*
-    branches-ignore:
-      - '**'
+
+  workflow_call:
+    inputs:
+      ref_name:
+        description: Tag short ref name like v1.2.3
+        type: string
+        required: true
 
 jobs:
-  build-base-image:
-    name: Build Base Image
+  image:
+    name: Build images
     runs-on: ubuntu-latest
     steps:
+      # type=ref,event=tag or type=semver will not fire in workflow_dispatch via workflow_call, so we're passing tag value via inputs manually.
+      - id: calc-tag
+        name: Calculate docker tag
+        run: |
+          echo "event_name=${{ github.event_name }}"
+          echo "ref_type=${{ github.ref_type }}"
+          ref_name="${{ inputs.ref_name || github.ref_name }}"
+          echo "ref_name=${ref_name}"
+
+          if [ "${{ github.event_name == 'push' && github.ref_type == 'tag' || inputs.ref_name != '' }}" = "true" ]; then
+            tag=${ref_name#v}
+            echo "Event type is tag, calculating docker tag => $tag"
+            echo "tag=${tag}" >> $GITHUB_OUTPUT
+          fi
+
       - uses: actions/checkout@v4
       - run: echo "APP_VERSION=$(echo ${GITHUB_REF:11})" >> $GITHUB_ENV
       - run: echo "APP_REVISION=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
@@ -30,147 +52,49 @@ jobs:
           username: traptitech
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: docker/build-push-action@v6
+      - id: meta
+        uses: docker/metadata-action@v5
         with:
-          context: .
-          target: ns
-          platforms: linux/amd64,linux/arm64
-          push: true
-          build-args: |
-            APP_VERSION=${{ env.APP_VERSION }}
-            APP_REVISION=${{ env.APP_REVISION }}
           tags: |
-            ghcr.io/traptitech/ns:latest
-            ghcr.io/traptitech/ns:${{ env.APP_VERSION }}
-          cache-from: type=registry,ref=ghcr.io/traptitech/ns:buildcache
-          cache-to: type=registry,ref=ghcr.io/traptitech/ns:buildcache-release,mode=max
-
-  build-component-images:
-    name: Build Component Images
-    runs-on: ubuntu-latest
-    needs:
-      - build-base-image
-    strategy:
-      matrix:
-        component:
-          - ns-builder
-          - ns-controller
-          - ns-gateway
-          - ns-gitea-integration
-          - ns-migrate
-          - ns-ssgen
-    steps:
-      - uses: actions/checkout@v4
-      - run: echo "APP_VERSION=$(echo ${GITHUB_REF:11})" >> $GITHUB_ENV
-      - run: echo "APP_REVISION=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
-
-      - uses: docker/setup-qemu-action@v3
-      - uses: docker/setup-buildx-action@v3
-        id: buildx
-      - name: Builder instance name
-        run: echo ${{ steps.buildx.outputs.name }}
-      - name: Available platforms
-        run: echo ${{ steps.buildx.outputs.platforms }}
-
-      - uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: traptitech
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - uses: docker/build-push-action@v6
-        with:
-          context: .
-          target: ${{ matrix.component }}
-          platforms: linux/amd64,linux/arm64
-          push: true
-          build-args: |
-            APP_VERSION=${{ env.APP_VERSION }}
-            APP_REVISION=${{ env.APP_REVISION }}
-          tags: |
-            ghcr.io/traptitech/${{ matrix.component }}:latest
-            ghcr.io/traptitech/${{ matrix.component }}:${{ env.APP_VERSION }}
-          cache-from: type=registry,ref=ghcr.io/traptitech/ns:buildcache-release
-
-  build-dashboard-image:
-    name: Build Dashboard Image
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set APP_VERSION env
-        run: echo "APP_VERSION=$(echo ${GITHUB_REF:11})" >> $GITHUB_ENV
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Builder instance name
-        run: echo ${{ steps.buildx.outputs.name }}
-      - name: Available platforms
-        run: echo ${{ steps.buildx.outputs.platforms }}
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: traptitech
-          password: ${{ secrets.GITHUB_TOKEN }}
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha
+            type=raw,value=${{ steps.calc-tag.outputs.tag }},enable=${{ steps.calc-tag.outputs.tag != '' }}
+            type=raw,value=latest,enable=${{ steps.calc-tag.outputs.tag != '' }}
+          sep-tags: ","
 
       - name: Build
-        uses: docker/build-push-action@v6
+        uses: docker/bake-action@v6
+        env:
+          APP_VERSION: ${{ env.APP_VERSION }}
+          APP_REVISION: ${{ env.APP_REVISION }}
+          TAGS: ${{ steps.meta.outputs.tags }}
         with:
-          context: dashboard
-          platforms: linux/amd64,linux/arm64
           push: true
-          tags: |
-            ghcr.io/traptitech/ns-dashboard:latest
-            ghcr.io/traptitech/ns-dashboard:${{ env.APP_VERSION }}
-          cache-from: type=registry,ref=ghcr.io/traptitech/ns-dashboard:buildcache
+          files: |
+            ./docker-bake.hcl
+            cwd://${{ steps.meta.outputs.bake-file-labels }}
+            cwd://${{ steps.meta.outputs.bake-file-annotations }}
+          set: |
+            *.cache-from=type=gha
+            *.cache-to=type=gha,mode=max
 
-  build-sablier-image:
-    name: Build Sablier Image
+  release:
+    if: ${{ github.event_name == 'push' && github.ref_type == 'tag' || inputs.ref_name != '' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set APP_VERSION env
-        run: echo "APP_VERSION=$(echo ${GITHUB_REF:11})" >> $GITHUB_ENV
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Builder instance name
-        run: echo ${{ steps.buildx.outputs.name }}
-      - name: Available platforms
-        run: echo ${{ steps.buildx.outputs.platforms }}
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+      - name: Release
+        uses: softprops/action-gh-release@v2
         with:
-          registry: ghcr.io
-          username: traptitech
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build
-        uses: docker/build-push-action@v6
-        with:
-          context: sablier
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: |
-            ghcr.io/traptitech/ns-sablier:latest
-            ghcr.io/traptitech/ns-sablier:${{ env.APP_VERSION }}
-          cache-from: type=registry,ref=ghcr.io/traptitech/ns-sablier:buildcache
+          # tag_name will default in the current branch name for workflow_dispatch via workflow_call, so we're passing tag value via inputs manually.
+          tag_name: ${{ inputs.ref_name || github.ref_name }}
+          generate_release_notes: true
 
   dispatch-renovate:
     name: Dispatch Renovate
     runs-on: ubuntu-latest
-    needs:
-      - build-component-images
-      - build-dashboard-image
-      - build-sablier-image
+    needs: [ image, release ]
     steps:
       - uses: actions/github-script@v7
         with:
@@ -182,12 +106,3 @@ jobs:
               workflow_id: 'renovate.yaml',
               ref: 'main'
             })
-
-  release:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Release
-        uses: softprops/action-gh-release@v2
-        with:
-          generate_release_notes: true

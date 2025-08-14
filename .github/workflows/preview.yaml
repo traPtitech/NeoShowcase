@@ -1,4 +1,4 @@
-name: preview
+name: Preview
 
 on:
   # pull_request_target を使うにあたって https://securitylab.github.com/research/github-actions-preventing-pwn-requests/ の一読を推奨
@@ -8,8 +8,8 @@ permissions:
   packages: write
 
 jobs:
-  build-dashboard-image:
-    name: Build Dashboard Image
+  image:
+    name: Build preview images
     runs-on: ubuntu-latest
     steps:
       - name: Set PR_NUMBER env
@@ -20,67 +20,44 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
         id: buildx
-        uses: docker/setup-buildx-action@v3
       - name: Builder instance name
         run: echo ${{ steps.buildx.outputs.name }}
       - name: Available platforms
         run: echo ${{ steps.buildx.outputs.platforms }}
 
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+      - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: traptitech
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build
-        uses: docker/build-push-action@v6
+      - id: meta
+        uses: docker/metadata-action@v5
         with:
-          context: dashboard
-          platforms: linux/amd64,linux/arm64
-          push: true
-          # NOTE: once https://github.com/argoproj/argo-cd/pull/13199 is released we can use short sha
-          tags: ghcr.io/traptitech/ns-dashboard:preview-${{ env.PR_NUMBER }}-${{ github.event.pull_request.head.sha }}
-          cache-from: type=registry,ref=ghcr.io/traptitech/ns-dashboard:buildcache
-
-  build-sablier-image:
-    name: Build Sablier Image
-    runs-on: ubuntu-latest
-    steps:
-      - name: Set PR_NUMBER env
-        run: echo "PR_NUMBER=${{ github.event.number }}" >> $GITHUB_ENV
-
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          persist-credentials: false
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Builder instance name
-        run: echo ${{ steps.buildx.outputs.name }}
-      - name: Available platforms
-        run: echo ${{ steps.buildx.outputs.platforms }}
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: traptitech
-          password: ${{ secrets.GITHUB_TOKEN }}
+          # TODO: Remove longer tag name and use type=sha in ArgoCD ApplicationSet Generator
+          tags: |
+            type=sha
+            type=raw,value=preview-${{ env.PR_NUMBER }}-${{ github.event.pull_request.head.sha }}
+          sep-tags: ","
 
       - name: Build
-        uses: docker/build-push-action@v6
+        uses: docker/bake-action@v6
+        env:
+          APP_VERSION: ${{ env.APP_VERSION }}
+          APP_REVISION: ${{ env.APP_REVISION }}
+          TAGS: ${{ steps.meta.outputs.tags }}
         with:
-          context: sablier
-          platforms: linux/amd64,linux/arm64
           push: true
-          tags: ghcr.io/traptitech/ns-sablier:preview-${{ env.PR_NUMBER }}-${{ github.event.pull_request.head.sha }}
-          cache-from: type=registry,ref=ghcr.io/traptitech/ns-sablier:buildcache
+          targets: |
+            ns-dashboard
+            ns-sablier
+          files: |
+            ./docker-bake.hcl
+            cwd://${{ steps.meta.outputs.bake-file-labels }}
+            cwd://${{ steps.meta.outputs.bake-file-annotations }}
+          set: |
+            *.cache-from=type=gha
+            *.cache-to=type=gha,mode=max
