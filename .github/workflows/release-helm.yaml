@@ -8,6 +8,11 @@ on:
       - '**'
 
   workflow_call:
+    inputs:
+      ref_name:
+        description: Git ref to checkout (tag or branch)
+        type: string
+        required: true
 
 env:
   REGISTRY_USER: traptitech
@@ -18,6 +23,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref_name || github.ref_name }}
 
       - uses: docker/login-action@v3
         with:

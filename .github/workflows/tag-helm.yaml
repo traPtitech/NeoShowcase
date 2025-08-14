@@ -75,3 +75,5 @@ jobs:
   release:
     needs: [ tag ]
     uses: ./.github/workflows/release-helm.yaml
+    with:
+      ref_name: ${{ needs.tag.outputs.new-tag }}
