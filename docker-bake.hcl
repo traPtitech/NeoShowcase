@@ -1,5 +1,6 @@
 group "default" {
   targets = [
+    "ns-dashboard",
     "ns-sablier",
     "ns-migrate",
     "ns",
