@@ -1,4 +1,4 @@
-name: Create new tag
+name: Create new tag (helm)
 
 on:
   workflow_dispatch:
@@ -28,11 +28,11 @@ jobs:
         run: |
           # Modified code from https://stackoverflow.com/a/51728322
           # Get the highest tag number
-          VERSION=$(git describe --abbrev=0 --tags --match 'v*.*.*')
+          VERSION=$(git describe --abbrev=0 --tags --match 'helm/v*.*.*')
           ORIG_VERSION="$VERSION"
 
           # Get number parts
-          MAJOR="${VERSION%%.*}"; VERSION="${VERSION#*.}"; MAJOR="${MAJOR#v}"
+          MAJOR="${VERSION%%.*}"; VERSION="${VERSION#*.}"; MAJOR="${MAJOR#helm/v}"
           MINOR="${VERSION%%.*}"; VERSION="${VERSION#*.}"
           PATCH="${VERSION%%.*}"; VERSION="${VERSION#*.}"
 
@@ -51,7 +51,7 @@ jobs:
             echo "Unknown strategy: $STRATEGY"
             exit 1
           fi
-          NEW_TAG="v$MAJOR.$MINOR.$PATCH"
+          NEW_TAG="helm/v$MAJOR.$MINOR.$PATCH"
           echo "Calculating new tag... $ORIG_VERSION => $NEW_TAG"
 
           GIT_COMMIT=$(git rev-parse HEAD)
@@ -69,6 +69,4 @@ jobs:
   # So we need to explicitly call the release workflow here.
   release:
     needs: [ tag ]
-    uses: ./.github/workflows/release.yaml
-    with:
-      ref_name: ${{ needs.tag.outputs.new-tag }}
+    uses: ./.github/workflows/release-helm.yaml
