@@ -1,4 +1,4 @@
-name: Release Helm
+name: Release helm chart
 
 on:
   push:
@@ -9,28 +9,26 @@ on:
 
   workflow_call:
 
+env:
+  REGISTRY_USER: traptitech
+  CHART: neoshowcase
+
 jobs:
   release-helm:
-    name: Release Helm Chart
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: traptitech
+          username: ${{ env.REGISTRY_USER }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Package chart
-        run: |
-          cd charts
-          helm package neoshowcase
 
       - name: Publish chart
         run: |
           cd charts
-          helm push neoshowcase-*.tgz oci://ghcr.io/traptitech/charts
+          ./publish.sh ${{ env.CHART }} oci://ghcr.io/${{ env.REGISTRY_USER }}/charts
 
   dispatch-renovate:
     name: Dispatch Renovate

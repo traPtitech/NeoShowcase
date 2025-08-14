@@ -14,6 +14,13 @@ on:
         type: string
         required: true
 
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+env:
+  REGISTRY_USER: traptitech
+
 jobs:
   image:
     name: Build images
@@ -34,7 +41,7 @@ jobs:
             echo "tag=${tag}" >> $GITHUB_OUTPUT
           fi
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - run: echo "APP_VERSION=$(echo ${GITHUB_REF:11})" >> $GITHUB_ENV
       - run: echo "APP_REVISION=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
@@ -49,7 +56,7 @@ jobs:
       - uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: traptitech
+          username: ${{ env.REGISTRY_USER }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - id: meta
@@ -83,7 +90,7 @@ jobs:
     if: ${{ github.event_name == 'push' && github.ref_type == 'tag' || inputs.ref_name != '' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
