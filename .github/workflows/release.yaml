@@ -19,6 +19,21 @@ jobs:
     name: Build images
     runs-on: ubuntu-latest
     steps:
+      # type=ref,event=tag or type=semver will not fire in workflow_dispatch via workflow_call, so we're passing tag value via inputs manually.
+      - id: calc-tag
+        name: Calculate docker tag
+        run: |
+          echo "event_name=${{ github.event_name }}"
+          echo "ref_type=${{ github.ref_type }}"
+          ref_name="${{ inputs.ref_name || github.ref_name }}"
+          echo "ref_name=${ref_name}"
+
+          if [ "${{ github.event_name == 'push' && github.ref_type == 'tag' || inputs.ref_name != '' }}" = "true" ]; then
+            tag=${ref_name#v}
+            echo "Event type is tag, calculating docker tag => $tag"
+            echo "tag=${tag}" >> $GITHUB_OUTPUT
+          fi
+
       - uses: actions/checkout@v4
       - run: echo "APP_VERSION=$(echo ${GITHUB_REF:11})" >> $GITHUB_ENV
       - run: echo "APP_REVISION=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
@@ -42,11 +57,10 @@ jobs:
         with:
           tags: |
             type=ref,event=branch
-            type=ref,event=tag
             type=ref,event=pr
             type=sha
-            ${{ inputs.ref_name != '' && format('type=raw,value={0}', inputs.ref_name) || '' }}
-            type=raw,value=latest,enable=${{ github.event_name == 'push' && github.ref_type == 'tag' || inputs.ref_name != '' }}
+            type=raw,value=${{ steps.calc-tag.outputs.tag }},enable=${{ steps.calc-tag.outputs.tag != '' }}
+            type=raw,value=latest,enable=${{ steps.calc-tag.outputs.tag != '' }}
           sep-tags: ","
 
       - name: Build
@@ -73,6 +87,7 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
+          # tag_name will default in the current branch name for workflow_dispatch via workflow_call, so we're passing tag value via inputs manually.
           tag_name: ${{ inputs.ref_name || github.ref_name }}
           generate_release_notes: true
 

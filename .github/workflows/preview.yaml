@@ -37,6 +37,7 @@ jobs:
       - id: meta
         uses: docker/metadata-action@v5
         with:
+          # TODO: Remove longer tag name and use type=sha in ArgoCD ApplicationSet Generator
           tags: |
             type=sha
             type=raw,value=preview-${{ env.PR_NUMBER }}-${{ github.event.pull_request.head.sha }}
