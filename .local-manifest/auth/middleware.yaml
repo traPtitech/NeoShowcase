@@ -7,4 +7,4 @@ spec:
   forwardAuth:
     address: http://ns-auth.auth.svc.cluster.local/
     authResponseHeaders:
-      - X-Showcase-User
+      - X-Forwarded-User

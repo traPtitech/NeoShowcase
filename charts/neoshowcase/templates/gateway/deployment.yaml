@@ -1,0 +1,110 @@
+{{- with $.Values.gateway }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $.Release.Name }}-gateway
+  namespace: {{ $.Release.Namespace }}
+
+spec:
+  replicas: {{ .replicas }}
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      app: {{ $.Release.Name }}-gateway
+  template:
+    metadata:
+      labels:
+        app: {{ $.Release.Name }}-gateway
+      annotations:
+        checksum/config: {{ include "config-hash" $ | quote }}
+        checksum/known-hosts: {{ include "known-hosts-hash" $ | quote }}
+    spec:
+      enableServiceLinks: false
+      {{- if .nodeSelector }}
+      nodeSelector:
+        {{- .nodeSelector | toYaml | nindent 8 }}
+      {{- end }}
+      {{- if .tolerations }}
+      tolerations:
+        {{- .tolerations | toYaml | nindent 8 }}
+      {{- end }}
+      {{- if .topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- .topologySpreadConstraints | toYaml | nindent 8 }}
+      {{- end }}
+
+      volumes:
+        - name: config
+          configMap:
+            name: ns-config
+        - name: keys
+          secret:
+            secretName: {{ $.Values.secret.keys.existingName }}
+        - name: known-hosts
+          configMap:
+            name: known-hosts
+        {{- if $.Values.common.additionalVolumes }}
+        {{- $.Values.common.additionalVolumes | toYaml | nindent 8 }}
+        {{- end }}
+
+      containers:
+        - name: gateway
+          image: {{ include "image.gateway" $ }}
+          imagePullPolicy: Always
+          args:
+            - --loglevel={{ $.Values.common.logLevel }}
+            - --config=/opt/config/ns.yaml
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: NS_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.secret.ns.existingName }}
+                  key: db-password
+            {{- if eq $.Values.common.storage.type "s3" }}
+            - name: NS_STORAGE_S3_ACCESSKEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.secret.ns.existingName }}
+                  key: s3-access-key
+            - name: NS_STORAGE_S3_ACCESSSECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.secret.ns.existingName }}
+                  key: s3-access-secret
+            {{- end }}
+            - name: NS_IMAGE_REGISTRY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.secret.ns.existingName }}
+                  key: registry-password
+            - name: NS_COMPONENTS_GATEWAY_MARIADB_ADMINPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.secret.ns.existingName }}
+                  key: mariadb-password
+            - name: NS_COMPONENTS_GATEWAY_MONGODB_ADMINPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.secret.ns.existingName }}
+                  key: mongodb-password
+          volumeMounts:
+            - mountPath: /opt/config/ns.yaml
+              name: config
+              subPath: ns.yaml
+            - mountPath: /keys
+              name: keys
+            - mountPath: /root/.ssh/known_hosts
+              name: known-hosts
+              subPath: known_hosts
+            {{- if $.Values.common.additionalVolumeMounts }}
+            {{- $.Values.common.additionalVolumeMounts | toYaml | nindent 12 }}
+            {{- end }}
+          {{- if .resources }}
+          resources:
+            {{- .resources | toYaml | nindent 12 }}
+          {{- end }}
+
+{{- end }}

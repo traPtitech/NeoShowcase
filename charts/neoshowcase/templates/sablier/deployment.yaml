@@ -1,0 +1,57 @@
+{{- with $.Values.sablier }}
+{{- if .enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $.Release.Name }}-sablier
+  namespace: {{ $.Release.Namespace }}
+
+spec:
+  replicas: 1
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      app: {{ $.Release.Name }}-sablier
+  template:
+    metadata:
+      labels:
+        app: {{ $.Release.Name }}-sablier
+      annotations:
+        checksum/config: {{ include "sablier-config-hash" $ | quote }}
+    spec:
+      enableServiceLinks: false
+      serviceAccountName: {{ $.Release.Name }}-sablier
+      {{- if .nodeSelector }}
+      nodeSelector:
+        {{- .nodeSelector | toYaml | nindent 8 }}
+      {{- end }}
+      {{- if .tolerations }}
+      tolerations:
+        {{- .tolerations | toYaml | nindent 8 }}
+      {{- end }}
+      {{- if .topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- .topologySpreadConstraints | toYaml | nindent 8 }}
+      {{- end }}
+
+      volumes:
+        - name: config
+          configMap:
+            name: {{ $.Release.Name }}-sablier
+      containers:
+        - name: sablier
+          image: {{ include "image.sablier" $ }}
+          ports:
+            - name: http
+              containerPort: 10000
+          volumeMounts:
+            - name: config
+              subPath: sablier.yaml
+              mountPath: /etc/sablier/sablier.yaml
+          {{- if .resources }}
+          resources:
+            {{- .resources | toYaml | nindent 12 }}
+          {{- end }}
+
+{{- end }}
+{{- end }}

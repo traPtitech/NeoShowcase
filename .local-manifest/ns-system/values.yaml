@@ -1,0 +1,111 @@
+global:
+  appVersionOverride: main
+
+common:
+  logLevel: debug
+
+  additionalLinks:
+    - name: Wiki
+      url: https://wiki.trap.jp/services/NeoShowcase
+    - name: DB Admin
+      url: http://adminer.local.trapti.tech/
+
+  storage:
+    type: local
+    local:
+      dir: /data
+
+  image:
+    registry:
+      scheme: http
+      addr: registry.local
+      username: ''
+
+  additionalVolumes:
+    - name: project
+      hostPath:
+        path: /work
+  additionalVolumeMounts:
+    - name: project
+      subPath: .local-dev/local-storage
+      mountPath: /data
+
+domains:
+  - domain: '*.local.trapti.tech'
+    excludes: []
+    auth:
+      available: true
+      soft:
+        - name: nsapp-auth-soft
+          namespace: ns-apps
+        - name: nsapp-auth
+          namespace: ns-apps
+      hard:
+        - name: nsapp-auth-hard
+          namespace: ns-apps
+        - name: nsapp-auth
+          namespace: ns-apps
+
+tls:
+  type: traefik
+  traefik:
+    certResolver: resolver
+    wildcard:
+      domains: []
+
+ports:
+  - startPort: 39000
+    endPort: 39999
+    protocol: tcp
+  - startPort: 39000
+    endPort: 39999
+    protocol: udp
+
+observability:
+  log:
+    type: victorialogs
+    victorialogs:
+      endpoint: http://vl-victoria-logs-single-server.monitor.svc.cluster.local:9428
+  metrics:
+    type: prometheus
+    prometheus:
+      endpoint: http://victoria-metrics.monitor.svc.cluster.local:8428
+
+app:
+  labels:
+    - key: app.kubernetes.io/instance
+      value: ns-apps
+  resources:
+    requests:
+      cpu: 10m
+      memory: 50Mi
+    limits:
+      cpu: "1.6"
+      memory: 1Gi
+
+builder:
+  buildkit:
+    buildkitd.toml: |
+      [registry."registry.local"]
+      http = true
+      
+      [worker.oci]
+      enabled = true
+      gc = true
+      gckeepstorage = 9000
+      
+      [[worker.oci.gcpolicy]]
+      all = true
+      keepBytes = 1024000000
+
+controller:
+  ssh:
+    host: localhost
+    port: 2201
+
+ingressRoute:
+  enabled: true
+  host: ns.local.trapti.tech
+  middlewares:
+    - name: ns-auth-dev
+      namespace: auth

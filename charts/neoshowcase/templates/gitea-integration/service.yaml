@@ -1,0 +1,16 @@
+{{- with $.Values.giteaIntegration }}
+{{- if .enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $.Release.Name }}-gitea-integration
+  namespace: {{ $.Release.Namespace }}
+
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ $.Release.Name }}-gitea-integration
+  clusterIP: None
+
+{{- end }}
+{{- end }}

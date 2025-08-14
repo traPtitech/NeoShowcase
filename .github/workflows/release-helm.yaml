@@ -1,0 +1,76 @@
+name: Release helm chart
+run-name: Release helm chart (${{ inputs.strategy }})
+
+on:
+  workflow_dispatch:
+    inputs:
+      chart:
+        description: Helm chart name
+        type: choice
+        default: neoshowcase
+        options:
+          - neoshowcase
+      strategy:
+        description: Semver release strategy
+        type: choice
+        default: patch
+        options:
+          - patch
+          - minor
+          - major
+
+  workflow_call:
+    inputs:
+      chart:
+        description: Helm chart name
+        type: string
+        default: neoshowcase
+      strategy:
+        description: Semver release strategy
+        type: string
+        required: true
+
+env:
+  REGISTRY_USER: traptitech
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: '0'
+
+      - name: Git config
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Update helm Chart.yaml
+        run: |
+          cd charts
+          ./bump.sh ${{ inputs.chart }} ${{ github.event.inputs.strategy }}
+          cd ..
+
+      - id: calc-tag
+        name: Calculate tag
+        run: |
+          VERSION=$(grep '^version:' ./charts/${{ inputs.chart }}/Chart.yaml | cut -d ' ' -f 2 | tr -d '"')
+          echo "new-raw=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Commit and push helm changes
+        run: |
+          git add charts/${{ inputs.chart }}/Chart.yaml
+          git commit -m "Update charts/${{ inputs.chart }} to ${{ steps.calc-tag.outputs.new-raw }}"
+          git push
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ env.REGISTRY_USER }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish chart
+        run: |
+          cd charts
+          ./publish.sh ${{ inputs.chart }} oci://ghcr.io/${{ env.REGISTRY_USER }}/charts

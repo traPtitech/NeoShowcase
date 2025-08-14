@@ -23,7 +23,7 @@ spec:
             - containerPort: 4181
               name: http
           env:
-            - name: HEADER
-              value: X-Showcase-User
-            - name: USER
+            - name: NS_COMPONENTS_AUTHDEV_HEADER
+              value: X-Forwarded-User
+            - name: NS_COMPONENTS_AUTHDEV_USER
               value: toki

@@ -1,0 +1,94 @@
+{{- with $.Values.giteaIntegration }}
+{{- if .enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ $.Release.Name }}-gitea-integration
+  namespace: {{ $.Release.Namespace }}
+
+spec:
+  replicas: 1
+  podManagementPolicy: Parallel
+  revisionHistoryLimit: 0
+  serviceName: {{ $.Release.Name }}-gitea-integration
+  selector:
+    matchLabels:
+      app: {{ $.Release.Name }}-gitea-integration
+  template:
+    metadata:
+      labels:
+        app: {{ $.Release.Name }}-gitea-integration
+      annotations:
+        checksum/config: {{ include "config-hash" $ | quote }}
+    spec:
+      enableServiceLinks: false
+      {{- if .nodeSelector }}
+      nodeSelector:
+        {{- .nodeSelector | toYaml | nindent 8 }}
+      {{- end }}
+      {{- if .tolerations }}
+      tolerations:
+        {{- .tolerations | toYaml | nindent 8 }}
+      {{- end }}
+      {{- if .topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- .topologySpreadConstraints | toYaml | nindent 8 }}
+      {{- end }}
+
+      volumes:
+        - name: config
+          configMap:
+            name: ns-config
+        {{- if $.Values.common.additionalVolumes }}
+        {{- $.Values.common.additionalVolumes | toYaml | nindent 8 }}
+        {{- end }}
+
+      containers:
+        - name: gitea-integration
+          image: {{ include "image.gitea-integration" $ }}
+          imagePullPolicy: Always
+          args:
+            - --loglevel={{ $.Values.common.logLevel }}
+            - --config=/opt/config/ns.yaml
+          env:
+            - name: NS_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.secret.ns.existingName }}
+                  key: db-password
+            {{- if eq $.Values.common.storage.type "s3" }}
+            - name: NS_STORAGE_S3_ACCESSKEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.secret.ns.existingName }}
+                  key: s3-access-key
+            - name: NS_STORAGE_S3_ACCESSSECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.secret.ns.existingName }}
+                  key: s3-access-secret
+            {{- end }}
+            - name: NS_IMAGE_REGISTRY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.secret.ns.existingName }}
+                  key: registry-password
+            - name: NS_COMPONENTS_GITEAINTEGRATION_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.secret.ns.existingName }}
+                  key: gitea-token
+          volumeMounts:
+            - mountPath: /opt/config/ns.yaml
+              name: config
+              subPath: ns.yaml
+            {{- if $.Values.common.additionalVolumeMounts }}
+            {{- $.Values.common.additionalVolumeMounts | toYaml | nindent 12 }}
+            {{- end }}
+          {{- if .resources }}
+          resources:
+            {{- .resources | toYaml | nindent 12 }}
+          {{- end }}
+
+{{- end }}
+{{- end }}

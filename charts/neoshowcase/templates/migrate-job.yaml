@@ -1,0 +1,34 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ $.Release.Name }}-migrate
+  namespace: {{ $.Release.Namespace }}
+  generateName: {{ $.Release.Name }}-migrate-
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      restartPolicy: Never
+      containers:
+        - name: migrate
+          image: {{ include "image.migrate" $ }}
+          imagePullPolicy: Always
+          env:
+            - name: DB_HOST
+              value: {{ $.Values.common.db.host }}
+            - name: DB_PORT
+              value: {{ $.Values.common.db.port | quote }}
+            - name: DB_USER
+              value: {{ $.Values.common.db.username }}
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.secret.ns.existingName }}
+                  key: db-password
+            - name: DB_NAME
+              value: {{ $.Values.common.db.database }}

@@ -1,4 +1,5 @@
 name: Create new tag
+run-name: Create new tag (${{ inputs.strategy }})
 
 on:
   workflow_dispatch:
@@ -19,12 +20,14 @@ jobs:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
+
       - name: Git config
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-      - id: tag
-        name: Tag
+
+      - id: calc-tag
+        name: Calculate tag
         run: |
           # Modified code from https://stackoverflow.com/a/51728322
           # Get the highest tag number
@@ -53,24 +56,19 @@ jobs:
           fi
           NEW_TAG="v$MAJOR.$MINOR.$PATCH"
           echo "Calculating new tag... $ORIG_VERSION => $NEW_TAG"
-
-          # Get current hash and see if it already has a tag
+          echo "new-tag=${NEW_TAG}" >> $GITHUB_OUTPUT
+      - name: Create and push tag
+        run: |
+          NEW_TAG=${{ steps.calc-tag.outputs.new-tag }}
           GIT_COMMIT=$(git rev-parse HEAD)
-          if git describe --contains "$GIT_COMMIT" > /dev/null 2>&1; then
-            echo "HEAD is already tagged, are you sure this is the right commit?"
-            exit 1
-          fi
-
-          # Only tag if no tag already (would be better if the git describe command above could have a silent option)
           echo "Tagging commit $GIT_COMMIT with $NEW_TAG"
           git tag "$NEW_TAG"
 
           echo "Pushing tag $NEW_TAG"
           git push origin "$NEW_TAG"
 
-          echo "new-tag=${NEW_TAG}" >> $GITHUB_OUTPUT
     outputs:
-      new-tag: ${{ steps.tag.outputs.new-tag }}
+      new-tag: ${{ steps.calc-tag.outputs.new-tag }}
 
   # NOTE: Push by GitHub Actions (using default $GITHUB_TOKEN) will NOT trigger another workflow with "on: push" to prevent an infinite loop.
   # So we need to explicitly call the release workflow here.
@@ -79,3 +77,10 @@ jobs:
     uses: ./.github/workflows/release.yaml
     with:
       ref_name: ${{ needs.tag.outputs.new-tag }}
+
+  # Bump and release helm chart on app release
+  helm-tag:
+    needs: [ tag ]
+    uses: ./.github/workflows/release-helm.yaml
+    with:
+      strategy: ${{ inputs.strategy }}

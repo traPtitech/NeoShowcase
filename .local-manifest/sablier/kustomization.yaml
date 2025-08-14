@@ -1,7 +1,0 @@
-namespace: sablier
-resources:
-  - sablier-service-account.yaml
-  - sablier-role.yaml
-  - sablier-role-binding.yaml
-  - sablier-deployment.yaml
-  - sablier-service.yaml
