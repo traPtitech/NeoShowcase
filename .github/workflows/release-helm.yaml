@@ -58,6 +58,16 @@ jobs:
           VERSION=$(grep '^version:' ./charts/${{ inputs.chart }}/Chart.yaml | cut -d ' ' -f 2 | tr -d '"')
           echo "new-raw=${VERSION}" >> $GITHUB_OUTPUT
 
+      - name: Load push key
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          echo "${{ secrets.HELM_PUSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+
+          # Use ssh instead of https (github token)
+          git remote set-url origin git@github.com:${{ github.repository }}.git
+
       - name: Commit and push helm changes
         run: |
           git add charts/${{ inputs.chart }}/Chart.yaml
