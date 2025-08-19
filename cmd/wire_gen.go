@@ -388,8 +388,9 @@ func NewGateway(c Config) (component, error) {
 	apiServiceHandler := grpc.NewAPIServiceServer(service, avatarBaseURL)
 	authHeader := gatewayConfig.AuthHeader
 	authInterceptor := grpc.NewAuthInterceptor(userRepository, authHeader)
+	logInterceptor := grpc.NewLogInterceptor()
 	cacheInterceptor := grpc.NewCacheInterceptor()
-	apiServer := provideGatewayServer(c, apiServiceHandler, authInterceptor, cacheInterceptor)
+	apiServer := provideGatewayServer(c, apiServiceHandler, authInterceptor, logInterceptor, cacheInterceptor)
 	server := &gateway.Server{
 		APIServer: apiServer,
 		DB:        db,
@@ -458,8 +459,13 @@ func NewSSGen(c Config) (component, error) {
 
 // wire.go:
 
+<<<<<<< HEAD
 var providers = wire.NewSet(apiserver.NewService, cdservice.NewAppDeployHelper, cdservice.NewContainerStateMutator, cdservice.NewService, versioned.NewForConfig, cleaner.NewService, commitfetcher.NewService, dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, dockerimpl.NewClientFromEnv, dockerimpl.NewDockerBackend, giteaintegration.NewIntegration, grpc.NewAPIServiceServer, grpc.NewAuthInterceptor, grpc.NewBuildpackHelperService, provideBuildpackHelperClient, grpc.NewCacheInterceptor, grpc.NewControllerService, grpc.NewControllerServiceClient, grpc.NewControllerBuilderService, grpc.NewGiteaIntegrationService, provideTokenAuthInterceptor,
 	provideControllerBuilderServiceClient, grpc.NewControllerSSGenService, grpc.NewControllerSSGenServiceClient, healthcheck.NewServer, k8simpl.NewK8SBackend, kubernetes.NewForConfig, logstream.NewService, repofetcher.NewService, repository.New, repository.NewApplicationRepository, repository.NewArtifactRepository, repository.NewRuntimeImageRepository, repository.NewBuildRepository, repository.NewEnvironmentRepository, repository.NewGitRepositoryRepository, repository.NewRepositoryCommitRepository, repository.NewUserRepository, repository.NewWebsiteRepository, rest.InClusterConfig, v1alpha1.NewForConfig, ssgen.NewGeneratorService, sshserver.NewSSHServer, systeminfo.NewService, builder.NewService, webhook.NewReceiver, provideRepositoryPrivateKey, domain.IntoPublicKey, git.NewService, registry.NewClient, observability.NewMetricsServer, observability.NewControllerMetrics, provideStorage,
+=======
+var providers = wire.NewSet(apiserver.NewService, cdservice.NewAppDeployHelper, cdservice.NewContainerStateMutator, cdservice.NewService, versioned.NewForConfig, cleaner.NewService, commitfetcher.NewService, dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, dockerimpl.NewClientFromEnv, dockerimpl.NewDockerBackend, giteaintegration.NewIntegration, grpc.NewAPIServiceServer, grpc.NewAuthInterceptor, grpc.NewLogInterceptor, grpc.NewBuildpackHelperService, provideBuildpackHelperClient, grpc.NewCacheInterceptor, grpc.NewControllerService, grpc.NewControllerServiceClient, grpc.NewControllerBuilderService, grpc.NewControllerGiteaIntegrationService, grpc.NewControllerGiteaIntegrationServiceClient, provideTokenAuthInterceptor,
+	provideControllerBuilderServiceClient, grpc.NewControllerSSGenService, grpc.NewControllerSSGenServiceClient, healthcheck.NewServer, k8simpl.NewK8SBackend, kubernetes.NewForConfig, logstream.NewService, repofetcher.NewService, repository.New, repository.NewApplicationRepository, repository.NewArtifactRepository, repository.NewRuntimeImageRepository, repository.NewBuildRepository, repository.NewEnvironmentRepository, repository.NewGitRepositoryRepository, repository.NewRepositoryCommitRepository, repository.NewUserRepository, repository.NewWebsiteRepository, rest.InClusterConfig, v1alpha1.NewForConfig, ssgen.NewGeneratorService, sshserver.NewSSHServer, systeminfo.NewService, builder.NewService, webhook.NewReceiver, provideRepositoryPrivateKey, domain.IntoPublicKey, git.NewService, registry.NewClient, provideStorage,
+>>>>>>> cc482ebc (feat: ns-gatewayでリクエストログをだす)
 	provideAuthDevServer,
 	provideBuildpackHelperServer, buildpack.NewBuildpackBackend, provideDiscoverer, discovery.NewCluster, provideBuilderConfig,
 	provideBuildkitClient,
