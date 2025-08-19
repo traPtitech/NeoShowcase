@@ -179,6 +179,7 @@ func provideGatewayServer(
 	c Config,
 	appService pbconnect.APIServiceHandler,
 	authInterceptor *grpc.AuthInterceptor,
+	logInterceptor *grpc.LogInterceptor,
 	cacheInterceptor *grpc.CacheInterceptor,
 ) *gateway.APIServer {
 	wc := web.H2CConfig{
@@ -188,6 +189,7 @@ func provideGatewayServer(
 				appService,
 				connect.WithInterceptors(
 					authInterceptor, // Make sure auth is the outermost interceptor
+					logInterceptor,
 					cacheInterceptor,
 				),
 			))
