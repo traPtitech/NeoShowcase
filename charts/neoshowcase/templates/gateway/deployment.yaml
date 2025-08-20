@@ -50,7 +50,7 @@ spec:
       containers:
         - name: gateway
           image: {{ include "image.gateway" $ }}
-          imagePullPolicy: Always
+          imagePullPolicy: {{ .imagePullPolicy | default $.Values.global.image.pullPolicy }}
           args:
             - --loglevel={{ $.Values.common.logLevel }}
             - --config=/opt/config/ns.yaml

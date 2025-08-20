@@ -3,6 +3,8 @@ global:
   image:
     repository: ghcr.io/traptitech/
     prefix: ns-
+    # Default image pull policy for all NeoShowcase components
+    pullPolicy: Always
   # If specified, overrides the chart app version.
   # Used by NeoShowcase image tags.
   appVersionOverride: ""
@@ -215,12 +217,18 @@ builder:
   tolerations: []
   topologySpreadConstraints: []
   resources: {}
+  # imagePullPolicy for builder component
+  imagePullPolicy: ""
   buildpack:
     image: paketobuildpacks/builder:full
     resources: {}
+    # imagePullPolicy for buildpack image (defaults to Always for build images)
+    imagePullPolicy: Always
   buildkit:
     image: moby/buildkit:rootless
     resources: {}
+    # imagePullPolicy for buildkit image (defaults to Always for build images)
+    imagePullPolicy: Always
     buildkitd.toml: ""
 
 # ns-controller component
@@ -230,6 +238,8 @@ controller:
   tolerations: []
   topologySpreadConstraints: []
   resources: {}
+  # imagePullPolicy for controller component
+  imagePullPolicy: ""
   ssh:
     host: ns.trap.jp
     port: 2201
@@ -241,6 +251,8 @@ dashboard:
   tolerations: []
   topologySpreadConstraints: []
   resources: {}
+  # imagePullPolicy for dashboard component
+  imagePullPolicy: ""
 
 # ns-gateway component
 gateway:
@@ -249,6 +261,8 @@ gateway:
   tolerations: []
   topologySpreadConstraints: []
   resources: {}
+  # imagePullPolicy for gateway component
+  imagePullPolicy: ""
 
 # ns-gitea-integration component
 giteaIntegration:
@@ -257,6 +271,8 @@ giteaIntegration:
   tolerations: []
   topologySpreadConstraints: []
   resources: {}
+  # imagePullPolicy for gitea-integration component
+  imagePullPolicy: ""
   url: https://git.trap.jp
 
 # sablier component starts user pods on demand.
@@ -267,6 +283,8 @@ sablier:
   tolerations: []
   topologySpreadConstraints: []
   resources: {}
+  # imagePullPolicy for sablier component
+  imagePullPolicy: ""
   sessionDuration: 1h
   dynamic:
     theme: neoshowcase
@@ -280,12 +298,16 @@ ssgen:
   tolerations: []
   topologySpreadConstraints: []
   resources: {}
+  # imagePullPolicy for ssgen component
+  imagePullPolicy: ""
   pvc:
     storageClassName: ""
     storage: 1Gi
   caddy:
     image: caddy:2-alpine
     resources: {}
+    # imagePullPolicy for caddy image (defaults to Always)
+    imagePullPolicy: Always
 
 # ingressRoute renders IngressRoute resource, if enabled.
 ingressRoute:

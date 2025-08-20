@@ -56,7 +56,7 @@ spec:
       initContainers:
         - name: buildpack-install
           image: {{ include "image.builder" $ }}
-          imagePullPolicy: Always
+          imagePullPolicy: {{ .imagePullPolicy | default $.Values.global.image.pullPolicy }}
           command:
             - cp
             - /app/ns
@@ -68,7 +68,7 @@ spec:
       containers:
         - name: buildpack
           image: {{ .buildpack.image }}
-          imagePullPolicy: Always
+          imagePullPolicy: {{ .buildpack.imagePullPolicy | default $.Values.global.image.pullPolicy }}
           command:
             - /ns-bin/ns
             - buildpack-helper
@@ -88,7 +88,7 @@ spec:
 
         - name: buildkit
           image: {{ .buildkit.image }}
-          imagePullPolicy: Always
+          imagePullPolicy: {{ .buildkit.imagePullPolicy | default $.Values.global.image.pullPolicy }}
           args:
             - --addr
             - unix:///run/user/1000/buildkit/buildkitd.sock
@@ -127,7 +127,7 @@ spec:
 
         - name: builder
           image: {{ include "image.builder" $ }}
-          imagePullPolicy: Always
+          imagePullPolicy: {{ .imagePullPolicy | default $.Values.global.image.pullPolicy }}
           args:
             - --loglevel={{ $.Values.common.logLevel }}
             - --config=/opt/config/ns.yaml
