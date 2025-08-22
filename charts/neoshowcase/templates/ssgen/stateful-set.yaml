@@ -63,7 +63,7 @@ spec:
       containers:
         - name: ssgen
           image: {{ include "image.ssgen" $ }}
-          imagePullPolicy: Always
+          imagePullPolicy: {{ .imagePullPolicy | default $.Values.global.image.pullPolicy }}
           args:
             - --loglevel={{ $.Values.common.logLevel }}
             - --config=/opt/config/ns.yaml
@@ -125,7 +125,7 @@ spec:
 
         - name: caddy
           image: {{ .caddy.image }}
-          imagePullPolicy: Always
+          imagePullPolicy: {{ .caddy.imagePullPolicy | default $.Values.global.image.pullPolicy }}
           ports:
             - name: http
               containerPort: 80

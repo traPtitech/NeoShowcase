@@ -41,6 +41,7 @@ spec:
       containers:
         - name: sablier
           image: {{ include "image.sablier" $ }}
+          imagePullPolicy: {{ .imagePullPolicy | default $.Values.global.image.pullPolicy }}
           ports:
             - name: http
               containerPort: 10000

@@ -51,7 +51,7 @@ spec:
       containers:
         - name: controller
           image: {{ include "image.controller" $ }}
-          imagePullPolicy: Always
+          imagePullPolicy: {{ .imagePullPolicy | default $.Values.global.image.pullPolicy }}
           args:
             - --loglevel={{ $.Values.common.logLevel }}
             - --config=/opt/config/ns.yaml
