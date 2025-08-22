@@ -1,24 +1,25 @@
 global:
-  # image defines NeoShowcase image config.
+  # -- image defines NeoShowcase image config.
   image:
     repository: ghcr.io/traptitech/
     prefix: ns-
-  # If specified, overrides the chart app version.
+  # -- If specified, overrides the chart app version.
   # Used by NeoShowcase image tags.
   appVersionOverride: ""
 
-# common defines various settings for use by all NeoShowcase components.
+# -- common defines various settings for use by all NeoShowcase components.
 common:
-  # Available log levels: trace, debug, info, warn, or error
+  # -- Available log levels: trace, debug, info, warn, or error
   logLevel: info
 
+  # -- Links to be displayed in the dashboard.
   additionalLinks:
     - name: Wiki
       url: https://wiki.trap.jp/services/NeoShowcase
     - name: DB Admin
       url: https://adminer.ns.trap.jp/
 
-  # db is used by NeoShowcase system components
+  # -- db is used by NeoShowcase system components
   db:
     host: mariadb.db.svc.cluster.local
     port: 3306
@@ -26,7 +27,7 @@ common:
     # password: <defined by secret>
     database: neoshowcase
 
-  # storage is used by NeoShowcase system components
+  # -- storage is used by NeoShowcase system components
   storage:
     type: s3
     local:
@@ -38,7 +39,7 @@ common:
       region: ap-northeast-1
       # endpoint: https://example.com
 
-  # image is used to store user app images.
+  # -- image is used to store user app images.
   image:
     registry:
       scheme: https
@@ -48,38 +49,40 @@ common:
     namePrefix: ns-apps/
     tmpNamePrefix: ns-apps-tmp/
 
-  # Additional mounts to NeoShowcase component containers
-  additionalVolumes: []
+  # -- Additional mounts to NeoShowcase component containers
+  additionalVolumes:
+    []
     # - name: project
     #   hostPath:
     #     path: /work
-  additionalVolumeMounts: []
+  additionalVolumeMounts:
+    []
     # - name: project
     #   subPath: .local-dev/local-storage
     #   mountPath: /data
 
-# auth defines user authentication.
+# -- auth defines user authentication.
 auth:
-  # header defines the name of the header auth.
+  # -- header defines the name of the header auth.
   header: X-Forwarded-User
-  # avatarBaseURL is used to display user icons in the dashboard.
+  # -- avatarBaseURL is used to display user icons in the dashboard.
   avatarBaseURL: https://q.trap.jp/api/v3/public/icon/
 
-# userMariaDB is used by user apps.
+# -- userMariaDB is used by user apps.
 userMariaDB:
   host: mariadb.db.svc.cluster.local
   port: 3306
   adminUser: root
   # adminPassword: <defined by secret>
 
-# userMongoDB is used by user apps.
+# -- userMongoDB is used by user apps.
 userMongoDB:
   host: mongo.db.svc.cluster.local
   port: 27017
   adminUser: root
   # adminPassword: <defined by secret>
 
-# secret defines secret names to be used by NeoShowcase components.
+# -- secret defines secret names to be used by NeoShowcase components.
 secret:
   # Expected keys:
   #  db-password: Used by NeoShowcase system
@@ -92,18 +95,18 @@ secret:
   #  controller-token: Token used by components to access ns-controller
   ns:
     existingName: ns
-  # Keys are used by gateway and controller to clone user repositories.
+  # -- Keys are used by gateway and controller to clone user repositories.
   # The corresponding public key is intended to be set to an admin deploy-key of an external Gitea instance.
   keys:
     existingName: ns-keys
-    # Only ed25519 type is supported for now.
+    # -- Only ed25519 type is supported for now.
     keyName: id_ed25519
 
-# known_hosts is mounted into builder, controller, and gateway to clone user repositories.
+# -- known_hosts is mounted into builder, controller, and gateway to clone user repositories.
 known_hosts:
   additionalContent: ""
 
-# domains define available domains to be used by user apps.
+# -- domains define available domains to be used by user apps.
 # For more, see pkg/infrastructure/k8simpl/config.go.
 domains: []
 #  - domain: "*.trap.show"
@@ -117,7 +120,7 @@ domains: []
 #        - name: auth-trap-show-hard
 #          namespace: auth
 
-# tls defines tls setting for user app ingress.
+# -- tls defines tls setting for user app ingress.
 # For more, see pkg/infrastructure/k8simpl/config.go.
 tls:
   type: cert-manager
@@ -126,10 +129,11 @@ tls:
       kind: ClusterIssuer
       name: cluster-issuer
     wildcard:
-      domains: []
+      domains:
+        []
         # - "*.trap.show"
 
-# ports define available port-forward ports to be used by user apps.
+# -- ports define available port-forward ports to be used by user apps.
 # For more, see pkg/infrastructure/k8simpl/config.go.
 ports: []
 #  - startPort: 39000
@@ -139,7 +143,7 @@ ports: []
 #    endPort: 39999
 #    protocol: udp
 
-# observability (o11y) defines user apps' o11y configuration to be viewed from the dashboard.
+# -- observability (o11y) defines user apps' o11y configuration to be viewed from the dashboard.
 observability:
   log:
     type: victorialogs
@@ -165,22 +169,26 @@ observability:
             container_memory_usage_bytes{namespace="ns-apps", pod="nsapp-{{ .App.ID }}-0", container="app"}
             + container_memory_swap{namespace="ns-apps", pod="nsapp-{{ .App.ID }}-0", container="app"}
 
-# app defines user app pod configurations.
+# -- app defines user app pod configurations.
 app:
   namespace: ns-apps
-  imagePullSecret: ''
-  labels: []
+  imagePullSecret: ""
+  labels:
+    []
     # Example to enable ArgoCD orphaned resource monitoring:
     # - key: app.kubernetes.io/instance
     #   value: ns-apps
-  nodeSelector: {}
+  nodeSelector:
+    {}
     # - key: kubernetes.io/arch
     #   value: amd64
-  tolerations: []
+  tolerations:
+    []
     # - key: ns.trap.jp/worker
     #   operator: Exists
     #   effect: NoSchedule
-  topologySpreadConstraints: []
+  topologySpreadConstraints:
+    []
     # - maxSkew: 1
     #   topologyKey: kubernetes.io/hostname
     #   whenUnsatisfiable: DoNotSchedule
@@ -190,7 +198,8 @@ app:
     #         value: "true"
     #   nodeAffinityPolicy: Honor
     #   nodeTaintsPolicy: Ignore
-  resources: {}
+  resources:
+    {}
     # requests:
     #   cpu: 10m
     #   memory: 50Mi
@@ -198,7 +207,8 @@ app:
     #   cpu: "1.6"
     #   memory: 1Gi
   service:
-    ipFamilies: []
+    ipFamilies:
+      []
       # - IPv4
       # - IPv6
     # Allowed values: "", "SingleStack", "PreferDualStack", "RequireDualStack"
@@ -208,7 +218,7 @@ app:
     traefik:
       priorityOffset: 0
 
-# ns-builder component
+# -- ns-builder component
 builder:
   replicas: 1
   nodeSelector: {}
@@ -223,7 +233,7 @@ builder:
     resources: {}
     buildkitd.toml: ""
 
-# ns-controller component
+# -- ns-controller component
 controller:
   replicas: 1
   nodeSelector: {}
@@ -234,7 +244,7 @@ controller:
     host: ns.trap.jp
     port: 2201
 
-# ns-dashboard component
+# -- ns-dashboard component
 dashboard:
   replicas: 1
   nodeSelector: {}
@@ -242,7 +252,7 @@ dashboard:
   topologySpreadConstraints: []
   resources: {}
 
-# ns-gateway component
+# -- ns-gateway component
 gateway:
   replicas: 1
   nodeSelector: {}
@@ -250,7 +260,7 @@ gateway:
   topologySpreadConstraints: []
   resources: {}
 
-# ns-gitea-integration component
+# -- ns-gitea-integration component
 giteaIntegration:
   enabled: false
   nodeSelector: {}
@@ -259,7 +269,7 @@ giteaIntegration:
   resources: {}
   url: https://git.trap.jp
 
-# sablier component starts user pods on demand.
+# -- sablier component starts user pods on demand.
 sablier:
   # If enabled, requires "experimental.plugins.sablier" configuration on the traefik instance.
   enabled: true
@@ -273,7 +283,7 @@ sablier:
   blocking:
     timeout: 1m
 
-# ns-ssgen component
+# -- ns-ssgen component
 ssgen:
   replicas: 2
   nodeSelector: {}
@@ -287,7 +297,7 @@ ssgen:
     image: caddy:2-alpine
     resources: {}
 
-# ingressRoute renders IngressRoute resource, if enabled.
+# -- ingressRoute renders IngressRoute resource, if enabled.
 ingressRoute:
   enabled: true
   host: ns.trap.jp
@@ -297,6 +307,7 @@ ingressRoute:
     # secretName defines IngressRoute tls.secretName.
     # Set to empty string to disable tls config.
     secretName: ""
-  middlewares: []
+  middlewares:
+    []
     # - name: ns-auth-dev
     #   namespace: auth
