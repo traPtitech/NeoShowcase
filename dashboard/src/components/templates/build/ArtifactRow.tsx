@@ -12,7 +12,7 @@ export interface Props {
 const downloadArtifact = async (id: string) => {
   try {
     const data = await client.getBuildArtifact({ artifactId: id })
-    saveToFile(data.content, 'application/gzip', data.filename)
+    saveToFile(new Uint8Array(data.content), 'application/gzip', data.filename)
   } catch (e) {
     handleAPIError(e, '成果物のダウンロードに失敗しました')
   }
