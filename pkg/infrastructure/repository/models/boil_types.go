@@ -66,12 +66,15 @@ func AllApplicationConfigStartupBehavior() []string {
 
 // Enum values for ApplicationConfigBuildType
 const (
-	ApplicationConfigBuildTypeRuntimeBuildpack  string = "runtime-buildpack"
-	ApplicationConfigBuildTypeRuntimeCMD        string = "runtime-cmd"
-	ApplicationConfigBuildTypeRuntimeDockerfile string = "runtime-dockerfile"
-	ApplicationConfigBuildTypeStaticBuildpack   string = "static-buildpack"
-	ApplicationConfigBuildTypeStaticCMD         string = "static-cmd"
-	ApplicationConfigBuildTypeStaticDockerfile  string = "static-dockerfile"
+	ApplicationConfigBuildTypeRuntimeBuildpack   string = "runtime-buildpack"
+	ApplicationConfigBuildTypeRuntimeCMD         string = "runtime-cmd"
+	ApplicationConfigBuildTypeRuntimeDockerfile  string = "runtime-dockerfile"
+	ApplicationConfigBuildTypeStaticBuildpack    string = "static-buildpack"
+	ApplicationConfigBuildTypeStaticCMD          string = "static-cmd"
+	ApplicationConfigBuildTypeStaticDockerfile   string = "static-dockerfile"
+	ApplicationConfigBuildTypeFunctionBuildpack  string = "function-buildpack"
+	ApplicationConfigBuildTypeFunctionCMD        string = "function-cmd"
+	ApplicationConfigBuildTypeFunctionDockerfile string = "function-dockerfile"
 )
 
 func AllApplicationConfigBuildType() []string {
@@ -82,19 +85,24 @@ func AllApplicationConfigBuildType() []string {
 		ApplicationConfigBuildTypeStaticBuildpack,
 		ApplicationConfigBuildTypeStaticCMD,
 		ApplicationConfigBuildTypeStaticDockerfile,
+		ApplicationConfigBuildTypeFunctionBuildpack,
+		ApplicationConfigBuildTypeFunctionCMD,
+		ApplicationConfigBuildTypeFunctionDockerfile,
 	}
 }
 
 // Enum values for ApplicationsDeployType
 const (
-	ApplicationsDeployTypeRuntime string = "runtime"
-	ApplicationsDeployTypeStatic  string = "static"
+	ApplicationsDeployTypeRuntime  string = "runtime"
+	ApplicationsDeployTypeStatic   string = "static"
+	ApplicationsDeployTypeFunction string = "function"
 )
 
 func AllApplicationsDeployType() []string {
 	return []string{
 		ApplicationsDeployTypeRuntime,
 		ApplicationsDeployTypeStatic,
+		ApplicationsDeployTypeFunction,
 	}
 }
 

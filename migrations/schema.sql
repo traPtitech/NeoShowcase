@@ -59,15 +59,15 @@ CREATE TABLE `repository_owners`
 
 CREATE TABLE `repository_commits`
 (
-    `hash` CHAR(40) PRIMARY KEY COMMENT 'Commit SHA-1 Hash',
-    `author_name` VARCHAR(256) NOT NULL COMMENT 'Author Name',
-    `author_email` VARCHAR(256) NOT NULL COMMENT 'Author Email',
-    `author_date` DATETIME(6) NOT NULL COMMENT 'Author Date',
-    `committer_name` VARCHAR(256) NOT NULL COMMENT 'Committer Name',
-    `committer_email` VARCHAR(256) NOT NULL COMMENT 'Committer Email',
-    `committer_date` DATETIME(6) NOT NULL COMMENT 'Commit Date',
-    `message` TEXT NOT NULL COMMENT 'Commit Message',
-    `error` TINYINT(1) NOT NULL COMMENT 'メタ情報取得に失敗したか'
+    `hash` CHAR(40)                   PRIMARY KEY COMMENT 'Commit SHA-1 Hash',
+    `author_name` VARCHAR(256)        NOT NULL COMMENT 'Author Name',
+    `author_email` VARCHAR(256)       NOT NULL COMMENT 'Author Email',
+    `author_date` DATETIME(6)         NOT NULL COMMENT 'Author Date',
+    `committer_name` VARCHAR(256)     NOT NULL COMMENT 'Committer Name',
+    `committer_email` VARCHAR(256)    NOT NULL COMMENT 'Committer Email',
+    `committer_date` DATETIME(6)      NOT NULL COMMENT 'Commit Date',
+    `message` TEXT                    NOT NULL COMMENT 'Commit Message',
+    `error` TINYINT(1)                NOT NULL COMMENT 'メタ情報取得に失敗したか'
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci COMMENT = 'コミットメタ情報テーブル';
@@ -79,7 +79,11 @@ CREATE TABLE `applications`
     `repository_id`     VARCHAR(22)                NOT NULL COMMENT 'リポジトリID',
     `ref_name`          VARCHAR(100)               NOT NULL COMMENT 'Gitブランチ・タグ名',
     `commit`            CHAR(40)                   NOT NULL COMMENT '解決されたコミット',
-    `deploy_type`       ENUM ('runtime', 'static') NOT NULL COMMENT 'デプロイタイプ',
+    `deploy_type`       ENUM (
+        'runtime',
+        'static',
+        'function'
+        )                                          NOT NULL COMMENT 'デプロイタイプ',
     `running`           TINYINT(1)                 NOT NULL COMMENT 'アプリを起動させるか(desired state)',
     `container`         ENUM (
         'missing',
@@ -117,7 +121,10 @@ CREATE TABLE `application_config`
         'runtime-dockerfile',
         'static-buildpack',
         'static-cmd',
-        'static-dockerfile'
+        'static-dockerfile',
+        'function-buildpack',
+        'function-cmd',
+        'function-dockerfile'
         )                           NOT NULL COMMENT 'ビルドタイプ',
     `base_image`      VARCHAR(1000) NOT NULL COMMENT 'ベースイメージの名前',
     `build_cmd`       TEXT          NOT NULL COMMENT 'ビルドコマンド',
