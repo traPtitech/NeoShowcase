@@ -64,6 +64,7 @@ export const AppMetrics: Component<AppMetricsProps> = (props) => {
     if (data.latest !== undefined) {
       const labels = data().metrics.map((m) => {
         if (m.time) return timestampDate(m.time).toLocaleTimeString()
+        return null
       })
       const values = data().metrics.map((m) => m.value)
       return {
