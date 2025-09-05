@@ -2,14 +2,8 @@ group "default" {
   targets = [
     "ns-dashboard",
     "ns-sablier",
-    "ns-migrate",
     "ns",
-    "ns-auth-dev",
-    "ns-builder",
-    "ns-controller",
-    "ns-gateway",
-    "ns-gitea-integration",
-    "ns-ssgen",
+    "ns-components",
   ]
 }
 
@@ -61,50 +55,28 @@ target "ns-sablier" {
   tags     = tags("ns-sablier")
 }
 
-target "ns-migrate" {
-  inherits = ["base"]
-  target   = "ns-migrate"
-  tags     = tags("ns-migrate")
-}
-
 target "ns" {
   inherits = ["base"]
   target   = "ns"
   tags     = tags("ns")
 }
 
-target "ns-auth-dev" {
+target "ns-components" {
   inherits = ["base"]
-  target   = "ns-auth-dev"
-  tags     = tags("ns-auth-dev")
-}
 
-target "ns-builder" {
-  inherits = ["base"]
-  target   = "ns-builder"
-  tags     = tags("ns-builder")
-}
-
-target "ns-controller" {
-  inherits = ["base"]
-  target   = "ns-controller"
-  tags     = tags("ns-controller")
-}
-
-target "ns-gateway" {
-  inherits = ["base"]
-  target   = "ns-gateway"
-  tags     = tags("ns-gateway")
-}
-
-target "ns-gitea-integration" {
-  inherits = ["base"]
-  target   = "ns-gitea-integration"
-  tags     = tags("ns-gitea-integration")
-}
-
-target "ns-ssgen" {
-  inherits = ["base"]
-  target   = "ns-ssgen"
-  tags     = tags("ns-ssgen")
+  matrix = {
+    component = [
+      "migrate",
+      "auth-dev", 
+      "builder",
+      "controller",
+      "gateway",
+      "gitea-integration",
+      "ssgen",
+    ]
+  }
+  
+  name   = "ns-${component}"
+  target = "ns-${component}"
+  tags   = tags("ns-${component}")
 }
