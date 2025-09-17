@@ -30,6 +30,25 @@ func (t BuildStatus) IsFinished() bool {
 	}
 }
 
+func (t BuildStatus) String() string {
+	switch t {
+	case BuildStatusQueued:
+		return "queued"
+	case BuildStatusBuilding:
+		return "building"
+	case BuildStatusSucceeded:
+		return "succeeded"
+	case BuildStatusFailed:
+		return "failed"
+	case BuildStatusCanceled:
+		return "canceled"
+	case BuildStatusSkipped:
+		return "skipped"
+	default:
+		return "unknown"
+	}
+}
+
 type Build struct {
 	ID            string
 	Commit        string
