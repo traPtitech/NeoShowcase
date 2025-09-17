@@ -18,6 +18,8 @@ spec:
       annotations:
         checksum/config: {{ include "config-hash" $ | quote }}
         checksum/known-hosts: {{ include "known-hosts-hash" $ | quote }}
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9100"
     spec:
       enableServiceLinks: false
       serviceAccountName: {{ $.Release.Name }}-controller
@@ -62,6 +64,8 @@ spec:
               containerPort: 8080
             - name: grpc
               containerPort: 10000
+            - name: metrics
+              containerPort: 9100
           env:
             - name: NS_DB_PASSWORD
               valueFrom:

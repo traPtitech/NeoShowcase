@@ -20,6 +20,25 @@ const (
 	BuildTypeStaticDockerfile
 )
 
+func (b BuildType) String() string {
+	switch b {
+	case BuildTypeRuntimeBuildpack:
+		return "runtime_buildpack"
+	case BuildTypeRuntimeCmd:
+		return "runtime_cmd"
+	case BuildTypeRuntimeDockerfile:
+		return "runtime_dockerfile"
+	case BuildTypeStaticBuildpack:
+		return "static_buildpack"
+	case BuildTypeStaticCmd:
+		return "static_cmd"
+	case BuildTypeStaticDockerfile:
+		return "static_dockerfile"
+	default:
+		return "unknown"
+	}
+}
+
 func (b BuildType) DeployType() DeployType {
 	switch b {
 	case BuildTypeRuntimeBuildpack, BuildTypeRuntimeCmd, BuildTypeRuntimeDockerfile:

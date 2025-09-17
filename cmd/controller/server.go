@@ -9,6 +9,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/observability"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/webhook"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/cleaner"
 	commitfetcher "github.com/traPtitech/neoshowcase/pkg/usecase/commit-fetcher"
@@ -29,6 +30,7 @@ type Server struct {
 	Backend        domain.Backend
 	SSHServer      sshserver.SSHServer
 	Webhook        *webhook.Receiver
+	Metrics        *observability.MetricsServer
 	CDService      domain.CDService
 	CommitFetcher  commitfetcher.Service
 	FetcherService repofetcher.Service
@@ -49,6 +51,9 @@ func (s *Server) Start(ctx context.Context) error {
 	})
 	eg.Go(func() error {
 		return s.Webhook.Start(ctx)
+	})
+	eg.Go(func() error {
+		return s.Metrics.Start()
 	})
 	eg.Go(func() error {
 		s.CDService.Run()
@@ -86,6 +91,9 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	})
 	eg.Go(func() error {
 		return s.Webhook.Shutdown(ctx)
+	})
+	eg.Go(func() error {
+		return s.Metrics.Shutdown(ctx)
 	})
 	eg.Go(func() error {
 		return s.CDService.Stop(ctx)
