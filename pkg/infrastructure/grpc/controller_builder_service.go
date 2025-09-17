@@ -19,6 +19,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pbconvert"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/observability"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/logstream"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
@@ -66,6 +67,8 @@ type ControllerBuilderService struct {
 
 	builderConnections []*builderConnection
 	lock               sync.Mutex
+
+	metrics *observability.ControllerMetrics
 }
 
 func NewControllerBuilderService(
@@ -79,6 +82,7 @@ func NewControllerBuilderService(
 	buildRepo domain.BuildRepository,
 	envRepo domain.EnvironmentRepository,
 	gitRepo domain.GitRepositoryRepository,
+	metrics *observability.ControllerMetrics,
 ) domain.ControllerBuilderService {
 	return &ControllerBuilderService{
 		logStream: logStream,
@@ -93,6 +97,7 @@ func NewControllerBuilderService(
 		buildRepo:        buildRepo,
 		envRepo:          envRepo,
 		gitRepo:          gitRepo,
+		metrics:          metrics,
 	}
 }
 
@@ -324,7 +329,22 @@ func (s *ControllerBuilderService) finishBuild(ctx context.Context, buildID stri
 	if n == 0 {
 		return fmt.Errorf("failed to change build status from builing to finished for %v - builder scheduling may be malfunctioning", buildID)
 	}
-	return err
+
+	// metrics
+	// errors are ignored
+	build, err := s.buildRepo.GetBuild(ctx, buildID)
+	if err != nil {
+		log.WithError(err).Warn("getting build for metrics")
+		return nil
+	}
+	app, err := s.appRepo.GetApplication(ctx, build.ApplicationID)
+	if err != nil {
+		log.WithError(err).Warn("getting application for metrics")
+		return nil
+	}
+	s.metrics.IncrementBuild(status, app.Config.BuildConfig.BuildType())
+
+	return nil
 }
 
 func (s *ControllerBuilderService) StartBuilds(ctx context.Context, buildIDs []string) {

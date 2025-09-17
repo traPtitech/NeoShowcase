@@ -12,6 +12,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/log/loki"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/log/victorialogs"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/metrics/prometheus"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/observability"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/staticserver/builtin"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/staticserver/caddy"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/webhook"
@@ -60,15 +61,16 @@ type BuilderConfig struct {
 }
 
 type ControllerConfig struct {
-	Port             grpc.ControllerPort              `mapstructure:"port" yaml:"port"`
-	TokenHeader      string                           `mapstructure:"tokenHeader" yaml:"tokenHeader"`
-	Token            string                           `mapstructure:"token" yaml:"token"`
-	Mode             string                           `mapstructure:"mode" yaml:"mode"`
-	Docker           dockerimpl.Config                `mapstructure:"docker" yaml:"docker"`
-	K8s              k8simpl.Config                   `mapstructure:"k8s" yaml:"k8s"`
-	SSH              domain.SSHConfig                 `mapstructure:"ssh" yaml:"ssh"`
-	Webhook          webhook.ReceiverConfig           `mapstructure:"webhook" yaml:"webhook"`
-	GiteaIntegration ControllerGiteaIntegrationConfig `mapstructure:"giteaIntegration" yaml:"giteaIntegration"`
+	Port             grpc.ControllerPort               `mapstructure:"port" yaml:"port"`
+	TokenHeader      string                            `mapstructure:"tokenHeader" yaml:"tokenHeader"`
+	Token            string                            `mapstructure:"token" yaml:"token"`
+	Mode             string                            `mapstructure:"mode" yaml:"mode"`
+	Docker           dockerimpl.Config                 `mapstructure:"docker" yaml:"docker"`
+	K8s              k8simpl.Config                    `mapstructure:"k8s" yaml:"k8s"`
+	SSH              domain.SSHConfig                  `mapstructure:"ssh" yaml:"ssh"`
+	Webhook          webhook.ReceiverConfig            `mapstructure:"webhook" yaml:"webhook"`
+	GiteaIntegration ControllerGiteaIntegrationConfig  `mapstructure:"giteaIntegration" yaml:"giteaIntegration"`
+	Metrics          observability.MetricsServerConfig `mapstructure:"metrics" yaml:"metrics"`
 }
 
 type GatewayConfig struct {
@@ -242,6 +244,8 @@ func init() {
 
 	viper.SetDefault("components.controller.webhook.basePath", "/api/webhook")
 	viper.SetDefault("components.controller.webhook.port", 8080)
+
+	viper.SetDefault("components.controller.metrics.port", 9100)
 
 	viper.SetDefault("components.gateway.port", 8080)
 	viper.SetDefault("components.gateway.avatarBaseURL", "https://q.trap.jp/api/v3/public/icon/")

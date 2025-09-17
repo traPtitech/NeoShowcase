@@ -25,6 +25,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/dbmanager"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/git"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/observability"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/registry"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/webhook"
@@ -96,6 +97,8 @@ var providers = wire.NewSet(
 	domain.IntoPublicKey,
 	git.NewService,
 	registry.NewClient,
+	observability.NewMetricsServer,
+	observability.NewControllerMetrics,
 	provideStorage,
 	provideAuthDevServer,
 	provideBuildpackHelperServer,
@@ -179,7 +182,7 @@ func NewController(c Config) (component, error) {
 func NewControllerDocker(c Config) (component, error) {
 	wire.Build(
 		providers,
-		wire.FieldsOf(new(ControllerConfig), "Port", "Docker", "SSH", "Webhook"),
+		wire.FieldsOf(new(ControllerConfig), "Port", "Docker", "SSH", "Webhook", "Metrics"),
 		wire.Bind(new(domain.Backend), new(*dockerimpl.Backend)),
 		wire.Bind(new(component), new(*controller.Server)),
 		wire.Struct(new(controller.Server), "*"),
@@ -190,7 +193,7 @@ func NewControllerDocker(c Config) (component, error) {
 func NewControllerK8s(c Config) (component, error) {
 	wire.Build(
 		providers,
-		wire.FieldsOf(new(ControllerConfig), "Port", "K8s", "SSH", "Webhook"),
+		wire.FieldsOf(new(ControllerConfig), "Port", "K8s", "SSH", "Webhook", "Metrics"),
 		wire.Bind(new(domain.Backend), new(*k8simpl.Backend)),
 		wire.Bind(new(component), new(*controller.Server)),
 		wire.Struct(new(controller.Server), "*"),

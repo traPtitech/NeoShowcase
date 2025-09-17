@@ -13,6 +13,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/observability"
 	"github.com/traPtitech/neoshowcase/pkg/util/discovery"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/loop"
@@ -52,6 +53,7 @@ func NewService(
 	builder domain.ControllerBuilderService,
 	deployer *AppDeployHelper,
 	mutator *ContainerStateMutator,
+	metrics *observability.ControllerMetrics,
 ) (domain.CDService, error) {
 	cd := &service{
 		cluster:   cluster,
@@ -98,7 +100,9 @@ func NewService(
 			log.Errorf("failed to sync deployments: %+v", err)
 			return nil
 		}
-		log.Infof("Synced deployments in %v", time.Since(start))
+		elapsed := time.Since(start)
+		log.Infof("Synced deployments in %v", elapsed)
+		metrics.ObserveDeployDuration(elapsed)
 		return nil
 	})
 	cd.doLocalSyncDeploy = func() {
