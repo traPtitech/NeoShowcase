@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version-file: ./go.mod
       - run: go mod download
@@ -35,7 +35,7 @@ jobs:
     needs: [mod]
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version-file: ./go.mod
       - run: go build -o ns ./cmd
@@ -46,7 +46,7 @@ jobs:
     needs: [mod]
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version-file: ./go.mod
       - name: golangci-lint
@@ -83,7 +83,7 @@ jobs:
           - 5010:27017
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version-file: ./go.mod
       - name: Run migration
@@ -109,7 +109,7 @@ jobs:
       ENABLE_K8S_TESTS: 'true'
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version-file: ./go.mod
       - name: Create single cluster
@@ -154,7 +154,7 @@ jobs:
           - 5004:3306
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version-file: ./go.mod
       - name: Run migration
