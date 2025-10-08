@@ -1026,7 +1026,7 @@ func (*BuilderResponse_Settled) isBuilderResponse_Body() {}
 type CopyFileTreeRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Destination   string                 `protobuf:"bytes,1,opt,name=destination,proto3" json:"destination,omitempty"`
-	TarContent    []byte                 `protobuf:"bytes,2,opt,name=tar_content,json=tarContent,proto3" json:"tar_content,omitempty"` // TODO: stream contents?
+	TarContent    []byte                 `protobuf:"bytes,2,opt,name=tar_content,json=tarContent,proto3" json:"tar_content,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1550,9 +1550,9 @@ const file_neoshowcase_protobuf_controller_proto_rawDesc = "" +
 	"\fSaveArtifact\x12).neoshowcase.protobuf.SaveArtifactRequest\x1a\x16.google.protobuf.Empty\x12Q\n" +
 	"\fSaveBuildLog\x12).neoshowcase.protobuf.SaveBuildLogRequest\x1a\x16.google.protobuf.Empty\x12Y\n" +
 	"\x10SaveRuntimeImage\x12-.neoshowcase.protobuf.SaveRuntimeImageRequest\x1a\x16.google.protobuf.Empty\x12a\n" +
-	"\x0eConnectBuilder\x12%.neoshowcase.protobuf.BuilderResponse\x1a$.neoshowcase.protobuf.BuilderRequest(\x010\x012\xc8\x01\n" +
-	"\x16BuildpackHelperService\x12Q\n" +
-	"\fCopyFileTree\x12).neoshowcase.protobuf.CopyFileTreeRequest\x1a\x16.google.protobuf.Empty\x12[\n" +
+	"\x0eConnectBuilder\x12%.neoshowcase.protobuf.BuilderResponse\x1a$.neoshowcase.protobuf.BuilderRequest(\x010\x012\xca\x01\n" +
+	"\x16BuildpackHelperService\x12S\n" +
+	"\fCopyFileTree\x12).neoshowcase.protobuf.CopyFileTreeRequest\x1a\x16.google.protobuf.Empty(\x01\x12[\n" +
 	"\x04Exec\x12'.neoshowcase.protobuf.HelperExecRequest\x1a(.neoshowcase.protobuf.HelperExecResponse0\x012f\n" +
 	"\x16ControllerSSGenService\x12L\n" +
 	"\fConnectSSGen\x12\x16.google.protobuf.Empty\x1a\".neoshowcase.protobuf.SSGenRequest0\x012w\n" +

@@ -703,7 +703,7 @@ func (UnimplementedControllerBuilderServiceHandler) ConnectBuilder(context.Conte
 // BuildpackHelperServiceClient is a client for the neoshowcase.protobuf.BuildpackHelperService
 // service.
 type BuildpackHelperServiceClient interface {
-	CopyFileTree(context.Context, *connect.Request[pb.CopyFileTreeRequest]) (*connect.Response[emptypb.Empty], error)
+	CopyFileTree(context.Context) *connect.ClientStreamForClient[pb.CopyFileTreeRequest, emptypb.Empty]
 	Exec(context.Context, *connect.Request[pb.HelperExecRequest]) (*connect.ServerStreamForClient[pb.HelperExecResponse], error)
 }
 
@@ -741,8 +741,8 @@ type buildpackHelperServiceClient struct {
 }
 
 // CopyFileTree calls neoshowcase.protobuf.BuildpackHelperService.CopyFileTree.
-func (c *buildpackHelperServiceClient) CopyFileTree(ctx context.Context, req *connect.Request[pb.CopyFileTreeRequest]) (*connect.Response[emptypb.Empty], error) {
-	return c.copyFileTree.CallUnary(ctx, req)
+func (c *buildpackHelperServiceClient) CopyFileTree(ctx context.Context) *connect.ClientStreamForClient[pb.CopyFileTreeRequest, emptypb.Empty] {
+	return c.copyFileTree.CallClientStream(ctx)
 }
 
 // Exec calls neoshowcase.protobuf.BuildpackHelperService.Exec.
@@ -753,7 +753,7 @@ func (c *buildpackHelperServiceClient) Exec(ctx context.Context, req *connect.Re
 // BuildpackHelperServiceHandler is an implementation of the
 // neoshowcase.protobuf.BuildpackHelperService service.
 type BuildpackHelperServiceHandler interface {
-	CopyFileTree(context.Context, *connect.Request[pb.CopyFileTreeRequest]) (*connect.Response[emptypb.Empty], error)
+	CopyFileTree(context.Context, *connect.ClientStream[pb.CopyFileTreeRequest]) (*connect.Response[emptypb.Empty], error)
 	Exec(context.Context, *connect.Request[pb.HelperExecRequest], *connect.ServerStream[pb.HelperExecResponse]) error
 }
 
@@ -764,7 +764,7 @@ type BuildpackHelperServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewBuildpackHelperServiceHandler(svc BuildpackHelperServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	buildpackHelperServiceMethods := pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("BuildpackHelperService").Methods()
-	buildpackHelperServiceCopyFileTreeHandler := connect.NewUnaryHandler(
+	buildpackHelperServiceCopyFileTreeHandler := connect.NewClientStreamHandler(
 		BuildpackHelperServiceCopyFileTreeProcedure,
 		svc.CopyFileTree,
 		connect.WithSchema(buildpackHelperServiceMethods.ByName("CopyFileTree")),
@@ -791,7 +791,7 @@ func NewBuildpackHelperServiceHandler(svc BuildpackHelperServiceHandler, opts ..
 // UnimplementedBuildpackHelperServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedBuildpackHelperServiceHandler struct{}
 
-func (UnimplementedBuildpackHelperServiceHandler) CopyFileTree(context.Context, *connect.Request[pb.CopyFileTreeRequest]) (*connect.Response[emptypb.Empty], error) {
+func (UnimplementedBuildpackHelperServiceHandler) CopyFileTree(context.Context, *connect.ClientStream[pb.CopyFileTreeRequest]) (*connect.Response[emptypb.Empty], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.BuildpackHelperService.CopyFileTree is not implemented"))
 }
 
