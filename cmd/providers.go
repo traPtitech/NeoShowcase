@@ -16,6 +16,7 @@ import (
 	buildpackhelper "github.com/traPtitech/neoshowcase/cmd/buildpack-helper"
 	"github.com/traPtitech/neoshowcase/cmd/controller"
 	"github.com/traPtitech/neoshowcase/cmd/gateway"
+	cmdgiteaintegration "github.com/traPtitech/neoshowcase/cmd/gitea-integration"
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
@@ -138,7 +139,7 @@ func provideControllerServer(
 	controllerHandler pbconnect.ControllerServiceHandler,
 	builderHandler domain.ControllerBuilderService,
 	ssgenHandler domain.ControllerSSGenService,
-	giteaIntegrationHandler domain.ControllerGiteaIntegrationService,
+	giteaIntegrationClient domain.GiteaIntegrationServiceClient,
 	tokenAuth *grpc.TokenAuthInterceptor,
 ) *controller.APIServer {
 	wc := web.H2CConfig{
@@ -147,7 +148,6 @@ func provideControllerServer(
 			mux.Handle(pbconnect.NewControllerServiceHandler(controllerHandler))
 			mux.Handle(pbconnect.NewControllerBuilderServiceHandler(builderHandler, connect.WithInterceptors(tokenAuth)))
 			mux.Handle(pbconnect.NewControllerSSGenServiceHandler(ssgenHandler))
-			mux.Handle(pbconnect.NewControllerGiteaIntegrationServiceHandler(giteaIntegrationHandler))
 		},
 	}
 	return &controller.APIServer{H2CServer: web.NewH2CServer(wc)}
@@ -204,6 +204,26 @@ func provideGiteaIntegrationConfig(c Config) giteaintegration.Config {
 		IntervalSeconds: cc.IntervalSeconds,
 		Concurrency:     cc.Concurrency,
 	}
+}
+
+func provideGiteaIntegrationServiceClient(c Config) domain.GiteaIntegrationServiceClient {
+	if c.Components.Controller.GiteaIntegration.Enable {
+		return grpc.NewGiteaIntegrationServiceClient(c.Components.Controller.GiteaIntegration.URL)
+	}
+	return grpc.NewGiteaIntegrationServiceClientNop()
+}
+
+func provideGiteaIntegrationAPIServer(
+	c Config,
+	giteaIntegrationHandler domain.GiteaIntegrationService,
+) *cmdgiteaintegration.APIServer {
+	wc := web.H2CConfig{
+		Port: c.Components.GiteaIntegration.Port,
+		SetupRoute: func(mux *http.ServeMux) {
+			mux.Handle(pbconnect.NewGiteaIntegrationServiceHandler(giteaIntegrationHandler))
+		},
+	}
+	return &cmdgiteaintegration.APIServer{H2CServer: web.NewH2CServer(wc)}
 }
 
 func provideHealthCheckFunc(gen ssgen.GeneratorService) healthcheck.Func {

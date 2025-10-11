@@ -65,8 +65,7 @@ var providers = wire.NewSet(
 	grpc.NewControllerService,
 	grpc.NewControllerServiceClient,
 	grpc.NewControllerBuilderService,
-	grpc.NewControllerGiteaIntegrationService,
-	grpc.NewControllerGiteaIntegrationServiceClient,
+	grpc.NewGiteaIntegrationService,
 	provideTokenAuthInterceptor,
 	provideControllerBuilderServiceClient,
 	grpc.NewControllerSSGenService,
@@ -111,6 +110,8 @@ var providers = wire.NewSet(
 	provideMetricsService,
 	provideGatewayServer,
 	provideGiteaIntegrationConfig,
+	provideGiteaIntegrationServiceClient,
+	provideGiteaIntegrationAPIServer,
 	provideHealthCheckFunc,
 	provideStaticServer,
 	provideStaticServerDocumentRootPath,
@@ -210,7 +211,6 @@ func NewGateway(c Config) (component, error) {
 func NewGiteaIntegration(c Config) (component, error) {
 	wire.Build(
 		providers,
-		wire.FieldsOf(new(GiteaIntegrationConfig), "Controller"),
 		wire.Bind(new(component), new(*giteaintegration.Server)),
 		wire.Struct(new(giteaintegration.Server), "*"),
 	)
