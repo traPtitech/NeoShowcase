@@ -9,9 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/util/loop"
-	"github.com/traPtitech/neoshowcase/pkg/util/retry"
 	"github.com/traPtitech/neoshowcase/pkg/util/scutil"
 )
 
@@ -40,10 +38,9 @@ type Integration struct {
 	interval    time.Duration
 	concurrency int
 
-	controller domain.ControllerGiteaIntegrationServiceClient
-	gitRepo    domain.GitRepositoryRepository
-	appRepo    domain.ApplicationRepository
-	userRepo   domain.UserRepository
+	gitRepo  domain.GitRepositoryRepository
+	appRepo  domain.ApplicationRepository
+	userRepo domain.UserRepository
 
 	cancel func()
 	syncer *scutil.Coalescer
@@ -51,7 +48,6 @@ type Integration struct {
 
 func NewIntegration(
 	c Config,
-	controller domain.ControllerGiteaIntegrationServiceClient,
 	gitRepo domain.GitRepositoryRepository,
 	appRepo domain.ApplicationRepository,
 	userRepo domain.UserRepository,
@@ -77,10 +73,9 @@ func NewIntegration(
 		interval:    time.Duration(c.IntervalSeconds) * time.Second,
 		concurrency: c.Concurrency,
 
-		controller: controller,
-		gitRepo:    gitRepo,
-		appRepo:    appRepo,
-		userRepo:   userRepo,
+		gitRepo:  gitRepo,
+		appRepo:  appRepo,
+		userRepo: userRepo,
 	}
 	i.syncer = scutil.NewCoalescer(i.syncAndLog)
 	return i, nil
@@ -90,9 +85,6 @@ func (i *Integration) Start() error {
 	ctx, cancel := context.WithCancel(context.Background())
 	i.cancel = cancel
 
-	go retry.Do(ctx, func(ctx context.Context) error {
-		return i.controller.Connect(ctx, i.onRequest(ctx))
-	}, "connect to controller")
 	go loop.Loop(ctx, func(ctx context.Context) {
 		_ = i.syncer.Do(ctx)
 	}, i.interval, true)
@@ -100,15 +92,8 @@ func (i *Integration) Start() error {
 	return nil
 }
 
-func (i *Integration) onRequest(ctx context.Context) func(req *pb.GiteaIntegrationRequest) {
-	return func(req *pb.GiteaIntegrationRequest) {
-		switch req.Type {
-		case pb.GiteaIntegrationRequest_RESYNC:
-			go func() {
-				_ = i.syncer.Do(ctx)
-			}()
-		}
-	}
+func (i *Integration) Sync(ctx context.Context) error {
+	return i.syncer.Do(ctx)
 }
 
 func (i *Integration) syncAndLog(ctx context.Context) error {

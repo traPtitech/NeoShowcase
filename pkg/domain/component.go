@@ -79,11 +79,10 @@ type ControllerSSGenServiceClient interface {
 	ConnectSSGen(ctx context.Context, onRequest func(req *pb.SSGenRequest)) error
 }
 
-type ControllerGiteaIntegrationService interface {
-	pbconnect.ControllerGiteaIntegrationServiceHandler
-	Broadcast(req *pb.GiteaIntegrationRequest)
+type GiteaIntegrationService interface {
+	pbconnect.GiteaIntegrationServiceHandler
 }
 
-type ControllerGiteaIntegrationServiceClient interface {
-	Connect(ctx context.Context, onRequest func(req *pb.GiteaIntegrationRequest)) error
+type GiteaIntegrationServiceClient interface {
+	Sync(ctx context.Context) error
 }

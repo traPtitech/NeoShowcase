@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: gitea
+  labels:
+    app: gitea
+spec:
+  serviceName: gitea
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gitea
+  template:
+    metadata:
+      labels:
+        app: gitea
+    spec:
+      volumes:
+        - name: project
+          hostPath:
+            path: /work
+      containers:
+      - name: gitea
+        image: docker.gitea.com/gitea:1.24.6
+        ports:
+        - containerPort: 3000
+          name: http
+        - containerPort: 22
+          name: ssh
+        volumeMounts:
+        - name: project
+          subPath: .local-dev/gitea
+          mountPath: /data
+        env:
+          - name: GITEA__webhook__ALLOWED_HOST_LIST
+            value: "*"

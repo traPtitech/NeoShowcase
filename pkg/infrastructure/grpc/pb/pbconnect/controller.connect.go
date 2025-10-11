@@ -30,9 +30,8 @@ const (
 	BuildpackHelperServiceName = "neoshowcase.protobuf.BuildpackHelperService"
 	// ControllerSSGenServiceName is the fully-qualified name of the ControllerSSGenService service.
 	ControllerSSGenServiceName = "neoshowcase.protobuf.ControllerSSGenService"
-	// ControllerGiteaIntegrationServiceName is the fully-qualified name of the
-	// ControllerGiteaIntegrationService service.
-	ControllerGiteaIntegrationServiceName = "neoshowcase.protobuf.ControllerGiteaIntegrationService"
+	// GiteaIntegrationServiceName is the fully-qualified name of the GiteaIntegrationService service.
+	GiteaIntegrationServiceName = "neoshowcase.protobuf.GiteaIntegrationService"
 )
 
 // These constants are the fully-qualified names of the RPCs defined in this package. They're
@@ -109,9 +108,9 @@ const (
 	// ControllerSSGenServiceConnectSSGenProcedure is the fully-qualified name of the
 	// ControllerSSGenService's ConnectSSGen RPC.
 	ControllerSSGenServiceConnectSSGenProcedure = "/neoshowcase.protobuf.ControllerSSGenService/ConnectSSGen"
-	// ControllerGiteaIntegrationServiceConnectProcedure is the fully-qualified name of the
-	// ControllerGiteaIntegrationService's Connect RPC.
-	ControllerGiteaIntegrationServiceConnectProcedure = "/neoshowcase.protobuf.ControllerGiteaIntegrationService/Connect"
+	// GiteaIntegrationServiceSyncProcedure is the fully-qualified name of the GiteaIntegrationService's
+	// Sync RPC.
+	GiteaIntegrationServiceSyncProcedure = "/neoshowcase.protobuf.GiteaIntegrationService/Sync"
 )
 
 // ControllerServiceClient is a client for the neoshowcase.protobuf.ControllerService service.
@@ -872,75 +871,75 @@ func (UnimplementedControllerSSGenServiceHandler) ConnectSSGen(context.Context, 
 	return connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerSSGenService.ConnectSSGen is not implemented"))
 }
 
-// ControllerGiteaIntegrationServiceClient is a client for the
-// neoshowcase.protobuf.ControllerGiteaIntegrationService service.
-type ControllerGiteaIntegrationServiceClient interface {
-	Connect(context.Context, *connect.Request[emptypb.Empty]) (*connect.ServerStreamForClient[pb.GiteaIntegrationRequest], error)
+// GiteaIntegrationServiceClient is a client for the neoshowcase.protobuf.GiteaIntegrationService
+// service.
+type GiteaIntegrationServiceClient interface {
+	Sync(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error)
 }
 
-// NewControllerGiteaIntegrationServiceClient constructs a client for the
-// neoshowcase.protobuf.ControllerGiteaIntegrationService service. By default, it uses the Connect
-// protocol with the binary Protobuf Codec, asks for gzipped responses, and sends uncompressed
-// requests. To use the gRPC or gRPC-Web protocols, supply the connect.WithGRPC() or
-// connect.WithGRPCWeb() options.
+// NewGiteaIntegrationServiceClient constructs a client for the
+// neoshowcase.protobuf.GiteaIntegrationService service. By default, it uses the Connect protocol
+// with the binary Protobuf Codec, asks for gzipped responses, and sends uncompressed requests. To
+// use the gRPC or gRPC-Web protocols, supply the connect.WithGRPC() or connect.WithGRPCWeb()
+// options.
 //
 // The URL supplied here should be the base URL for the Connect or gRPC server (for example,
 // http://api.acme.com or https://acme.com/grpc).
-func NewControllerGiteaIntegrationServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) ControllerGiteaIntegrationServiceClient {
+func NewGiteaIntegrationServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) GiteaIntegrationServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
-	controllerGiteaIntegrationServiceMethods := pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerGiteaIntegrationService").Methods()
-	return &controllerGiteaIntegrationServiceClient{
-		connect: connect.NewClient[emptypb.Empty, pb.GiteaIntegrationRequest](
+	giteaIntegrationServiceMethods := pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("GiteaIntegrationService").Methods()
+	return &giteaIntegrationServiceClient{
+		sync: connect.NewClient[emptypb.Empty, emptypb.Empty](
 			httpClient,
-			baseURL+ControllerGiteaIntegrationServiceConnectProcedure,
-			connect.WithSchema(controllerGiteaIntegrationServiceMethods.ByName("Connect")),
+			baseURL+GiteaIntegrationServiceSyncProcedure,
+			connect.WithSchema(giteaIntegrationServiceMethods.ByName("Sync")),
 			connect.WithClientOptions(opts...),
 		),
 	}
 }
 
-// controllerGiteaIntegrationServiceClient implements ControllerGiteaIntegrationServiceClient.
-type controllerGiteaIntegrationServiceClient struct {
-	connect *connect.Client[emptypb.Empty, pb.GiteaIntegrationRequest]
+// giteaIntegrationServiceClient implements GiteaIntegrationServiceClient.
+type giteaIntegrationServiceClient struct {
+	sync *connect.Client[emptypb.Empty, emptypb.Empty]
 }
 
-// Connect calls neoshowcase.protobuf.ControllerGiteaIntegrationService.Connect.
-func (c *controllerGiteaIntegrationServiceClient) Connect(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.ServerStreamForClient[pb.GiteaIntegrationRequest], error) {
-	return c.connect.CallServerStream(ctx, req)
+// Sync calls neoshowcase.protobuf.GiteaIntegrationService.Sync.
+func (c *giteaIntegrationServiceClient) Sync(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error) {
+	return c.sync.CallUnary(ctx, req)
 }
 
-// ControllerGiteaIntegrationServiceHandler is an implementation of the
-// neoshowcase.protobuf.ControllerGiteaIntegrationService service.
-type ControllerGiteaIntegrationServiceHandler interface {
-	Connect(context.Context, *connect.Request[emptypb.Empty], *connect.ServerStream[pb.GiteaIntegrationRequest]) error
+// GiteaIntegrationServiceHandler is an implementation of the
+// neoshowcase.protobuf.GiteaIntegrationService service.
+type GiteaIntegrationServiceHandler interface {
+	Sync(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error)
 }
 
-// NewControllerGiteaIntegrationServiceHandler builds an HTTP handler from the service
-// implementation. It returns the path on which to mount the handler and the handler itself.
+// NewGiteaIntegrationServiceHandler builds an HTTP handler from the service implementation. It
+// returns the path on which to mount the handler and the handler itself.
 //
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
-func NewControllerGiteaIntegrationServiceHandler(svc ControllerGiteaIntegrationServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
-	controllerGiteaIntegrationServiceMethods := pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerGiteaIntegrationService").Methods()
-	controllerGiteaIntegrationServiceConnectHandler := connect.NewServerStreamHandler(
-		ControllerGiteaIntegrationServiceConnectProcedure,
-		svc.Connect,
-		connect.WithSchema(controllerGiteaIntegrationServiceMethods.ByName("Connect")),
+func NewGiteaIntegrationServiceHandler(svc GiteaIntegrationServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	giteaIntegrationServiceMethods := pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("GiteaIntegrationService").Methods()
+	giteaIntegrationServiceSyncHandler := connect.NewUnaryHandler(
+		GiteaIntegrationServiceSyncProcedure,
+		svc.Sync,
+		connect.WithSchema(giteaIntegrationServiceMethods.ByName("Sync")),
 		connect.WithHandlerOptions(opts...),
 	)
-	return "/neoshowcase.protobuf.ControllerGiteaIntegrationService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return "/neoshowcase.protobuf.GiteaIntegrationService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
-		case ControllerGiteaIntegrationServiceConnectProcedure:
-			controllerGiteaIntegrationServiceConnectHandler.ServeHTTP(w, r)
+		case GiteaIntegrationServiceSyncProcedure:
+			giteaIntegrationServiceSyncHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
 	})
 }
 
-// UnimplementedControllerGiteaIntegrationServiceHandler returns CodeUnimplemented from all methods.
-type UnimplementedControllerGiteaIntegrationServiceHandler struct{}
+// UnimplementedGiteaIntegrationServiceHandler returns CodeUnimplemented from all methods.
+type UnimplementedGiteaIntegrationServiceHandler struct{}
 
-func (UnimplementedControllerGiteaIntegrationServiceHandler) Connect(context.Context, *connect.Request[emptypb.Empty], *connect.ServerStream[pb.GiteaIntegrationRequest]) error {
-	return connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerGiteaIntegrationService.Connect is not implemented"))
+func (UnimplementedGiteaIntegrationServiceHandler) Sync(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.GiteaIntegrationService.Sync is not implemented"))
 }

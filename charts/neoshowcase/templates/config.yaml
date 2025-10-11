@@ -94,6 +94,9 @@ data:
         webhook:
           basePath: /api/webhook
           port: 8080
+        giteaIntegration:
+          enable: {{ $.Values.giteaIntegration.enabled }}
+          url: http://{{ $.Release.Name }}-gitea-integration.{{ $Release.Namespace }}.svc.cluster.local:10001
 
       gateway:
         port: 8080
@@ -111,10 +114,9 @@ data:
           {{- $.Values.observability.metrics | toYaml | nindent 10 }}
 
       giteaIntegration:
+        port: 10001
         url: {{ $.Values.giteaIntegration.url }}
         # token: <env secret>
-        controller:
-          url: http://{{ $.Release.Name }}-controller.{{ $.Release.Namespace }}.svc.cluster.local:10000
 
       ssgen:
         artifactsRoot: /artifacts

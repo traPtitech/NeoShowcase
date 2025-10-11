@@ -78,6 +78,9 @@ spec:
                 secretKeyRef:
                   name: {{ $.Values.secret.ns.existingName }}
                   key: gitea-token
+          ports:
+            - name: grpc
+              containerPort: 10001
           volumeMounts:
             - mountPath: /opt/config/ns.yaml
               name: config
