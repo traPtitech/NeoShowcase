@@ -3,6 +3,7 @@ resources:
   - auth
   - coredns-patch
   - db
+  # - gitea
   - monitor
   - ns-apps
   - ns-system

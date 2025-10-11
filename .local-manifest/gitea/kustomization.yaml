@@ -1,0 +1,4 @@
+namespace: gitea
+resources:
+  - statefulset.yaml
+  - ingressroute.yaml

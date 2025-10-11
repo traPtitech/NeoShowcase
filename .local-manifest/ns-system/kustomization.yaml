@@ -17,6 +17,7 @@ secretGenerator:
       - mongodb-password=password
       - registry-password=
       - controller-token=my-super-secret-token
+      - gitea-token=
 
   - name: ns-keys
     namespace: ns-system
