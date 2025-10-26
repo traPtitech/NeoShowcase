@@ -3,6 +3,7 @@ resources:
   - auth
   - coredns-patch
   - db
+  # Uncomment this line if you want to try gitea integration
   # - gitea
   - monitor
   - ns-apps
