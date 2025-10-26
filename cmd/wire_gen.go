@@ -180,16 +180,16 @@ func NewControllerDocker(c Config) (component, error) {
 		return nil, err
 	}
 	controllerServiceHandler := grpc.NewControllerService(controllerPort, cluster, service, repofetcherService, cdService, controllerBuilderService, logstreamService)
-	controllerGiteaIntegrationService := grpc.NewControllerGiteaIntegrationService()
+	giteaIntegrationServiceClient := provideGiteaIntegrationServiceClient(c)
 	tokenAuthInterceptor, err := provideTokenAuthInterceptor(c)
 	if err != nil {
 		return nil, err
 	}
-	apiServer := provideControllerServer(c, controllerServiceHandler, controllerBuilderService, controllerSSGenService, controllerGiteaIntegrationService, tokenAuthInterceptor)
+	apiServer := provideControllerServer(c, controllerServiceHandler, controllerBuilderService, controllerSSGenService, giteaIntegrationServiceClient, tokenAuthInterceptor)
 	userRepository := repository.NewUserRepository(db)
 	sshServer := sshserver.NewSSHServer(sshConfig, publicKeys, backend, applicationRepository, userRepository)
 	receiverConfig := controllerConfig.Webhook
-	receiver := webhook.NewReceiver(receiverConfig, gitRepositoryRepository, repofetcherService, controllerGiteaIntegrationService)
+	receiver := webhook.NewReceiver(receiverConfig, gitRepositoryRepository, repofetcherService, giteaIntegrationServiceClient)
 	registryClient := registry.NewClient(imageConfig)
 	cleanerService, err := cleaner.NewService(cluster, artifactRepository, applicationRepository, buildRepository, registryClient, imageConfig, storage)
 	if err != nil {
@@ -289,16 +289,16 @@ func NewControllerK8s(c Config) (component, error) {
 		return nil, err
 	}
 	controllerServiceHandler := grpc.NewControllerService(controllerPort, cluster, service, repofetcherService, cdService, controllerBuilderService, logstreamService)
-	controllerGiteaIntegrationService := grpc.NewControllerGiteaIntegrationService()
+	giteaIntegrationServiceClient := provideGiteaIntegrationServiceClient(c)
 	tokenAuthInterceptor, err := provideTokenAuthInterceptor(c)
 	if err != nil {
 		return nil, err
 	}
-	apiServer := provideControllerServer(c, controllerServiceHandler, controllerBuilderService, controllerSSGenService, controllerGiteaIntegrationService, tokenAuthInterceptor)
+	apiServer := provideControllerServer(c, controllerServiceHandler, controllerBuilderService, controllerSSGenService, giteaIntegrationServiceClient, tokenAuthInterceptor)
 	userRepository := repository.NewUserRepository(db)
 	sshServer := sshserver.NewSSHServer(sshConfig, publicKeys, backend, applicationRepository, userRepository)
 	receiverConfig := controllerConfig.Webhook
-	receiver := webhook.NewReceiver(receiverConfig, gitRepositoryRepository, repofetcherService, controllerGiteaIntegrationService)
+	receiver := webhook.NewReceiver(receiverConfig, gitRepositoryRepository, repofetcherService, giteaIntegrationServiceClient)
 	registryClient := registry.NewClient(imageConfig)
 	cleanerService, err := cleaner.NewService(cluster, artifactRepository, applicationRepository, buildRepository, registryClient, imageConfig, storage)
 	if err != nil {
@@ -390,10 +390,6 @@ func NewGateway(c Config) (component, error) {
 
 func NewGiteaIntegration(c Config) (component, error) {
 	giteaintegrationConfig := provideGiteaIntegrationConfig(c)
-	componentsConfig := c.Components
-	giteaIntegrationConfig := componentsConfig.GiteaIntegration
-	controllerServiceClientConfig := giteaIntegrationConfig.Controller
-	controllerGiteaIntegrationServiceClient := grpc.NewControllerGiteaIntegrationServiceClient(controllerServiceClientConfig)
 	repositoryConfig := c.DB
 	db, err := repository.New(repositoryConfig)
 	if err != nil {
@@ -402,13 +398,16 @@ func NewGiteaIntegration(c Config) (component, error) {
 	gitRepositoryRepository := repository.NewGitRepositoryRepository(db)
 	applicationRepository := repository.NewApplicationRepository(db)
 	userRepository := repository.NewUserRepository(db)
-	integration, err := giteaintegration.NewIntegration(giteaintegrationConfig, controllerGiteaIntegrationServiceClient, gitRepositoryRepository, applicationRepository, userRepository)
+	integration, err := giteaintegration.NewIntegration(giteaintegrationConfig, gitRepositoryRepository, applicationRepository, userRepository)
 	if err != nil {
 		return nil, err
 	}
+	giteaIntegrationService := grpc.NewGiteaIntegrationService(integration)
+	apiServer := provideGiteaIntegrationAPIServer(c, giteaIntegrationService)
 	server := &giteaintegration2.Server{
 		Integration: integration,
 		DB:          db,
+		APIServer:   apiServer,
 	}
 	return server, nil
 }
@@ -450,7 +449,7 @@ func NewSSGen(c Config) (component, error) {
 
 // wire.go:
 
-var providers = wire.NewSet(apiserver.NewService, cdservice.NewAppDeployHelper, cdservice.NewContainerStateMutator, cdservice.NewService, versioned.NewForConfig, cleaner.NewService, commitfetcher.NewService, dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, dockerimpl.NewClientFromEnv, dockerimpl.NewDockerBackend, giteaintegration.NewIntegration, grpc.NewAPIServiceServer, grpc.NewAuthInterceptor, grpc.NewBuildpackHelperService, provideBuildpackHelperClient, grpc.NewCacheInterceptor, grpc.NewControllerService, grpc.NewControllerServiceClient, grpc.NewControllerBuilderService, grpc.NewControllerGiteaIntegrationService, grpc.NewControllerGiteaIntegrationServiceClient, provideTokenAuthInterceptor,
+var providers = wire.NewSet(apiserver.NewService, cdservice.NewAppDeployHelper, cdservice.NewContainerStateMutator, cdservice.NewService, versioned.NewForConfig, cleaner.NewService, commitfetcher.NewService, dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, dockerimpl.NewClientFromEnv, dockerimpl.NewDockerBackend, giteaintegration.NewIntegration, grpc.NewAPIServiceServer, grpc.NewAuthInterceptor, grpc.NewBuildpackHelperService, provideBuildpackHelperClient, grpc.NewCacheInterceptor, grpc.NewControllerService, grpc.NewControllerServiceClient, grpc.NewControllerBuilderService, grpc.NewGiteaIntegrationService, provideTokenAuthInterceptor,
 	provideControllerBuilderServiceClient, grpc.NewControllerSSGenService, grpc.NewControllerSSGenServiceClient, healthcheck.NewServer, k8simpl.NewK8SBackend, kubernetes.NewForConfig, logstream.NewService, repofetcher.NewService, repository.New, repository.NewApplicationRepository, repository.NewArtifactRepository, repository.NewRuntimeImageRepository, repository.NewBuildRepository, repository.NewEnvironmentRepository, repository.NewGitRepositoryRepository, repository.NewRepositoryCommitRepository, repository.NewUserRepository, repository.NewWebsiteRepository, rest.InClusterConfig, v1alpha1.NewForConfig, ssgen.NewGeneratorService, sshserver.NewSSHServer, systeminfo.NewService, builder.NewService, webhook.NewReceiver, provideRepositoryPrivateKey, domain.IntoPublicKey, git.NewService, registry.NewClient, provideStorage,
 	provideAuthDevServer,
 	provideBuildpackHelperServer, buildpack.NewBuildpackBackend, provideDiscoverer, discovery.NewCluster, provideBuilderConfig,
@@ -461,6 +460,8 @@ var providers = wire.NewSet(apiserver.NewService, cdservice.NewAppDeployHelper, 
 	provideMetricsService,
 	provideGatewayServer,
 	provideGiteaIntegrationConfig,
+	provideGiteaIntegrationServiceClient,
+	provideGiteaIntegrationAPIServer,
 	provideHealthCheckFunc,
 	provideStaticServer,
 	provideStaticServerDocumentRootPath, wire.FieldsOf(new(Config), "DB", "Storage", "Image", "Components"), wire.FieldsOf(new(ComponentsConfig), "Builder", "Controller", "Gateway", "GiteaIntegration", "SSGen"),

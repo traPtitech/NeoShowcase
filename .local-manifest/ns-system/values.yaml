@@ -104,6 +104,12 @@ controller:
   ssh:
     host: localhost
     port: 2201
+  # giteaIntegration:
+  #   url: http://ns-gitea-integration:10001
+
+# giteaIntegration:
+#   enabled: true
+#   url: http://gitea.gitea.svc.cluster.local:3000
 
 ingressRoute:
   enabled: true

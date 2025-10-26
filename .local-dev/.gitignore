@@ -16,3 +16,4 @@
 /traefik/*
 !/traefik/middlewares.yaml
 /victoria-metrics
+/gitea

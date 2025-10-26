@@ -171,6 +171,6 @@ service ControllerSSGenService {
   rpc ConnectSSGen(google.protobuf.Empty) returns (stream SSGenRequest);
 }
 
-service ControllerGiteaIntegrationService {
-  rpc Connect(google.protobuf.Empty) returns (stream GiteaIntegrationRequest);
+service GiteaIntegrationService {
+  rpc Sync(google.protobuf.Empty) returns (google.protobuf.Empty);
 }

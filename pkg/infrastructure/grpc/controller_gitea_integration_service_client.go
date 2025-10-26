@@ -8,35 +8,34 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb/pbconnect"
 )
 
-type ControllerGiteaIntegrationServiceClient struct {
-	client pbconnect.ControllerGiteaIntegrationServiceClient
+type GiteaIntegrationServiceClient struct {
+	client pbconnect.GiteaIntegrationServiceClient
 }
 
-func NewControllerGiteaIntegrationServiceClient(
-	c ControllerServiceClientConfig,
-) domain.ControllerGiteaIntegrationServiceClient {
-	return &ControllerGiteaIntegrationServiceClient{
-		client: pbconnect.NewControllerGiteaIntegrationServiceClient(web.NewH2CClient(), c.URL),
+type GiteaIntegrationServiceURL string
+
+func NewGiteaIntegrationServiceClient(
+	url GiteaIntegrationServiceURL,
+) domain.GiteaIntegrationServiceClient {
+	return &GiteaIntegrationServiceClient{
+		client: pbconnect.NewGiteaIntegrationServiceClient(web.NewH2CClient(), string(url)),
 	}
 }
 
-func (c *ControllerGiteaIntegrationServiceClient) Connect(ctx context.Context, onRequest func(req *pb.GiteaIntegrationRequest)) error {
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
+func (c *GiteaIntegrationServiceClient) Sync(ctx context.Context) error {
+	_, err := c.client.Sync(ctx, connect.NewRequest(&emptypb.Empty{}))
+	return err
+}
 
-	st, err := c.client.Connect(ctx, connect.NewRequest(&emptypb.Empty{}))
-	if err != nil {
-		return err
-	}
-	defer st.Close()
+type GiteaIntegrationServiceClientNop struct{}
 
-	for st.Receive() {
-		msg := st.Msg()
-		onRequest(msg)
-	}
-	return st.Err()
+func NewGiteaIntegrationServiceClientNop() domain.GiteaIntegrationServiceClient {
+	return &GiteaIntegrationServiceClientNop{}
+}
+
+func (c *GiteaIntegrationServiceClientNop) Sync(ctx context.Context) error {
+	return nil
 }

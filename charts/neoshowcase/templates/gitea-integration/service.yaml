@@ -10,7 +10,10 @@ spec:
   type: ClusterIP
   selector:
     app: {{ $.Release.Name }}-gitea-integration
-  clusterIP: None
+  ports:
+    - name: grpc
+      port: 10001
+      targetPort: grpc
 
 {{- end }}
 {{- end }}

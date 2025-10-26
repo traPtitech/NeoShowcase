@@ -60,14 +60,15 @@ type BuilderConfig struct {
 }
 
 type ControllerConfig struct {
-	Port        grpc.ControllerPort    `mapstructure:"port" yaml:"port"`
-	TokenHeader string                 `mapstructure:"tokenHeader" yaml:"tokenHeader"`
-	Token       string                 `mapstructure:"token" yaml:"token"`
-	Mode        string                 `mapstructure:"mode" yaml:"mode"`
-	Docker      dockerimpl.Config      `mapstructure:"docker" yaml:"docker"`
-	K8s         k8simpl.Config         `mapstructure:"k8s" yaml:"k8s"`
-	SSH         domain.SSHConfig       `mapstructure:"ssh" yaml:"ssh"`
-	Webhook     webhook.ReceiverConfig `mapstructure:"webhook" yaml:"webhook"`
+	Port             grpc.ControllerPort              `mapstructure:"port" yaml:"port"`
+	TokenHeader      string                           `mapstructure:"tokenHeader" yaml:"tokenHeader"`
+	Token            string                           `mapstructure:"token" yaml:"token"`
+	Mode             string                           `mapstructure:"mode" yaml:"mode"`
+	Docker           dockerimpl.Config                `mapstructure:"docker" yaml:"docker"`
+	K8s              k8simpl.Config                   `mapstructure:"k8s" yaml:"k8s"`
+	SSH              domain.SSHConfig                 `mapstructure:"ssh" yaml:"ssh"`
+	Webhook          webhook.ReceiverConfig           `mapstructure:"webhook" yaml:"webhook"`
+	GiteaIntegration ControllerGiteaIntegrationConfig `mapstructure:"giteaIntegration" yaml:"giteaIntegration"`
 }
 
 type GatewayConfig struct {
@@ -88,7 +89,13 @@ type GatewayConfig struct {
 	}
 }
 
+type ControllerGiteaIntegrationConfig struct {
+	Enable bool                            `mapstructure:"enable" yaml:"enable"`
+	URL    grpc.GiteaIntegrationServiceURL `mapstructure:"url" yaml:"url"`
+}
+
 type GiteaIntegrationConfig struct {
+	Port            int                                `mapstructure:"port" yaml:"port"`
 	URL             string                             `mapstructure:"url" yaml:"url"`
 	Token           string                             `mapstructure:"token" yaml:"token"`
 	IntervalSeconds int                                `mapstructure:"intervalSeconds" yaml:"intervalSeconds"`
@@ -161,6 +168,9 @@ func init() {
 	viper.SetDefault("components.controller.tokenHeader", "X-NS-Controller-Token")
 	viper.SetDefault("components.controller.token", "")
 	viper.SetDefault("components.controller.mode", "docker")
+
+	viper.SetDefault("components.controller.gitea.enable", false)
+	viper.SetDefault("components.controller.gitea.url", "http://ns-gitea-integration:10001")
 
 	viper.SetDefault("components.controller.docker.confDir", "/opt/traefik/conf")
 	viper.SetDefault("components.controller.docker.domains", nil)
@@ -261,6 +271,7 @@ func init() {
 	viper.SetDefault("components.gateway.metrics.endpoint", "http://prometheus:9090")
 	viper.SetDefault("components.gateway.metric.queries", prometheus.DefaultQueriesConfig())
 
+	viper.SetDefault("components.giteaIntegration.port", 10001)
 	viper.SetDefault("components.giteaIntegration.url", "https://git.trap.jp")
 	viper.SetDefault("components.giteaIntegration.token", "")
 	viper.SetDefault("components.giteaIntegration.intervalSeconds", 86400)
