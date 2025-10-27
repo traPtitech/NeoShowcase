@@ -96,7 +96,7 @@ data:
           port: 8080
         giteaIntegration:
           enable: {{ $.Values.giteaIntegration.enabled }}
-          url: http://{{ $.Release.Name }}-gitea-integration.{{ $Release.Namespace }}.svc.cluster.local:10001
+          url: http://{{ $.Release.Name }}-gitea-integration.{{ $.Release.Namespace }}.svc.cluster.local:10001
 
       gateway:
         port: 8080
