@@ -8,6 +8,8 @@ import (
 
 const BuilderStaticArtifactName = "website.tar.gz"
 
+const BuilderFunctionArtifactName = "function.tar.gz"
+
 type Artifact struct {
 	ID        string
 	Name      string

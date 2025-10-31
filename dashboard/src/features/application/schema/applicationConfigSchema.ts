@@ -288,6 +288,14 @@ export const configMessageToSchema = (config: ApplicationConfig): ApplicationCon
         },
       }),
     )
+    .with(
+      {
+        case: P.union('functionBuildpack', 'functionDockerfile', 'functionCmd'),
+      },
+      (buildConfig) => {
+        throw new Error(`Currently function build config type ${buildConfig.case} is not supported`)
+      },
+    )
     .with({ case: undefined }, () => undefined)
     .exhaustive()
 
@@ -325,6 +333,14 @@ export const configMessageToSchema = (config: ApplicationConfig): ApplicationCon
           dockerfile: buildConfig.value,
         },
       }),
+    )
+    .with(
+      {
+        case: P.union('functionBuildpack', 'functionCmd', 'functionDockerfile'),
+      },
+      (buildConfig) => {
+        throw new Error(`Currently function build config type ${buildConfig.case} is not supported`)
+      },
     )
     .with({ case: undefined }, () => undefined)
     .exhaustive()

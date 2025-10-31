@@ -69,7 +69,8 @@ type state struct {
 	artifactTempFile  *os.File
 	done              chan struct{}
 
-	staticDest string
+	staticDest   string
+	functionDest string
 }
 
 func newState(app *domain.Application, envs []*domain.Environment, build *domain.Build, repo *domain.Repository, client domain.ControllerBuilderServiceClient) (*state, error) {
