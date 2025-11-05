@@ -28,13 +28,13 @@ func (l *LogInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
 			logrus.WithFields(logrus.Fields{
 				"user":      user.ID,
 				"procedure": request.Spec().Procedure,
-				"duration":  elapsed,
+				"duration_sec":  elapsed,
 			}).Info("")
 		} else {
 			logrus.WithFields(logrus.Fields{
 				"user":      user.ID,
 				"procedure": request.Spec().Procedure,
-				"duration":  elapsed,
+				"duration_sec":  elapsed,
 				"error":     err,
 				"status":    connect.CodeOf(err).String(),
 			}).Error("")
@@ -67,14 +67,14 @@ func (l *LogInterceptor) WrapStreamingHandler(next connect.StreamingHandlerFunc)
 				"user":      user.ID,
 				"stream_id": streamID,
 				"procedure": shc.Spec().Procedure,
-				"duration":  elapsed,
+				"duration_sec":  elapsed,
 			}).Info("stream closed")
 		} else {
 			logrus.WithFields(logrus.Fields{
 				"user":      user.ID,
 				"stream_id": streamID,
 				"procedure": shc.Spec().Procedure,
-				"duration":  elapsed,
+				"duration_sec":  elapsed,
 				"error":     err,
 				"status":    connect.CodeOf(err).String(),
 			}).Error("stream closed")
