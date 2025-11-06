@@ -1,5 +1,4 @@
 //go:build wireinject
-// +build wireinject
 
 package main
 
@@ -60,6 +59,7 @@ var providers = wire.NewSet(
 	ugiteaintegration.NewIntegration,
 	grpc.NewAPIServiceServer,
 	grpc.NewAuthInterceptor,
+	grpc.NewLogInterceptor,
 	grpc.NewBuildpackHelperService,
 	provideBuildpackHelperClient,
 	grpc.NewCacheInterceptor,
