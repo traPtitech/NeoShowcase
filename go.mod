@@ -16,7 +16,7 @@ require (
 	github.com/bep/debounce v1.2.1
 	github.com/cert-manager/cert-manager v1.19.1
 	github.com/docker/cli v28.5.1+incompatible
-	github.com/docker/docker v28.4.0+incompatible // should be in sync with requirements of github.com/moby/buildkit or build could break
+	github.com/docker/docker v28.5.1+incompatible // should be in sync with requirements of github.com/moby/buildkit or build could break
 	github.com/docker/go-connections v0.6.0
 	github.com/friendsofgo/errors v0.9.2
 	github.com/gliderlabs/ssh v0.3.8
