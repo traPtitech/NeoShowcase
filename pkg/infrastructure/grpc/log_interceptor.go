@@ -26,17 +26,17 @@ func (l *LogInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
 		user := web.GetUser(ctx)
 		if err == nil || connect.IsNotModifiedError(err) {
 			logrus.WithFields(logrus.Fields{
-				"user":      user.ID,
-				"procedure": request.Spec().Procedure,
-				"duration_sec":  elapsed,
+				"user":         user.ID,
+				"procedure":    request.Spec().Procedure,
+				"duration_sec": elapsed,
 			}).Info("")
 		} else {
 			logrus.WithFields(logrus.Fields{
-				"user":      user.ID,
-				"procedure": request.Spec().Procedure,
-				"duration_sec":  elapsed,
-				"error":     err,
-				"status":    connect.CodeOf(err).String(),
+				"user":         user.ID,
+				"procedure":    request.Spec().Procedure,
+				"duration_sec": elapsed,
+				"error":        err,
+				"status":       connect.CodeOf(err).String(),
 			}).Error("")
 		}
 
@@ -64,19 +64,19 @@ func (l *LogInterceptor) WrapStreamingHandler(next connect.StreamingHandlerFunc)
 		elapsed := fmt.Sprintf("%.3fs", time.Since(open).Seconds())
 		if err == nil {
 			logrus.WithFields(logrus.Fields{
-				"user":      user.ID,
-				"stream_id": streamID,
-				"procedure": shc.Spec().Procedure,
-				"duration_sec":  elapsed,
+				"user":         user.ID,
+				"stream_id":    streamID,
+				"procedure":    shc.Spec().Procedure,
+				"duration_sec": elapsed,
 			}).Info("stream closed")
 		} else {
 			logrus.WithFields(logrus.Fields{
-				"user":      user.ID,
-				"stream_id": streamID,
-				"procedure": shc.Spec().Procedure,
-				"duration_sec":  elapsed,
-				"error":     err,
-				"status":    connect.CodeOf(err).String(),
+				"user":         user.ID,
+				"stream_id":    streamID,
+				"procedure":    shc.Spec().Procedure,
+				"duration_sec": elapsed,
+				"error":        err,
+				"status":       connect.CodeOf(err).String(),
 			}).Error("stream closed")
 		}
 
