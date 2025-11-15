@@ -53,6 +53,7 @@ data:
               blocking:
                 timeout: {{ .blocking.timeout }}
             {{- end }}
+          serviceName: {{ $.Release.Name }}-controller
           ports:
             {{- $.Values.ports | toYaml | nindent 12 }}
           ss:
