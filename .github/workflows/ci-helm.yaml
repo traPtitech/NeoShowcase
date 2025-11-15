@@ -80,6 +80,9 @@ jobs:
             --set auth.database=neoshowcase \
             -n db
 
+          # Wait for MariaDB to be ready
+          kubectl wait --for=condition=Ready pod -l app.kubernetes.io/instance=mariadb -n db --timeout=60s
+
       - name: Run chart-testing (install)
         if: steps.list-changed.outputs.changed == 'true'
         run: ct install --charts charts/neoshowcase --namespace neoshowcase --helm-extra-args "--timeout 5m"
