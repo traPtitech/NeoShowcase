@@ -23,7 +23,7 @@ jobs:
       # yamllint (https://github.com/adrienverge/yamllint) which require Python
       - uses: actions/setup-python@v6
         with:
-          python-version: "3.x"
+          python-version: "3.13"
 
       - name: Set up chart-testing
         uses: helm/chart-testing-action@v2.8.0
@@ -82,4 +82,4 @@ jobs:
 
       - name: Run chart-testing (install)
         if: steps.list-changed.outputs.changed == 'true'
-        run: ct install --charts charts/neoshowcase --namespace neoshowcase --helm-extra-args "--timeout 15m"
+        run: ct install --charts charts/neoshowcase --namespace neoshowcase --helm-extra-args "--timeout 5m"
