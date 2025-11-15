@@ -80,8 +80,6 @@ jobs:
             --set auth.database=neoshowcase \
             -n db
 
-          # Install MongoDB
-          helm install mongodb bitnami/mongodb \
-            --set image.tag=latest \
-            --set auth.rootPassword=mongodbpassword \
-            -n db
+      - name: Run chart-testing (install)
+        if: steps.list-changed.outputs.changed == 'true'
+        run: ct install --charts charts/neoshowcase --namespace neoshowcase --helm-extra-args "--timeout 15m"
