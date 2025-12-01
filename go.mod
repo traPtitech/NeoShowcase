@@ -15,7 +15,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.92.1
 	github.com/bep/debounce v1.2.1
 	github.com/cert-manager/cert-manager v1.19.1
-	github.com/docker/cli v28.5.1+incompatible
+	github.com/docker/cli v29.1.1+incompatible
 	github.com/docker/docker v28.5.1+incompatible // should be in sync with requirements of github.com/moby/buildkit or build could break
 	github.com/docker/go-connections v0.6.0
 	github.com/friendsofgo/errors v0.9.2
