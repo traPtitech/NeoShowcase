@@ -15,7 +15,7 @@ jobs:
     name: Check diff
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Install buf
         run: make init-buf
       - name: Generate code
@@ -27,7 +27,7 @@ jobs:
     name: Format
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Install buf
         run: make init-buf
       - name: Format proto files
@@ -41,7 +41,7 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Install buf
         run: make init-buf
       - name: Lint proto files

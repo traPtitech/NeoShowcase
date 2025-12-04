@@ -41,7 +41,7 @@ jobs:
             echo "tag=${tag}" >> $GITHUB_OUTPUT
           fi
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - run: echo "APP_VERSION=${{ steps.calc-tag.outputs.tag || github.ref_name }}" >> $GITHUB_ENV
       - run: echo "APP_REVISION=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
@@ -90,7 +90,7 @@ jobs:
     if: ${{ github.event_name == 'push' && github.ref_type == 'tag' || inputs.ref_name != '' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
