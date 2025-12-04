@@ -16,11 +16,14 @@ jobs:
       - name: Set up Helm
         uses: azure/setup-helm@v4
 
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+
       # Python is required because `ct lint` runs Yamale (https://github.com/23andMe/Yamale) and
       # yamllint (https://github.com/adrienverge/yamllint) which require Python
       - uses: actions/setup-python@v6
         with:
-          python-version: '3.x'
+          python-version: "3.x"
 
       - name: Set up chart-testing
         uses: helm/chart-testing-action@v2.8.0
@@ -36,3 +39,50 @@ jobs:
       - name: Run chart-testing (lint)
         if: steps.list-changed.outputs.changed == 'true'
         run: ct lint --check-version-increment=false --validate-maintainers=false --target-branch ${{ github.event.repository.default_branch }}
+
+      - name: Create kind cluster
+        uses: helm/kind-action@v1
+        if: steps.list-changed.outputs.changed == 'true'
+
+      - name: Setup kind cluster
+        if: steps.list-changed.outputs.changed == 'true'
+        run: |
+          # Install Traefik CRDs
+          kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v3.0.0/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
+
+          # Create namespace
+          kubectl create namespace neoshowcase
+          kubectl create namespace db
+
+          # Create ns secret
+          kubectl create secret generic ns -n neoshowcase \
+            --from-literal=db-password=mariadbpassword \
+            --from-literal=mariadb-password=mariadbpassword \
+            --from-literal=mongodb-password=mongodbpassword \
+            --from-literal=s3-access-key=s3accesskey \
+            --from-literal=s3-access-secret=s3accesssecret \
+            --from-literal=registry-password=registrypassword \
+            --from-literal=gitea-token=giteatoken \
+            --from-literal=controller-token=controllertoken
+
+          # Create ns-keys secret
+          ssh-keygen -t ed25519 -N "" -f id_ed25519
+          kubectl create secret generic ns-keys -n neoshowcase \
+            --from-file=id_ed25519=id_ed25519
+
+          # Add bitnami repo
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+
+          # Install MariaDB
+          helm install mariadb bitnami/mariadb \
+            --set image.tag=latest \
+            --set auth.rootPassword=mariadbpassword \
+            --set auth.database=neoshowcase \
+            -n db
+
+          # Wait for MariaDB to be ready
+          kubectl wait --for=condition=Ready pod -l app.kubernetes.io/instance=mariadb -n db --timeout=60s
+
+      - name: Run chart-testing (install)
+        if: steps.list-changed.outputs.changed == 'true'
+        run: ct install --charts charts/neoshowcase --namespace neoshowcase --helm-extra-args "--timeout 5m"
