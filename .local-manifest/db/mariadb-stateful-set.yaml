@@ -26,7 +26,7 @@ spec:
 
       containers:
         - name: mariadb
-          image: mariadb:10
+          image: mariadb:11.8
           imagePullPolicy: Always
           args:
             - mysqld

@@ -11,12 +11,12 @@ services:
       - ./.local-dev/keys:/keys
       - ~/.ssh/known_hosts:/root/.ssh/known_hosts
     labels:
-      - 'traefik.enable=true'
-      - 'traefik.http.routers.ns-gateway.rule=Host(`ns.local.trapti.tech`) && PathPrefix(`/neoshowcase.protobuf.APIService`)'
+      - "traefik.enable=true"
+      - "traefik.http.routers.ns-gateway.rule=Host(`ns.local.trapti.tech`) && PathPrefix(`/neoshowcase.protobuf.APIService`)"
       # - "traefik.http.routers.ns-gateway.middlewares=ns_auth@file"
-      - 'traefik.http.routers.ns-gateway.middlewares=ns_auth_dev@file'
-      - 'traefik.http.routers.ns-gateway.service=ns-gateway'
-      - 'traefik.http.services.ns-gateway.loadbalancer.server.port=8080'
+      - "traefik.http.routers.ns-gateway.middlewares=ns_auth_dev@file"
+      - "traefik.http.routers.ns-gateway.service=ns-gateway"
+      - "traefik.http.services.ns-gateway.loadbalancer.server.port=8080"
     depends_on:
       mysql:
         condition: service_healthy
@@ -34,12 +34,12 @@ services:
       - ./dashboard:/work
       - /work/node_modules
     labels:
-      - 'traefik.enable=true'
-      - 'traefik.http.routers.ns_dashboard.rule=Host(`ns.local.trapti.tech`)'
+      - "traefik.enable=true"
+      - "traefik.http.routers.ns_dashboard.rule=Host(`ns.local.trapti.tech`)"
       # - "traefik.http.routers.ns_dashboard.middlewares=ns_auth@file"
-      - 'traefik.http.routers.ns_dashboard.middlewares=ns_auth_dev@file'
-      - 'traefik.http.routers.ns_dashboard.service=ns_dashboard'
-      - 'traefik.http.services.ns_dashboard.loadbalancer.server.port=80'
+      - "traefik.http.routers.ns_dashboard.middlewares=ns_auth_dev@file"
+      - "traefik.http.routers.ns_dashboard.service=ns_dashboard"
+      - "traefik.http.services.ns_dashboard.loadbalancer.server.port=80"
     networks:
       - default
 
@@ -65,14 +65,14 @@ services:
       ns-migrate:
         condition: service_completed_successfully
     labels:
-      - 'traefik.enable=true'
-      - 'traefik.http.routers.ns_controller_webhook.rule=Host(`ns.local.trapti.tech`) && PathPrefix(`/api/webhook`)'
-      - 'traefik.http.routers.ns_controller_webhook.service=ns_controller_webhook'
-      - 'traefik.http.services.ns_controller_webhook.loadbalancer.server.port=8080'
-      - 'traefik.tcp.routers.ns_controller.entrypoints=ns-ssh'
-      - 'traefik.tcp.routers.ns_controller.rule=HostSNI(`*`)'
-      - 'traefik.tcp.routers.ns_controller.service=ns_controller'
-      - 'traefik.tcp.services.ns_controller.loadbalancer.server.port=2201'
+      - "traefik.enable=true"
+      - "traefik.http.routers.ns_controller_webhook.rule=Host(`ns.local.trapti.tech`) && PathPrefix(`/api/webhook`)"
+      - "traefik.http.routers.ns_controller_webhook.service=ns_controller_webhook"
+      - "traefik.http.services.ns_controller_webhook.loadbalancer.server.port=8080"
+      - "traefik.tcp.routers.ns_controller.entrypoints=ns-ssh"
+      - "traefik.tcp.routers.ns_controller.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.ns_controller.service=ns_controller"
+      - "traefik.tcp.services.ns_controller.loadbalancer.server.port=2201"
     networks:
       - default
 
@@ -101,10 +101,10 @@ services:
     volumes:
       - ./.local-dev/config/ns-auth.yaml:/config.yaml
     labels:
-      - 'traefik.enable=true'
-      - 'traefik.http.routers.ns_auth.rule=Host(`auth.local.trapti.tech`)'
-      - 'traefik.http.routers.ns_auth.service=ns_auth'
-      - 'traefik.http.services.ns_auth.loadbalancer.server.port=4181'
+      - "traefik.enable=true"
+      - "traefik.http.routers.ns_auth.rule=Host(`auth.local.trapti.tech`)"
+      - "traefik.http.routers.ns_auth.service=ns_auth"
+      - "traefik.http.services.ns_auth.loadbalancer.server.port=4181"
     networks:
       - default
 
@@ -115,7 +115,7 @@ services:
     restart: always
     environment:
       HEADER: X-Showcase-User
-      USER: 'toki'
+      USER: "toki"
     networks:
       - default
 
@@ -145,7 +145,7 @@ services:
     build:
       context: .
       target: ns
-    restart: 'no'
+    restart: "no"
     entrypoint: cp /app/ns /ns-bin
     volumes:
       - binary:/ns-bin
@@ -181,14 +181,14 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1'
+          cpus: "1"
 
   static-server:
     image: caddy:2-alpine
     restart: always
     environment:
       # Do not bind to all addresses in production!
-      CADDY_ADMIN: ':2019'
+      CADDY_ADMIN: ":2019"
     volumes:
       - ./.local-dev/staticsite/artifacts:/artifacts
     networks:
@@ -216,13 +216,13 @@ services:
     build:
       context: .
       target: ns-migrate
-    restart: 'no'
+    restart: "no"
     environment:
-      DB_HOST: 'mysql'
-      DB_PORT: '3306'
-      DB_USER: 'root'
-      DB_PASS: 'password'
-      DB_NAME: 'neoshowcase'
+      DB_HOST: "mysql"
+      DB_PORT: "3306"
+      DB_USER: "root"
+      DB_PASS: "password"
+      DB_NAME: "neoshowcase"
     depends_on:
       mysql:
         condition: service_healthy
@@ -233,14 +233,14 @@ services:
     image: registry:2
     restart: always
     environment:
-      REGISTRY_STORAGE_DELETE_ENABLED: 'true'
+      REGISTRY_STORAGE_DELETE_ENABLED: "true"
       REGISTRY_HTTP_ADDR: :80
       REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /var/lib/registry
       GC_SCRIPT: /gc.sh
     labels:
-      - 'traefik.enable=true'
-      - 'traefik.http.routers.registry.rule=Host(`registry.local`)'
-      - 'traefik.http.services.registry.loadbalancer.server.port=80'
+      - "traefik.enable=true"
+      - "traefik.http.routers.registry.rule=Host(`registry.local`)"
+      - "traefik.http.services.registry.loadbalancer.server.port=80"
     volumes:
       - ./.local-dev/registry/entrypoint.sh:/entrypoint.sh
       - ./.local-dev/registry/gc.sh:/gc.sh
@@ -248,26 +248,26 @@ services:
     networks:
       default:
         aliases:
-          - 'registry.local'
+          - "registry.local"
 
   registry-frontend:
     image: joxit/docker-registry-ui:2
     restart: always
     environment:
-      SINGLE_REGISTRY: 'true'
+      SINGLE_REGISTRY: "true"
       REGISTRY_TITLE: registry.local
       NGINX_PROXY_PASS_URL: http://registry.local
-      SHOW_CONTENT_DIGEST: 'true'
-      DELETE_IMAGES: 'true'
+      SHOW_CONTENT_DIGEST: "true"
+      DELETE_IMAGES: "true"
     labels:
-      - 'traefik.enable=true'
-      - 'traefik.http.routers.registry_frontend.rule=Host(`registry-frontend.local.trapti.tech`)'
-      - 'traefik.http.services.registry_frontend.loadbalancer.server.port=80'
+      - "traefik.enable=true"
+      - "traefik.http.routers.registry_frontend.rule=Host(`registry-frontend.local.trapti.tech`)"
+      - "traefik.http.services.registry_frontend.loadbalancer.server.port=80"
     networks:
       - default
 
   mysql:
-    image: mariadb:10
+    image: mariadb:11.8
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: password
@@ -281,7 +281,7 @@ services:
     volumes:
       - ./.local-dev/mysql:/var/lib/mysql
     ports:
-      - '5004:3306'
+      - "5004:3306"
     networks:
       - default
       - apps
@@ -295,31 +295,31 @@ services:
     volumes:
       - ./.local-dev/mongo:/data/db
     ports:
-      - '5010:27017'
+      - "5010:27017"
     networks:
       - default
       - apps
 
   adminer:
-    image: adminer:4.8.1
+    image: adminer:5.4.1
     restart: always
     environment:
       ADMINER_DEFAULT_SERVER: mysql
       ADMINER_DESIGN: nette
     labels:
-      - 'traefik.enable=true'
-      - 'traefik.http.routers.adminer.rule=Host(`adminer.local.trapti.tech`)'
-      - 'traefik.http.services.adminer.loadbalancer.server.port=8080'
+      - "traefik.enable=true"
+      - "traefik.http.routers.adminer.rule=Host(`adminer.local.trapti.tech`)"
+      - "traefik.http.services.adminer.loadbalancer.server.port=8080"
     networks:
       - default
 
   grafana:
-    image: grafana/grafana:11.1.3
+    image: grafana/grafana:12.3.0
     restart: always
     labels:
-      - 'traefik.enable=true'
-      - 'traefik.http.routers.grafana.rule=Host(`grafana.local.trapti.tech`)'
-      - 'traefik.http.services.grafana.loadbalancer.server.port=3000'
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.local.trapti.tech`)"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
     volumes:
       - ./.local-dev/grafana:/var/lib/grafana
       - ./.local-dev/config/grafana.ini:/etc/grafana/grafana.ini:ro
@@ -328,13 +328,13 @@ services:
 
   loki:
     image: grafana/loki:3.1.0
-    command: '-config.file /etc/loki/loki.yaml'
+    command: "-config.file /etc/loki/loki.yaml"
     restart: always
     labels:
       # for debug
-      - 'traefik.enable=true'
-      - 'traefik.http.routers.loki.rule=Host(`loki.local.trapti.tech`)'
-      - 'traefik.http.services.loki.loadbalancer.server.port=3100'
+      - "traefik.enable=true"
+      - "traefik.http.routers.loki.rule=Host(`loki.local.trapti.tech`)"
+      - "traefik.http.services.loki.loadbalancer.server.port=3100"
     volumes:
       - ./.local-dev/loki:/var/lib/loki
       - ./.local-dev/config/loki.yaml:/etc/loki/loki.yaml:ro
@@ -343,7 +343,7 @@ services:
 
   promtail:
     image: grafana/promtail:3.1.0
-    command: '-config.file /etc/promtail/promtail.yaml'
+    command: "-config.file /etc/promtail/promtail.yaml"
     restart: always
     volumes:
       - ./.local-dev/config/promtail.yaml:/etc/promtail/promtail.yaml
@@ -367,7 +367,7 @@ services:
       - ./.local-dev/victoria-metrics:/data
 
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor:v0.50.0
+    image: ghcr.io/google/cadvisor:v0.54
     privileged: true
     devices:
       - /dev/kmsg
@@ -392,7 +392,7 @@ services:
       - ./.local-dev/config/sablier.yaml:/etc/sablier/sablier.yaml
 
   traefik:
-    image: traefik:3.1
+    image: traefik:v3.6.4
     restart: always
     command:
       - --api.insecure=true
@@ -414,22 +414,22 @@ services:
       - --experimental.plugins.sablier.modulename=github.com/sablierapp/sablier
       - --experimental.plugins.sablier.version=v1.8.1
     ports:
-      - '80:80'
-      - '443:443'
-      - '2201:2201'
-      - '8080:8080'
-      - '9100:9100'
+      - "80:80"
+      - "443:443"
+      - "2201:2201"
+      - "8080:8080"
+      - "9100:9100"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./.local-dev/traefik:/opt/neoshowcase/conf
     labels:
-      - 'traefik.enable=true'
-      - 'traefik.http.routers.traefik_dashboard.rule=Host(`traefik.local.trapti.tech`)'
-      - 'traefik.http.routers.traefik_dashboard.service=traefik_dashboard'
-      - 'traefik.http.services.traefik_dashboard.loadbalancer.server.port=8080'
-      - 'traefik.http.routers.traefik_metrics.rule=Host(`traefik.local.trapti.tech`) && PathPrefix(`/metrics`)'
-      - 'traefik.http.routers.traefik_metrics.service=traefik_metrics'
-      - 'traefik.http.services.traefik_metrics.loadbalancer.server.port=9100'
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik_dashboard.rule=Host(`traefik.local.trapti.tech`)"
+      - "traefik.http.routers.traefik_dashboard.service=traefik_dashboard"
+      - "traefik.http.services.traefik_dashboard.loadbalancer.server.port=8080"
+      - "traefik.http.routers.traefik_metrics.rule=Host(`traefik.local.trapti.tech`) && PathPrefix(`/metrics`)"
+      - "traefik.http.routers.traefik_metrics.service=traefik_metrics"
+      - "traefik.http.services.traefik_metrics.loadbalancer.server.port=9100"
     networks:
       - default
       - apps
