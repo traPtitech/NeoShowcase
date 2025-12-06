@@ -138,8 +138,11 @@ func (s *ServiceImpl) solveDockerfile(
 		Exports: []buildkit.ExportEntry{{
 			Type: buildkit.ExporterImage,
 			Attrs: map[string]string{
-				"name": dest,
-				"push": "true",
+				"name":              dest,
+				"push":              "true",
+				"oci-mediatypes":    "true",
+				"compression":       "zstd",
+				"force-compression": "false",
 			},
 		}},
 		LocalMounts: map[string]fsutil.FS{
