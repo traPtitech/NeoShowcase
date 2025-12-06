@@ -7,8 +7,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/docker/docker/api/types/image"
-	"github.com/docker/docker/client"
+	"github.com/moby/moby/client"
 	"github.com/stretchr/testify/require"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
@@ -35,7 +34,7 @@ func prepareManager(t *testing.T) (*Backend, *client.Client) {
 	err = m.Start(context.Background())
 	require.NoError(t, err)
 
-	res, err := c.ImagePull(context.Background(), "alpine:latest", image.PullOptions{})
+	res, err := c.ImagePull(context.Background(), "alpine:latest", client.ImagePullOptions{})
 	require.NoError(t, err)
 	_, err = io.ReadAll(res)
 	require.NoError(t, err)

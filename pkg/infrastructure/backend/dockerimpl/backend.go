@@ -12,12 +12,9 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/retry"
 
 	clitypes "github.com/docker/cli/cli/config/types"
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/api/types/events"
-	"github.com/docker/docker/api/types/filters"
-	"github.com/docker/docker/api/types/network"
-	"github.com/docker/docker/client"
 	"github.com/friendsofgo/errors"
+	"github.com/moby/moby/api/types/container"
+	"github.com/moby/moby/client"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
@@ -50,9 +47,7 @@ type Backend struct {
 }
 
 func NewClientFromEnv() (*client.Client, error) {
-	return client.NewClientWithOpts(
-		client.FromEnv,
-	)
+	return client.New(client.FromEnv)
 }
 
 func NewDockerBackend(
@@ -87,10 +82,10 @@ func (b *Backend) Start(ctx context.Context) error {
 
 func (b *Backend) eventListener(ctx context.Context) error {
 	// https://docs.docker.com/engine/reference/commandline/events/
-	ch, errCh := b.c.Events(ctx, events.ListOptions{Filters: filters.NewArgs(filters.Arg("type", "container"))})
+	stream := b.c.Events(ctx, client.EventsListOptions{Filters: make(client.Filters).Add("type", "container")})
 	for {
 		select {
-		case ev, ok := <-ch:
+		case ev, ok := <-stream.Messages:
 			if !ok {
 				return nil
 			}
@@ -102,7 +97,7 @@ func (b *Backend) eventListener(ctx context.Context) error {
 				}
 				b.eventSubs.Publish(&domain.ContainerEvent{ApplicationID: appID})
 			}
-		case err, ok := <-errCh:
+		case err, ok := <-stream.Err:
 			if !ok {
 				return nil
 			}
@@ -138,17 +133,17 @@ func (b *Backend) ListenContainerEvents() (sub <-chan *domain.ContainerEvent, un
 }
 
 func (b *Backend) initNetworks(ctx context.Context) error {
-	networks, err := b.c.NetworkList(ctx, network.ListOptions{})
+	networks, err := b.c.NetworkList(ctx, client.NetworkListOptions{})
 	if err != nil {
 		return errors.Wrap(err, "failed to list networks")
 	}
-	for _, network := range networks {
+	for _, network := range networks.Items {
 		if network.Name == b.config.Network {
 			return nil
 		}
 	}
 
-	_, err = b.c.NetworkCreate(ctx, b.config.Network, network.CreateOptions{})
+	_, err = b.c.NetworkCreate(ctx, b.config.Network, client.NetworkCreateOptions{})
 	return err
 }
 

@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/docker/docker/api/types/container"
+	"github.com/moby/moby/client"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -57,17 +57,18 @@ func TestDockerBackend_CreateContainer(t *testing.T) {
 		err := m.Synchronize(context.Background(), &st)
 		require.NoError(t, err)
 
-		cont, err := c.ContainerInspect(context.Background(), containerName(appID))
+		res, err := c.ContainerInspect(context.Background(), containerName(appID), client.ContainerInspectOptions{})
 		require.NoError(t, err)
 
-		assert.Equal(t, cont.Config.Image, image+":latest")
-		assert.Equal(t, cont.Config.Labels[appLabel], "true")
-		assert.Equal(t, cont.Config.Labels[appIDLabel], appID)
+		assert.Equal(t, res.Container.Image, image+":latest")
+		assert.Equal(t, res.Container.Config.Labels[appLabel], "true")
+		assert.Equal(t, res.Container.Config.Labels[appIDLabel], appID)
 
-		require.NoError(t, c.ContainerRemove(context.Background(), cont.ID, container.RemoveOptions{
+		_, err = c.ContainerRemove(context.Background(), res.Container.ID, client.ContainerRemoveOptions{
 			RemoveVolumes: true,
 			Force:         true,
-		}))
+		})
+		require.NoError(t, err)
 	})
 
 	t.Run("コンテナを正常に作成して起動 (Recreate)", func(t *testing.T) {
@@ -96,16 +97,17 @@ func TestDockerBackend_CreateContainer(t *testing.T) {
 		err = m.Synchronize(context.Background(), &st)
 		require.NoError(t, err)
 
-		cont, err := c.ContainerInspect(context.Background(), containerName(appID))
+		res, err := c.ContainerInspect(context.Background(), containerName(appID), client.ContainerInspectOptions{})
 		require.NoError(t, err)
 
-		assert.Equal(t, cont.Config.Image, image+":latest")
-		assert.Equal(t, cont.Config.Labels[appLabel], "true")
-		assert.Equal(t, cont.Config.Labels[appIDLabel], appID)
+		assert.Equal(t, res.Container.Image, image+":latest")
+		assert.Equal(t, res.Container.Config.Labels[appLabel], "true")
+		assert.Equal(t, res.Container.Config.Labels[appIDLabel], appID)
 
-		require.NoError(t, c.ContainerRemove(context.Background(), cont.ID, container.RemoveOptions{
+		_, err = c.ContainerRemove(context.Background(), res.Container.ID, client.ContainerRemoveOptions{
 			RemoveVolumes: true,
 			Force:         true,
-		}))
+		})
+		require.NoError(t, err)
 	})
 }

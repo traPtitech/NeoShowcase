@@ -4,14 +4,13 @@ import (
 	"context"
 	"io"
 
-	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/friendsofgo/errors"
+	"github.com/moby/moby/api/pkg/stdcopy"
+	"github.com/moby/moby/client"
 	"golang.org/x/sync/errgroup"
 )
 
-func streamHijackedResp(ctx context.Context, res types.HijackedResponse, stdin io.Reader, stdout, stderr io.Writer) error {
+func streamHijackedResp(ctx context.Context, res client.HijackedResponse, stdin io.Reader, stdout, stderr io.Writer) error {
 	ctx, cancel := context.WithCancel(ctx)
 	eg, ctx := errgroup.WithContext(ctx)
 	eg.Go(func() error {
@@ -39,7 +38,7 @@ func streamHijackedResp(ctx context.Context, res types.HijackedResponse, stdin i
 }
 
 func (b *Backend) AttachContainer(ctx context.Context, appID string, stdin io.Reader, stdout, stderr io.Writer) error {
-	res, err := b.c.ContainerAttach(ctx, containerName(appID), container.AttachOptions{
+	res, err := b.c.ContainerAttach(ctx, containerName(appID), client.ContainerAttachOptions{
 		Stream:     true,
 		Stdin:      true,
 		Stdout:     true,
@@ -50,27 +49,27 @@ func (b *Backend) AttachContainer(ctx context.Context, appID string, stdin io.Re
 	if err != nil {
 		return errors.Wrap(err, "attaching to container")
 	}
-	return streamHijackedResp(ctx, res, stdin, stdout, stderr)
+	return streamHijackedResp(ctx, res.HijackedResponse, stdin, stdout, stderr)
 }
 
 func (b *Backend) ExecContainer(ctx context.Context, appID string, cmd []string, stdin io.Reader, stdout, stderr io.Writer) error {
-	execConf := container.ExecOptions{
-		Tty:          true,
+	execConf := client.ExecCreateOptions{
+		TTY:          true,
 		AttachStdin:  true,
 		AttachStderr: true,
 		AttachStdout: true,
 		WorkingDir:   "/srv",
 		Cmd:          cmd,
 	}
-	execID, err := b.c.ContainerExecCreate(ctx, containerName(appID), execConf)
+	execID, err := b.c.ExecCreate(ctx, containerName(appID), execConf)
 	if err != nil {
 		return errors.Wrap(err, "creating exec")
 	}
 
-	res, err := b.c.ContainerExecAttach(ctx, execID.ID, container.ExecStartOptions{})
+	res, err := b.c.ExecAttach(ctx, execID.ID, client.ExecAttachOptions{})
 	if err != nil {
 		return errors.Wrap(err, "attaching exec process")
 	}
 
-	return streamHijackedResp(ctx, res, stdin, stdout, stderr)
+	return streamHijackedResp(ctx, res.HijackedResponse, stdin, stdout, stderr)
 }
