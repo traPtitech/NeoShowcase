@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: adminer
-          image: adminer:4.8.1
+          image: adminer:5.4.1
           imagePullPolicy: Always
           env:
             - name: ADMINER_DEFAULT_SERVER
