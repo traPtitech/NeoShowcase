@@ -15,9 +15,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.92.1
 	github.com/bep/debounce v1.2.1
 	github.com/cert-manager/cert-manager v1.19.1
-	github.com/docker/cli v28.5.1+incompatible
-	github.com/docker/docker v28.5.1+incompatible // should be in sync with requirements of github.com/moby/buildkit or build could break
-	github.com/docker/go-connections v0.6.0
+	github.com/docker/cli v29.1.1+incompatible
 	github.com/friendsofgo/errors v0.9.2
 	github.com/gliderlabs/ssh v0.3.8
 	github.com/go-git/go-git/v5 v5.16.4
@@ -30,6 +28,8 @@ require (
 	github.com/labstack/echo/v4 v4.13.4
 	github.com/lukesampson/figlet v0.0.0-20190211215653-8a3ef4a6ac42
 	github.com/moby/buildkit v0.26.2
+	github.com/moby/moby/api v1.52.0
+	github.com/moby/moby/client v0.2.1
 	github.com/motoki317/sc v1.8.2
 	github.com/ncw/swift v1.0.53
 	github.com/pkg/errors v0.9.1
@@ -109,7 +109,9 @@ require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/davidmz/go-pageant v1.0.2 // indirect
 	github.com/distribution/reference v0.6.0 // indirect
+	github.com/docker/docker v28.5.1+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.9.3 // indirect
+	github.com/docker/go-connections v0.6.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7 // indirect
 	github.com/ebitengine/purego v0.8.4 // indirect

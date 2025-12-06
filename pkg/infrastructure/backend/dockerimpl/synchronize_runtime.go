@@ -4,14 +4,13 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net/netip"
 	"strconv"
 
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/api/types/filters"
-	"github.com/docker/docker/api/types/image"
-	"github.com/docker/docker/api/types/network"
-	"github.com/docker/go-connections/nat"
 	"github.com/friendsofgo/errors"
+	"github.com/moby/moby/api/types/container"
+	"github.com/moby/moby/api/types/network"
+	"github.com/moby/moby/client"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 
@@ -27,7 +26,7 @@ func (b *Backend) syncAppContainer(ctx context.Context, app *domain.RuntimeDesir
 	}
 
 	if oldContainer != nil {
-		err := b.c.ContainerRemove(ctx, oldContainer.ID, container.RemoveOptions{
+		_, err := b.c.ContainerRemove(ctx, oldContainer.ID, client.ContainerRemoveOptions{
 			RemoveVolumes: true,
 			Force:         true,
 		})
@@ -40,7 +39,7 @@ func (b *Backend) syncAppContainer(ctx context.Context, app *domain.RuntimeDesir
 	if err != nil {
 		return errors.Wrap(err, "getting auth config")
 	}
-	res, err := b.c.ImagePull(ctx, app.ImageName+":"+app.ImageTag, image.PullOptions{
+	res, err := b.c.ImagePull(ctx, app.ImageName+":"+app.ImageTag, client.ImagePullOptions{
 		RegistryAuth: registryAuth,
 	})
 	if err != nil {
@@ -62,7 +61,7 @@ func (b *Backend) syncAppContainer(ctx context.Context, app *domain.RuntimeDesir
 		Image:        newImageName,
 		Labels:       b.containerLabels(app.App),
 		Env:          envs,
-		ExposedPorts: make(map[nat.Port]struct{}),
+		ExposedPorts: make(network.PortSet),
 		OpenStdin:    true,
 		Tty:          true,
 		AttachStdin:  true,
@@ -76,13 +75,13 @@ func (b *Backend) syncAppContainer(ctx context.Context, app *domain.RuntimeDesir
 		config.Cmd = args
 	}
 	for _, website := range app.App.Websites {
-		config.ExposedPorts[nat.Port(fmt.Sprintf("%d/tcp", website.HTTPPort))] = struct{}{}
+		config.ExposedPorts[network.MustParsePort(fmt.Sprintf("%d/tcp", website.HTTPPort))] = struct{}{}
 	}
 	for _, p := range app.App.PortPublications {
-		config.ExposedPorts[nat.Port(fmt.Sprintf("%d/%s", p.ApplicationPort, p.Protocol))] = struct{}{}
+		config.ExposedPorts[network.MustParsePort(fmt.Sprintf("%d/%s", p.ApplicationPort, p.Protocol))] = struct{}{}
 	}
 	hostConfig := &container.HostConfig{
-		PortBindings: make(map[nat.Port][]nat.PortBinding),
+		PortBindings: make(network.PortMap),
 		RestartPolicy: container.RestartPolicy{
 			Name: "on-failure",
 			// sablier stops the container, so we don't need to restart it
@@ -90,9 +89,9 @@ func (b *Backend) syncAppContainer(ctx context.Context, app *domain.RuntimeDesir
 		},
 	}
 	for _, p := range app.App.PortPublications {
-		appPort := nat.Port(fmt.Sprintf("%d/%s", p.ApplicationPort, p.Protocol))
-		hostConfig.PortBindings[appPort] = append(hostConfig.PortBindings[appPort], nat.PortBinding{
-			HostIP:   "0.0.0.0/0",
+		appPort := network.MustParsePort(fmt.Sprintf("%d/%s", p.ApplicationPort, p.Protocol))
+		hostConfig.PortBindings[appPort] = append(hostConfig.PortBindings[appPort], network.PortBinding{
+			HostIP:   netip.IPv4Unspecified(),
 			HostPort: strconv.Itoa(p.InternetPort),
 		})
 	}
@@ -113,12 +112,18 @@ func (b *Backend) syncAppContainer(ctx context.Context, app *domain.RuntimeDesir
 			Aliases: []string{networkName(app.App.ID)},
 		},
 	}}
-	cont, err := b.c.ContainerCreate(ctx, config, hostConfig, networkingConfig, nil, containerName(app.App.ID))
+	cont, err := b.c.ContainerCreate(ctx, client.ContainerCreateOptions{
+		Config:           config,
+		HostConfig:       hostConfig,
+		NetworkingConfig: networkingConfig,
+		Platform:         nil,
+		Name:             containerName(app.App.ID),
+	})
 	if err != nil {
 		return errors.Wrap(err, "failed to create container")
 	}
 
-	err = b.c.ContainerStart(ctx, cont.ID, container.StartOptions{})
+	_, err = b.c.ContainerStart(ctx, cont.ID, client.ContainerStartOptions{})
 	if err != nil {
 		return errors.Wrap(err, "failed to start container")
 	}
@@ -127,16 +132,14 @@ func (b *Backend) syncAppContainer(ctx context.Context, app *domain.RuntimeDesir
 
 func (b *Backend) synchronizeRuntime(ctx context.Context, apps []*domain.RuntimeDesiredState) error {
 	// List old resources
-	oldContainers, err := b.c.ContainerList(ctx, container.ListOptions{
-		All: true,
-		Filters: filters.NewArgs(
-			filters.Arg("label", fmt.Sprintf("%s=true", appLabel)),
-		),
+	oldContainers, err := b.c.ContainerList(ctx, client.ContainerListOptions{
+		All:     true,
+		Filters: make(client.Filters).Add("label", fmt.Sprintf("%s=true", appLabel)),
 	})
 	if err != nil {
 		return errors.Wrap(err, "failed to list containers")
 	}
-	oldContainersMap := lo.SliceToMap(oldContainers, func(c container.Summary) (string, *container.Summary) {
+	oldContainersMap := lo.SliceToMap(oldContainers.Items, func(c container.Summary) (string, *container.Summary) {
 		return c.Labels[appIDLabel], &c
 	})
 
@@ -163,13 +166,13 @@ func (b *Backend) synchronizeRuntime(ctx context.Context, apps []*domain.Runtime
 
 	// Prune old resources
 	newApps := lo.SliceToMap(apps, func(app *domain.RuntimeDesiredState) (string, bool) { return app.App.ID, true })
-	for _, oldContainer := range oldContainers {
+	for _, oldContainer := range oldContainers.Items {
 		appID := oldContainer.Labels[appIDLabel]
 		if newApps[appID] {
 			continue
 		}
 
-		err = b.c.ContainerRemove(ctx, oldContainer.ID, container.RemoveOptions{
+		_, err = b.c.ContainerRemove(ctx, oldContainer.ID, client.ContainerRemoveOptions{
 			RemoveVolumes: true,
 			Force:         true,
 		})
