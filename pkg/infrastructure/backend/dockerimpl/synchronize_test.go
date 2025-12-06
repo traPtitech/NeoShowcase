@@ -60,7 +60,7 @@ func TestDockerBackend_CreateContainer(t *testing.T) {
 		res, err := c.ContainerInspect(context.Background(), containerName(appID), client.ContainerInspectOptions{})
 		require.NoError(t, err)
 
-		assert.Equal(t, res.Container.Image, image+":latest")
+		assert.Equal(t, res.Container.Config.Image, image+":latest")
 		assert.Equal(t, res.Container.Config.Labels[appLabel], "true")
 		assert.Equal(t, res.Container.Config.Labels[appIDLabel], appID)
 
@@ -100,7 +100,7 @@ func TestDockerBackend_CreateContainer(t *testing.T) {
 		res, err := c.ContainerInspect(context.Background(), containerName(appID), client.ContainerInspectOptions{})
 		require.NoError(t, err)
 
-		assert.Equal(t, res.Container.Image, image+":latest")
+		assert.Equal(t, res.Container.Config.Image, image+":latest")
 		assert.Equal(t, res.Container.Config.Labels[appLabel], "true")
 		assert.Equal(t, res.Container.Config.Labels[appIDLabel], appID)
 
