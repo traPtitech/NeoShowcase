@@ -17,9 +17,9 @@ func SetupDebugFlag(flags *pflag.FlagSet) {
 	cobra.OnInitialize(func() {
 		if Debug {
 			log.SetLevel(log.DebugLevel)
-			log.SetReportCaller(true)
 			boil.DebugMode = true
 		}
+		log.SetReportCaller(true)
 	})
 }
 
