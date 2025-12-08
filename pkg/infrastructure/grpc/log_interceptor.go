@@ -31,13 +31,25 @@ func (l *LogInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
 				"duration_sec": elapsed,
 			}).Info("unary request succeeded")
 		} else {
-			logrus.WithFields(logrus.Fields{
-				"user":         user.ID,
-				"procedure":    request.Spec().Procedure,
-				"duration_sec": elapsed,
-				"error":        err,
-				"status":       connect.CodeOf(err).String(),
-			}).Error("unary request failed")
+			switch connect.CodeOf(err) {
+			case connect.CodeUnknown, connect.CodeInternal, connect.CodeUnavailable, connect.CodeDeadlineExceeded, connect.CodeUnimplemented, connect.CodeDataLoss:
+				logrus.WithFields(logrus.Fields{
+					"user":         user.ID,
+					"procedure":    request.Spec().Procedure,
+					"duration_sec": elapsed,
+					"error":        err,
+					"status":       connect.CodeOf(err).String(),
+				}).Error("unary request failed with server error")
+
+			case connect.CodeCanceled, connect.CodeInvalidArgument, connect.CodeNotFound, connect.CodeAlreadyExists, connect.CodePermissionDenied, connect.CodeFailedPrecondition, connect.CodeAborted, connect.CodeOutOfRange, connect.CodeUnauthenticated, connect.CodeResourceExhausted:
+				logrus.WithFields(logrus.Fields{
+					"user":         user.ID,
+					"procedure":    request.Spec().Procedure,
+					"duration_sec": elapsed,
+					"error":        err,
+					"status":       connect.CodeOf(err).String(),
+				}).Warn("unary request failed with client error")
+			}
 		}
 
 		return response, err
