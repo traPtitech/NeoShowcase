@@ -29,7 +29,7 @@ func (l *LogInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
 				"user":         user.ID,
 				"procedure":    request.Spec().Procedure,
 				"duration_sec": elapsed,
-			}).Info("")
+			}).Info("unary request succeeded")
 		} else {
 			logrus.WithFields(logrus.Fields{
 				"user":         user.ID,
@@ -37,7 +37,7 @@ func (l *LogInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
 				"duration_sec": elapsed,
 				"error":        err,
 				"status":       connect.CodeOf(err).String(),
-			}).Error("")
+			}).Error("unary request failed")
 		}
 
 		return response, err
