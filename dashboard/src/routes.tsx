@@ -2,7 +2,7 @@ import {
   createAsync,
   Navigate,
   Route,
-  type RouteLoadFunc,
+  type RoutePreloadFunc,
   Router,
   type RouteSectionProps,
   useParams,
@@ -24,7 +24,7 @@ import {
   revalidateRepository,
 } from './libs/api'
 
-const loadApplicationData: RouteLoadFunc = ({ params }) => {
+const loadApplicationData: RoutePreloadFunc = ({ params }) => {
   getApplication(params.id).then((app) => {
     void getRepository(app.repositoryId)
     void getRepositoryCommits([app.commit])
@@ -63,7 +63,7 @@ export const useApplicationData = () => {
   }
 }
 
-const loadRepositoryData: RouteLoadFunc = ({ params }) => {
+const loadRepositoryData: RoutePreloadFunc = ({ params }) => {
   void getRepository(params.id)
   getRepositoryApps(params.id).then((apps) => {
     const hashes = apps.map((app) => app.commit)
@@ -93,7 +93,7 @@ export const useRepositoryData = () => {
   }
 }
 
-const loadBuildData: RouteLoadFunc = ({ params }) => {
+const loadBuildData: RoutePreloadFunc = ({ params }) => {
   void getApplication(params.id)
   getBuild(params.buildID).then((build) => {
     void getRepositoryCommits([build.commit])
