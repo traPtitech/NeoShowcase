@@ -45,7 +45,7 @@ const WebsiteFieldGroup: Component<Props> = (props) => {
 
   return (
     <div class="relative flex w-full flex-col gap-6">
-      <div class="-top-2 -right-2 absolute">
+      <div class="absolute -top-2 -right-2">
         <Button onClick={handleDelete} variants="textError" size="small" type="button">
           Delete
         </Button>
