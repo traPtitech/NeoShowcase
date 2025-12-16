@@ -2,6 +2,8 @@ FROM --platform=$BUILDPLATFORM node:25 AS base
 
 WORKDIR /work
 
+# use --force to replace existing yarn v1 binaries
+RUN npm install -g corepack@latest --force
 RUN corepack enable
 
 COPY package.json yarn.lock .yarnrc.yml ./
