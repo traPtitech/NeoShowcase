@@ -66,7 +66,7 @@ const AppsFilter: Component<{
         <div class="relative size-6">
           <div class="i-material-symbols:tune shrink-0 text-2xl/6" />
           <Show when={filtered()}>
-            <div class="-right-0.5 -top-0.5 absolute size-2 rounded bg-primary-main outline outline-1 outline-ui-background" />
+            <div class="absolute -top-0.5 -right-0.5 size-2 rounded bg-primary-main outline outline-1 outline-ui-background" />
           </Show>
         </div>
         <DropdownMenu.Icon class="size-6 transition-transform duration-200 data-[expanded]:rotate-180">

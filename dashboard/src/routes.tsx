@@ -2,7 +2,7 @@ import {
   createAsync,
   Navigate,
   Route,
-  type RouteLoadFunc,
+  type RoutePreloadFunc,
   Router,
   type RouteSectionProps,
   useParams,
@@ -24,7 +24,7 @@ import {
   revalidateRepository,
 } from './libs/api'
 
-const loadApplicationData: RouteLoadFunc = ({ params }) => {
+const loadApplicationData: RoutePreloadFunc = ({ params }) => {
   getApplication(params.id).then((app) => {
     void getRepository(app.repositoryId)
     void getRepositoryCommits([app.commit])
@@ -33,9 +33,11 @@ const loadApplicationData: RouteLoadFunc = ({ params }) => {
 
 export const useApplicationData = () => {
   const params = useParams()
-  const app = createAsync(() => getApplication(params.id))
+  const applicationId = params.id
+  if (!applicationId) throw new Error('Application ID is missing in route parameters')
+  const app = createAsync(() => getApplication(applicationId))
   const repo = createAsync(async () => app() && (await getRepository(app()?.repositoryId)))
-  const builds = createAsync(() => getBuilds(params.id))
+  const builds = createAsync(() => getBuilds(applicationId))
   const hashes = () => {
     const a = app()
     const b = builds()
@@ -48,7 +50,7 @@ export const useApplicationData = () => {
     return getRepositoryCommits(h)
   })
   const refetch = async () => {
-    await Promise.all([revalidateApplication(params.id), revalidateBuilds(params.id)])
+    await Promise.all([revalidateApplication(applicationId), revalidateBuilds(applicationId)])
   }
   const hasPermission = createMemo(() => hasApplicationPermission(app))
   return {
@@ -61,7 +63,7 @@ export const useApplicationData = () => {
   }
 }
 
-const loadRepositoryData: RouteLoadFunc = ({ params }) => {
+const loadRepositoryData: RoutePreloadFunc = ({ params }) => {
   void getRepository(params.id)
   getRepositoryApps(params.id).then((apps) => {
     const hashes = apps.map((app) => app.commit)
@@ -71,6 +73,8 @@ const loadRepositoryData: RouteLoadFunc = ({ params }) => {
 
 export const useRepositoryData = () => {
   const params = useParams()
+  const repositoryId = params.id
+  if (!repositoryId) throw new Error('Repository ID is missing in route parameters')
   const repo = createAsync(() => getRepository(params.id))
   const apps = createAsync(() => getRepositoryApps(params.id))
   const commits = createAsync(async () => {
@@ -78,7 +82,7 @@ export const useRepositoryData = () => {
     if (!a) return undefined
     return getRepositoryCommits(a.map((a) => a.commit))
   })
-  const refetchRepo = () => revalidateRepository(params.id)
+  const refetchRepo = () => revalidateRepository(repositoryId)
   const hasPermission = createMemo(() => hasRepositoryPermission(repo))
   return {
     repo,
@@ -89,7 +93,7 @@ export const useRepositoryData = () => {
   }
 }
 
-const loadBuildData: RouteLoadFunc = ({ params }) => {
+const loadBuildData: RoutePreloadFunc = ({ params }) => {
   void getApplication(params.id)
   getBuild(params.buildID).then((build) => {
     void getRepositoryCommits([build.commit])
@@ -98,15 +102,19 @@ const loadBuildData: RouteLoadFunc = ({ params }) => {
 
 export const useBuildData = () => {
   const params = useParams()
-  const app = createAsync(() => getApplication(params.id))
-  const build = createAsync(() => getBuild(params.buildID))
+  const applicationId = params.id
+  if (!applicationId) throw new Error('Repository ID is missing in route parameters')
+  const buildId = params.buildID
+  if (!buildId) throw new Error('Build ID is missing in route parameters')
+  const app = createAsync(() => getApplication(applicationId))
+  const build = createAsync(() => getBuild(buildId))
   const commit = createAsync(async () => {
     const hash = build()?.commit
     if (!hash) return undefined
     return getRepositoryCommits([hash]).then((c) => c[hash])
   })
   const refetch = async () => {
-    await Promise.all([revalidateApplication(params.id), revalidateBuild(params.buildID), revalidateBuilds(params.id)])
+    await Promise.all([revalidateApplication(applicationId), revalidateBuild(buildId), revalidateBuilds(applicationId)])
   }
   const hasPermission = () => hasApplicationPermission(app)
   return {
