@@ -12,7 +12,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
-func (s *ServiceImpl) saveArtifact(ctx context.Context, st *state) error {
+func (s *ServiceImpl) saveGzArtifact(ctx context.Context, st *state, artifactName string) error {
 	// Open artifact
 	filename := st.artifactTempFile.Name()
 	stat, err := os.Stat(filename)
@@ -21,7 +21,7 @@ func (s *ServiceImpl) saveArtifact(ctx context.Context, st *state) error {
 	}
 
 	// Create artifact meta
-	artifact := domain.NewArtifact(st.build.ID, domain.BuilderStaticArtifactName, stat.Size())
+	artifact := domain.NewArtifact(st.build.ID, artifactName, stat.Size())
 
 	// Create artifact .tar.gz
 	file, err := os.Open(filename)
@@ -48,4 +48,12 @@ func (s *ServiceImpl) saveArtifact(ctx context.Context, st *state) error {
 	}
 
 	return nil
+}
+
+func (s *ServiceImpl) saveTarGzArtifact(ctx context.Context, st *state) error {
+	return s.saveGzArtifact(ctx, st, domain.BuilderStaticArtifactName)
+}
+
+func (s *ServiceImpl) saveFunctionArtifact(ctx context.Context, st *state) error {
+	return s.saveGzArtifact(ctx, st, domain.BuilderFunctionArtifactName)
 }

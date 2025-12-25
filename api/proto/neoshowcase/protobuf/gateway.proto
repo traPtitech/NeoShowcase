@@ -95,6 +95,7 @@ message SimpleCommit {
 enum DeployType {
   RUNTIME = 0;
   STATIC = 1;
+  FUNCTION = 2;
 }
 
 message AutoShutdownConfig {
@@ -137,6 +138,10 @@ message StaticConfig {
   bool spa = 2;
 }
 
+message FunctionConfig {
+  string artifact_path = 1;
+}
+
 message BuildConfigStaticBuildpack {
   StaticConfig static_config = 1;
   string context = 2;
@@ -154,6 +159,23 @@ message BuildConfigStaticDockerfile {
   string context = 3;
 }
 
+message BuildConfigFunctionBuildpack {
+  FunctionConfig function_config = 1;
+  string context = 2;
+}
+
+message BuildConfigFunctionCmd {
+  FunctionConfig function_config = 1;
+  string base_image = 2;
+  string build_cmd = 3;
+}
+
+message BuildConfigFunctionDockerfile {
+  FunctionConfig function_config = 1;
+  string dockerfile_name = 2;
+  string context = 3;
+}
+
 message ApplicationConfig {
   oneof build_config {
     BuildConfigRuntimeBuildpack runtime_buildpack = 1;
@@ -162,6 +184,9 @@ message ApplicationConfig {
     BuildConfigStaticBuildpack static_buildpack = 4;
     BuildConfigStaticCmd static_cmd = 5;
     BuildConfigStaticDockerfile static_dockerfile = 6;
+    BuildConfigFunctionBuildpack function_buildpack = 7;
+    BuildConfigFunctionCmd function_cmd = 8;
+    BuildConfigFunctionDockerfile function_dockerfile = 9;
   }
 }
 
