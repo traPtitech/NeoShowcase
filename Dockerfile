@@ -1,7 +1,7 @@
 FROM --platform=$BUILDPLATFORM golang:1.25-alpine AS builder
 
 WORKDIR /work
-ENV CGO_ENABLED 0
+ENV CGO_ENABLED=0
 
 RUN apk add --update --no-cache git
 
