@@ -1814,12 +1814,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:24.6.1":
-  version: 24.6.1
-  resolution: "@types/node@npm:24.6.1"
+"@types/node@npm:25.0.3":
+  version: 25.0.3
+  resolution: "@types/node@npm:25.0.3"
   dependencies:
-    undici-types: "npm:~7.13.0"
-  checksum: 10c0/f2f8aea441d72139345cfa2e392af51bc27d12eb5f74b9b4d202046a2e82ab70d6da89c46a2ac7feea98854c2919e53070869d4af9d448e173a77249fcb7bca3
+    undici-types: "npm:~7.16.0"
+  checksum: 10c0/b7568f0d765d9469621615e2bb257c7fd1953d95e9acbdb58dffb6627a2c4150d405a4600aa1ad8a40182a94fe5f903cafd3c0a2f5132814debd0e3bfd61f835
   languageName: node
   linkType: hard
 
@@ -3880,7 +3880,7 @@ __metadata:
     "@tanstack/solid-virtual": "npm:3.13.13"
     "@tanstack/virtual-core": "npm:3.13.13"
     "@types/async-lock": "npm:1.4.2"
-    "@types/node": "npm:24.6.1"
+    "@types/node": "npm:25.0.3"
     "@unocss/reset": "npm:66.5.10"
     ansi-to-html: "npm:0.7.2"
     async-lock: "npm:1.4.1"
@@ -4920,10 +4920,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici-types@npm:~7.13.0":
-  version: 7.13.0
-  resolution: "undici-types@npm:7.13.0"
-  checksum: 10c0/44bbb0935425291351bfd8039571f017295b5d6dc5727045d0a4fea8c6ffe73a6703b48ce010f9cb539b9041a75b463f8cfe1e7309cab7486452505fb0d66151
+"undici-types@npm:~7.16.0":
+  version: 7.16.0
+  resolution: "undici-types@npm:7.16.0"
+  checksum: 10c0/3033e2f2b5c9f1504bdc5934646cb54e37ecaca0f9249c983f7b1fc2e87c6d18399ebb05dc7fd5419e02b2e915f734d872a65da2e3eeed1813951c427d33cc9a
   languageName: node
   linkType: hard
 
