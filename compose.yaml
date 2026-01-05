@@ -272,7 +272,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: neoshowcase
-    command: mysqld --character-set-server=utf8 --collation-server=utf8_general_ci
+    command: mariadbd --character-set-server=utf8 --collation-server=utf8_general_ci
     healthcheck:
       test: mysql --user=root --password=password --execute "SHOW DATABASES;"
       interval: 1s
