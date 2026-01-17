@@ -6,15 +6,15 @@ import (
 	"log/slog"
 )
 
-// CustomHandler wraps slog.JSONHandler and adds trace_id and user_id from context
+// CustomHandler adds trace_id and user_id from context
 type CustomHandler struct {
 	baseHandler slog.Handler
 }
 
-// NewCustomHandler creates a new CustomHandler with JSON output
+// NewCustomHandler creates a new CustomHandler
 func NewCustomHandler(w io.Writer, opts *slog.HandlerOptions) *CustomHandler {
 	return &CustomHandler{
-		baseHandler: slog.NewJSONHandler(w, opts),
+		baseHandler: slog.NewTextHandler(w, opts),
 	}
 }
 
