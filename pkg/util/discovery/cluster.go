@@ -2,11 +2,11 @@ package discovery
 
 import (
 	"context"
+	"log/slog"
 	"strconv"
 	"sync"
 
 	"github.com/samber/lo"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/util/hash"
 )
@@ -47,7 +47,7 @@ func (c *Cluster) Start(ctx context.Context) error {
 	for targets := range updates {
 		c.lock.Lock()
 		if len(targets) == 0 {
-			log.Info("[cluster] no targets received, skipping until first discovery...")
+			slog.InfoContext(ctx, "[cluster] no targets received, skipping until first discovery")
 			c.lock.Unlock()
 			continue
 		}
@@ -55,7 +55,7 @@ func (c *Cluster) Start(ctx context.Context) error {
 		_, c.meIdx, _ = lo.FindIndexOf(targets, func(e Target) bool { return e.Me })
 		c.lock.Unlock()
 		c.setInitialized()
-		log.Infof("[cluster] %d target(s) received", len(targets))
+		slog.InfoContext(ctx, "[cluster] targets received", "count", len(targets))
 	}
 	return nil
 }

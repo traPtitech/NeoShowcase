@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
@@ -16,7 +17,6 @@ import (
 	"github.com/moby/buildkit/session/auth/authprovider"
 	"github.com/moby/buildkit/util/progress/progressui"
 	"github.com/samber/lo"
-	log "github.com/sirupsen/logrus"
 	"github.com/tonistiigi/fsutil"
 	"golang.org/x/sync/errgroup"
 
@@ -60,7 +60,7 @@ func createTempFile(pattern string, content string) (name string, cleanup func()
 	cleanup = func() {
 		err := os.Remove(f.Name())
 		if err != nil {
-			log.Errorf("removing temp file "+f.Name()+": %+v", err)
+			slog.Error("removing temp file", "file", f.Name(), "error", err)
 		}
 	}
 	_, err = f.WriteString(content)

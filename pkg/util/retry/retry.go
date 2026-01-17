@@ -2,9 +2,8 @@ package retry
 
 import (
 	"context"
+	"log/slog"
 	"time"
-
-	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -27,9 +26,9 @@ func Do(ctx context.Context, fn func(ctx context.Context) error, msg string) {
 			backoff = initialBackoff
 		}
 		if err == nil {
-			log.Infof("Retrier: retrying in %v: %v", backoff, msg)
+			slog.InfoContext(ctx, "Retrier: retrying", "backoff", backoff, "message", msg)
 		} else {
-			log.Errorf("Retrier: retrying in %v: %v: %v", backoff, msg, err)
+			slog.ErrorContext(ctx, "Retrier: retrying", "backoff", backoff, "message", msg, "error", err)
 		}
 		select {
 		case <-time.After(backoff):

@@ -1,7 +1,8 @@
 package cli
 
 import (
-	log "github.com/sirupsen/logrus"
+	"log/slog"
+
 	"github.com/spf13/cobra"
 )
 
@@ -22,5 +23,5 @@ func GetVersion() (ver, rev string) {
 // PrintVersion バージョンを出力する
 func PrintVersion(cmd *cobra.Command, _ []string) {
 	cmd = cmd.Root()
-	log.Infof("%s - %s", cmd.Use, cmd.Version)
+	slog.Info("neoshowcase", "name", cmd.Use, "version", cmd.Version)
 }

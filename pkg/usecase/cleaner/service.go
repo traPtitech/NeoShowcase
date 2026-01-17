@@ -3,13 +3,13 @@ package cleaner
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"sync"
 	"time"
 
 	"github.com/friendsofgo/errors"
 	"github.com/regclient/regclient/types/errs"
 	"github.com/samber/lo"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
@@ -64,19 +64,19 @@ func NewService(
 			start := time.Now()
 			err := c.pruneImages(ctx, c.regclient)
 			if err != nil {
-				log.Errorf("failed to prune images: %+v", err)
+				slog.ErrorContext(ctx, "failed to prune images", "error", err)
 				return
 			}
-			log.Infof("Pruned images in %v", time.Since(start))
+			slog.InfoContext(ctx, "Pruned images", "duration", time.Since(start))
 		}, 1*time.Hour, true)
 		go loop.Loop(ctx, func(ctx context.Context) {
 			start := time.Now()
 			err := c.pruneArtifacts(ctx)
 			if err != nil {
-				log.Errorf("failed to prune artifacts: %+v", err)
+				slog.ErrorContext(ctx, "failed to prune artifacts", "error", err)
 				return
 			}
-			log.Infof("Pruned artifacts in %v", time.Since(start))
+			slog.InfoContext(ctx, "Pruned artifacts", "duration", time.Since(start))
 		}, 1*time.Hour, true)
 	}
 	c.shutdown = cancel
@@ -108,8 +108,7 @@ func (c *cleanerService) pruneImages(ctx context.Context, r builder.RegistryClie
 
 		err = c.pruneImage(ctx, r, app)
 		if err != nil {
-			log.Errorf("pruning image %v: %+v", c.image.NamePrefix+app.ID, err)
-			// fail-safe for each image
+			slog.ErrorContext(ctx, "failed to prune image", "image", c.image.NamePrefix+app.ID, "error", err)
 		}
 	}
 
@@ -141,7 +140,7 @@ func (c *cleanerService) pruneImage(ctx context.Context, r builder.RegistryClien
 		// https://docs.docker.com/registry/garbage-collection/
 		err = r.DeleteImage(ctx, imageName, tag)
 		if err != nil {
-			log.Errorf("deleting tag %s:%s: %+v", imageName, tag, err)
+			slog.ErrorContext(ctx, "failed to delete tag", "image_name", imageName, "tag", tag, "error", err)
 			// fail-safe and continue
 		}
 	}

@@ -3,10 +3,10 @@ package webhook
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"path"
 
 	"github.com/labstack/echo/v4"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/repofetcher"
@@ -74,7 +74,7 @@ func (r *Receiver) updateURLs(urls []string) {
 	ctx := context.Background()
 	repos, err := r.gitRepo.GetRepositories(ctx, domain.GetRepositoryCondition{URLs: optional.From(urls)})
 	if err != nil {
-		log.Errorf("getting repositories by url: %+v", err)
+		slog.ErrorContext(ctx, "failed to get repositories by url", "error", err)
 		return
 	}
 	for _, repo := range repos {

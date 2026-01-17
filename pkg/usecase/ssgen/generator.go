@@ -3,6 +3,7 @@ package ssgen
 import (
 	"compress/gzip"
 	"context"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"sync/atomic"
@@ -10,7 +11,6 @@ import (
 
 	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
@@ -73,7 +73,7 @@ func (s *generatorService) Start(_ context.Context) error {
 	go func() {
 		err := s.cluster.Start(ctx)
 		if err != nil {
-			log.Errorf("failed to start cluster: %+v", err)
+			slog.Error("failed to start cluster", "error", err)
 		}
 	}()
 	go retry.Do(ctx, func(ctx context.Context) error {
@@ -111,7 +111,7 @@ func (s *generatorService) onRequest(req *pb.SSGenRequest) {
 func (s *generatorService) reload() {
 	err := s.reloader.Do(context.Background())
 	if err != nil {
-		log.Errorf("failed to reload static server: %+v", err)
+		slog.Error("failed to reload static server", "error", err)
 	}
 }
 
@@ -133,7 +133,7 @@ func (s *generatorService) _reload(ctx context.Context) error {
 		return err
 	}
 	s.reloaded.Store(true)
-	log.Infof("reloaded static server in %v (%v sites active)", time.Since(start), len(sites))
+	slog.InfoContext(ctx, "reloaded static server", "duration", time.Since(start), "sites_count", len(sites))
 	return nil
 }
 

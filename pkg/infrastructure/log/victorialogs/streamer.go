@@ -5,13 +5,13 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"text/template"
 	"time"
 
 	"github.com/friendsofgo/errors"
 	"github.com/samber/lo/mutable"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
@@ -141,12 +141,12 @@ func (l *victoriaLogsStreamer) Stream(ctx context.Context, app *domain.Applicati
 
 	go func() {
 		defer res.Body.Close()
-		defer log.Infof("closing victorialogs stream")
-		log.Infof("new victorialogs stream")
+		defer slog.InfoContext(ctx, "closing victorialogs stream")
+		slog.InfoContext(ctx, "new victorialogs stream")
 
 		for line, err := range decodeQuery(res.Body) {
 			if err != nil {
-				log.Errorf("decoding query response: %s", err)
+				slog.ErrorContext(ctx, "failed to decode query response", "error", err)
 				return
 			}
 			select {

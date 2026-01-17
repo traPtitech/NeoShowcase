@@ -5,10 +5,10 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 
 	"github.com/samber/lo"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/friendsofgo/errors"
 
@@ -26,7 +26,7 @@ func newLogWriter(buildID string, client domain.ControllerBuilderServiceClient) 
 	go func() {
 		err := client.StreamBuildLog(context.Background(), buildID, send)
 		if err != nil {
-			log.Errorf("sending build log: %+v", err)
+			slog.Error("failed to send build log", "error", err)
 		}
 	}()
 	return &logWriter{

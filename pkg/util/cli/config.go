@@ -1,9 +1,10 @@
 package cli
 
 import (
+	"log/slog"
+	"os"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
@@ -30,11 +31,13 @@ func CobraOnInitializeFunc(configFilePath *string, config any) func() {
 		viper.AutomaticEnv()
 		if err := viper.ReadInConfig(); err != nil {
 			if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
-				log.Fatalf("failed to read config file: %v", err)
+				slog.Error("failed to read config file", "error", err)
+				os.Exit(1)
 			}
 		}
 		if err := viper.Unmarshal(config); err != nil {
-			log.Fatalf("failed to unmarshal config: %v", err)
+			slog.Error("failed to unmarshal config", "error", err)
+			os.Exit(1)
 		}
 	}
 }

@@ -3,11 +3,11 @@ package builder
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/friendsofgo/errors"
 	buildkit "github.com/moby/buildkit/client"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
@@ -20,11 +20,11 @@ func (s *ServiceImpl) startBuild(req *domain.StartBuildRequest) error {
 	defer s.statusLock.Unlock()
 
 	if s.state != nil {
-		log.Warnf("Skipping build request for %v, builder busy - builder scheduling may be malfunctioning?", req.Build.ID)
+		slog.Warn("Skipping build request, builder busy - builder scheduling may be malfunctioning?", "build_id", req.Build.ID)
 		return nil // Builder busy - skip
 	}
 
-	log.Infof("Starting build for %v", req.Build.ID)
+	slog.Info("Starting build", "build_id", req.Build.ID)
 
 	st, err := newState(req.App, req.Envs, req.Build, req.Repo, s.client)
 	if err != nil {
@@ -47,7 +47,7 @@ func (s *ServiceImpl) startBuild(req *domain.StartBuildRequest) error {
 		s.state = nil
 		s.stateCancel = nil
 		s.statusLock.Unlock()
-		log.Infof("Build settled for %v", st.build.ID)
+		slog.Info("Build settled", "build_id", st.build.ID)
 		// Send settled response *after* unlocking internal state for next build
 		s.response <- &pb.BuilderResponse{Type: pb.BuilderResponse_BUILD_SETTLED, Body: &pb.BuilderResponse_Settled{Settled: &pb.BuildSettled{
 			BuildId: st.build.ID,
@@ -153,7 +153,7 @@ func (s *ServiceImpl) process(ctx context.Context, st *state) domain.BuildStatus
 
 	steps, err := s.buildSteps(st)
 	if err != nil {
-		log.Errorf("calculating build steps: %+v", err)
+		slog.ErrorContext(ctx, "failed to calculate build steps", "error", err)
 		st.WriteLog(fmt.Sprintf("[ns-builder] Error calculating build steps: %v", err))
 		return domain.BuildStatusFailed
 	}
@@ -180,7 +180,7 @@ func (s *ServiceImpl) process(ctx context.Context, st *state) domain.BuildStatus
 		}
 		// Other reasons such as build script failure
 		if err != nil {
-			log.Errorf("Build failed for %v: %+v", st.build.ID, err)
+			slog.ErrorContext(ctx, "Build failed", "build_id", st.build.ID, "error", err)
 			st.WriteLog(fmt.Sprintf("[ns-builder] Build failed: %v", err))
 			return domain.BuildStatusFailed
 		}
@@ -199,7 +199,7 @@ func (s *ServiceImpl) buildPingLoop(ctx context.Context, buildID string) {
 		case <-ticker.C:
 			err := s.client.PingBuild(ctx, buildID)
 			if err != nil {
-				log.Errorf("pinging build: %+v", err)
+				slog.ErrorContext(ctx, "failed to ping build", "error", err)
 			}
 		case <-ctx.Done():
 			return
@@ -210,19 +210,19 @@ func (s *ServiceImpl) buildPingLoop(ctx context.Context, buildID string) {
 func (s *ServiceImpl) finalize(ctx context.Context, st *state, status domain.BuildStatus) {
 	err := s.client.SaveBuildLog(ctx, st.build.ID, st.logWriter.buf.Bytes())
 	if err != nil {
-		log.Errorf("failed to save build log: %+v", err)
+		slog.ErrorContext(ctx, "failed to save build log", "error", err)
 		// don't return here - we want to continue with other finalization tasks
 	}
 
 	if status == domain.BuildStatusSucceeded && st.deployType() == domain.DeployTypeRuntime {
 		size, err := s.fetchImageSize(ctx, st)
 		if err != nil {
-			log.Errorf("failed to get image size: %+v", err)
+			slog.ErrorContext(ctx, "failed to get image size", "error", err)
 			return
 		}
 		err = s.client.SaveRuntimeImage(ctx, st.build.ID, size)
 		if err != nil {
-			log.Errorf("failed to save runtime image: %+v", err)
+			slog.ErrorContext(ctx, "failed to save runtime image", "error", err)
 		}
 	}
 }

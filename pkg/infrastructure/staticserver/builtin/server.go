@@ -3,12 +3,12 @@ package builtin
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"path/filepath"
 	"sync"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
@@ -77,7 +77,7 @@ func (b *server) Reconcile(sites []*domain.StaticSite) error {
 	siteMap := map[string]*host{}
 	for _, site := range sites {
 		if site.SPA {
-			log.Warnf("SPA option is not supported in built-in static server")
+			slog.Warn("SPA option is not supported in built-in static server")
 		}
 		artifactDir := filepath.Join(b.docsRoot, site.ArtifactID)
 		e := echo.New()

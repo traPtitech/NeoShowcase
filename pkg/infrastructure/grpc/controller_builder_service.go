@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"slices"
 	"sync"
 	"time"
@@ -12,7 +13,6 @@ import (
 	"connectrpc.com/connect"
 	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
-	log "github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -120,13 +120,13 @@ func (s *ControllerBuilderService) PingBuild(ctx context.Context, req *connect.R
 	return res, nil
 }
 
-func (s *ControllerBuilderService) StreamBuildLog(_ context.Context, st *connect.ClientStream[pb.BuildLogPortion]) (*connect.Response[emptypb.Empty], error) {
+func (s *ControllerBuilderService) StreamBuildLog(ctx context.Context, st *connect.ClientStream[pb.BuildLogPortion]) (*connect.Response[emptypb.Empty], error) {
 	for st.Receive() {
 		msg := st.Msg()
 		s.logStream.AppendBuildLog(msg.BuildId, msg.Log)
 	}
 	if err := st.Err(); err != nil {
-		log.Errorf("receiving build log: %+v", err)
+		slog.ErrorContext(ctx, "receiving build log", "error", err)
 		return nil, errors.Wrap(err, "receiving build log")
 	}
 	res := connect.NewResponse(&emptypb.Empty{})
@@ -170,8 +170,8 @@ func (s *ControllerBuilderService) SaveRuntimeImage(ctx context.Context, req *co
 
 func (s *ControllerBuilderService) ConnectBuilder(ctx context.Context, st *connect.BidiStream[pb.BuilderResponse, pb.BuilderRequest]) error {
 	id := domain.NewID()
-	log.WithField("id", id).Info("new builder connection")
-	defer log.WithField("id", id).Info("builder connection closed")
+	slog.InfoContext(ctx, "new builder connection", "id", id)
+	defer slog.InfoContext(ctx, "builder connection closed", "id", id)
 
 	s.idle.Publish(struct{}{})
 
@@ -197,7 +197,7 @@ func (s *ControllerBuilderService) ConnectBuilder(ctx context.Context, st *conne
 				return
 			}
 			if err != nil {
-				log.Errorf("error receiving builder event: %+v", err)
+				slog.ErrorContext(ctx, "error receiving builder event", "error", err)
 				return
 			}
 
@@ -212,7 +212,7 @@ func (s *ControllerBuilderService) ConnectBuilder(ctx context.Context, st *conne
 				status := pbconvert.BuildStatusMapper.FromMust(payload.Status)
 				err := s.finishBuild(ctx, payload.BuildId, status)
 				if err != nil {
-					log.Errorf("error finishing build: %+v", err)
+					slog.ErrorContext(ctx, "error finishing build", "error", err)
 				}
 				conn.ClearBuildID()
 				s.idle.Publish(struct{}{})
@@ -334,12 +334,12 @@ func (s *ControllerBuilderService) finishBuild(ctx context.Context, buildID stri
 	// errors are ignored
 	build, err := s.buildRepo.GetBuild(ctx, buildID)
 	if err != nil {
-		log.WithError(err).Warn("getting build for metrics")
+		slog.WarnContext(ctx, "getting build for metrics", "error", err)
 		return nil
 	}
 	app, err := s.appRepo.GetApplication(ctx, build.ApplicationID)
 	if err != nil {
-		log.WithError(err).Warn("getting application for metrics")
+		slog.WarnContext(ctx, "getting application for metrics", "error", err)
 		return nil
 	}
 	s.metrics.IncrementBuild(status, app.Config.BuildConfig.BuildType())
@@ -369,7 +369,7 @@ func (s *ControllerBuilderService) StartBuilds(ctx context.Context, buildIDs []s
 		} else {
 			// It is possible that some other controller has acquired build lock first
 			// - in that case, skip and try the next build ID
-			log.Errorf("error starting build: %+v", err)
+			slog.ErrorContext(ctx, "error starting build", "error", err)
 		}
 	}
 }
