@@ -2,13 +2,13 @@ package webhook
 
 import (
 	"context"
+	"log/slog"
 	"net/http"
 
 	"github.com/friendsofgo/errors"
 	"github.com/go-playground/webhooks/v6/gitea"
 	"github.com/labstack/echo/v4"
 	"github.com/samber/lo"
-	log "github.com/sirupsen/logrus"
 )
 
 var giteaHook = lo.Must(gitea.New())
@@ -29,9 +29,9 @@ func (r *Receiver) giteaHandler(c echo.Context) error {
 		}
 		go r.updateURLs(urls)
 	case gitea.RepositoryPayload:
-		log.Infof("Repository %v event received", p.Action)
+		slog.Info("Repository event received", "action", p.Action)
 		if err := r.giteaIntegration.Sync(context.Background()); err != nil {
-			log.WithError(err).Error("Failed to sync gitea repoitories")
+			slog.Error("Failed to sync gitea repositories", "error", err)
 		}
 	default:
 		return echo.NewHTTPError(http.StatusInternalServerError, errors.New("unsupported payload type"))

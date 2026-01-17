@@ -3,13 +3,13 @@ package k8simpl
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strconv"
 	"strings"
 	"sync"
 
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
 	"github.com/friendsofgo/errors"
-	log "github.com/sirupsen/logrus"
 	traefikv1alpha1 "github.com/traefik/traefik/v3/pkg/provider/kubernetes/crd/generated/clientset/versioned/typed/traefikio/v1alpha1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -98,7 +98,7 @@ func (b *Backend) eventListener(ctx context.Context) error {
 	for ev := range podWatcher.ResultChan() {
 		p, ok := ev.Object.(*apiv1.Pod)
 		if !ok {
-			log.Warnf("unexpected type: %v", ev)
+			slog.WarnContext(ctx, "unexpected object from pod watcher", "event", ev)
 			continue
 		}
 

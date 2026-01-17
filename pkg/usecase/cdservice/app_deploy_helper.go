@@ -2,9 +2,9 @@ package cdservice
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/samber/lo"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
@@ -122,7 +122,7 @@ func (s *AppDeployHelper) synchronize(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	log.Infof("[shard %d/%d] %v runtime, %v static sites active", s.cluster.MyShardIndex(), s.cluster.Size(), len(st.Runtime), len(st.StaticSites))
+	slog.InfoContext(ctx, "shard status", "shard_index", s.cluster.MyShardIndex(), "shard_size", s.cluster.Size(), "runtime_count", len(st.Runtime), "static_sites_count", len(st.StaticSites))
 
 	s.ssgen.BroadcastSSGen(&pb.SSGenRequest{Type: pb.SSGenRequest_RELOAD})
 	err = s.backend.Synchronize(ctx, &st)
@@ -136,7 +136,7 @@ func (s *AppDeployHelper) synchronize(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-		log.Infof("[shard leader] %v tls targets active", len(st.TLSTargetDomains))
+		slog.InfoContext(ctx, "shard leader status", "tls_targets_count", len(st.TLSTargetDomains))
 		err = s.backend.SynchronizeShared(ctx, st)
 		if err != nil {
 			return err

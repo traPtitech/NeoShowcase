@@ -3,12 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/friendsofgo/errors"
 	_ "github.com/go-sql-driver/mysql"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/traPtitech/neoshowcase/pkg/util/cli"
@@ -58,10 +59,11 @@ func componentCommand(name string, gen componentGenF, longDesc string) *cobra.Co
 			go func() {
 				err := service.Start(ctx)
 				if err != nil && !errors.Is(err, http.ErrServerClosed) {
-					log.Fatalf("failed to start service: %+v", err)
+					slog.Error("failed to start service", "error", err)
+					cancel()
 				}
 			}()
-			log.Infof("NeoShowcase %s started", name)
+			slog.Info("NeoShowcase service started", "service", name)
 
 			cli.WaitSIGINT()
 			cancel()
@@ -95,6 +97,7 @@ Admin token required.`),
 	cli.SetupLogLevelFlag(flags)
 
 	if err := rootCommand.Execute(); err != nil {
-		log.Fatalf("failed to exec: %+v", err)
+		slog.Error("failed to exec", "error", err)
+		os.Exit(1)
 	}
 }

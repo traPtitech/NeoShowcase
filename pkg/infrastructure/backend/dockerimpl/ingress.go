@@ -2,13 +2,13 @@ package dockerimpl
 
 import (
 	"fmt"
+	"log/slog"
 	"maps"
 	"os"
 	"path/filepath"
 
 	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
-	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -40,7 +40,7 @@ func (b *Backend) routerBase(app *domain.Application, website *domain.Website, s
 			middlewareNames = append(middlewareNames, authConfig.Hard...)
 		}
 	} else if website.Authentication != domain.AuthenticationTypeOff {
-		log.Warnf("auth config not available for %s", website.FQDN)
+		slog.Warn("auth config not available", "fqdn", website.FQDN)
 	}
 
 	if b.useSablier(app) {

@@ -3,12 +3,12 @@ package sshserver
 import (
 	"bytes"
 	"fmt"
+	"log/slog"
 
 	"github.com/friendsofgo/errors"
 	"github.com/gliderlabs/ssh"
 	ssh2 "github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/samber/lo"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
@@ -92,15 +92,15 @@ func (s *sshServer) Close() error {
 
 func (s *sshServer) publicKeyHandler(ctx ssh.Context, key ssh.PublicKey) bool {
 	appID := ctx.User()
-	log.Debugf("authenticating ssh for app %v", appID)
+	slog.Debug("authenticating ssh for app", "app_id", appID)
 	app, err := s.appRepo.GetApplication(ctx, appID)
 	if err != nil {
-		log.Errorf("retrieving app with id %v: %+v", appID, err)
+		slog.Error("failed to retrieve app", "app_id", appID, "error", err)
 		return false
 	}
 	admins, err := s.userRepo.GetUsers(ctx, domain.GetUserCondition{Admin: optional.From(true)})
 	if err != nil {
-		log.Errorf("retrieving admin list: %+v", err)
+		slog.Error("failed to retrieve admin list", "error", err)
 		return false
 	}
 
@@ -109,7 +109,7 @@ func (s *sshServer) publicKeyHandler(ctx ssh.Context, key ssh.PublicKey) bool {
 	eligibleUsers = append(eligibleUsers, ds.Map(admins, func(u *domain.User) string { return u.ID })...)
 	keys, err := s.userRepo.GetUserKeys(ctx, domain.GetUserKeyCondition{UserIDs: optional.From(eligibleUsers)})
 	if err != nil {
-		log.Errorf("retrieving user keys of app id %v: %+v", appID, err)
+		slog.Error("failed to retrieve user keys of app", "app_id", appID, "error", err)
 		return false
 	}
 
@@ -122,7 +122,7 @@ func (s *sshServer) publicKeyHandler(ctx ssh.Context, key ssh.PublicKey) bool {
 func (s *sshServer) handler(sess ssh.Session) {
 	err := s.handle(sess)
 	if err != nil {
-		log.Errorf("%+v", err)
+		slog.Error("ssh handler error", "error", err)
 		_, _ = sess.Write([]byte(err.Error() + "\n"))
 		_ = sess.Exit(1)
 		return
@@ -133,8 +133,8 @@ func (s *sshServer) handler(sess ssh.Session) {
 func (s *sshServer) handle(sess ssh.Session) error {
 	appID := sess.User()
 	sessID := domain.NewID()
-	log.Infof("new ssh connection into app %s (session id: %v)", appID, sessID)
-	defer log.Infof("closing ssh connecttion into app %s (session id: %v)", appID, sessID)
+	slog.Info("new ssh connection into app", "app_id", appID, "session_id", sessID)
+	defer slog.Info("closing ssh connection into app", "app_id", appID, "session_id", sessID)
 
 	app, err := s.appRepo.GetApplication(sess.Context(), appID)
 	if err != nil {

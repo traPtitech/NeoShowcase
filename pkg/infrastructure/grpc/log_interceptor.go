@@ -3,10 +3,10 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"connectrpc.com/connect"
-	"github.com/sirupsen/logrus"
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 )
@@ -25,30 +25,30 @@ func (l *LogInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
 		elapsed := fmt.Sprintf("%.3fs", time.Since(start).Seconds())
 		user := web.GetUser(ctx)
 		if err == nil || connect.IsNotModifiedError(err) {
-			logrus.WithFields(logrus.Fields{
-				"user":         user.ID,
-				"procedure":    request.Spec().Procedure,
-				"duration_sec": elapsed,
-			}).Info("unary request succeeded")
+			slog.InfoContext(ctx, "unary request succeeded",
+				"user", user.ID,
+				"procedure", request.Spec().Procedure,
+				"duration_sec", elapsed,
+			)
 		} else {
 			switch connect.CodeOf(err) {
 			case connect.CodeUnknown, connect.CodeInternal, connect.CodeUnavailable, connect.CodeDeadlineExceeded, connect.CodeUnimplemented, connect.CodeDataLoss:
-				logrus.WithFields(logrus.Fields{
-					"user":         user.ID,
-					"procedure":    request.Spec().Procedure,
-					"duration_sec": elapsed,
-					"error":        err,
-					"status":       connect.CodeOf(err).String(),
-				}).Error("unary request failed with server error")
+				slog.ErrorContext(ctx, "unary request failed with server error",
+					"user", user.ID,
+					"procedure", request.Spec().Procedure,
+					"duration_sec", elapsed,
+					"error", err,
+					"status", connect.CodeOf(err).String(),
+				)
 
 			case connect.CodeCanceled, connect.CodeInvalidArgument, connect.CodeNotFound, connect.CodeAlreadyExists, connect.CodePermissionDenied, connect.CodeFailedPrecondition, connect.CodeAborted, connect.CodeOutOfRange, connect.CodeUnauthenticated, connect.CodeResourceExhausted:
-				logrus.WithFields(logrus.Fields{
-					"user":         user.ID,
-					"procedure":    request.Spec().Procedure,
-					"duration_sec": elapsed,
-					"error":        err,
-					"status":       connect.CodeOf(err).String(),
-				}).Warn("unary request failed with client error")
+				slog.WarnContext(ctx, "unary request failed with client error",
+					"user", user.ID,
+					"procedure", request.Spec().Procedure,
+					"duration_sec", elapsed,
+					"error", err,
+					"status", connect.CodeOf(err).String(),
+				)
 			}
 		}
 
@@ -65,31 +65,31 @@ func (l *LogInterceptor) WrapStreamingHandler(next connect.StreamingHandlerFunc)
 		open := time.Now()
 		user := web.GetUser(ctx)
 		streamID := domain.NewID()
-		logrus.WithFields(logrus.Fields{
-			"user":      user.ID,
-			"stream_id": streamID,
-			"procedure": shc.Spec().Procedure,
-		}).Info("stream opened")
+		slog.InfoContext(ctx, "stream opened",
+			"user", user.ID,
+			"stream_id", streamID,
+			"procedure", shc.Spec().Procedure,
+		)
 
 		err := next(ctx, shc)
 
 		elapsed := fmt.Sprintf("%.3fs", time.Since(open).Seconds())
 		if err == nil {
-			logrus.WithFields(logrus.Fields{
-				"user":         user.ID,
-				"stream_id":    streamID,
-				"procedure":    shc.Spec().Procedure,
-				"duration_sec": elapsed,
-			}).Info("stream closed")
+			slog.InfoContext(ctx, "stream closed",
+				"user", user.ID,
+				"stream_id", streamID,
+				"procedure", shc.Spec().Procedure,
+				"duration_sec", elapsed,
+			)
 		} else {
-			logrus.WithFields(logrus.Fields{
-				"user":         user.ID,
-				"stream_id":    streamID,
-				"procedure":    shc.Spec().Procedure,
-				"duration_sec": elapsed,
-				"error":        err,
-				"status":       connect.CodeOf(err).String(),
-			}).Error("stream closed")
+			slog.ErrorContext(ctx, "stream closed",
+				"user", user.ID,
+				"stream_id", streamID,
+				"procedure", shc.Spec().Procedure,
+				"duration_sec", elapsed,
+				"error", err,
+				"status", connect.CodeOf(err).String(),
+			)
 		}
 
 		return err

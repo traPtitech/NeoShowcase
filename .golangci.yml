@@ -1,4 +1,4 @@
-version: '2'
+version: "2"
 linters:
   default: none
   enable:
@@ -6,6 +6,7 @@ linters:
     - ineffassign
     - staticcheck
     - unused
+    - sloglint
   exclusions:
     generated: lax
     presets:
@@ -13,6 +14,9 @@ linters:
       - common-false-positives
       - legacy
       - std-error-handling
+  settings:
+    sloglint:
+      context: scope
 formatters:
   enable:
     - gofmt

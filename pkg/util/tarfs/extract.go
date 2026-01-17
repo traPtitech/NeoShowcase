@@ -3,12 +3,12 @@ package tarfs
 import (
 	"archive/tar"
 	"io"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/friendsofgo/errors"
-	log "github.com/sirupsen/logrus"
 )
 
 func isValidRelPath(relPath string) bool {
@@ -61,7 +61,7 @@ func Extract(tarStream io.Reader, destPath string) error {
 			}
 
 		default:
-			log.Debug("skip:", header)
+			slog.Debug("skipping tar entry", "name", header.Name, "type", header.Typeflag)
 		}
 	}
 	return nil

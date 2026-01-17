@@ -2,13 +2,13 @@ package builder
 
 import (
 	"context"
+	"log/slog"
 	"sync"
 	"time"
 
 	"github.com/friendsofgo/errors"
 
 	buildkit "github.com/moby/buildkit/client"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
@@ -116,7 +116,7 @@ func (s *ServiceImpl) Shutdown(_ context.Context) error {
 func (s *ServiceImpl) prune(ctx context.Context) {
 	err := s.buildkit.Prune(ctx, nil, buildkit.PruneAll)
 	if err != nil {
-		log.Errorf("failed to prune buildkit: %+v", err)
+		slog.ErrorContext(ctx, "failed to prune buildkit", "error", err)
 	}
 }
 
@@ -127,7 +127,7 @@ func (s *ServiceImpl) cancelBuild(buildID string) {
 	if s.state != nil && s.stateCancel != nil && s.state.build.ID == buildID {
 		s.stateCancel()
 	} else {
-		log.Warnf("Skipping cancel build request for %v - a race condition or builder scheduling malfunction?", buildID)
+		slog.Warn("Skipping cancel build request - a race condition or builder scheduling malfunction?", "build_id", buildID)
 	}
 }
 
@@ -137,12 +137,12 @@ func (s *ServiceImpl) onRequest(req *pb.BuilderRequest) {
 		b := req.Body.(*pb.BuilderRequest_StartBuild).StartBuild
 		err := s.startBuild(pbconvert.FromPBStartBuildRequest(b))
 		if err != nil {
-			log.Errorf("failed to start build: %+v", err)
+			slog.Error("failed to start build", "error", err)
 		}
 	case pb.BuilderRequest_CANCEL_BUILD:
 		b := req.Body.(*pb.BuilderRequest_CancelBuild).CancelBuild
 		s.cancelBuild(b.BuildId)
 	default:
-		log.Errorf("unknown builder request type: %v", req.Type)
+		slog.Error("unknown builder request type", "value", req.Type)
 	}
 }

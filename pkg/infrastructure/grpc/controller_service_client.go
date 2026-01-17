@@ -2,11 +2,11 @@ package grpc
 
 import (
 	"context"
+	"log/slog"
 	"time"
 
 	"connectrpc.com/connect"
 	"github.com/motoki317/sc"
-	log "github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -89,7 +89,7 @@ func (c *ControllerServiceClient) StreamBuildLog(ctx context.Context, address st
 			ch <- st.Msg()
 		}
 		if err := st.Err(); err != nil {
-			log.Errorf("failed to receive build log stream: %+v", err)
+			slog.Error("failed to receive build log stream", "error", err)
 		}
 	}()
 	return ch, nil

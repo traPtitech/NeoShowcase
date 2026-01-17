@@ -2,6 +2,7 @@ package cdservice
 
 import (
 	"context"
+	"log/slog"
 	"slices"
 	"strconv"
 	"sync"
@@ -9,7 +10,6 @@ import (
 
 	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
@@ -77,10 +77,10 @@ func NewService(
 	doLocalStartBuild := scutil.NewCoalescer(func(ctx context.Context) error {
 		start := time.Now()
 		if err := cd.startBuildsLocal(ctx); err != nil {
-			log.Errorf("failed to start builds: %+v", err)
+			slog.Error("failed to start builds", "error", err)
 			return nil
 		}
-		log.Infof("Started builds in %v", time.Since(start))
+		slog.Info("Started builds", "duration", time.Since(start))
 		time.Sleep(1 * time.Second) // 1 second throttle between build checks to account for quick succession of repo checks
 		return nil
 	})
@@ -90,18 +90,18 @@ func NewService(
 	cd.doClusterStartBuild = func() {
 		err := cd.localClient.StartBuild(context.Background())
 		if err != nil {
-			log.Errorf("failed to broadcast StartBuild: %+v", err)
+			slog.Error("failed to broadcast StartBuild", "error", err)
 		}
 	}
 
 	doLocalSyncDeploy := scutil.NewCoalescer(func(ctx context.Context) error {
 		start := time.Now()
 		if err := cd.syncDeployments(ctx); err != nil {
-			log.Errorf("failed to sync deployments: %+v", err)
+			slog.Error("failed to sync deployments", "error", err)
 			return nil
 		}
 		elapsed := time.Since(start)
-		log.Infof("Synced deployments in %v", elapsed)
+		slog.Info("Synced deployments", "duration", elapsed)
 		metrics.ObserveDeployDuration(elapsed)
 		return nil
 	})
@@ -111,16 +111,16 @@ func NewService(
 	cd.doClusterSyncDeploy = func() {
 		err := cd.localClient.SyncDeployments(context.Background())
 		if err != nil {
-			log.Errorf("failed to broadcast SyncDeployments: %+v", err)
+			slog.Error("failed to broadcast SyncDeployments", "error", err)
 		}
 	}
 
 	doDetectBuildCrash := func(ctx context.Context) {
 		start := time.Now()
 		if err := cd.detectBuildCrash(ctx); err != nil {
-			log.Errorf("failed to detect build crash: %+v", err)
+			slog.Error("failed to detect build crash", "error", err)
 		}
-		log.Debugf("Build crash detection complete in %v", time.Since(start))
+		slog.Debug("Build crash detection complete", "duration", time.Since(start))
 	}
 
 	cd.run = func() {
@@ -153,7 +153,7 @@ func (cd *service) Run() {
 func (cd *service) RegisterBuild(appID string) {
 	go func() {
 		if err := cd.registerBuild(context.Background(), appID); err != nil {
-			log.Errorf("failed to kickoff build for app %v: %+v", appID, err)
+			slog.Error("failed to kickoff build for app", "app_id", appID, "error", err)
 			return
 		}
 		go cd.doClusterStartBuild()
@@ -254,7 +254,7 @@ func (cd *service) detectBuildCrash(ctx context.Context) error {
 			Status: optional.From(domain.BuildStatusFailed),
 		})
 		if err != nil {
-			log.Errorf("failed to mark crashed build as errored: %+v", err)
+			slog.ErrorContext(ctx, "failed to mark crashed build as errored", "error", err)
 		}
 	}
 
@@ -299,7 +299,7 @@ func (cd *service) _syncAppFields(ctx context.Context) error {
 			}
 			beforeBuild, err := cd.buildRepo.GetBuild(ctx, app.CurrentBuild)
 			if err != nil {
-				log.Warnf("failed to retrieve build for %v", app.CurrentBuild)
+				slog.Warn("failed to retrieve build", "build_id", app.CurrentBuild)
 				return false
 			}
 			return beforeBuild.QueuedAt.Before(nextBuild.QueuedAt)

@@ -3,11 +3,11 @@ package k8simpl
 import (
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"time"
 
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 	certmetav1 "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
-	log "github.com/sirupsen/logrus"
 	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 	traefikv1alpha1 "github.com/traefik/traefik/v3/pkg/provider/kubernetes/crd/traefikio/v1alpha1"
 	"github.com/traefik/traefik/v3/pkg/types"
@@ -153,7 +153,7 @@ func (b *Backend) ingressRoute(
 			}
 		}
 	} else if website.Authentication != domain.AuthenticationTypeOff {
-		log.Warnf("auth config not available for %s", website.FQDN)
+		slog.Warn("auth config not available", "fqdn", website.FQDN)
 	}
 
 	var rule string

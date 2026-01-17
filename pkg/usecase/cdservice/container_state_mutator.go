@@ -2,12 +2,12 @@ package cdservice
 
 import (
 	"context"
+	"log/slog"
 	"sync"
 
 	"github.com/friendsofgo/errors"
 	"github.com/motoki317/sc"
 	"github.com/samber/lo"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/util/discovery"
@@ -44,7 +44,7 @@ func (m *ContainerStateMutator) _subscribe(backend domain.Backend) {
 		go func(appID string) {
 			_, err := updateOne.Get(context.Background(), appID)
 			if err != nil {
-				log.Errorf("failed to update app container state: %+v", err)
+				slog.Error("failed to update app container state", "error", err)
 			}
 		}(e.ApplicationID)
 	}

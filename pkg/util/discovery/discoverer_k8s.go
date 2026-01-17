@@ -3,12 +3,12 @@ package discovery
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"slices"
 	"time"
 
 	"github.com/friendsofgo/errors"
-	log "github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	discoveryv1 "k8s.io/api/discovery/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -113,7 +113,7 @@ func (k *k8sDiscoverer) discover() ([]Target, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Infof("[k8s discoverer] Discovered %d target(s)", len(targets))
+	slog.Info("[k8s discoverer] Discovered targets", "count", len(targets))
 	return targets, nil
 }
 

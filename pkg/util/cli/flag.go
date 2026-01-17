@@ -1,8 +1,9 @@
 package cli
 
 import (
+	"log/slog"
+
 	"github.com/aarondl/sqlboiler/v4/boil"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -16,23 +17,32 @@ func SetupDebugFlag(flags *pflag.FlagSet) {
 	viper.SetDefault("debug", false)
 	cobra.OnInitialize(func() {
 		if Debug {
-			log.SetLevel(log.DebugLevel)
+			slog.SetLogLoggerLevel(slog.LevelDebug)
 			boil.DebugMode = true
 		}
-		log.SetReportCaller(true)
 	})
 }
 
 func SetupLogLevelFlag(flags *pflag.FlagSet) {
-	flags.String("loglevel", "info", "log level (trace, debug, info, warn, error)")
+	flags.String("loglevel", "info", "log level (debug, info, warn, error)")
 	BindPFlag(flags, "loglevel")
 	viper.SetDefault("loglevel", "info")
 	cobra.OnInitialize(func() {
-		level, err := log.ParseLevel(viper.GetString("loglevel"))
-		if err != nil {
-			log.Errorf("failed to set log level: %+v", err)
-		} else {
-			log.SetLevel(level)
+		levelStr := viper.GetString("loglevel")
+		var level slog.Level
+		switch levelStr {
+		case "debug":
+			level = slog.LevelDebug
+		case "info":
+			level = slog.LevelInfo
+		case "warn":
+			level = slog.LevelWarn
+		case "error":
+			level = slog.LevelError
+		default:
+			slog.Error("invalid log level", "level", levelStr)
+			level = slog.LevelInfo
 		}
+		slog.SetLogLoggerLevel(level)
 	})
 }

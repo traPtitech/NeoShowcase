@@ -2,12 +2,12 @@ package repofetcher
 
 import (
 	"context"
+	"log/slog"
 	"sync"
 	"time"
 
 	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
-	log "github.com/sirupsen/logrus"
 	"github.com/sourcegraph/conc/pool"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -105,9 +105,9 @@ func (r *service) fetchLoop(ctx context.Context, fetcher <-chan string) {
 		start := time.Now()
 		n, err := r.doFetchEpoch(ctx, epoch)
 		if err != nil {
-			log.Errorf("failed to fetch repositories: %+v", err)
+			slog.ErrorContext(ctx, "failed to fetch repositories", "error", err)
 		}
-		log.Infof("Fetched %v repositories in %v", n, time.Since(start))
+		slog.InfoContext(ctx, "Fetched repositories", "count", n, "duration", time.Since(start))
 		epoch++
 	}
 
@@ -118,7 +118,7 @@ func (r *service) fetchLoop(ctx context.Context, fetcher <-chan string) {
 		case id := <-fetcher:
 			err := r.fetchOne(ctx, id)
 			if err != nil {
-				log.Errorf("failed to fetch repository %v: %+v", id, err)
+				slog.ErrorContext(ctx, "failed to fetch repository", "repository_id", id, "error", err)
 			}
 		case <-ticker.C:
 			runFetchEpoch()
@@ -169,7 +169,7 @@ func (r *service) doFetchEpoch(ctx context.Context, epoch int) (int, error) {
 				}
 				err := r.updateApps(ctx, repo, apps)
 				if err != nil {
-					log.Warnf("failed to update repo: %+v", err)
+					slog.Warn("failed to update repo", "error", err)
 				}
 			})
 		}
@@ -204,7 +204,7 @@ func (r *service) updateApps(ctx context.Context, repo *domain.Repository, apps 
 		if ok {
 			hashes = append(hashes, commit)
 		} else {
-			log.Warnf("failed to get resolve ref %v for app %v", app.RefName, app.ID)
+			slog.WarnContext(ctx, "failed to resolve ref for app", "ref_name", app.RefName, "app_id", app.ID)
 			commit = domain.EmptyCommit // Mark as empty commit to signal error
 		}
 

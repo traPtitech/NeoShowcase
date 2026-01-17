@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/netip"
 	"strconv"
 
@@ -12,7 +13,6 @@ import (
 	"github.com/moby/moby/api/types/network"
 	"github.com/moby/moby/client"
 	"github.com/samber/lo"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
@@ -147,7 +147,7 @@ func (b *Backend) synchronizeRuntime(ctx context.Context, apps []*domain.Runtime
 	for _, app := range apps {
 		err = b.syncAppContainer(ctx, app, oldContainersMap[app.App.ID])
 		if err != nil {
-			log.Errorf("failed to sync app: %+v", err)
+			slog.ErrorContext(ctx, "failed to sync app", "error", err)
 			continue // fail-safe
 		}
 	}
@@ -177,7 +177,7 @@ func (b *Backend) synchronizeRuntime(ctx context.Context, apps []*domain.Runtime
 			Force:         true,
 		})
 		if err != nil {
-			log.Errorf("failed to remove old container: %+v", err)
+			slog.ErrorContext(ctx, "failed to remove old container", "error", err)
 			continue // fail-safe
 		}
 	}

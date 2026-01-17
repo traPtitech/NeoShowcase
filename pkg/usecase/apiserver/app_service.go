@@ -3,11 +3,11 @@ package apiserver
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strconv"
 
 	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
@@ -351,7 +351,7 @@ func (s *Service) DeleteApplication(ctx context.Context, id string) error {
 	go func() {
 		err := s.deleteApplicationImages(context.WithoutCancel(ctx), app)
 		if err != nil {
-			log.Errorf("Deleting application %v (id: %v) image: %+v", app.Name, app.ID, err)
+			slog.Error("failed to delete application image", "app_name", app.Name, "app_id", app.ID, "error", err)
 		}
 	}()
 
@@ -366,7 +366,7 @@ func (s *Service) DeleteApplication(ctx context.Context, id string) error {
 		}
 		err = domain.DeleteArtifact(s.storage, artifact.ID)
 		if err != nil {
-			log.Errorf("failed to delete artifact: %+v", err) // fail-safe
+			slog.ErrorContext(ctx, "failed to delete artifact", "error", err) // fail-safe
 		}
 	}
 	err = s.artifactRepo.HardDeleteArtifacts(ctx, domain.GetArtifactCondition{ApplicationID: optional.From(app.ID)})
@@ -386,7 +386,7 @@ func (s *Service) DeleteApplication(ctx context.Context, id string) error {
 	for _, build := range builds {
 		err = domain.DeleteBuildLog(s.storage, build.ID)
 		if err != nil {
-			log.Errorf("failed to delete build log: %+v", err) // fail-safe
+			slog.ErrorContext(ctx, "failed to delete build log", "error", err) // fail-safe
 		}
 	}
 	err = s.buildRepo.DeleteBuilds(ctx, domain.GetBuildCondition{ApplicationID: optional.From(app.ID)})
