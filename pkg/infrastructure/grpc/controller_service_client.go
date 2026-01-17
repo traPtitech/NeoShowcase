@@ -89,7 +89,7 @@ func (c *ControllerServiceClient) StreamBuildLog(ctx context.Context, address st
 			ch <- st.Msg()
 		}
 		if err := st.Err(); err != nil {
-			slog.Error("failed to receive build log stream", "error", err)
+			slog.ErrorContext(ctx, "failed to receive build log stream", "error", err)
 		}
 	}()
 	return ch, nil

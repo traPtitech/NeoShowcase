@@ -351,7 +351,7 @@ func (s *Service) DeleteApplication(ctx context.Context, id string) error {
 	go func() {
 		err := s.deleteApplicationImages(context.WithoutCancel(ctx), app)
 		if err != nil {
-			slog.Error("failed to delete application image", "app_name", app.Name, "app_id", app.ID, "error", err)
+			slog.ErrorContext(ctx, "failed to delete application image", "app_name", app.Name, "app_id", app.ID, "error", err)
 		}
 	}()
 

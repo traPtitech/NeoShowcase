@@ -161,12 +161,12 @@ func (l *lokiStreamer) Stream(ctx context.Context, app *domain.Application, begi
 				var res streamResponse
 				err = json.NewDecoder(bytes.NewReader(b)).Decode(&res)
 				if err != nil {
-					slog.Error("failed to decode ws message", "error", err)
+					slog.ErrorContext(ctx, "failed to decode ws message", "error", err)
 					continue // fail-safe
 				}
 				logs, err := res.Streams.toSortedResponse(true)
 				if err != nil {
-					slog.Error("failed to decode ws message", "error", err)
+					slog.ErrorContext(ctx, "failed to decode ws message", "error", err)
 					continue // fail-safe
 				}
 				for _, l := range logs {

@@ -64,19 +64,19 @@ func NewService(
 			start := time.Now()
 			err := c.pruneImages(ctx, c.regclient)
 			if err != nil {
-				slog.Error("failed to prune images", "error", err)
+				slog.ErrorContext(ctx, "failed to prune images", "error", err)
 				return
 			}
-			slog.Info("Pruned images", "duration", time.Since(start))
+			slog.InfoContext(ctx, "Pruned images", "duration", time.Since(start))
 		}, 1*time.Hour, true)
 		go loop.Loop(ctx, func(ctx context.Context) {
 			start := time.Now()
 			err := c.pruneArtifacts(ctx)
 			if err != nil {
-				slog.Error("failed to prune artifacts", "error", err)
+				slog.ErrorContext(ctx, "failed to prune artifacts", "error", err)
 				return
 			}
-			slog.Info("Pruned artifacts", "duration", time.Since(start))
+			slog.InfoContext(ctx, "Pruned artifacts", "duration", time.Since(start))
 		}, 1*time.Hour, true)
 	}
 	c.shutdown = cancel

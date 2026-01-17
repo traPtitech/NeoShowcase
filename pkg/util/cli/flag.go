@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
+	"github.com/traPtitech/neoshowcase/pkg/util/slogutil"
 )
 
 var Debug = false
@@ -17,7 +18,7 @@ func SetupDebugFlag(flags *pflag.FlagSet) {
 	viper.SetDefault("debug", false)
 	cobra.OnInitialize(func() {
 		if Debug {
-			slog.SetLogLoggerLevel(slog.LevelDebug)
+			slogutil.InitLogger(slog.LevelDebug)
 			boil.DebugMode = true
 		}
 	})
@@ -43,6 +44,6 @@ func SetupLogLevelFlag(flags *pflag.FlagSet) {
 			slog.Error("invalid log level", "level", levelStr)
 			level = slog.LevelInfo
 		}
-		slog.SetLogLoggerLevel(level)
+		slogutil.InitLogger(level)
 	})
 }

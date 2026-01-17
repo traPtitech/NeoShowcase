@@ -197,7 +197,7 @@ func (s *ControllerBuilderService) ConnectBuilder(ctx context.Context, st *conne
 				return
 			}
 			if err != nil {
-				slog.Error("error receiving builder event", "error", err)
+				slog.ErrorContext(ctx, "error receiving builder event", "error", err)
 				return
 			}
 
@@ -212,7 +212,7 @@ func (s *ControllerBuilderService) ConnectBuilder(ctx context.Context, st *conne
 				status := pbconvert.BuildStatusMapper.FromMust(payload.Status)
 				err := s.finishBuild(ctx, payload.BuildId, status)
 				if err != nil {
-					slog.Error("error finishing build", "error", err)
+					slog.ErrorContext(ctx, "error finishing build", "error", err)
 				}
 				conn.ClearBuildID()
 				s.idle.Publish(struct{}{})

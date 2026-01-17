@@ -141,12 +141,12 @@ func (l *victoriaLogsStreamer) Stream(ctx context.Context, app *domain.Applicati
 
 	go func() {
 		defer res.Body.Close()
-		defer slog.Info("closing victorialogs stream")
-		slog.Info("new victorialogs stream")
+		defer slog.InfoContext(ctx, "closing victorialogs stream")
+		slog.InfoContext(ctx, "new victorialogs stream")
 
 		for line, err := range decodeQuery(res.Body) {
 			if err != nil {
-				slog.Error("failed to decode query response", "value", err)
+				slog.ErrorContext(ctx, "failed to decode query response", "error", err)
 				return
 			}
 			select {

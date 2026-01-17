@@ -12,7 +12,9 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/spf13/cobra"
 
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/observability"
 	"github.com/traPtitech/neoshowcase/pkg/util/cli"
+	"github.com/traPtitech/neoshowcase/pkg/util/slogutil"
 )
 
 var (
@@ -76,6 +78,15 @@ func componentCommand(name string, gen componentGenF, longDesc string) *cobra.Co
 }
 
 func main() {
+	// Initialize logger early with default level
+	slogutil.InitLogger(slog.LevelInfo)
+
+	// Initialize OpenTelemetry tracer provider for trace ID generation
+	if err := observability.InitTracerProvider("neoshowcase"); err != nil {
+		slog.Error("failed to initialize tracer provider", "error", err)
+		os.Exit(1)
+	}
+
 	cobra.OnInitialize(cli.CobraOnInitializeFunc(&configFilePath, &config))
 
 	rootCommand.AddCommand(
