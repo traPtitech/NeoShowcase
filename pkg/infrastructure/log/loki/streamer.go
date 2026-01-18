@@ -153,7 +153,7 @@ func (l *lokiStreamer) Stream(ctx context.Context, app *domain.Application, begi
 			default:
 			}
 			if err != nil {
-				slog.Error("failed to read ws message", "error", err)
+				slog.ErrorContext(ctx, "failed to read ws message", "error", err)
 				return
 			}
 			switch typ {
