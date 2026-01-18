@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"text/template"
@@ -12,7 +13,6 @@ import (
 
 	"github.com/friendsofgo/errors"
 	"github.com/shiguredo/websocket"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
@@ -142,8 +142,8 @@ func (l *lokiStreamer) Stream(ctx context.Context, app *domain.Application, begi
 	}()
 	go func() {
 		defer cancel()
-		defer log.Infof("closing loki websocket stream")
-		log.Infof("new loki websocket stream")
+		defer slog.InfoContext(ctx, "closing loki websocket stream")
+		slog.InfoContext(ctx, "new loki websocket stream")
 
 		for {
 			typ, b, err := conn.ReadMessage()
@@ -153,7 +153,7 @@ func (l *lokiStreamer) Stream(ctx context.Context, app *domain.Application, begi
 			default:
 			}
 			if err != nil {
-				log.Errorf("failed to read ws message: %+v", err)
+				slog.Error("failed to read ws message", "error", err)
 				return
 			}
 			switch typ {
@@ -161,12 +161,12 @@ func (l *lokiStreamer) Stream(ctx context.Context, app *domain.Application, begi
 				var res streamResponse
 				err = json.NewDecoder(bytes.NewReader(b)).Decode(&res)
 				if err != nil {
-					log.Errorf("failed to decode ws message: %+v", err)
+					slog.ErrorContext(ctx, "failed to decode ws message", "error", err)
 					continue // fail-safe
 				}
 				logs, err := res.Streams.toSortedResponse(true)
 				if err != nil {
-					log.Errorf("failed to decode ws message: %+v", err)
+					slog.ErrorContext(ctx, "failed to decode ws message", "error", err)
 					continue // fail-safe
 				}
 				for _, l := range logs {

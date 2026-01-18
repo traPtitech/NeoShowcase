@@ -3,13 +3,13 @@ package giteaintegration
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"slices"
 	"time"
 
 	"code.gitea.io/sdk/gitea"
 	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
-	log "github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -35,13 +35,13 @@ func listAllPages[T any](fn func(page, perPage int) ([]T, error)) ([]T, error) {
 
 func (i *Integration) sync(ctx context.Context) error {
 	start := time.Now()
-	log.Infof("Starting sync ...")
+	slog.InfoContext(ctx, "Starting sync")
 	defer func() {
-		log.Infof("Sync finished in %v.", time.Since(start))
+		slog.InfoContext(ctx, "Sync finished", "duration", time.Since(start))
 	}()
 
 	// Sync users
-	log.Infof("Retrieving users from Gitea ...")
+	slog.InfoContext(ctx, "Retrieving users from Gitea")
 	giteaUsers, err := listAllPages(func(page, perPage int) ([]*gitea.User, error) {
 		users, _, err := i.c.AdminListUsers(gitea.AdminListUsersOptions{
 			ListOptions: gitea.ListOptions{Page: page, PageSize: perPage},
@@ -53,16 +53,16 @@ func (i *Integration) sync(ctx context.Context) error {
 	}
 	userNames := ds.Map(giteaUsers, func(user *gitea.User) string { return user.UserName })
 
-	log.Infof("Syncing %v users ...", len(userNames))
+	slog.InfoContext(ctx, "Syncing users", "count", len(userNames))
 	users, err := i.userRepo.EnsureUsers(ctx, userNames)
 	if err != nil {
 		return err
 	}
 	usersMap := lo.SliceToMap(users, func(user *domain.User) (string, *domain.User) { return user.Name, user })
-	log.Infof("Synced %v users.", len(userNames))
+	slog.InfoContext(ctx, "Synced users", "count", len(userNames))
 
 	// Get repositories
-	log.Infof("Retrieving repositories from Gitea ...")
+	slog.InfoContext(ctx, "Retrieving repositories from Gitea")
 	repos, err := listAllPages(func(page, perPage int) ([]*gitea.Repository, error) {
 		repos, _, err := i.c.SearchRepos(gitea.SearchRepoOptions{
 			ListOptions: gitea.ListOptions{
@@ -79,7 +79,7 @@ func (i *Integration) sync(ctx context.Context) error {
 	}
 
 	// Sync repositories
-	log.Infof("Syncing %v repositories ...", len(repos))
+	slog.InfoContext(ctx, "Syncing repositories", "count", len(repos))
 	var eg errgroup.Group
 	eg.SetLimit(i.concurrency)
 	for _, repo := range repos {
@@ -95,7 +95,7 @@ func (i *Integration) sync(ctx context.Context) error {
 				if ok {
 					return []string{user.ID}
 				} else {
-					log.Warnf("failed to find user %v", member.UserName)
+					slog.Warn("failed to find user", "user_name", member.UserName)
 					return nil
 				}
 			}))
@@ -121,7 +121,7 @@ func (i *Integration) syncRepository(ctx context.Context, username string, gitea
 			optional.From(domain.RepositoryAuth{Method: domain.RepositoryAuthMethodSSH}),
 			giteaOwnerIDs,
 		)
-		log.Infof("New repository %v (id: %v)", repo.Name, repo.ID)
+		slog.InfoContext(ctx, "New repository found", "name", repo.Name, "id", repo.ID)
 		return i.gitRepo.CreateRepository(ctx, repo)
 	}
 
@@ -133,7 +133,7 @@ func (i *Integration) syncRepository(ctx context.Context, username string, gitea
 	allOwnersAdded := lo.EveryBy(giteaOwnerIDs, func(ownerID string) bool { return slices.Contains(repo.OwnerIDs, ownerID) })
 	if !allOwnersAdded {
 		newOwners := ds.UniqMergeSlice(repo.OwnerIDs, giteaOwnerIDs)
-		log.Infof("Syncing repository %v (id: %v) owners, %v users -> %v users", repo.Name, repo.ID, len(repo.OwnerIDs), len(newOwners))
+		slog.InfoContext(ctx, "Syncing repository owners", "repo_name", repo.Name, "repo_id", repo.ID, "old_count", len(repo.OwnerIDs), "new_count", len(newOwners))
 		err = i.gitRepo.UpdateRepository(ctx, repo.ID, &domain.UpdateRepositoryArgs{OwnerIDs: optional.From(newOwners)})
 		if err != nil {
 			return err
@@ -160,7 +160,7 @@ func (i *Integration) syncApplication(ctx context.Context, app *domain.Applicati
 	allOwnersAdded := lo.EveryBy(giteaOwnerIDs, func(ownerID string) bool { return slices.Contains(app.OwnerIDs, ownerID) })
 	if !allOwnersAdded {
 		newOwners := ds.UniqMergeSlice(app.OwnerIDs, giteaOwnerIDs)
-		log.Infof("Syncing application %v (id: %v) owners, %v users -> %v users", app.Name, app.ID, len(app.OwnerIDs), len(newOwners))
+		slog.InfoContext(ctx, "Syncing application owners", "app_name", app.Name, "app_id", app.ID, "old_count", len(app.OwnerIDs), "new_count", len(newOwners))
 		err := i.appRepo.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{OwnerIDs: optional.From(newOwners)})
 		if err != nil {
 			return err

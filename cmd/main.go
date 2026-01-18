@@ -3,15 +3,18 @@ package main
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/friendsofgo/errors"
 	_ "github.com/go-sql-driver/mysql"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/observability"
 	"github.com/traPtitech/neoshowcase/pkg/util/cli"
+	"github.com/traPtitech/neoshowcase/pkg/util/slogutil"
 )
 
 var (
@@ -58,10 +61,11 @@ func componentCommand(name string, gen componentGenF, longDesc string) *cobra.Co
 			go func() {
 				err := service.Start(ctx)
 				if err != nil && !errors.Is(err, http.ErrServerClosed) {
-					log.Fatalf("failed to start service: %+v", err)
+					slog.Error("failed to start service", "error", err)
+					cancel()
 				}
 			}()
-			log.Infof("NeoShowcase %s started", name)
+			slog.Info("NeoShowcase service started", "service", name)
 
 			cli.WaitSIGINT()
 			cancel()
@@ -74,6 +78,15 @@ func componentCommand(name string, gen componentGenF, longDesc string) *cobra.Co
 }
 
 func main() {
+	// Initialize logger early with default level
+	slogutil.InitLogger(slog.LevelInfo)
+
+	// Initialize OpenTelemetry tracer provider for trace ID generation
+	if err := observability.InitTracerProvider("neoshowcase"); err != nil {
+		slog.Error("failed to initialize tracer provider", "error", err)
+		os.Exit(1)
+	}
+
 	cobra.OnInitialize(cli.CobraOnInitializeFunc(&configFilePath, &config))
 
 	rootCommand.AddCommand(
@@ -95,6 +108,7 @@ Admin token required.`),
 	cli.SetupLogLevelFlag(flags)
 
 	if err := rootCommand.Execute(); err != nil {
-		log.Fatalf("failed to exec: %+v", err)
+		slog.Error("failed to exec", "error", err)
+		os.Exit(1)
 	}
 }

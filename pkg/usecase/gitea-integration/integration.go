@@ -3,10 +3,10 @@ package giteaintegration
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"code.gitea.io/sdk/gitea"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/util/loop"
@@ -99,7 +99,7 @@ func (i *Integration) Sync(ctx context.Context) error {
 func (i *Integration) syncAndLog(ctx context.Context) error {
 	err := i.sync(ctx)
 	if err != nil {
-		log.Errorf("failed to sync: %+v", err)
+		slog.ErrorContext(ctx, "failed to sync", "error", err)
 	}
 	return nil
 }

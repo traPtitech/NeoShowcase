@@ -2,13 +2,13 @@ package commitfetcher
 
 import (
 	"context"
+	"log/slog"
 	"os"
 	"sync"
 	"time"
 
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/util/discovery"
@@ -82,7 +82,7 @@ func (s *service) Run() {
 func (s *service) resolveCommits(ctx context.Context) {
 	apps, err := s.appRepo.GetApplications(ctx, domain.GetApplicationCondition{})
 	if err != nil {
-		log.Errorf("failed to get applications: %+v", err)
+		slog.ErrorContext(ctx, "failed to get applications", "error", err)
 		return
 	}
 
@@ -94,7 +94,7 @@ func (s *service) resolveCommits(ctx context.Context) {
 
 		builds, err := s.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{ApplicationID: optional.From(app.ID)})
 		if err != nil {
-			log.Errorf("failed to get builds: %+v", err)
+			slog.ErrorContext(ctx, "failed to get builds", "error", err)
 			return
 		}
 
@@ -113,7 +113,7 @@ func (s *service) Fetch(repositoryID string, hashes []string) {
 	select {
 	case s.queue <- queueItem{repositoryID, hashes}:
 	default:
-		log.Warnf("commit fetcher: queue is full, skipping request for repository %s and %d hashes", repositoryID, len(hashes))
+		slog.Warn("commit fetcher: queue is full, skipping request for repository and hashes", "repository_id", repositoryID, "hash_count", len(hashes))
 	}
 }
 
@@ -123,7 +123,7 @@ func (s *service) fetchLoop(ctx context.Context, fetcher <-chan queueItem) {
 		case item := <-fetcher:
 			err := s.fetchOne(ctx, item.repositoryID, item.hashes)
 			if err != nil {
-				log.Errorf("failed to fetch %d commits for repository %v: %v", len(item.hashes), item.repositoryID, err)
+				slog.ErrorContext(ctx, "failed to fetch commits for repository", "count", len(item.hashes), "repository_id", item.repositoryID, "error", err)
 			}
 		case <-ctx.Done():
 			return
@@ -180,7 +180,7 @@ func (s *service) fetchOne(ctx context.Context, repositoryID string, hashes []st
 	for _, hash := range hashes {
 		commit, err := localRepo.GetCommit(hash)
 		if err != nil {
-			log.Errorf("failed to fetch commit %v for repository %v: %+v", hash, repositoryID, err)
+			slog.ErrorContext(ctx, "failed to fetch commit for repository", "hash", hash, "repository_id", repositoryID, "error", err)
 			commit = domain.ToErroredRepositoryCommit(hash)
 		}
 
@@ -190,7 +190,7 @@ func (s *service) fetchOne(ctx context.Context, repositoryID string, hashes []st
 		}
 	}
 
-	log.Debugf("commit fetcher: fetched %v commit(s) for repository %v in %v", len(hashes), repositoryID, time.Since(start))
+	slog.DebugContext(ctx, "commit fetcher: fetched commits for repository", "count", len(hashes), "repository_id", repositoryID, "duration", time.Since(start))
 	return nil
 }
 

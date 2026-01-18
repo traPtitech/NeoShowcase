@@ -3,13 +3,13 @@ package k8simpl
 import (
 	"context"
 	"encoding/json"
+	"log/slog"
 	"sync"
 	"sync/atomic"
 	"time"
 
 	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
-	log "github.com/sirupsen/logrus"
 	"github.com/sourcegraph/conc/pool"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -115,7 +115,7 @@ func syncResources[T apiResource](ctx context.Context, cluster *discovery.Cluste
 		}
 		_, err = s.Patch(ctx, rc.GetName(), types.ApplyPatchType, b, metav1.PatchOptions{Force: lo.ToPtr(true), FieldManager: fieldManager})
 		if err != nil {
-			log.WithError(err).Errorf("failed to patch %s/%s", rcName, rc.GetName())
+			slog.ErrorContext(ctx, "failed to patch", "resource", rcName+"/"+rc.GetName(), "error", err)
 			continue // skip this resource if patch fails
 		}
 		patched++
@@ -124,7 +124,7 @@ func syncResources[T apiResource](ctx context.Context, cluster *discovery.Cluste
 	pruned := pruneResources(ctx, cluster, rcName, existing, next, s)
 
 	if patched > 0 || pruned > 0 {
-		log.Debugf("patched %v %v, pruned %v %v", patched, rcName, pruned, rcName)
+		slog.DebugContext(ctx, "patched and pruned resources", "resource", rcName, "patched", patched, "pruned", pruned)
 	}
 	return nil
 }
@@ -198,14 +198,14 @@ func syncResourcesWithReplace[T apiResource](ctx context.Context, cluster *disco
 	}
 
 	if err := replacePool.Wait(); err != nil {
-		log.WithError(err).Error("error occurred while waiting for replace")
+		slog.ErrorContext(ctx, "error occurred while waiting for replace", "error", err)
 		// no return here, continue to prune old resources
 	}
 
 	pruned := pruneResources(ctx, cluster, rcName, existing, next, s)
 
 	if patched > 0 || replaced.Load() > 0 || pruned > 0 {
-		log.Debugf("patched %v %v, replaced %v %v, pruned %v %v", patched, rcName, replaced.Load(), rcName, pruned, rcName)
+		slog.DebugContext(ctx, "patched, replaced, and pruned resources", "resource", rcName, "patched", patched, "replaced", replaced.Load(), "pruned", pruned)
 	}
 	return nil
 }
@@ -219,7 +219,7 @@ func pruneResources[T apiResource](ctx context.Context, cluster *discovery.Clust
 		}
 		err := s.Delete(ctx, rc.GetName(), metav1.DeleteOptions{PropagationPolicy: lo.ToPtr(metav1.DeletePropagationForeground)})
 		if err != nil {
-			log.WithError(err).Errorf("failed to delete %s/%s", rcName, rc.GetName())
+			slog.ErrorContext(ctx, "failed to delete resource", "resource", rcName+"/"+rc.GetName(), "error", err)
 			continue // skip this resource if delete fails
 		}
 		pruned++

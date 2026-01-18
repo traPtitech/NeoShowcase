@@ -2,11 +2,11 @@ package grpc
 
 import (
 	"context"
+	"log/slog"
 	"sync"
 
 	"connectrpc.com/connect"
 	"github.com/samber/lo"
-	log "github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -28,8 +28,8 @@ func NewControllerSSGenService() domain.ControllerSSGenService {
 
 func (s *ControllerSSGenService) ConnectSSGen(ctx context.Context, _ *connect.Request[emptypb.Empty], st *connect.ServerStream[pb.SSGenRequest]) error {
 	id := domain.NewID()
-	log.WithField("id", id).Info("new ssgen connection")
-	defer log.WithField("id", id).Info("ssgen connection closed")
+	slog.InfoContext(ctx, "new ssgen connection", "id", id)
+	defer slog.InfoContext(ctx, "ssgen connection closed", "id", id)
 
 	reqSender := make(chan *pb.SSGenRequest)
 	conn := &ssGenConnection{reqSender: reqSender}

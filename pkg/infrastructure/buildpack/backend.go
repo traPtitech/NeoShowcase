@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
@@ -12,7 +13,6 @@ import (
 	"github.com/docker/cli/cli/config/configfile"
 	types2 "github.com/docker/cli/cli/config/types"
 	"github.com/friendsofgo/errors"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
@@ -89,7 +89,7 @@ func (b *backend) prepareDir(ctx context.Context, localName, remoteName string) 
 	cleanup = func() {
 		err := b.exec(context.Background(), b.config.RemoteDir, []string{"rm", "-r", remotePath}, nil, io.Discard)
 		if err != nil {
-			log.Errorf("failed to remove tmp repo dir: %+v", err)
+			slog.ErrorContext(ctx, "failed to remove tmp repo dir", "error", err)
 		}
 	}
 

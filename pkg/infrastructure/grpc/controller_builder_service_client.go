@@ -3,12 +3,12 @@ package grpc
 import (
 	"context"
 	"io"
+	"log/slog"
 
 	"connectrpc.com/connect"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/friendsofgo/errors"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
@@ -114,7 +114,7 @@ func (c *ControllerBuilderServiceClient) ConnectBuilder(ctx context.Context, onR
 			}},
 		})
 		if err != nil {
-			log.Errorf("failed to send connected event: %+v", err)
+			slog.Error("failed to send connected event", "error", err)
 			return
 		}
 
@@ -126,7 +126,7 @@ func (c *ControllerBuilderServiceClient) ConnectBuilder(ctx context.Context, onR
 				}
 				err := st.Send(res)
 				if err != nil {
-					log.Errorf("failed to send builder response: %+v", err)
+					slog.Error("failed to send builder response", "error", err)
 					return
 				}
 			case <-ctx.Done():

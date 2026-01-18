@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"connectrpc.com/connect"
+	"connectrpc.com/otelconnect"
 	"github.com/friendsofgo/errors"
 	buildkit "github.com/moby/buildkit/client"
 
@@ -66,6 +67,10 @@ func provideTokenAuthInterceptor(c Config) (*grpc.TokenAuthInterceptor, error) {
 		c.Components.Controller.TokenHeader,
 		c.Components.Controller.Token,
 	)
+}
+
+func provideOtelInterceptor() (*otelconnect.Interceptor, error) {
+	return otelconnect.NewInterceptor()
 }
 
 func provideControllerBuilderServiceClient(c Config, auth *grpc.TokenAuthInterceptor) domain.ControllerBuilderServiceClient {
@@ -178,6 +183,7 @@ func provideMetricsService(c Config) (domain.MetricsService, error) {
 func provideGatewayServer(
 	c Config,
 	appService pbconnect.APIServiceHandler,
+	otelInterceptor *otelconnect.Interceptor,
 	authInterceptor *grpc.AuthInterceptor,
 	logInterceptor *grpc.LogInterceptor,
 	cacheInterceptor *grpc.CacheInterceptor,
@@ -189,6 +195,7 @@ func provideGatewayServer(
 				appService,
 				connect.WithInterceptors(
 					authInterceptor, // Make sure auth is the outermost interceptor
+					otelInterceptor,
 					logInterceptor,
 					cacheInterceptor,
 				),
