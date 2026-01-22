@@ -18,6 +18,9 @@ const (
 	BuildTypeStaticBuildpack
 	BuildTypeStaticCmd
 	BuildTypeStaticDockerfile
+	BuildTypeFunctionBuildpack
+	BuildTypeFunctionCmd
+	BuildTypeFunctionDockerfile
 )
 
 func (b BuildType) String() string {
@@ -45,6 +48,8 @@ func (b BuildType) DeployType() DeployType {
 		return DeployTypeRuntime
 	case BuildTypeStaticBuildpack, BuildTypeStaticCmd, BuildTypeStaticDockerfile:
 		return DeployTypeStatic
+	case BuildTypeFunctionBuildpack, BuildTypeFunctionCmd, BuildTypeFunctionDockerfile:
+		return DeployTypeFunction
 	default:
 		panic(fmt.Sprintf("unknown build type: %v", b))
 	}
@@ -126,6 +131,10 @@ func (rc *RuntimeConfig) GetStaticConfig() StaticConfig {
 	panic("not static config")
 }
 
+func (rc *RuntimeConfig) GetFunctionConfig() FunctionConfig {
+	panic("not function config")
+}
+
 type StaticConfig struct {
 	ArtifactPath string
 	SPA          bool
@@ -154,6 +163,41 @@ func (sc *StaticConfig) GetStaticConfig() StaticConfig {
 	return *sc
 }
 
+func (sc *StaticConfig) GetFunctionConfig() FunctionConfig {
+	panic("not function config")
+}
+
+type FunctionConfig struct {
+	ArtifactPath string
+}
+
+func (fc *FunctionConfig) Validate() error {
+	if fc.ArtifactPath == "" {
+		return errors.New("artifact_path is required for function builds")
+	}
+	return nil
+}
+
+func (fc *FunctionConfig) MariaDB() bool {
+	return false
+}
+
+func (fc *FunctionConfig) MongoDB() bool {
+	return false
+}
+
+func (fc *FunctionConfig) GetRuntimeConfig() RuntimeConfig {
+	panic("not runtime config")
+}
+
+func (fc *FunctionConfig) GetStaticConfig() StaticConfig {
+	panic("not static config")
+}
+
+func (fc *FunctionConfig) GetFunctionConfig() FunctionConfig {
+	return *fc
+}
+
 type BuildConfig interface {
 	isBuildConfig()
 	BuildType() BuildType
@@ -164,6 +208,7 @@ type BuildConfig interface {
 
 	GetRuntimeConfig() RuntimeConfig
 	GetStaticConfig() StaticConfig
+	GetFunctionConfig() FunctionConfig
 }
 
 type buildConfigEmbed struct{}
@@ -289,6 +334,68 @@ func (bc *BuildConfigStaticDockerfile) BuildType() BuildType {
 
 func (bc *BuildConfigStaticDockerfile) Validate() error {
 	if err := bc.StaticConfig.Validate(); err != nil {
+		return err
+	}
+	if bc.DockerfileName == "" {
+		return errors.New("dockerfile_name is required")
+	}
+	return nil
+}
+
+type BuildConfigFunctionBuildpack struct {
+	FunctionConfig
+	Context string
+	buildConfigEmbed
+}
+
+func (bc *BuildConfigFunctionBuildpack) BuildType() BuildType {
+	return BuildTypeFunctionBuildpack
+}
+
+func (bc *BuildConfigFunctionBuildpack) Validate() error {
+	if err := bc.FunctionConfig.Validate(); err != nil {
+		return err
+	}
+	// NOTE: context is not necessary
+	return nil
+}
+
+type BuildConfigFunctionCmd struct {
+	FunctionConfig
+	BaseImage string
+	BuildCmd  string
+	buildConfigEmbed
+}
+
+func (bc *BuildConfigFunctionCmd) BuildType() BuildType {
+	return BuildTypeFunctionCmd
+}
+
+func (bc *BuildConfigFunctionCmd) Validate() error {
+	if err := bc.FunctionConfig.Validate(); err != nil {
+		return err
+	}
+	// NOTE: base image is not necessary (default: scratch)
+	// NOTE: build cmd is not necessary
+	if bc.ArtifactPath == "" {
+		return errors.New("artifact_path is required")
+	}
+	return nil
+}
+
+type BuildConfigFunctionDockerfile struct {
+	FunctionConfig
+	DockerfileName string
+	Context        string
+	buildConfigEmbed
+}
+
+func (bc *BuildConfigFunctionDockerfile) BuildType() BuildType {
+	return BuildTypeFunctionDockerfile
+}
+
+func (bc *BuildConfigFunctionDockerfile) Validate() error {
+	if err := bc.FunctionConfig.Validate(); err != nil {
 		return err
 	}
 	if bc.DockerfileName == "" {
