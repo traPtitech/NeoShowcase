@@ -149,7 +149,11 @@ func syncResourcesWithReplace[T apiResource](ctx context.Context, cluster *disco
 	go func() {
 		for {
 			select {
-			case event := <-watcher.ResultChan():
+			case event, ok := <-watcher.ResultChan():
+				if !ok {
+					slog.WarnContext(ctx, "watcher channel closed")
+					return
+				}
 				if event.Type == watch.Deleted {
 					obj, ok := event.Object.(apiResource)
 					if !ok {
