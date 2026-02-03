@@ -98,14 +98,14 @@ func (s *ServiceImpl) authSessions() []session.Attachable {
 		return nil
 	}
 	return []session.Attachable{authprovider.NewDockerAuthProvider(authprovider.DockerAuthProviderConfig{
-		ConfigFile: &configfile.ConfigFile{
+		AuthConfigProvider: authprovider.LoadAuthConfig(&configfile.ConfigFile{
 			AuthConfigs: map[string]types.AuthConfig{
 				s.imageConfig.Registry.Addr: {
 					Username: s.imageConfig.Registry.Username,
 					Password: s.imageConfig.Registry.Password,
 				},
 			},
-		},
+		}),
 	})}
 }
 
