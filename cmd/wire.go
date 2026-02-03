@@ -68,7 +68,6 @@ var providers = wire.NewSet(
 	grpc.NewControllerBuilderService,
 	grpc.NewGiteaIntegrationService,
 	provideTokenAuthInterceptor,
-	provideOtelInterceptor,
 	provideControllerBuilderServiceClient,
 	grpc.NewControllerSSGenService,
 	grpc.NewControllerSSGenServiceClient,

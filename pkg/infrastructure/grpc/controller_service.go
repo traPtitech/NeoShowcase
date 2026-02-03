@@ -54,7 +54,7 @@ func NewControllerService(
 		logStream: logStream,
 
 		clientCache: sc.NewMust(func(ctx context.Context, address string) (domain.ControllerServiceClient, error) {
-			return NewControllerServiceClient(ControllerServiceClientConfig{URL: address}), nil
+			return NewControllerServiceClient(ControllerServiceClientConfig{URL: address})
 		}, time.Hour, time.Hour),
 	}
 }

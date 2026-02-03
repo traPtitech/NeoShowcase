@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"connectrpc.com/connect"
+	"connectrpc.com/otelconnect"
 	"github.com/motoki317/sc"
 	"google.golang.org/protobuf/types/known/emptypb"
 
@@ -27,13 +28,23 @@ type ControllerServiceClient struct {
 
 func NewControllerServiceClient(
 	c ControllerServiceClientConfig,
-) domain.ControllerServiceClient {
-	return &ControllerServiceClient{
-		client: pbconnect.NewControllerServiceClient(web.NewH2CClient(), c.URL),
-		clientCache: sc.NewMust(func(ctx context.Context, address string) (pbconnect.ControllerServiceClient, error) {
-			return pbconnect.NewControllerServiceClient(web.NewH2CClient(), address), nil
-		}, time.Hour, time.Hour),
+) (domain.ControllerServiceClient, error) {
+	otelInterceptor, err := otelconnect.NewInterceptor()
+	if err != nil {
+		return nil, err
 	}
+	return &ControllerServiceClient{
+		client: pbconnect.NewControllerServiceClient(
+			web.NewH2CClient(),
+			c.URL,
+			connect.WithInterceptors(otelInterceptor)),
+		clientCache: sc.NewMust(func(ctx context.Context, address string) (pbconnect.ControllerServiceClient, error) {
+			return pbconnect.NewControllerServiceClient(
+				web.NewH2CClient(),
+				address,
+				connect.WithInterceptors(otelInterceptor)), nil
+		}, time.Hour, time.Hour),
+	}, err
 }
 
 func (c *ControllerServiceClient) GetSystemInfo(ctx context.Context) (*domain.SystemInfo, error) {

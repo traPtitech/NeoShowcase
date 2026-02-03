@@ -69,10 +69,6 @@ func provideTokenAuthInterceptor(c Config) (*grpc.TokenAuthInterceptor, error) {
 	)
 }
 
-func provideOtelInterceptor() (*otelconnect.Interceptor, error) {
-	return otelconnect.NewInterceptor()
-}
-
 func provideControllerBuilderServiceClient(c Config, auth *grpc.TokenAuthInterceptor) domain.ControllerBuilderServiceClient {
 	return grpc.NewControllerBuilderServiceClient(
 		c.Components.Builder.Controller,
@@ -144,18 +140,24 @@ func provideControllerServer(
 	controllerHandler pbconnect.ControllerServiceHandler,
 	builderHandler domain.ControllerBuilderService,
 	ssgenHandler domain.ControllerSSGenService,
-	giteaIntegrationClient domain.GiteaIntegrationServiceClient,
+	logInterceptor *grpc.LogInterceptor,
 	tokenAuth *grpc.TokenAuthInterceptor,
-) *controller.APIServer {
+) (*controller.APIServer, error) {
+	otelInterceptor, err := otelconnect.NewInterceptor(otelconnect.WithTrustRemote())
+	if err != nil {
+		return nil, err
+	}
 	wc := web.H2CConfig{
 		Port: int(c.Components.Controller.Port),
 		SetupRoute: func(mux *http.ServeMux) {
-			mux.Handle(pbconnect.NewControllerServiceHandler(controllerHandler))
-			mux.Handle(pbconnect.NewControllerBuilderServiceHandler(builderHandler, connect.WithInterceptors(tokenAuth)))
+			mux.Handle(pbconnect.NewControllerServiceHandler(controllerHandler,
+				connect.WithInterceptors(otelInterceptor, logInterceptor)))
+			mux.Handle(pbconnect.NewControllerBuilderServiceHandler(builderHandler,
+				connect.WithInterceptors(tokenAuth)))
 			mux.Handle(pbconnect.NewControllerSSGenServiceHandler(ssgenHandler))
 		},
 	}
-	return &controller.APIServer{H2CServer: web.NewH2CServer(wc)}
+	return &controller.APIServer{H2CServer: web.NewH2CServer(wc)}, nil
 }
 
 func provideContainerLogger(c Config) (domain.ContainerLogger, error) {
@@ -183,11 +185,14 @@ func provideMetricsService(c Config) (domain.MetricsService, error) {
 func provideGatewayServer(
 	c Config,
 	appService pbconnect.APIServiceHandler,
-	otelInterceptor *otelconnect.Interceptor,
 	authInterceptor *grpc.AuthInterceptor,
 	logInterceptor *grpc.LogInterceptor,
 	cacheInterceptor *grpc.CacheInterceptor,
-) *gateway.APIServer {
+) (*gateway.APIServer, error) {
+	otelInterceptor, err := otelconnect.NewInterceptor()
+	if err != nil {
+		return nil, err
+	}
 	wc := web.H2CConfig{
 		Port: c.Components.Gateway.Port,
 		SetupRoute: func(mux *http.ServeMux) {
@@ -202,7 +207,7 @@ func provideGatewayServer(
 			))
 		},
 	}
-	return &gateway.APIServer{H2CServer: web.NewH2CServer(wc)}
+	return &gateway.APIServer{H2CServer: web.NewH2CServer(wc)}, nil
 }
 
 func provideGiteaIntegrationConfig(c Config) giteaintegration.Config {
