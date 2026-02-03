@@ -55,6 +55,14 @@ func NewService(
 	mutator *ContainerStateMutator,
 	metrics *observability.ControllerMetrics,
 ) (domain.CDService, error) {
+	// そのまま現在のgRPCレイヤーを参照すると循環参照になってしまうため、ネットワークから呼び出しする
+	// https://github.com/traPtitech/NeoShowcase/pull/1071#discussion_r2193711878
+	localClient, err := grpc.NewControllerServiceClient(grpc.ControllerServiceClientConfig{
+		URL: "http://127.0.0.1:" + strconv.Itoa(int(port)),
+	})
+	if err != nil {
+		return nil, err
+	}
 	cd := &service{
 		cluster:   cluster,
 		appRepo:   appRepo,
@@ -65,11 +73,7 @@ func NewService(
 		deployer:  deployer,
 		mutator:   mutator,
 
-		// そのまま現在のgRPCレイヤーを参照すると循環参照になってしまうため、ネットワークから呼び出しする
-		// https://github.com/traPtitech/NeoShowcase/pull/1071#discussion_r2193711878
-		localClient: grpc.NewControllerServiceClient(grpc.ControllerServiceClientConfig{
-			URL: "http://127.0.0.1:" + strconv.Itoa(int(port)),
-		}),
+		localClient: localClient,
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())

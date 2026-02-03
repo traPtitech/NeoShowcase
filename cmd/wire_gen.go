@@ -182,15 +182,19 @@ func NewControllerDocker(c Config) (component, error) {
 		return nil, err
 	}
 	controllerServiceHandler := grpc.NewControllerService(controllerPort, cluster, service, repofetcherService, cdService, controllerBuilderService, logstreamService)
-	giteaIntegrationServiceClient := provideGiteaIntegrationServiceClient(c)
+	logInterceptor := grpc.NewLogInterceptor()
 	tokenAuthInterceptor, err := provideTokenAuthInterceptor(c)
 	if err != nil {
 		return nil, err
 	}
-	apiServer := provideControllerServer(c, controllerServiceHandler, controllerBuilderService, controllerSSGenService, giteaIntegrationServiceClient, tokenAuthInterceptor)
+	apiServer, err := provideControllerServer(c, controllerServiceHandler, controllerBuilderService, controllerSSGenService, logInterceptor, tokenAuthInterceptor)
+	if err != nil {
+		return nil, err
+	}
 	userRepository := repository.NewUserRepository(db)
 	sshServer := sshserver.NewSSHServer(sshConfig, publicKeys, backend, applicationRepository, userRepository)
 	receiverConfig := controllerConfig.Webhook
+	giteaIntegrationServiceClient := provideGiteaIntegrationServiceClient(c)
 	receiver := webhook.NewReceiver(receiverConfig, gitRepositoryRepository, repofetcherService, giteaIntegrationServiceClient)
 	metricsServerConfig := controllerConfig.Metrics
 	metricsServer := observability.NewMetricsServer(metricsServerConfig)
@@ -295,15 +299,19 @@ func NewControllerK8s(c Config) (component, error) {
 		return nil, err
 	}
 	controllerServiceHandler := grpc.NewControllerService(controllerPort, cluster, service, repofetcherService, cdService, controllerBuilderService, logstreamService)
-	giteaIntegrationServiceClient := provideGiteaIntegrationServiceClient(c)
+	logInterceptor := grpc.NewLogInterceptor()
 	tokenAuthInterceptor, err := provideTokenAuthInterceptor(c)
 	if err != nil {
 		return nil, err
 	}
-	apiServer := provideControllerServer(c, controllerServiceHandler, controllerBuilderService, controllerSSGenService, giteaIntegrationServiceClient, tokenAuthInterceptor)
+	apiServer, err := provideControllerServer(c, controllerServiceHandler, controllerBuilderService, controllerSSGenService, logInterceptor, tokenAuthInterceptor)
+	if err != nil {
+		return nil, err
+	}
 	userRepository := repository.NewUserRepository(db)
 	sshServer := sshserver.NewSSHServer(sshConfig, publicKeys, backend, applicationRepository, userRepository)
 	receiverConfig := controllerConfig.Webhook
+	giteaIntegrationServiceClient := provideGiteaIntegrationServiceClient(c)
 	receiver := webhook.NewReceiver(receiverConfig, gitRepositoryRepository, repofetcherService, giteaIntegrationServiceClient)
 	metricsServerConfig := controllerConfig.Metrics
 	metricsServer := observability.NewMetricsServer(metricsServerConfig)
@@ -368,7 +376,10 @@ func NewGateway(c Config) (component, error) {
 		return nil, err
 	}
 	controllerServiceClientConfig := gatewayConfig.Controller
-	controllerServiceClient := grpc.NewControllerServiceClient(controllerServiceClientConfig)
+	controllerServiceClient, err := grpc.NewControllerServiceClient(controllerServiceClientConfig)
+	if err != nil {
+		return nil, err
+	}
 	imageConfig := c.Image
 	registryClient := registry.NewClient(imageConfig)
 	privateKey, err := provideRepositoryPrivateKey(c)
@@ -386,15 +397,14 @@ func NewGateway(c Config) (component, error) {
 	}
 	avatarBaseURL := gatewayConfig.AvatarBaseURL
 	apiServiceHandler := grpc.NewAPIServiceServer(service, avatarBaseURL)
-	interceptor, err := provideOtelInterceptor()
-	if err != nil {
-		return nil, err
-	}
 	authHeader := gatewayConfig.AuthHeader
 	authInterceptor := grpc.NewAuthInterceptor(userRepository, authHeader)
 	logInterceptor := grpc.NewLogInterceptor()
 	cacheInterceptor := grpc.NewCacheInterceptor()
-	apiServer := provideGatewayServer(c, apiServiceHandler, interceptor, authInterceptor, logInterceptor, cacheInterceptor)
+	apiServer, err := provideGatewayServer(c, apiServiceHandler, authInterceptor, logInterceptor, cacheInterceptor)
+	if err != nil {
+		return nil, err
+	}
 	server := &gateway.Server{
 		APIServer: apiServer,
 		DB:        db,
@@ -464,7 +474,6 @@ func NewSSGen(c Config) (component, error) {
 // wire.go:
 
 var providers = wire.NewSet(apiserver.NewService, cdservice.NewAppDeployHelper, cdservice.NewContainerStateMutator, cdservice.NewService, versioned.NewForConfig, cleaner.NewService, commitfetcher.NewService, dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, dockerimpl.NewClientFromEnv, dockerimpl.NewDockerBackend, giteaintegration.NewIntegration, grpc.NewAPIServiceServer, grpc.NewAuthInterceptor, grpc.NewLogInterceptor, grpc.NewBuildpackHelperService, provideBuildpackHelperClient, grpc.NewCacheInterceptor, grpc.NewControllerService, grpc.NewControllerServiceClient, grpc.NewControllerBuilderService, grpc.NewGiteaIntegrationService, provideTokenAuthInterceptor,
-	provideOtelInterceptor,
 	provideControllerBuilderServiceClient, grpc.NewControllerSSGenService, grpc.NewControllerSSGenServiceClient, healthcheck.NewServer, k8simpl.NewK8SBackend, kubernetes.NewForConfig, logstream.NewService, repofetcher.NewService, repository.New, repository.NewApplicationRepository, repository.NewArtifactRepository, repository.NewRuntimeImageRepository, repository.NewBuildRepository, repository.NewEnvironmentRepository, repository.NewGitRepositoryRepository, repository.NewRepositoryCommitRepository, repository.NewUserRepository, repository.NewWebsiteRepository, rest.InClusterConfig, v1alpha1.NewForConfig, ssgen.NewGeneratorService, sshserver.NewSSHServer, systeminfo.NewService, builder.NewService, webhook.NewReceiver, provideRepositoryPrivateKey, domain.IntoPublicKey, git.NewService, registry.NewClient, observability.NewMetricsServer, observability.NewControllerMetrics, provideStorage,
 	provideAuthDevServer,
 	provideBuildpackHelperServer, buildpack.NewBuildpackBackend, provideDiscoverer, discovery.NewCluster, provideBuilderConfig,

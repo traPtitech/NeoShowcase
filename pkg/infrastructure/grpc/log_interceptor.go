@@ -28,9 +28,9 @@ func (l *LogInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
 			ctx = context.WithValue(ctx, slogutil.TraceIDKey, traceID)
 		}
 
-		// Add user_id to context
-		user := web.GetUser(ctx)
-		if user.ID != "" {
+		// Add user_id to context if exists
+		user, ok := web.TryGetUser(ctx)
+		if ok && user.ID != "" {
 			ctx = context.WithValue(ctx, slogutil.UserIDKey, user.ID)
 		}
 
@@ -78,9 +78,9 @@ func (l *LogInterceptor) WrapStreamingHandler(next connect.StreamingHandlerFunc)
 			ctx = context.WithValue(ctx, slogutil.TraceIDKey, traceID)
 		}
 
-		// Add user_id to context
-		user := web.GetUser(ctx)
-		if user.ID != "" {
+		// Add user_id to context if exists
+		user, ok := web.TryGetUser(ctx)
+		if ok && user.ID != "" {
 			ctx = context.WithValue(ctx, slogutil.UserIDKey, user.ID)
 		}
 
