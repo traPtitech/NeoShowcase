@@ -11,6 +11,7 @@ import (
 	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
 	"github.com/sourcegraph/conc/pool"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/watch"
@@ -129,7 +130,13 @@ func syncResources[T apiResource](ctx context.Context, cluster *discovery.Cluste
 	return nil
 }
 
-func syncResourcesWithReplace[T apiResource](ctx context.Context, cluster *discovery.Cluster, rcName string, existing []T, next []T, s syncer[T]) error {
+func syncResourcesWithReplace[T apiResource](
+	ctx context.Context,
+	cluster *discovery.Cluster,
+	rcName string,
+	existing []T,
+	next []T,
+	s syncer[T]) error {
 	var patched int
 	var replaced atomic.Int64
 	replacePool := pool.New().WithErrors().WithContext(ctx).WithMaxGoroutines(10)
@@ -239,7 +246,11 @@ func replaceResource[T apiResource](
 	notifier *deletionNotifier,
 ) error {
 	ch := notifier.add(rc.GetName())
-	_ = s.Delete(ctx, rc.GetName(), metav1.DeleteOptions{PropagationPolicy: lo.ToPtr(metav1.DeletePropagationForeground)})
+	err := s.Delete(ctx, rc.GetName(), metav1.DeleteOptions{PropagationPolicy: lo.ToPtr(metav1.DeletePropagationForeground)})
+	if apierrors.IsNotFound(err) {
+		_, err = s.Patch(ctx, rc.GetName(), types.ApplyPatchType, data, metav1.PatchOptions{Force: lo.ToPtr(true), FieldManager: fieldManager})
+		return err
+	}
 
 	select {
 	case <-ch: // Wait for the resource to be deleted
@@ -252,6 +263,6 @@ func replaceResource[T apiResource](
 		return ctx.Err()
 	}
 
-	_, err := s.Patch(ctx, rc.GetName(), types.ApplyPatchType, data, metav1.PatchOptions{Force: lo.ToPtr(true), FieldManager: fieldManager})
+	_, err = s.Patch(ctx, rc.GetName(), types.ApplyPatchType, data, metav1.PatchOptions{Force: lo.ToPtr(true), FieldManager: fieldManager})
 	return err
 }
