@@ -19,7 +19,6 @@ spec:
         checksum/config: {{ include "config-hash" $ | quote }}
         checksum/buildkit-config: {{ include "buildkit-config-hash" $ | quote }}
         checksum/known-hosts: {{ include "known-hosts-hash" $ | quote }}
-        container.apparmor.security.beta.kubernetes.io/buildkit: unconfined
     spec:
       enableServiceLinks: false
       {{- if .nodeSelector }}
@@ -110,6 +109,8 @@ spec:
             initialDelaySeconds: 5
             periodSeconds: 30
           securityContext:
+            appArmorProfile:
+              type: Unconfined
             seccompProfile:
               type: Unconfined
             runAsUser: 1000
