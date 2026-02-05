@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"connectrpc.com/connect"
+	"github.com/friendsofgo/errors"
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/util/slogutil"
@@ -37,12 +38,17 @@ func (l *LogInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
 		start := time.Now()
 		response, err := next(ctx, request)
 		elapsed := fmt.Sprintf("%.3fs", time.Since(start).Seconds())
+
 		if err == nil || connect.IsNotModifiedError(err) {
 			slog.InfoContext(ctx, "unary request succeeded",
 				"procedure", request.Spec().Procedure,
 				"duration_sec", elapsed,
 			)
 		} else {
+			// treat context.Canceled error as connect.CodeCanceled
+			if errors.Is(err, context.Canceled) {
+				err = connect.NewError(connect.CodeCanceled, err)
+			}
 			switch connect.CodeOf(err) {
 			case connect.CodeUnknown, connect.CodeInternal, connect.CodeUnavailable, connect.CodeDeadlineExceeded, connect.CodeUnimplemented, connect.CodeDataLoss:
 				slog.ErrorContext(ctx, "unary request failed with server error",
