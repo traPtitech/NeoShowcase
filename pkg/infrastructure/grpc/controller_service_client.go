@@ -7,6 +7,7 @@ import (
 
 	"connectrpc.com/connect"
 	"connectrpc.com/otelconnect"
+	"github.com/friendsofgo/errors"
 	"github.com/motoki317/sc"
 	"google.golang.org/protobuf/types/known/emptypb"
 
@@ -99,7 +100,7 @@ func (c *ControllerServiceClient) StreamBuildLog(ctx context.Context, address st
 		for st.Receive() {
 			ch <- st.Msg()
 		}
-		if err := st.Err(); err != nil {
+		if err := st.Err(); err != nil && !errors.Is(err, context.Canceled) {
 			slog.ErrorContext(ctx, "failed to receive build log stream", "error", err)
 		}
 	}()
