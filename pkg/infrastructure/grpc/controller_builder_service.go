@@ -193,7 +193,7 @@ func (s *ControllerBuilderService) ConnectBuilder(ctx context.Context, st *conne
 
 		for {
 			res, err := st.Receive()
-			if errors.Is(err, io.EOF) {
+			if errors.Is(err, io.EOF) || connect.CodeOf(err) == connect.CodeCanceled {
 				return
 			}
 			if err != nil {
