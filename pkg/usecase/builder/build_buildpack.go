@@ -34,3 +34,18 @@ func (s *ServiceImpl) buildStaticBuildpackPack(
 	st.staticDest = filepath.Join(path, bc.ArtifactPath)
 	return nil
 }
+
+func (s *ServiceImpl) buildFunctionBuildpack(
+	ctx context.Context,
+	st *state,
+	bc *domain.BuildConfigFunctionBuildpack,
+) error {
+	contextDir := lo.Ternary(bc.Context != "", bc.Context, ".")
+	buildDir := filepath.Join(st.repositoryTempDir, contextDir)
+	path, err := s.buildpack.Pack(ctx, buildDir, s.tmpDestImage(st.app, st.build), s.imageConfig, st.appEnv(), st.Logger())
+	if err != nil {
+		return err
+	}
+	st.functionDest = filepath.Join(path, bc.ArtifactPath)
+	return nil
+}

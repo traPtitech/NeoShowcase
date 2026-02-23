@@ -97,10 +97,10 @@ func (s *ServiceImpl) buildSteps(st *state) ([]buildStep, error) {
 			})
 		}})
 		steps = append(steps, buildStep{"Cleanup Temporary Image", func(ctx context.Context) error {
-			return s.buildStaticCleanup(ctx, st)
+			return s.buildRegistryCleanup(ctx, st)
 		}})
 		steps = append(steps, buildStep{"Save Artifact", func(ctx context.Context) error {
-			return s.saveArtifact(ctx, st)
+			return s.saveTarGzArtifact(ctx, st)
 		}})
 	case *domain.BuildConfigStaticCmd:
 		steps = append(steps, buildStep{"Build (Static Command)", func(ctx context.Context) error {
@@ -114,10 +114,10 @@ func (s *ServiceImpl) buildSteps(st *state) ([]buildStep, error) {
 			})
 		}})
 		steps = append(steps, buildStep{"Cleanup Temporary Image", func(ctx context.Context) error {
-			return s.buildStaticCleanup(ctx, st)
+			return s.buildRegistryCleanup(ctx, st)
 		}})
 		steps = append(steps, buildStep{"Save Artifact", func(ctx context.Context) error {
-			return s.saveArtifact(ctx, st)
+			return s.saveTarGzArtifact(ctx, st)
 		}})
 	case *domain.BuildConfigStaticDockerfile:
 		steps = append(steps, buildStep{"Build (Static Dockerfile)", func(ctx context.Context) error {
@@ -131,10 +131,59 @@ func (s *ServiceImpl) buildSteps(st *state) ([]buildStep, error) {
 			})
 		}})
 		steps = append(steps, buildStep{"Cleanup Temporary Image", func(ctx context.Context) error {
-			return s.buildStaticCleanup(ctx, st)
+			return s.buildRegistryCleanup(ctx, st)
 		}})
 		steps = append(steps, buildStep{"Save Artifact", func(ctx context.Context) error {
-			return s.saveArtifact(ctx, st)
+			return s.saveTarGzArtifact(ctx, st)
+		}})
+	case *domain.BuildConfigFunctionBuildpack:
+		steps = append(steps, buildStep{"Build (Function Buildpack)", func(ctx context.Context) error {
+			return s.buildFunctionBuildpack(ctx, st, bc)
+		}})
+		steps = append(steps, buildStep{"Extract Function Artifact", func(ctx context.Context) error {
+			return withBuildkitProgress(ctx, st.logWriter, func(ctx context.Context, ch chan *buildkit.SolveStatus) error {
+				return s.extractFunctionArtifact(ctx, st, ch)
+			})
+		}})
+		steps = append(steps, buildStep{"Cleanup Temporary Image", func(ctx context.Context) error {
+			return s.buildRegistryCleanup(ctx, st)
+		}})
+		steps = append(steps, buildStep{"Save Artifact", func(ctx context.Context) error {
+			return s.saveFunctionArtifact(ctx, st)
+		}})
+	case *domain.BuildConfigFunctionCmd:
+		steps = append(steps, buildStep{"Build (Function Command)", func(ctx context.Context) error {
+			return withBuildkitProgress(ctx, st.logWriter, func(ctx context.Context, ch chan *buildkit.SolveStatus) error {
+				return s.buildFunctionCmd(ctx, st, ch, bc)
+			})
+		}})
+		steps = append(steps, buildStep{"Extract Function Artifact", func(ctx context.Context) error {
+			return withBuildkitProgress(ctx, st.logWriter, func(ctx context.Context, ch chan *buildkit.SolveStatus) error {
+				return s.extractFunctionArtifact(ctx, st, ch)
+			})
+		}})
+		steps = append(steps, buildStep{"Cleanup Temporary Image", func(ctx context.Context) error {
+			return s.buildRegistryCleanup(ctx, st)
+		}})
+		steps = append(steps, buildStep{"Save Artifact", func(ctx context.Context) error {
+			return s.saveFunctionArtifact(ctx, st)
+		}})
+	case *domain.BuildConfigFunctionDockerfile:
+		steps = append(steps, buildStep{"Build (Function Dockerfile)", func(ctx context.Context) error {
+			return withBuildkitProgress(ctx, st.logWriter, func(ctx context.Context, ch chan *buildkit.SolveStatus) error {
+				return s.buildFunctionDockerfile(ctx, st, ch, bc)
+			})
+		}})
+		steps = append(steps, buildStep{"Extract Function Artifact", func(ctx context.Context) error {
+			return withBuildkitProgress(ctx, st.logWriter, func(ctx context.Context, ch chan *buildkit.SolveStatus) error {
+				return s.extractFunctionArtifact(ctx, st, ch)
+			})
+		}})
+		steps = append(steps, buildStep{"Cleanup Temporary Image", func(ctx context.Context) error {
+			return s.buildRegistryCleanup(ctx, st)
+		}})
+		steps = append(steps, buildStep{"Save Artifact", func(ctx context.Context) error {
+			return s.saveFunctionArtifact(ctx, st)
 		}})
 	default:
 		return nil, errors.New("unknown build config type")

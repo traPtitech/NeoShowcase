@@ -39,6 +39,7 @@ type DeployType int
 const (
 	DeployTypeRuntime DeployType = iota
 	DeployTypeStatic
+	DeployTypeFunction
 )
 
 var EmptyCommit = strings.Repeat("0", 40)
