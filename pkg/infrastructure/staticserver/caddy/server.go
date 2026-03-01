@@ -85,23 +85,20 @@ func (s *server) Reconcile(sites []*domain.StaticSite) error {
 	for _, site := range sites {
 		matcherName := fmt.Sprintf("nsapp-%v", site.Application.ID)
 		if site.SPA {
-			b.WriteString(fmt.Sprintf(
-				siteTemplateSPA,
+			fmt.Fprintf(&b, siteTemplateSPA,
 				matcherName,
 				web.HeaderNameSSGenAppID, site.Application.ID,
 				filepath.Join(s.c.DocsRoot, site.ArtifactID),
 				matcherName,
 				matcherName,
-				filepath.Join(s.c.DocsRoot, site.ArtifactID),
-			))
+				filepath.Join(s.c.DocsRoot, site.ArtifactID))
 		} else {
-			b.WriteString(fmt.Sprintf(
-				siteTemplate,
+			fmt.Fprintf(&b, siteTemplate,
 				matcherName,
 				web.HeaderNameSSGenAppID, site.Application.ID,
 				matcherName,
 				filepath.Join(s.c.DocsRoot, site.ArtifactID),
-			))
+			)
 		}
 	}
 	b.WriteString(unityWebglCompressionHeader)
