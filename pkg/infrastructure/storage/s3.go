@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
-	s3manager "github.com/aws/aws-sdk-go-v2/feature/s3/manager"
+	"github.com/aws/aws-sdk-go-v2/feature/s3/transfermanager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/friendsofgo/errors"
 
@@ -45,8 +45,8 @@ func NewS3Storage(bucket, accessKey, accessSecret, region, endpoint string) (*S3
 
 // Save ファイルをアップロードする
 func (s3s *S3Storage) Save(filename string, src io.Reader) error {
-	uploader := s3manager.NewUploader(s3s.client)
-	_, err := uploader.Upload(context.Background(), &s3.PutObjectInput{
+	uploader := transfermanager.New(s3s.client)
+	_, err := uploader.UploadObject(context.Background(), &transfermanager.UploadObjectInput{
 		Bucket: aws.String(s3s.bucket),
 		Key:    aws.String(filename),
 		Body:   src,
