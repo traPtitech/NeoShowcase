@@ -187,18 +187,18 @@ func (s *ServiceImpl) buildRuntimeCmd(
 	if bc.BaseImage == "" {
 		dockerfile.WriteString("FROM scratch\n")
 	} else {
-		dockerfile.WriteString(fmt.Sprintf("FROM %v\n", bc.BaseImage))
+		fmt.Fprintf(&dockerfile, "FROM %v\n", bc.BaseImage)
 	}
 
 	for key := range st.appEnv() {
-		dockerfile.WriteString(fmt.Sprintf("ARG %v\n", key))
-		dockerfile.WriteString(fmt.Sprintf("ENV %v=$%v\n", key, key))
+		fmt.Fprintf(&dockerfile, "ARG %v\n", key)
+		fmt.Fprintf(&dockerfile, "ENV %v=$%v\n", key, key)
 	}
 
 	dockerfile.WriteString("WORKDIR /srv\n")
 	dockerfile.WriteString("COPY . .\n")
 	if dockerignoreExists {
-		dockerfile.WriteString(fmt.Sprintf("RUN mv %s .dockerignore\n", temporaryDockerignoreName))
+		fmt.Fprintf(&dockerfile, "RUN mv %s .dockerignore\n", temporaryDockerignoreName)
 	}
 
 	if bc.BuildCmd != "" {
@@ -206,8 +206,8 @@ func (s *ServiceImpl) buildRuntimeCmd(
 		if err != nil {
 			return err
 		}
-		dockerfile.WriteString(fmt.Sprintf("RUN ./%v\n", buildScriptName))
-		dockerfile.WriteString(fmt.Sprintf("RUN rm ./%v\n", buildScriptName))
+		fmt.Fprintf(&dockerfile, "RUN ./%v\n", buildScriptName)
+		fmt.Fprintf(&dockerfile, "RUN rm ./%v\n", buildScriptName)
 	}
 
 	tmpName, cleanup, err := createTempFile("dockerfile-*", dockerfile.String())
@@ -264,20 +264,18 @@ func (s *ServiceImpl) buildStaticCmd(
 
 	var dockerfile strings.Builder
 
-	dockerfile.WriteString(fmt.Sprintf(
-		"FROM %s\n",
-		lo.Ternary(bc.BaseImage == "", "scratch", bc.BaseImage),
-	))
+	fmt.Fprintf(&dockerfile, "FROM %s\n",
+		lo.Ternary(bc.BaseImage == "", "scratch", bc.BaseImage))
 
 	for key := range st.appEnv() {
-		dockerfile.WriteString(fmt.Sprintf("ARG %v\n", key))
-		dockerfile.WriteString(fmt.Sprintf("ENV %v=$%v\n", key, key))
+		fmt.Fprintf(&dockerfile, "ARG %v\n", key)
+		fmt.Fprintf(&dockerfile, "ENV %v=$%v\n", key, key)
 	}
 
 	dockerfile.WriteString("WORKDIR /srv\n")
 	dockerfile.WriteString("COPY . .\n")
 	if dockerignoreExists {
-		dockerfile.WriteString(fmt.Sprintf("RUN mv %s .dockerignore\n", temporaryDockerignoreName))
+		fmt.Fprintf(&dockerfile, "RUN mv %s .dockerignore\n", temporaryDockerignoreName)
 	}
 
 	if bc.BuildCmd != "" {
