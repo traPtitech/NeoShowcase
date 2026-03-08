@@ -32,10 +32,13 @@ var (
 )
 
 var rootCommand = &cobra.Command{
-	Use:              "ns",
-	Short:            "NeoShowcase",
-	Version:          fmt.Sprintf("%s (%s)", version, revision),
-	PersistentPreRun: cli.PrintVersion,
+	Use:     "ns",
+	Short:   "NeoShowcase",
+	Version: fmt.Sprintf("%s (%s)", version, revision),
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		serviceName := cmd.Name()
+		slogutil.InitLogger(serviceName, version, revision)
+	},
 }
 
 type component interface {
@@ -78,9 +81,6 @@ func componentCommand(name string, gen componentGenF, longDesc string) *cobra.Co
 }
 
 func main() {
-	// Initialize logger early with default level
-	slogutil.InitLogger(slog.LevelInfo)
-
 	// Initialize OpenTelemetry tracer provider for trace ID generation
 	if err := observability.InitTracerProvider("neoshowcase"); err != nil {
 		slog.Error("failed to initialize tracer provider", "error", err)

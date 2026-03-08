@@ -18,7 +18,7 @@ func SetupDebugFlag(flags *pflag.FlagSet) {
 	viper.SetDefault("debug", false)
 	cobra.OnInitialize(func() {
 		if Debug {
-			slogutil.InitLogger(slog.LevelDebug)
+			slogutil.SetLogLevel(slog.LevelDebug)
 			boil.DebugMode = true
 		}
 	})
@@ -44,6 +44,6 @@ func SetupLogLevelFlag(flags *pflag.FlagSet) {
 			slog.Error("invalid log level", "level", levelStr)
 			level = slog.LevelInfo
 		}
-		slogutil.InitLogger(level)
+		slogutil.SetLogLevel(level)
 	})
 }
