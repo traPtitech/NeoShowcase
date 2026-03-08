@@ -272,6 +272,8 @@ func (s *ControllerBuilderService) startBuildPayload(ctx context.Context, buildI
 	}, nil
 }
 
+var errBuildLockConflict = errors.New("build lock conflict")
+
 func (s *ControllerBuilderService) startBuild(ctx context.Context, conn *builderConnection, buildID string) error {
 	// Change build status in order to acquire lock
 	now := time.Now()
@@ -289,7 +291,7 @@ func (s *ControllerBuilderService) startBuild(ctx context.Context, conn *builder
 		return err
 	}
 	if n == 0 {
-		return fmt.Errorf("failed to acquire build lock for %v, skipping", buildID)
+		return errBuildLockConflict
 	}
 
 	// Construct payload to send to builder
@@ -366,9 +368,10 @@ func (s *ControllerBuilderService) StartBuilds(ctx context.Context, buildIDs []s
 		err := s.startBuild(ctx, conn, buildID)
 		if err == nil {
 			builderIdx++
-		} else {
+		} else if errors.Is(err, errBuildLockConflict) {
 			// It is possible that some other controller has acquired build lock first
-			// - in that case, skip and try the next build ID
+			slog.DebugContext(ctx, "failed to acquire build lock", "build_id", buildID)
+		} else {
 			slog.ErrorContext(ctx, "error starting build", "error", err)
 		}
 	}
