@@ -7,11 +7,9 @@ managed:
     - file_option: go_package
       value: github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb
 plugins:
-  - local: ["go", "tool", "protoc-gen-go"]
+  - remote: buf.build/protocolbuffers/go:v1.36.11
     out: .
-    opt:
-      - module=github.com/traPtitech/neoshowcase
-  - local: ["go", "tool", "protoc-gen-connect-go"]
+    opt: module=github.com/traPtitech/neoshowcase
+  - remote: buf.build/connectrpc/go:v1.19.1
     out: .
-    opt:
-      - module=github.com/traPtitech/neoshowcase
+    opt: module=github.com/traPtitech/neoshowcase

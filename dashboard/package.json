@@ -20,7 +20,6 @@
   "license": "MIT",
   "devDependencies": {
     "@biomejs/biome": "2.4.10",
-    "@bufbuild/protoc-gen-es": "2.11.0",
     "@iconify-json/material-symbols": "1.2.65",
     "@tanstack/virtual-core": "3.13.23",
     "@types/node": "25.5.2",
