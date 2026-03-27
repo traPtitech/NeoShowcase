@@ -1,0 +1,102 @@
+[tools]
+go = "1.26"
+node = "24"
+yarn = "4.13"
+
+k3d = "5.8.3"
+kubectl = "1.35.3"
+kustomize = "5.8.1"
+helm = "4.1.3"
+
+tbls = "1.93.0"
+buf = "1.66.1"
+"go:github.com/aarondl/sqlboiler/v4" = "4.19.7"
+"go:github.com/aarondl/sqlboiler/v4/drivers/sqlboiler-mysql" = "4.19.7"
+"go:github.com/sqldef/sqldef/cmd/mysqldef" = "1.0.7"
+
+[env]
+APP_VERSION = "dev"
+APP_REVISION = "{{ exec(command='git describe --tags --dirty') }}"
+
+[tasks."ensure:mounts"]
+description = "Setup local directories for Grafana/Loki"
+run = """
+mkdir -p .local-dev/grafana .local-dev/loki
+sudo chown -R 472:472 .local-dev/grafana
+sudo chown -R 10001:10001 .local-dev/loki
+"""
+
+[tasks."ensure:db"]
+description = "Start DBs"
+run = """
+docker compose up -d --wait mysql mongo
+"""
+
+# ---- Code Generation ----
+
+[tasks.migrate]
+description = "DB migration"
+depends = ["ensure:db"]
+run = "mysqldef --port=5004 --user=root --password=password neoshowcase < ./migrations/schema.sql"
+
+[tasks."gen:proto"]
+description = "Generate protobuf"
+run = """
+buf generate --template buf.gen.go.yaml
+buf generate --template buf.gen.ts.yaml
+"""
+
+[tasks."gen:go"]
+description = "Run go generate"
+depends = ["ensure:db"]
+run = "go generate ./..."
+
+[tasks."gen:db-docs"]
+description = "Generate DB documentation using tbls"
+depends = ["migrate"]
+run = "tbls doc mysql://root:password@127.0.0.1:5004/neoshowcase --rm-dist"
+
+[tasks.gen]
+description = "Generate code and documents"
+depends = ["gen:go", "gen:proto", "gen:db-docs"]
+
+# ---- Testing ----
+
+[tasks."test:up-k8s"]
+run = """
+k3d cluster create ns-test --no-lb --k3s-arg "--disable=traefik,servicelb,metrics-server"
+kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v3.0.0/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
+"""
+
+[tasks."test:down-k8s"]
+description = "Delete k3d cluster for testing"
+run = "k3d cluster delete ns-test"
+
+[tasks.test]
+description = "Run tests"
+depends = ["ensure:db", "test:up-k8s"]
+depends_post = ["test:down-k8s"]
+run = "go test -shuffle=on -v ./..."
+env = { ENABLE_DOCKER_TESTS = "true", ENABLE_K8S_TESTS = "true", K8S_TESTS_CLUSTER_CONTEXT = "k3d-ns-test" }
+
+# ---- Global Commands ----
+
+[tasks.build]
+description = "Build docker images"
+run = """
+case $(uname -m) in
+  x86_64|amd64) arch=amd64;;
+  aarch64|arm64) arch=arm64;;
+  *) echo "unknown arch: $(uname -m)" && exit 1;;
+esac
+docker bake --set=*.platform=linux/"$arch" --load
+"""
+
+[tasks.up]
+description = "Start development environment"
+depends = ["ensure:mounts", "build"]
+run = "docker compose up -d"
+
+[tasks.down]
+description = "Tear down development environment"
+run = "docker compose down"

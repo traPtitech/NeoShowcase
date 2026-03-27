@@ -1,0 +1,59 @@
+[env]
+CLUSTER_NAME = "ns-dev"
+
+[tasks."k3d:up"]
+description = "Spin up k3d cluster with envsubst"
+run = """
+TMP_FILE=$(mktemp)
+envsubst < k3d.yaml > "$TMP_FILE"
+k3d cluster create "$CLUSTER_NAME" -c "$TMP_FILE"
+rm "$TMP_FILE"
+"""
+env = { PROJECT_ROOT = "{{ config_root | dirname }}" }
+
+[tasks."k3d:down"]
+description = "Spin down k3d cluster"
+run = "k3d cluster delete $CLUSTER_NAME"
+
+[tasks."ensure:context"]
+description = "Switch kubectl context to k3d"
+depends = ["k3d:up"]
+run = "kubectl config use-context k3d-$CLUSTER_NAME"
+
+[tasks.import]
+description = "Build and import images into k3d"
+depends = ["build"]
+run = """
+#!/usr/bin/env bash
+images=(
+  ns-dashboard ns-sablier ns-auth-dev ns-builder
+  ns-controller ns-gateway ns-gitea-integration
+  ns-migrate ns-ssgen
+)
+for img in "${images[@]}"; do
+  k3d image import --cluster "$CLUSTER_NAME" "ghcr.io/traptitech/$img:main"
+done
+"""
+
+[tasks.apply]
+description = "Apply manifests to k3d cluster (Helm enabled)"
+depends = ["ensure:context"]
+run = """
+ls -d */ | tr -d '/' | grep -v -E 'coredns-patch|crd' | \
+xargs -I{} sh -c 'kubectl create namespace {} --dry-run=client -o yaml | kubectl apply -f -'
+
+kustomize build ./crd | kubectl apply -f -
+kustomize build --enable-helm --load-restrictor LoadRestrictionsNone . | kubectl apply -f -
+
+kubectl rollout restart deployment/coredns -n kube-system
+"""
+
+# ---- All-in-one commands ----
+
+[tasks.up]
+description = "Full setup: k3d-up -> import -> apply -> events"
+depends = ["import", "apply"]
+
+[tasks.down]
+description = "Full teardown"
+run = "mise run k3d:down"

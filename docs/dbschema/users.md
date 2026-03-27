@@ -22,7 +22,7 @@ CREATE TABLE `users` (
 
 | Name | Type | Default | Nullable | Children | Parents | Comment |
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
-| id | char(22) |  | false | [application_owners](application_owners.md) [repository_owners](repository_owners.md) [user_keys](user_keys.md) |  | ユーザーID |
+| id | char(22) |  | false | [repository_owners](repository_owners.md) [application_owners](application_owners.md) [user_keys](user_keys.md) |  | ユーザーID |
 | name | varchar(255) |  | false |  |  | ユーザー名 |
 | admin | tinyint(1) |  | false |  |  | Admin Flag |
 
@@ -43,8 +43,8 @@ CREATE TABLE `users` (
 ```mermaid
 erDiagram
 
-"application_owners" }o--|| "users" : "FOREIGN KEY (user_id) REFERENCES users (id)"
 "repository_owners" }o--|| "users" : "FOREIGN KEY (user_id) REFERENCES users (id)"
+"application_owners" }o--|| "users" : "FOREIGN KEY (user_id) REFERENCES users (id)"
 "user_keys" }o--|| "users" : "FOREIGN KEY (user_id) REFERENCES users (id)"
 
 "users" {
@@ -52,13 +52,13 @@ erDiagram
   varchar_255_ name
   tinyint_1_ admin
 }
-"application_owners" {
-  char_22_ user_id PK
-  char_22_ application_id PK
-}
 "repository_owners" {
   char_22_ user_id PK
   char_22_ repository_id PK
+}
+"application_owners" {
+  char_22_ user_id PK
+  char_22_ application_id PK
 }
 "user_keys" {
   char_22_ id PK

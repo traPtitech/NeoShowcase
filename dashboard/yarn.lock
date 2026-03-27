@@ -1639,17 +1639,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typescript/vfs@npm:^1.6.2":
-  version: 1.6.2
-  resolution: "@typescript/vfs@npm:1.6.2"
-  dependencies:
-    debug: "npm:^4.1.1"
-  peerDependencies:
-    typescript: "*"
-  checksum: 10c0/72e9a551337aa5478e39d6e0568bcf00d30fad68eae456a68b7436d2b5c7a35d78dd1d121242433fb6c8dc02ca618dfb5fe09916de88dabe746b3fb6b224793a
-  languageName: node
-  linkType: hard
-
 "@unocss/cli@npm:66.6.7":
   version: 66.6.7
   resolution: "@unocss/cli@npm:66.6.7"
@@ -4725,16 +4714,6 @@ __metadata:
   version: 0.1.17
   resolution: "type-level-regexp@npm:0.1.17"
   checksum: 10c0/54798f83464cb5ce04246c9c4739ec471c526aaa7690679fddbce05b689b99403de709f3fcb494555d4276b46c606435a95855e52535602f63378ab8b38010d5
-  languageName: node
-  linkType: hard
-
-"typescript@npm:5.4.5":
-  version: 5.4.5
-  resolution: "typescript@npm:5.4.5"
-  bin:
-    tsc: bin/tsc
-    tsserver: bin/tsserver
-  checksum: 10c0/2954022ada340fd3d6a9e2b8e534f65d57c92d5f3989a263754a78aba549f7e6529acc1921913560a4b816c46dce7df4a4d29f9f11a3dc0d4213bb76d043251e
   languageName: node
   linkType: hard
 
