@@ -5,18 +5,18 @@ Manifest files required to deploy NeoShowcase locally using k8s backend
 ## Usage
 
 tl;dr:
-Run `make up` / `make down`
+Run `mise run up` / `mise run down`
 
 ### Spin up
 
-1. `make k3d-up` to spin up the k3d cluster
-2. `make import` to build and import NeoShowcase images
-3. `make apply` to apply the manifest files
+1. `mise run k3d:up` to spin up the k3d cluster
+2. `mise run import` to build and import NeoShowcase images
+3. `mise run apply` to apply the manifest files
 
 ### Managing
 
-- To tail cluster events (pulling image, creating container etc.), `make events`
-- To tail specific pod / container logs, `make logs NAMESPACE=ns-system APP=ns-controller`
+- To tail cluster events (pulling image, creating container etc.), `kubectl get events --watch`
+- To tail specific pod / container logs, `kubectl logs -f <pod-name> -n <namespace>`
   - For more, visit http://grafana.local.trapti.tech/ and see centralized Loki logs
 - Go to http://localhost:8080/ to view traefik dashboard
 
@@ -27,4 +27,4 @@ Run `make up` / `make down`
 
 ### Spin down
 
-1. `make k3d-down` to take down the k3d cluster completely
+1. `mise run k3d:down` to take down the k3d cluster completely

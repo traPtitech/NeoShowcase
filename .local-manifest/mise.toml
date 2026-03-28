@@ -22,7 +22,7 @@ run = "kubectl config use-context k3d-$CLUSTER_NAME"
 
 [tasks.import]
 description = "Build and import images into k3d"
-depends = ["build"]
+depends = ["build", "k3d:up"]
 run = """
 #!/usr/bin/env bash
 images=(

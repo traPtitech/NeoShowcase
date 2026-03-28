@@ -16,7 +16,7 @@ buf = "1.66.1"
 
 [env]
 APP_VERSION = "dev"
-APP_REVISION = "{{ exec(command='git describe --tags --dirty') }}"
+APP_REVISION = "{{ exec(command='git describe --tags --dirty 2>/dev/null || git rev-parse --short HEAD 2>/dev/null || echo local') }}"
 
 [tasks."ensure:mounts"]
 description = "Setup local directories for Grafana/Loki"
