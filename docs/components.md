@@ -59,8 +59,6 @@ Protocol Buffers用のモダンなツール。`.proto`ファイルから`.go`フ
 
 `mise install` で入るようにしてある。
 
-https://grpc.io/docs/languages/go/quickstart/ も参照
-
 ### [evans](https://github.com/ktr0731/evans)
 
 gRPC用クライアント
