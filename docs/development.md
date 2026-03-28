@@ -1,10 +1,38 @@
 # Development
 
+## Prerequisites
+
+This project uses [mise](https://mise.jdx.dev/) for managing tools and tasks. Install mise:
+
+```bash
+# macOS / Linux
+curl https://mise.run | sh
+
+# Or use your package manager
+# macOS: brew install mise
+# Ubuntu/Debian: apt install mise
+```
+
+After installation, activate mise by adding the following to your shell rc file:
+
+```bash
+# For bash (~/.bashrc)
+eval "$(mise activate bash)"
+
+# For zsh (~/.zshrc)
+eval "$(mise activate zsh)"
+
+# For fish (~/.config/fish/config.fish)
+mise activate fish | source
+```
+
+Then, run `mise install` at the project root to install all required tools.
+
 ## Workaround Notes
 
 ### Local (docker)
 
-Add following to your `/etc/hosts` before executing `make up`
+Add following to your `/etc/hosts` before executing `mise run up`
 (workaround to issue #493)
 
 ```
@@ -29,16 +57,16 @@ k3d environment is mainly for testing k8s features.
 
 ### docker backend (docker compose)
 
-You will need `/Makefile` and `/compose.yaml` at the project root.
+You will need `/compose.yaml` and `/mise.toml` at the project root.
 
-1. `make init`: Install / update development tools
-2. `make up`: Spin up development environment
-3. `make down`: Tear down development environment
+1. `mise install`: Install / update development tools
+2. `mise run up`: Spin up development environment
+3. `mise run down`: Tear down development environment
 
-Everything should automatically start after running `make up`.
+Everything should automatically start after running `mise run up`.
 
 - Dashboard: http://ns.local.trapti.tech/
-- For more, type `make` to display all commands help
+- For more, run `mise tasks` to display all available commands
 
 If you use Docker Desktop for Windows and WSL2...
 
@@ -49,28 +77,28 @@ If you use Docker Desktop for Windows and WSL2...
 
 You will need manifest files in `/.local-manifest` directory.
 
-1. `make init` (at project root): Install / update development tools
-2. `make up` (at `/.local-manifest`): Spin up development environment
-3. `make down` (at `/.local-manifest`): Tear down development environment
+1. `mise install` (at project root): Install / update development tools
+2. `mise run up` (at `/.local-manifest`): Spin up development environment
+3. `mise run down` (at `/.local-manifest`): Tear down development environment
    - The use of k3d (k3s in docker) allows ease cleanup.
 
-Everything should automatically start after running `make up`.
+Everything should automatically start after running `mise run up`.
 
 For more, see [.local-manifest/README.md](../.local-manifest/README.md).
 
 ## Testing
 
-Run tests with `make test`.
+Run tests with `mise run test`.
 
-See [Makefile](../Makefile) for more.
+See [mise.toml](../mise.toml) for more available tasks.
 
 ## Changing Database Schema
 
 To change the database schema, do the following:
 
 1. Change schema in `./migrations/schema.sql`. This definition file is the source of truth for all generated tables / codes.
-2. Run `make migrate` to apply schema changes to local db container in an idempotent manner.
-3. Run `make gen` (or individually, `make gen-go && make gen-db-docs`) to update generated codes and docs via SQLBoiler and tbls.
+2. Run `mise run migrate` to apply schema changes to local db container in an idempotent manner.
+3. Run `mise run gen` (or individually, `mise run gen:go && mise run gen:db-docs`) to update generated codes and docs via SQLBoiler and tbls.
 4. Write your code.
    - Don't forget to modify fields in `./pkg/domain` structs, `./pkg/infrastructure/repository/repoconvert` functions, etc.
 
@@ -79,7 +107,7 @@ To change the database schema, do the following:
 To change the API schema, do the following:
 
 1. Change schema in `./api/proto/neoshowcase/protobuf/*.proto` files. These files are the source of truth for all generated codes.
-2. Run `make gen` (or individually, `make gen-proto`) to generate both server (Go) and client (TypeScript) codes.
+2. Run `mise run gen` (or individually, `mise run gen:proto`) to generate both server (Go) and client (TypeScript) codes.
 3. Write your code.
    - Don't forget to modify fields in `./pkg/infrastructure/grpc/pbconvert` etc.
 
@@ -93,4 +121,4 @@ Example: A new repository in `./pkg/infrastructure/repository`, a new use-case s
 2. Add its constructor method (`New...()`) to `./cmd/providers.go`.
    - Reference the component from needed component. Example: add the component as a member in `Server` struct in `./cmd/controller/server.go`. See `./cmd/wire.go` to see how each component references multiple internal components.
 3. Add config and its default to `./cmd/config.go`, if necessary.
-4. Run `make gen` (or individually, `make gen-go`) to generate DI (dependency injection) codes.
+4. Run `mise run gen` (or individually, `mise run gen:go`) to generate DI (dependency injection) codes.

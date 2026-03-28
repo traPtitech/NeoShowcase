@@ -10,7 +10,7 @@ This application is a successor to [kaz/showcase](https://github.com/kaz/showcas
 
 ## Development
 
-Quick start: run `make init && make up`.
+Quick start: run `mise run up`.
 
 See [development.md](./docs/development.md) for more.
 
