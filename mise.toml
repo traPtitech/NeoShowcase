@@ -58,7 +58,7 @@ run = "tbls doc mysql://root:password@127.0.0.1:5004/neoshowcase --rm-dist"
 
 [tasks.gen]
 description = "Generate code and documents"
-depends = ["gen:go", "gen:proto", "gen:db-docs"]
+run = { tasks = ["gen:go", "gen:proto", "gen:db-docs"] }
 
 # ---- Testing ----
 
