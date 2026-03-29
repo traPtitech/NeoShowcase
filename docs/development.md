@@ -1,10 +1,20 @@
 # Development
 
+## Prerequisites
+
+This project uses mise to manage development tools and tasks.
+
+1. Install mise: If you don't have it yet, follow the [Official Getting Started Guide](https://mise.jdx.dev/getting-started.html).
+2. Setup Tools: Run the following command at the project root to install all required dependencies:
+    ```
+    mise trust && mise install
+    ```
+
 ## Workaround Notes
 
 ### Local (docker)
 
-Add following to your `/etc/hosts` before executing `make up`
+Add following to your `/etc/hosts` before executing `mise run up`
 (workaround to issue #493)
 
 ```
@@ -29,16 +39,15 @@ k3d environment is mainly for testing k8s features.
 
 ### docker backend (docker compose)
 
-You will need `/Makefile` and `/compose.yaml` at the project root.
+You will need `/compose.yaml` and `/mise.toml` at the project root.
 
-1. `make init`: Install / update development tools
-2. `make up`: Spin up development environment
-3. `make down`: Tear down development environment
+1. `mise run up`: Spin up development environment
+2. `mise run down`: Tear down development environment
 
-Everything should automatically start after running `make up`.
+Everything should automatically start after running `mise run up`.
 
 - Dashboard: http://ns.local.trapti.tech/
-- For more, type `make` to display all commands help
+- For more, run `mise tasks` to display all available commands
 
 If you use Docker Desktop for Windows and WSL2...
 
@@ -49,28 +58,27 @@ If you use Docker Desktop for Windows and WSL2...
 
 You will need manifest files in `/.local-manifest` directory.
 
-1. `make init` (at project root): Install / update development tools
-2. `make up` (at `/.local-manifest`): Spin up development environment
-3. `make down` (at `/.local-manifest`): Tear down development environment
+1. `mise trust && mise run up` (at `/.local-manifest`): Spin up development environment
+2. `mise run down` (at `/.local-manifest`): Tear down development environment
    - The use of k3d (k3s in docker) allows ease cleanup.
 
-Everything should automatically start after running `make up`.
+Everything should automatically start after running `mise run up`.
 
 For more, see [.local-manifest/README.md](../.local-manifest/README.md).
 
 ## Testing
 
-Run tests with `make test`.
+Run tests with `mise run test`.
 
-See [Makefile](../Makefile) for more.
+See [mise.toml](../mise.toml) for more available tasks.
 
 ## Changing Database Schema
 
 To change the database schema, do the following:
 
 1. Change schema in `./migrations/schema.sql`. This definition file is the source of truth for all generated tables / codes.
-2. Run `make migrate` to apply schema changes to local db container in an idempotent manner.
-3. Run `make gen` (or individually, `make gen-go && make gen-db-docs`) to update generated codes and docs via SQLBoiler and tbls.
+2. Run `mise run migrate` to apply schema changes to local db container in an idempotent manner.
+3. Run `mise run gen` (or individually, `mise run gen:go && mise run gen:db-docs`) to update generated codes and docs via SQLBoiler and tbls.
 4. Write your code.
    - Don't forget to modify fields in `./pkg/domain` structs, `./pkg/infrastructure/repository/repoconvert` functions, etc.
 
@@ -79,7 +87,7 @@ To change the database schema, do the following:
 To change the API schema, do the following:
 
 1. Change schema in `./api/proto/neoshowcase/protobuf/*.proto` files. These files are the source of truth for all generated codes.
-2. Run `make gen` (or individually, `make gen-proto`) to generate both server (Go) and client (TypeScript) codes.
+2. Run `mise run gen` (or individually, `mise run gen:proto`) to generate both server (Go) and client (TypeScript) codes.
 3. Write your code.
    - Don't forget to modify fields in `./pkg/infrastructure/grpc/pbconvert` etc.
 
@@ -93,4 +101,4 @@ Example: A new repository in `./pkg/infrastructure/repository`, a new use-case s
 2. Add its constructor method (`New...()`) to `./cmd/providers.go`.
    - Reference the component from needed component. Example: add the component as a member in `Server` struct in `./cmd/controller/server.go`. See `./cmd/wire.go` to see how each component references multiple internal components.
 3. Add config and its default to `./cmd/config.go`, if necessary.
-4. Run `make gen` (or individually, `make gen-go`) to generate DI (dependency injection) codes.
+4. Run `mise run gen` (or individually, `mise run gen:go`) to generate DI (dependency injection) codes.
