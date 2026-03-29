@@ -7,7 +7,7 @@ This project uses mise to manage development tools and tasks.
 1. Install mise: If you don't have it yet, follow the [Official Getting Started Guide](https://mise.jdx.dev/getting-started.html).
 2. Setup Tools: Run the following command at the project root to install all required dependencies:
     ```
-    mise install
+    mise trust && mise install
     ```
 
 ## Workaround Notes
@@ -58,7 +58,7 @@ If you use Docker Desktop for Windows and WSL2...
 
 You will need manifest files in `/.local-manifest` directory.
 
-1. `mise run up` (at `/.local-manifest`): Spin up development environment
+1. `mise trust && mise run up` (at `/.local-manifest`): Spin up development environment
 2. `mise run down` (at `/.local-manifest`): Tear down development environment
    - The use of k3d (k3s in docker) allows ease cleanup.
 

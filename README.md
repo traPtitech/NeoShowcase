@@ -10,7 +10,7 @@ This application is a successor to [kaz/showcase](https://github.com/kaz/showcas
 
 ## Development
 
-Quick start: run `mise run up`.
+Quick start: run `mise trust && mise run up`.
 
 See [development.md](./docs/development.md) for more.
 
