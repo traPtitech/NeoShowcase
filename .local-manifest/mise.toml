@@ -4,10 +4,14 @@ CLUSTER_NAME = "ns-dev"
 [tasks."k3d:up"]
 description = "Spin up k3d cluster with envsubst"
 run = """
-TMP_FILE=$(mktemp)
-envsubst < k3d.yaml > "$TMP_FILE"
-k3d cluster create "$CLUSTER_NAME" -c "$TMP_FILE"
-rm "$TMP_FILE"
+if k3d cluster list "$CLUSTER_NAME" > /dev/null 2>&1; then
+  echo "Cluster $CLUSTER_NAME already exists, skipping creation."
+else
+  TMP_FILE=$(mktemp)
+  envsubst < k3d.yaml > "$TMP_FILE"
+  k3d cluster create "$CLUSTER_NAME" -c "$TMP_FILE"
+  rm "$TMP_FILE"
+fi
 """
 env = { PROJECT_ROOT = "{{ config_root | dirname }}" }
 
@@ -17,12 +21,11 @@ run = "k3d cluster delete $CLUSTER_NAME"
 
 [tasks."ensure:context"]
 description = "Switch kubectl context to k3d"
-depends = ["k3d:up"]
 run = "kubectl config use-context k3d-$CLUSTER_NAME"
 
 [tasks.import]
 description = "Build and import images into k3d"
-depends = ["build", "k3d:up"]
+depends = ["build"]
 run = """
 #!/usr/bin/env bash
 images=(
@@ -30,9 +33,7 @@ images=(
   ns-controller ns-gateway ns-gitea-integration
   ns-migrate ns-ssgen
 )
-for img in "${images[@]}"; do
-  k3d image import --cluster "$CLUSTER_NAME" "ghcr.io/traptitech/$img:main"
-done
+k3d image import --cluster "$CLUSTER_NAME" $(printf "ghcr.io/traptitech/%s:main " "${images[@]}")
 """
 
 [tasks.apply]
@@ -51,9 +52,9 @@ kubectl rollout restart deployment/coredns -n kube-system
 # ---- All-in-one commands ----
 
 [tasks.up]
-description = "Full setup: k3d-up -> import -> apply -> events"
-depends = ["import", "apply"]
+description = "Full setup: k3d-up -> import -> apply"
+run = [{ task = "k3d:up" }, { task = "import" }, { task = "apply" }]
 
 [tasks.down]
 description = "Full teardown"
-run = "mise run k3d:down"
+run = { task = "k3d:down" }
