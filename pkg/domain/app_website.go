@@ -216,8 +216,18 @@ func (w *Website) overlapsWith(target *Website) bool {
 	return w.pathContainedBy(target) || target.pathContainedBy(w)
 }
 
-func (a *Application) WebsiteConflicts(existing []*Application, actor *User) bool {
+func (a *Application) WebsiteConflicts(existing []*Application, actor *User, prevApp *Application) bool {
 	for _, w := range a.Websites {
+		// Skip conflict check for websites that already existed (unchanged)
+		// This allows updating other settings without triggering website conflict errors
+		// when the website configuration hasn't changed
+		if prevApp != nil {
+			if lo.ContainsBy(prevApp.Websites, func(prevW *Website) bool {
+				return w.ID == prevW.ID
+			}) {
+				continue
+			}
+		}
 		// check with all other websites
 		for _, other := range append(existing, a) {
 			for _, w2 := range other.Websites {

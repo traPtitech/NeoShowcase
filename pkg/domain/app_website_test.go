@@ -451,7 +451,99 @@ func TestApplication_WebsiteConflicts(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.target.WebsiteConflicts([]*Application{tt.existing}, tt.actor)
+			got := tt.target.WebsiteConflicts([]*Application{tt.existing}, tt.actor, nil)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestApplication_WebsiteConflicts_Update(t *testing.T) {
+	// Test for issue #1170: website conflict error when changing settings without URL change
+	// Scenario: User B updates App 2 (owner of App 2 but not App 1) without changing website
+	// Expected: No conflict because the website hasn't changed
+	u1 := &User{ID: "user1"} // Owner of App 2, NOT owner of App 1
+	u2 := &User{ID: "user2"} // Owner of App 1
+	u3 := &User{ID: "user3"} // Owner of both App 1 and App 2
+
+	// App 1: has website at bar.trap.games/ (root path)
+	app1WebsiteID := NewID()
+	app1 := &Application{
+		ID: NewID(),
+		Websites: []*Website{{
+			ID:         app1WebsiteID,
+			FQDN:       "bar.trap.games",
+			PathPrefix: "/",
+		}},
+		OwnerIDs: []string{u2.ID, u3.ID}, // Owned by u2 and u3, NOT u1
+	}
+
+	// App 2 before update: has website at bar.trap.games/api (overlaps with App 1)
+	app2WebsiteID := NewID()
+	app2Before := &Application{
+		ID: NewID(),
+		Websites: []*Website{{
+			ID:         app2WebsiteID,
+			FQDN:       "bar.trap.games",
+			PathPrefix: "/api",
+		}},
+		OwnerIDs: []string{u1.ID, u3.ID}, // Owned by u1 and u3
+	}
+
+	// App 2 after update: same website (unchanged), other settings changed
+	app2After := &Application{
+		ID: app2Before.ID, // Same ID as before
+		Websites: []*Website{{
+			ID:         app2WebsiteID, // Same website ID = unchanged
+			FQDN:       "bar.trap.games",
+			PathPrefix: "/api",
+		}},
+		OwnerIDs: []string{u1.ID, u3.ID},
+	}
+
+	tests := []struct {
+		name     string
+		target   *Application
+		existing []*Application
+		prevApp  *Application
+		actor    *User
+		want     bool
+	}{
+		{
+			name:     "ok (update without changing website, actor not owner of overlapping app)",
+			target:   app2After,       // App 2 after update (website unchanged)
+			existing: []*Application{app1}, // App 1 has overlapping website
+			prevApp:  app2Before,      // App 2 before update (same website)
+			actor:    u1,               // Owner of App 2, NOT owner of App 1
+			want:     false,            // No conflict because website hasn't changed
+		},
+		{
+			name:     "ng (update with new website, actor not owner of overlapping app)",
+			target: &Application{
+				ID: app2Before.ID,
+				Websites: []*Website{{
+					ID:         NewID(), // New website ID = new website
+					FQDN:       "bar.trap.games",
+					PathPrefix: "/api/v2",
+				}},
+				OwnerIDs: []string{u1.ID, u3.ID},
+			},
+			existing: []*Application{app1},
+			prevApp:  app2Before,
+			actor:    u1,
+			want:     true, // Conflict because new website overlaps with App 1
+		},
+		{
+			name:     "ok (create new app without prevApp)",
+			target:   app2After,
+			existing: []*Application{app1},
+			prevApp:  nil, // No prevApp = create scenario
+			actor:    u1,
+			want:     true, // Conflict because creating new app with overlapping website
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.target.WebsiteConflicts(tt.existing, tt.actor, tt.prevApp)
 			assert.Equal(t, tt.want, got)
 		})
 	}

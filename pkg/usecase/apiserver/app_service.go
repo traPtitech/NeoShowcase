@@ -16,7 +16,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/random"
 )
 
-func (s *Service) validateApp(ctx context.Context, app *domain.Application) error {
+func (s *Service) validateApp(ctx context.Context, app *domain.Application, prevApp *domain.Application) error {
 	// Validate app fields and conflict
 	existingApps, err := s.appRepo.GetApplications(ctx, domain.GetApplicationCondition{})
 	if err != nil {
@@ -26,7 +26,7 @@ func (s *Service) validateApp(ctx context.Context, app *domain.Application) erro
 	if err != nil {
 		return errors.Wrap(err, "getting system info")
 	}
-	err = app.Validate(web.GetUser(ctx), existingApps, si.AvailableDomains, si.AvailablePorts)
+	err = app.Validate(web.GetUser(ctx), existingApps, si.AvailableDomains, si.AvailablePorts, prevApp)
 	if err != nil {
 		return newError(ErrorTypeBadRequest, "invalid application", err)
 	}
@@ -60,7 +60,7 @@ func (s *Service) CreateApplication(ctx context.Context, app *domain.Application
 	if !repo.CanCreateApp(web.GetUser(ctx)) {
 		return nil, newError(ErrorTypeForbidden, "you cannot create application from this repository", nil)
 	}
-	err = s.validateApp(ctx, app)
+	err = s.validateApp(ctx, app, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -235,21 +235,23 @@ func (s *Service) UpdateApplication(ctx context.Context, id string, args *domain
 	if err != nil {
 		return err
 	}
+	// Fetch the previous app state for conflict validation before applying changes
+	// Note: We need to fetch again because Apply modifies app in place
+	appBefore, err := s.appRepo.GetApplication(ctx, id)
+	if err != nil {
+		return err
+	}
 	app.Apply(args)
 
 	for _, website := range app.Websites {
 		website.Normalize()
 	}
 	// Validate
-	if err = s.validateApp(ctx, app); err != nil {
+	if err = s.validateApp(ctx, app, appBefore); err != nil {
 		return err
 	}
 	// Validate immutable fields
 	{
-		appBefore, err := s.appRepo.GetApplication(ctx, id)
-		if err != nil {
-			return err
-		}
 		if appBefore.Config.BuildConfig.MariaDB() != app.Config.BuildConfig.MariaDB() {
 			return newError(ErrorTypeBadRequest, "use_mariadb is immutable", nil)
 		}
