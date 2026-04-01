@@ -74,7 +74,7 @@ jobs:
           git commit -m "Update charts/${{ inputs.chart }} to ${{ steps.calc-tag.outputs.new-raw }}"
           git push
 
-      - uses: docker/login-action@v3
+      - uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ env.REGISTRY_USER }}
