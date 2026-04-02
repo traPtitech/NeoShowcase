@@ -438,7 +438,6 @@ networks:
   default: {}
   apps:
     name: neoshowcase_apps
-    external: true
 
 volumes:
   binary:

@@ -23,7 +23,7 @@ CREATE TABLE `repositories` (
 
 | Name | Type | Default | Nullable | Children | Parents | Comment |
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
-| id | char(22) |  | false | [applications](applications.md) [repository_auth](repository_auth.md) [repository_owners](repository_owners.md) |  | リポジトリID |
+| id | char(22) |  | false | [repository_owners](repository_owners.md) [repository_auth](repository_auth.md) [applications](applications.md) |  | リポジトリID |
 | name | varchar(256) |  | false |  |  | リポジトリ名 |
 | url | varchar(256) |  | false |  |  | Git Remote URL |
 
@@ -46,14 +46,25 @@ CREATE TABLE `repositories` (
 ```mermaid
 erDiagram
 
-"applications" }o--|| "repositories" : "FOREIGN KEY (repository_id) REFERENCES repositories (id)"
-"repository_auth" |o--|| "repositories" : "FOREIGN KEY (repository_id) REFERENCES repositories (id)"
 "repository_owners" }o--|| "repositories" : "FOREIGN KEY (repository_id) REFERENCES repositories (id)"
+"repository_auth" |o--|| "repositories" : "FOREIGN KEY (repository_id) REFERENCES repositories (id)"
+"applications" }o--|| "repositories" : "FOREIGN KEY (repository_id) REFERENCES repositories (id)"
 
 "repositories" {
   char_22_ id PK
   varchar_256_ name
   varchar_256_ url
+}
+"repository_owners" {
+  char_22_ user_id PK
+  char_22_ repository_id PK
+}
+"repository_auth" {
+  char_22_ repository_id PK
+  enum__basic___ssh__ method
+  varchar_256_ username
+  varchar_256_ password
+  text ssh_key
 }
 "applications" {
   char_22_ id PK
@@ -68,17 +79,6 @@ erDiagram
   char_22_ current_build
   datetime_6_ created_at
   datetime_6_ updated_at
-}
-"repository_auth" {
-  char_22_ repository_id PK
-  enum__basic___ssh__ method
-  varchar_256_ username
-  varchar_256_ password
-  text ssh_key
-}
-"repository_owners" {
-  char_22_ user_id PK
-  char_22_ repository_id PK
 }
 ```
 
