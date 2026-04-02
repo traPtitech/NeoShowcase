@@ -46,7 +46,7 @@ jobs:
           sep-tags: ","
 
       - name: Build
-        uses: docker/bake-action@v6
+        uses: docker/bake-action@v7
         env:
           APP_VERSION: ${{ env.APP_VERSION }}
           APP_REVISION: ${{ env.APP_REVISION }}
