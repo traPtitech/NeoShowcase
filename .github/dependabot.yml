@@ -12,6 +12,9 @@ updates:
     schedule:
       interval: "monthly"
     groups:
+      security-updates:
+        applies-to: security-updates
+        patterns: ["*"]
       non-majors:
         update-types:
           - "patch"
@@ -34,6 +37,9 @@ updates:
     schedule:
       interval: "monthly"
     groups:
+      security-updates:
+        applies-to: security-updates
+        patterns: ["*"]
       non-majors:
         update-types:
           - "patch"
