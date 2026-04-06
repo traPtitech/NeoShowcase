@@ -64,7 +64,7 @@ export const allOrigins: SelectOption<RepositoryOrigin>[] = [
 const AppsList: Component<{
   repoWithApps: RepoWithApp[]
   query: string
-  parentRef: HTMLDivElement
+  parentRef: HTMLDivElement | undefined
 }> = (props) => {
   const hashes = () => props.repoWithApps.flatMap((r) => r.apps.map((a) => a.commit))
   const [commits] = createResource(
@@ -81,31 +81,24 @@ const AppsList: Component<{
     })
   })
 
-  const virtualizer = createMemo(() =>
-    createVirtualizer({
-      count: filteredRepos().length,
-      getScrollElement: () => props.parentRef,
-      estimateSize: (i) => 76 + 16 + filteredRepos()[i].apps.length * 80,
-      // scrollParentRef内に高さ120pxのFilterContainerが存在するため、この分を設定
-      scrollMargin: 120,
-      paddingEnd: 72,
-      gap: 16,
-    }),
-  )
-
-  const items = () => virtualizer().getVirtualItems()
+  const virtualizer = createVirtualizer({
+    get count() {
+      return filteredRepos().length
+    },
+    getScrollElement: () => (props.parentRef?.isConnected ? props.parentRef : null),
+    estimateSize: (i) => 76 + 16 + filteredRepos()[i].apps.length * 80,
+    gap: 16,
+  })
 
   return (
     <div
       class="relative w-full"
       style={{
-        height: `${virtualizer().getTotalSize()}px`,
-        // scrollParentRef内に高さ120pxのFilterContainerが存在するため、この分を減算
-        transform: `translateY(${-virtualizer().options.scrollMargin}px)`,
+        height: `${virtualizer.getTotalSize()}px`,
       }}
     >
       <For
-        each={items() ?? []}
+        each={virtualizer.getVirtualItems() ?? []}
         fallback={
           <div class="mt-32 flex flex-col items-center justify-center gap-4 text-text-black">
             <div class="i-material-symbols:search shrink-0 text-20/20" />
@@ -113,30 +106,22 @@ const AppsList: Component<{
           </div>
         }
       >
-        {(vRow) => {
-          let el: HTMLDivElement | undefined
-          createEffect(() => {
-            if (el) {
-              virtualizer().measureElement(el)
-            }
-          })
-          return (
-            <div
-              ref={el}
-              data-index={vRow.index}
-              class="absolute top-0 left-0 w-full"
-              style={{
-                transform: `translateY(${vRow.start}px)`,
-              }}
-            >
-              <RepositoryList
-                repository={filteredRepos()[vRow.index].repo}
-                apps={filteredRepos()[vRow.index].apps}
-                commits={commits()}
-              />
-            </div>
-          )
-        }}
+        {(vRow) => (
+          <div
+            ref={virtualizer.measureElement}
+            data-index={vRow.index}
+            class="absolute top-0 left-0 w-full"
+            style={{
+              transform: `translateY(${vRow.start}px)`,
+            }}
+          >
+            <RepositoryList
+              repository={filteredRepos()[vRow.index].repo}
+              apps={filteredRepos()[vRow.index].apps}
+              commits={commits()}
+            />
+          </div>
+        )}
       </For>
     </div>
   )
@@ -257,7 +242,7 @@ export default () => {
               }
             >
               <SuspenseContainer isPending={isPending()}>
-                <AppsList repoWithApps={repoWithApps()} query={query()} parentRef={scrollParentRef()!} />
+                <AppsList repoWithApps={repoWithApps()} query={query()} parentRef={scrollParentRef()} />
               </SuspenseContainer>
             </Suspense>
           </div>
