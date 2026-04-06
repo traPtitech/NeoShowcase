@@ -56,7 +56,7 @@ func (b *Backend) certificate(targetDomain string) *certmanagerv1.Certificate {
 			Duration:    &metav1.Duration{Duration: 90 * 24 * time.Hour},
 			RenewBefore: &metav1.Duration{Duration: 30 * 24 * time.Hour},
 			DNSNames:    []string{targetDomain},
-			IssuerRef: certmetav1.ObjectReference{
+			IssuerRef: certmetav1.IssuerReference{
 				Name: b.config.TLS.CertManager.Issuer.Name,
 				Kind: b.config.TLS.CertManager.Issuer.Kind,
 			},
