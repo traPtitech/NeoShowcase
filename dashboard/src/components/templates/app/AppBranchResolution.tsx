@@ -34,7 +34,7 @@ const AppBranchResolution: Component<{
         </div>
       </div>
     )
-    if (!c || !c.commitDate) {
+    if (!c?.commitDate) {
       return base
     }
 

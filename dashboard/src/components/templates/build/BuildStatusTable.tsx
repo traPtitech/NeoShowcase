@@ -57,7 +57,7 @@ const BuildStatusTable: Component<{
 
   const commitDisplay = () => {
     const c = props.commit
-    if (!c || !c.commitDate) {
+    if (!c?.commitDate) {
       return shortSha(props.build.commit)
     }
 

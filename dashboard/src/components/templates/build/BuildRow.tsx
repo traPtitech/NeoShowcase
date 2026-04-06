@@ -24,7 +24,7 @@ export const BuildRow: Component<Props> = (props) => {
   }
   const commitDetails = () => {
     const c = commit()
-    if (!c || !c.commitDate) return '<no info>'
+    if (!c?.commitDate) return '<no info>'
     const diff = diffHuman(timestampDate(c.commitDate))
     const localeString = timestampDate(c.commitDate).toLocaleString()
     return (

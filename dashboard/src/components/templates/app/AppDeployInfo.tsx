@@ -44,7 +44,7 @@ const AppDeployInfo: Component<{
   const deployedCommit = () => commits()?.[props.deployedBuild?.commit || '']
   const deployedCommitDisplay = () => {
     const c = deployedCommit()
-    if (!c || !c.commitDate) {
+    if (!c?.commitDate) {
       const hash = props.deployedBuild?.commit
       if (!hash) return '<no build>'
       return `Build at ${shortSha(hash)}`
