@@ -7,7 +7,7 @@ const [users, { mutate: mutateUsers, refetch: refetchUsers }] = createResource(a
   return getUsersRes.users
 })
 
-export { users, mutateUsers, refetchUsers }
+export { mutateUsers, refetchUsers, users }
 
 // keyにID, valueにユーザー情報を持つMap
 // createRootを使わない場合``computations created outside a `createRoot` or `render` will never be disposed``の警告が出る

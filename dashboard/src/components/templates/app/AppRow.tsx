@@ -70,7 +70,7 @@ export const AppRow: Component<Props> = (props) => {
   }
   const commitTooltip = () => {
     const c = commit()
-    if (!c || !c.commitDate) return `${shortSha(props.app!.commit)}`
+    if (!c?.commitDate) return `${shortSha(props.app!.commit)}`
     const diff = diffHuman(timestampDate(c.commitDate))
     return (
       <>
