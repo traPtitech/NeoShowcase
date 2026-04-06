@@ -1,7 +1,7 @@
 import { Title } from '@solidjs/meta'
 import { A } from '@solidjs/router'
 import { createVirtualizer } from '@tanstack/solid-virtual'
-import { type Component, createMemo, createResource, createSignal, For, Suspense, useTransition } from 'solid-js'
+import { type Component, createEffect, createMemo, createResource, createSignal, For, Suspense, useTransition } from 'solid-js'
 import { GetApplicationsRequest_Scope, GetRepositoriesRequest_Scope } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { styled } from '/@/components/styled-components'
 import type { SelectOption } from '/@/components/templates/Select'
@@ -104,23 +104,30 @@ const AppsList: Component<{
           </div>
         }
       >
-        {(vRow) => (
-          <div
-            data-index={vRow.index}
-            ref={(el) => queueMicrotask(() => virtualizer().measureElement(el))}
-            class="absolute top-0 left-0 w-full"
-            style={{
-              height: `${items()[vRow.index]}px`,
-              transform: `translateY(${vRow.start}px)`,
-            }}
-          >
-            <RepositoryList
-              repository={filteredRepos()[vRow.index].repo}
-              apps={filteredRepos()[vRow.index].apps}
-              commits={commits()}
-            />
-          </div>
-        )}
+        {(vRow) => {
+          let el: HTMLDivElement | undefined
+          createEffect(() => {
+            if (el) {
+              virtualizer().measureElement(el)
+            }
+          })
+          return (
+            <div
+              ref={el}
+              data-index={vRow.index}
+              class="absolute top-0 left-0 w-full"
+              style={{
+                transform: `translateY(${vRow.start}px)`,
+              }}
+            >
+              <RepositoryList
+                repository={filteredRepos()[vRow.index].repo}
+                apps={filteredRepos()[vRow.index].apps}
+                commits={commits()}
+              />
+            </div>
+          )
+        }}
       </For>
     </div>
   )
