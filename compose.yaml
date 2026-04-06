@@ -367,7 +367,7 @@ services:
       - ./.local-dev/victoria-metrics:/data
 
   cadvisor:
-    image: ghcr.io/google/cadvisor:v0.54
+    image: ghcr.io/google/cadvisor:0.54
     privileged: true
     devices:
       - /dev/kmsg
