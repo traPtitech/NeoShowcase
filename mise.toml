@@ -20,6 +20,7 @@ APP_REVISION = "{{ exec(command='git describe --tags --dirty 2>/dev/null || git 
 
 [tasks."ensure:mounts"]
 description = "Setup local directories for Grafana/Loki"
+interactive = true
 run = """
 mkdir -p .local-dev/grafana .local-dev/loki
 sudo chown -R 472:472 .local-dev/grafana
