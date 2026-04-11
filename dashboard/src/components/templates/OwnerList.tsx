@@ -1,4 +1,3 @@
-import { createVirtualizer } from '@tanstack/solid-virtual'
 import { type Component, createMemo, createSignal, For, Show } from 'solid-js'
 import type { User } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { styled } from '/@/components/styled-components'
@@ -7,6 +6,7 @@ import UserAvatar from '/@/components/UI/UserAvater'
 import useModal from '/@/libs/useModal'
 import ModalDeleteConfirm from '../UI/ModalDeleteConfirm'
 import { TextField } from '../UI/TextField'
+import { VList } from 'virtua/solid'
 
 const UserPlaceholder = styled(
   'div',
@@ -31,16 +31,6 @@ const AddOwners: Component<{
     return props.nonOwners.filter(({ name }) => name.toLowerCase().includes(searchUserQuery().toLowerCase()))
   })
 
-  const [containerRef, setContainerRef] = createSignal<HTMLDivElement | null>(null)
-  const virtualizer = createMemo(() =>
-    createVirtualizer({
-      count: filteredUsers().length,
-      getScrollElement: containerRef,
-      estimateSize: () => 64,
-    }),
-  )
-  const items = () => virtualizer().getVirtualItems()
-
   return (
     <div class="flex h-full max-h-full w-full flex-col gap-4">
       <TextField
@@ -58,33 +48,21 @@ const AddOwners: Component<{
           </UserPlaceholder>
         }
       >
-        <UsersContainer ref={setContainerRef}>
-          <div
-            class="relative w-full"
-            style={{
-              height: `${virtualizer().getTotalSize()}px`,
-            }}
-          >
-            <For each={items() ?? []}>
-              {(vRow) => (
-                <div
-                  data-index={vRow.index}
-                  style={{
-                    height: `${vRow.size}px`,
-                    transform: `translateY(${vRow.start}px)`,
-                  }}
-                  class="absolute top-0 left-0 w-full border-ui-border [&:not(:last-child)]:border-b"
-                >
+        <UsersContainer>
+          <div class="w-full">
+            <VList data={filteredUsers()}>
+              {(user) => (
+                <div class="w-full border-ui-border [&:not(:last-child)]:border-b">
                   <UserRowContainer>
-                    <UserAvatar user={filteredUsers()[vRow.index]} size={32} />
-                    <UserName>{filteredUsers()[vRow.index].name}</UserName>
-                    <Button variants="ghost" size="small" onClick={() => props.addOwner(filteredUsers()[vRow.index])}>
+                    <UserAvatar user={user} size={32} />
+                    <UserName>{user.name}</UserName>
+                    <Button variants="ghost" size="small" onClick={() => props.addOwner(user)}>
                       Add
                     </Button>
                   </UserRowContainer>
                 </div>
               )}
-            </For>
+            </VList>
           </div>
         </UsersContainer>
       </Show>

@@ -1,16 +1,7 @@
 import { Title } from '@solidjs/meta'
 import { A } from '@solidjs/router'
-import { createVirtualizer } from '@tanstack/solid-virtual'
-import {
-  type Component,
-  createEffect,
-  createMemo,
-  createResource,
-  createSignal,
-  For,
-  Suspense,
-  useTransition,
-} from 'solid-js'
+import { type Component, createMemo, createResource, For, Show, Suspense, useTransition } from 'solid-js'
+import { WindowVirtualizer } from 'virtua/solid'
 import { GetApplicationsRequest_Scope, GetRepositoriesRequest_Scope } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { styled } from '/@/components/styled-components'
 import type { SelectOption } from '/@/components/templates/Select'
@@ -64,7 +55,6 @@ export const allOrigins: SelectOption<RepositoryOrigin>[] = [
 const AppsList: Component<{
   repoWithApps: RepoWithApp[]
   query: string
-  parentRef: HTMLDivElement | undefined
 }> = (props) => {
   const hashes = () => props.repoWithApps.flatMap((r) => r.apps.map((a) => a.commit))
   const [commits] = createResource(
@@ -81,24 +71,10 @@ const AppsList: Component<{
     })
   })
 
-  const virtualizer = createVirtualizer({
-    get count() {
-      return filteredRepos().length
-    },
-    getScrollElement: () => (props.parentRef?.isConnected ? props.parentRef : null),
-    estimateSize: (i) => 76 + 16 + filteredRepos()[i].apps.length * 80,
-    gap: 16,
-  })
-
   return (
-    <div
-      class="relative w-full"
-      style={{
-        height: `${virtualizer.getTotalSize()}px`,
-      }}
-    >
-      <For
-        each={virtualizer.getVirtualItems() ?? []}
+    <div class="w-full">
+      <Show
+        when={filteredRepos().length > 0}
         fallback={
           <div class="mt-32 flex flex-col items-center justify-center gap-4 text-text-black">
             <div class="i-material-symbols:search shrink-0 text-20/20" />
@@ -106,23 +82,14 @@ const AppsList: Component<{
           </div>
         }
       >
-        {(vRow) => (
-          <div
-            ref={virtualizer.measureElement}
-            data-index={vRow.index}
-            class="absolute top-0 left-0 w-full"
-            style={{
-              transform: `translateY(${vRow.start}px)`,
-            }}
-          >
-            <RepositoryList
-              repository={filteredRepos()[vRow.index].repo}
-              apps={filteredRepos()[vRow.index].apps}
-              commits={commits()}
-            />
-          </div>
-        )}
-      </For>
+        <WindowVirtualizer data={filteredRepos()}>
+          {(repo) => (
+            <div class="mb-10">
+              <RepositoryList repository={repo.repo} apps={repo.apps} commits={commits()} />
+            </div>
+          )}
+        </WindowVirtualizer>
+      </Show>
     </div>
   )
 }
@@ -148,8 +115,6 @@ export default () => {
   const [query, setQuery] = createSessionSignal('apps-query', '')
   const [sort, setSort] = createSessionSignal<keyof typeof sortItems>('apps-sort', sortItems.desc.value)
   const [includeNoApp, setIncludeNoApp] = createSessionSignal('apps-include-no-app', false)
-
-  const [scrollParentRef, setScrollParentRef] = createSignal<HTMLDivElement>()
 
   const appScope = () => {
     const mine = scope() === GetRepositoriesRequest_Scope.MINE
@@ -183,7 +148,7 @@ export default () => {
     )
 
   return (
-    <div class="h-full overflow-y-auto" ref={setScrollParentRef}>
+    <div class="h-full overflow-y-auto">
       <WithNav.Container>
         <Title>Apps - NeoShowcase</Title>
         <WithNav.Navs>
@@ -242,7 +207,7 @@ export default () => {
               }
             >
               <SuspenseContainer isPending={isPending()}>
-                <AppsList repoWithApps={repoWithApps()} query={query()} parentRef={scrollParentRef()} />
+                <AppsList repoWithApps={repoWithApps()} query={query()} />
               </SuspenseContainer>
             </Suspense>
           </div>
