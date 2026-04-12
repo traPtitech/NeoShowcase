@@ -1,7 +1,7 @@
 import { Title } from '@solidjs/meta'
 import { A } from '@solidjs/router'
-import { createVirtualizer } from '@tanstack/solid-virtual'
-import { type Component, createMemo, createResource, createSignal, For, Suspense, useTransition } from 'solid-js'
+import { type Component, createMemo, createResource, createSignal, For, Show, Suspense, useTransition } from 'solid-js'
+import { Virtualizer } from 'virtua/solid'
 import { GetApplicationsRequest_Scope, GetRepositoriesRequest_Scope } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { styled } from '/@/components/styled-components'
 import type { SelectOption } from '/@/components/templates/Select'
@@ -55,7 +55,7 @@ export const allOrigins: SelectOption<RepositoryOrigin>[] = [
 const AppsList: Component<{
   repoWithApps: RepoWithApp[]
   query: string
-  parentRef: HTMLDivElement
+  parentRef: HTMLDivElement | undefined
 }> = (props) => {
   const hashes = () => props.repoWithApps.flatMap((r) => r.apps.map((a) => a.commit))
   const [commits] = createResource(
@@ -72,57 +72,28 @@ const AppsList: Component<{
     })
   })
 
-  const virtualizer = createMemo(() =>
-    createVirtualizer({
-      count: filteredRepos().length,
-      getScrollElement: () => props.parentRef,
-      estimateSize: (i) => 76 + 16 + filteredRepos()[i].apps.length * 80,
-      // scrollParentRef内に高さ120pxのFilterContainerが存在するため、この分を設定
-      scrollMargin: 120,
-      paddingEnd: 72,
-      gap: 16,
-    }),
-  )
-
-  const items = () => virtualizer().getVirtualItems()
-
   return (
-    <div
-      class="relative w-full"
-      style={{
-        height: `${virtualizer().getTotalSize()}px`,
-        // scrollParentRef内に高さ120pxのFilterContainerが存在するため、この分を減算
-        transform: `translateY(${-virtualizer().options.scrollMargin}px)`,
-      }}
+    <Show
+      when={filteredRepos().length > 0}
+      fallback={
+        <div class="mt-32 flex flex-col items-center justify-center gap-4 text-text-black">
+          <div class="i-material-symbols:search shrink-0 text-20/20" />
+          <span class="font-bold">No Apps Found</span>
+        </div>
+      }
     >
-      <For
-        each={items() ?? []}
-        fallback={
-          <div class="mt-32 flex flex-col items-center justify-center gap-4 text-text-black">
-            <div class="i-material-symbols:search shrink-0 text-20/20" />
-            <span class="font-bold">No Apps Found</span>
-          </div>
-        }
+      <Virtualizer
+        data={filteredRepos()}
+        scrollRef={props.parentRef}
+        startMargin={280} // ナビゲーションバー 160px + 検索バー 120px
       >
-        {(vRow) => (
-          <div
-            data-index={vRow.index}
-            ref={(el) => queueMicrotask(() => virtualizer().measureElement(el))}
-            class="absolute top-0 left-0 w-full"
-            style={{
-              height: `${items()[vRow.index]}px`,
-              transform: `translateY(${vRow.start}px)`,
-            }}
-          >
-            <RepositoryList
-              repository={filteredRepos()[vRow.index].repo}
-              apps={filteredRepos()[vRow.index].apps}
-              commits={commits()}
-            />
+        {(repo) => (
+          <div class="mb-10">
+            <RepositoryList repository={repo.repo} apps={repo.apps} commits={commits()} />
           </div>
         )}
-      </For>
-    </div>
+      </Virtualizer>
+    </Show>
   )
 }
 
@@ -182,7 +153,7 @@ export default () => {
     )
 
   return (
-    <div class="h-full overflow-y-auto" ref={setScrollParentRef}>
+    <div class="h-full overflow-y-auto" style={{ 'overflow-anchor': 'none' }} ref={setScrollParentRef}>
       <WithNav.Container>
         <Title>Apps - NeoShowcase</Title>
         <WithNav.Navs>
@@ -208,7 +179,7 @@ export default () => {
           </WithNav.Tabs>
         </WithNav.Navs>
         <WithNav.Body>
-          <div class="relative flex h-full w-full flex-col bg-ui-background px-[max(calc(50%-500px),32px)] max-md:px-4">
+          <div class="flex h-full w-full flex-col bg-ui-background px-[max(calc(50%-500px),32px)] max-md:px-4">
             <FilterContainer>
               <TextField
                 placeholder="Search"
@@ -241,7 +212,7 @@ export default () => {
               }
             >
               <SuspenseContainer isPending={isPending()}>
-                <AppsList repoWithApps={repoWithApps()} query={query()} parentRef={scrollParentRef()!} />
+                <AppsList repoWithApps={repoWithApps()} query={query()} parentRef={scrollParentRef()} />
               </SuspenseContainer>
             </Suspense>
           </div>
