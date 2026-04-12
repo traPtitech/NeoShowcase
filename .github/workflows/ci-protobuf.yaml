@@ -16,10 +16,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - name: Install buf
-        run: make init-buf
+      - uses: jdx/mise-action@v4
+        with:
+          install_args: buf
       - name: Generate code
-        run: make gen-proto
+        run: mise run gen:proto
       - name: Check diff
         run: git diff --exit-code
 
@@ -28,8 +29,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - name: Install buf
-        run: make init-buf
+      - uses: jdx/mise-action@v4
+        with:
+          install_args: buf
       - name: Format proto files
         run: |
           if ! buf format --diff --exit-code; then
@@ -42,7 +44,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - name: Install buf
-        run: make init-buf
+      - uses: jdx/mise-action@v4
+        with:
+          install_args: buf
       - name: Lint proto files
         run: buf lint
