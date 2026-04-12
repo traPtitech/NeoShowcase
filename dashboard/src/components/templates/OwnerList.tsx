@@ -49,21 +49,19 @@ const AddOwners: Component<{
         }
       >
         <UsersContainer>
-          <div class="w-full">
-            <VList data={filteredUsers()}>
-              {(user) => (
-                <div class="w-full border-ui-border [&:not(:last-child)]:border-b">
-                  <UserRowContainer>
-                    <UserAvatar user={user} size={32} />
-                    <UserName>{user.name}</UserName>
-                    <Button variants="ghost" size="small" onClick={() => props.addOwner(user)}>
-                      Add
-                    </Button>
-                  </UserRowContainer>
-                </div>
-              )}
-            </VList>
-          </div>
+          <VList data={filteredUsers()}>
+            {(user) => (
+              <div class="w-full border-ui-border [&:not(:last-child)]:border-b">
+                <UserRowContainer>
+                  <UserAvatar user={user} size={32} />
+                  <UserName>{user.name}</UserName>
+                  <Button variants="ghost" size="small" onClick={() => props.addOwner(user)}>
+                    Add
+                  </Button>
+                </UserRowContainer>
+              </div>
+            )}
+          </VList>
         </UsersContainer>
       </Show>
     </div>

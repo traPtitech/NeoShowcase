@@ -55,7 +55,7 @@ export const allOrigins: SelectOption<RepositoryOrigin>[] = [
 const AppsList: Component<{
   repoWithApps: RepoWithApp[]
   query: string
-  parentRef: HTMLDivElement
+  parentRef: HTMLDivElement | undefined
 }> = (props) => {
   const hashes = () => props.repoWithApps.flatMap((r) => r.apps.map((a) => a.commit))
   const [commits] = createResource(
@@ -82,7 +82,11 @@ const AppsList: Component<{
         </div>
       }
     >
-      <Virtualizer data={filteredRepos()} scrollRef={props.parentRef} startMargin={280}>
+      <Virtualizer
+        data={filteredRepos()}
+        scrollRef={props.parentRef}
+        startMargin={280} // ナビゲーションバー 160px + 検索バー 120px
+      >
         {(repo) => (
           <div class="mb-10">
             <RepositoryList repository={repo.repo} apps={repo.apps} commits={commits()} />
@@ -208,7 +212,7 @@ export default () => {
               }
             >
               <SuspenseContainer isPending={isPending()}>
-                <AppsList repoWithApps={repoWithApps()} query={query()} parentRef={scrollParentRef()!} />
+                <AppsList repoWithApps={repoWithApps()} query={query()} parentRef={scrollParentRef()} />
               </SuspenseContainer>
             </Suspense>
           </div>
