@@ -1,7 +1,7 @@
 import { Title } from '@solidjs/meta'
 import { A } from '@solidjs/router'
-import { type Component, createMemo, createResource, For, Show, Suspense, useTransition } from 'solid-js'
-import { WindowVirtualizer } from 'virtua/solid'
+import { type Component, createMemo, createResource, createSignal, For, Show, Suspense, useTransition } from 'solid-js'
+import { Virtualizer } from 'virtua/solid'
 import { GetApplicationsRequest_Scope, GetRepositoriesRequest_Scope } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { styled } from '/@/components/styled-components'
 import type { SelectOption } from '/@/components/templates/Select'
@@ -55,6 +55,7 @@ export const allOrigins: SelectOption<RepositoryOrigin>[] = [
 const AppsList: Component<{
   repoWithApps: RepoWithApp[]
   query: string
+  parentRef: HTMLDivElement
 }> = (props) => {
   const hashes = () => props.repoWithApps.flatMap((r) => r.apps.map((a) => a.commit))
   const [commits] = createResource(
@@ -72,25 +73,23 @@ const AppsList: Component<{
   })
 
   return (
-    <div class="w-full">
-      <Show
-        when={filteredRepos().length > 0}
-        fallback={
-          <div class="mt-32 flex flex-col items-center justify-center gap-4 text-text-black">
-            <div class="i-material-symbols:search shrink-0 text-20/20" />
-            <span class="font-bold">No Apps Found</span>
+    <Show
+      when={filteredRepos().length > 0}
+      fallback={
+        <div class="mt-32 flex flex-col items-center justify-center gap-4 text-text-black">
+          <div class="i-material-symbols:search shrink-0 text-20/20" />
+          <span class="font-bold">No Apps Found</span>
+        </div>
+      }
+    >
+      <Virtualizer data={filteredRepos()} scrollRef={props.parentRef} startMargin={280}>
+        {(repo) => (
+          <div class="mb-10">
+            <RepositoryList repository={repo.repo} apps={repo.apps} commits={commits()} />
           </div>
-        }
-      >
-        <WindowVirtualizer data={filteredRepos()}>
-          {(repo) => (
-            <div class="mb-10">
-              <RepositoryList repository={repo.repo} apps={repo.apps} commits={commits()} />
-            </div>
-          )}
-        </WindowVirtualizer>
-      </Show>
-    </div>
+        )}
+      </Virtualizer>
+    </Show>
   )
 }
 
@@ -115,6 +114,8 @@ export default () => {
   const [query, setQuery] = createSessionSignal('apps-query', '')
   const [sort, setSort] = createSessionSignal<keyof typeof sortItems>('apps-sort', sortItems.desc.value)
   const [includeNoApp, setIncludeNoApp] = createSessionSignal('apps-include-no-app', false)
+
+  const [scrollParentRef, setScrollParentRef] = createSignal<HTMLDivElement>()
 
   const appScope = () => {
     const mine = scope() === GetRepositoriesRequest_Scope.MINE
@@ -148,7 +149,7 @@ export default () => {
     )
 
   return (
-    <div class="h-full overflow-y-auto">
+    <div class="h-full overflow-y-auto" style={{ 'overflow-anchor': 'none' }} ref={setScrollParentRef}>
       <WithNav.Container>
         <Title>Apps - NeoShowcase</Title>
         <WithNav.Navs>
@@ -174,7 +175,7 @@ export default () => {
           </WithNav.Tabs>
         </WithNav.Navs>
         <WithNav.Body>
-          <div class="relative flex h-full w-full flex-col bg-ui-background px-[max(calc(50%-500px),32px)] max-md:px-4">
+          <div class="flex h-full w-full flex-col bg-ui-background px-[max(calc(50%-500px),32px)] max-md:px-4">
             <FilterContainer>
               <TextField
                 placeholder="Search"
@@ -207,7 +208,7 @@ export default () => {
               }
             >
               <SuspenseContainer isPending={isPending()}>
-                <AppsList repoWithApps={repoWithApps()} query={query()} />
+                <AppsList repoWithApps={repoWithApps()} query={query()} parentRef={scrollParentRef()!} />
               </SuspenseContainer>
             </Suspense>
           </div>

@@ -1,4 +1,5 @@
 import { type Component, createMemo, createSignal, For, Show } from 'solid-js'
+import { VList } from 'virtua/solid'
 import type { User } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { styled } from '/@/components/styled-components'
 import { Button } from '/@/components/UI/Button'
@@ -6,7 +7,6 @@ import UserAvatar from '/@/components/UI/UserAvater'
 import useModal from '/@/libs/useModal'
 import ModalDeleteConfirm from '../UI/ModalDeleteConfirm'
 import { TextField } from '../UI/TextField'
-import { VList } from 'virtua/solid'
 
 const UserPlaceholder = styled(
   'div',
