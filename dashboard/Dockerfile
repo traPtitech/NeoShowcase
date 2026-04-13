@@ -1,26 +1,24 @@
-FROM --platform=$BUILDPLATFORM node:25-slim AS base
+FROM --platform=$BUILDPLATFORM node:24-slim AS base
+
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
 
 WORKDIR /work
 
-# use --force to replace existing yarn v1 binaries
-RUN npm install -g corepack@latest --force
+COPY package.json pnpm-lock.yaml .
 RUN corepack enable
-
-COPY package.json yarn.lock .yarnrc.yml ./
-COPY .yarn .yarn
-RUN yarn --immutable
+RUN --mount=type=cache,target=/pnpm/store \
+    pnpm install --frozen-lockfile
 
 FROM --platform=$BUILDPLATFORM base AS dev
-
-ENTRYPOINT ["yarn", "dev"]
+COPY . .
+ENTRYPOINT ["pnpm", "dev"]
 CMD ["--host", "--port=80"]
 
 FROM --platform=$BUILDPLATFORM base AS builder
-
 COPY . .
-RUN yarn build
+RUN pnpm build
 
 FROM caddy:2 AS prod
-
 COPY Caddyfile /etc/caddy/Caddyfile
 COPY --from=builder /work/dist/ /usr/share/caddy/

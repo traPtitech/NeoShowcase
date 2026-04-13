@@ -24,7 +24,7 @@ jobs:
         with:
           node-version: 22
       - run: corepack enable
-      - run: yarn install --immutable
+      - run: pnpm install --frozen-lockfile
   rome:
     name: Format and Lint
     runs-on: ubuntu-latest
@@ -35,8 +35,8 @@ jobs:
         with:
           node-version: 22
       - run: corepack enable
-      - run: yarn install --immutable
-      - run: yarn ci
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm ci
   typecheck:
     name: Check types
     runs-on: ubuntu-latest
@@ -47,8 +47,8 @@ jobs:
         with:
           node-version: 22
       - run: corepack enable
-      - run: yarn install --immutable
-      - run: yarn typecheck
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
   test:
     name: Test
     runs-on: ubuntu-latest
@@ -59,8 +59,8 @@ jobs:
         with:
           node-version: 22
       - run: corepack enable
-      - run: yarn install --immutable
-      - run: yarn test
+      - run: pnpm install --immutable
+      - run: pnpm test
   build:
     name: Build
     runs-on: ubuntu-latest
@@ -71,5 +71,5 @@ jobs:
         with:
           node-version: 22
       - run: corepack enable
-      - run: yarn install --immutable
-      - run: yarn build
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build

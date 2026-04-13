@@ -1,7 +1,7 @@
 [tools]
 go = "1.26"
 node = "24"
-yarn = "4.13"
+pnpm = "10.33.0"
 
 k3d = "5.8.3"
 kubectl = "1.35.3"
