@@ -1,8 +1,7 @@
 name: Preview
 
 on:
-  # pull_request_target を使うにあたって https://securitylab.github.com/research/github-actions-preventing-pwn-requests/ の一読を推奨
-  pull_request_target:
+  pull_request:
 
 permissions:
   packages: write
@@ -16,9 +15,6 @@ jobs:
         run: echo "PR_NUMBER=${{ github.event.number }}" >> $GITHUB_ENV
 
       - uses: actions/checkout@v6
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          persist-credentials: false
       - run: echo "APP_VERSION=preview-${{ env.PR_NUMBER }}" >> $GITHUB_ENV
       - run: echo "APP_REVISION=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
