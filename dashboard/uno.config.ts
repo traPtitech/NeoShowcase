@@ -1,8 +1,8 @@
-import { defineConfig, presetIcons, presetUno, transformerVariantGroup } from 'unocss'
+import { defineConfig, presetIcons, presetWind3, transformerVariantGroup } from 'unocss'
 import { parseColor } from '@unocss/preset-mini/utils'
 
 export default defineConfig({
-  presets: [presetUno(), presetIcons()],
+  presets: [presetWind3(), presetIcons()],
   rules: [
     [
       /^overflow-wrap-(normal|break-word|anywhere|inherit|initial|revert|unset)$/,

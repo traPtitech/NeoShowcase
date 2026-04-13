@@ -11,7 +11,7 @@
     "lint": "biome check src",
     "lint:apply": "biome check src --write",
     "lint:force": "biome check src --write --unsafe",
-    "fix": "yarn fmt:apply && yarn lint:apply",
+    "fix": "pnpm fmt:apply && pnpm lint:apply",
     "typecheck": "tsc --noEmit",
     "ci": "biome ci src",
     "analyze": "vite build --mode analyze",
@@ -22,6 +22,7 @@
     "@biomejs/biome": "2.4.10",
     "@iconify-json/material-symbols": "1.2.65",
     "@types/node": "25.5.2",
+    "@unocss/preset-mini": "66.6.7",
     "jsdom": "27.4.0",
     "rollup-plugin-visualizer": "6.0.5",
     "typescript": "5.9.3",
@@ -55,7 +56,7 @@
     "tippy.js": "6.3.7",
     "ts-pattern": "5.9.0",
     "valibot": "1.3.1",
-    "virtua": "^0.49.0"
+    "virtua": "0.49.0"
   },
-  "packageManager": "yarn@4.13.0"
+  "packageManager": "pnpm@10.33.0"
 }
