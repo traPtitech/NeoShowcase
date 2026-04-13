@@ -59,7 +59,7 @@ jobs:
         with:
           node-version: 22
       - run: corepack enable
-      - run: pnpm install --immutable
+      - run: pnpm install --frozen-lockfile
       - run: pnpm test
   build:
     name: Build
