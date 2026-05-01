@@ -27,7 +27,7 @@
     "rollup-plugin-visualizer": "7.0.1",
     "typescript": "6.0.3",
     "unocss": "66.6.7",
-    "unplugin-fonts": "1.4.0",
+    "unplugin-fonts": "2.0.0",
     "vite": "npm:rolldown-vite@7.0.4",
     "vite-plugin-compression": "0.5.1",
     "vite-plugin-solid": "2.11.12",
