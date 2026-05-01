@@ -92,7 +92,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           # tag_name will default in the current branch name for workflow_dispatch via workflow_call, so we're passing tag value via inputs manually.
           tag_name: ${{ inputs.ref_name || github.ref_name }}
