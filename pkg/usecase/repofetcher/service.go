@@ -169,7 +169,7 @@ func (r *service) doFetchEpoch(ctx context.Context, epoch int) (int, error) {
 				}
 				err := r.updateApps(ctx, repo, apps)
 				if err != nil {
-					slog.Warn("failed to update repo", "error", err)
+					slog.WarnContext(ctx, "failed to update repo", "error", err)
 				}
 			})
 		}

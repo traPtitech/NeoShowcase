@@ -73,7 +73,7 @@ func (s *generatorService) Start(_ context.Context) error {
 	go func() {
 		err := s.cluster.Start(ctx)
 		if err != nil {
-			slog.Error("failed to start cluster", "error", err)
+			slog.ErrorContext(ctx, "failed to start cluster", "error", err)
 		}
 	}()
 	go retry.Do(ctx, func(ctx context.Context) error {
