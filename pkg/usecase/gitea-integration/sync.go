@@ -95,7 +95,7 @@ func (i *Integration) sync(ctx context.Context) error {
 				if ok {
 					return []string{user.ID}
 				} else {
-					slog.Warn("failed to find user", "user_name", member.UserName)
+					slog.WarnContext(ctx, "failed to find user", "user_name", member.UserName)
 					return nil
 				}
 			}))

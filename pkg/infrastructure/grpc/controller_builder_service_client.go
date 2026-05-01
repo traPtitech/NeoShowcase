@@ -114,7 +114,7 @@ func (c *ControllerBuilderServiceClient) ConnectBuilder(ctx context.Context, onR
 			}},
 		})
 		if err != nil {
-			slog.Error("failed to send connected event", "error", err)
+			slog.ErrorContext(ctx, "failed to send connected event", "error", err)
 			return
 		}
 
@@ -126,7 +126,7 @@ func (c *ControllerBuilderServiceClient) ConnectBuilder(ctx context.Context, onR
 				}
 				err := st.Send(res)
 				if err != nil {
-					slog.Error("failed to send builder response", "error", err)
+					slog.ErrorContext(ctx, "failed to send builder response", "error", err)
 					return
 				}
 			case <-ctx.Done():

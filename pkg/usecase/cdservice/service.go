@@ -81,10 +81,10 @@ func NewService(
 	doLocalStartBuild := scutil.NewCoalescer(func(ctx context.Context) error {
 		start := time.Now()
 		if err := cd.startBuildsLocal(ctx); err != nil {
-			slog.Error("failed to start builds", "error", err)
+			slog.ErrorContext(ctx, "failed to start builds", "error", err)
 			return nil
 		}
-		slog.Info("Started builds", "duration", time.Since(start))
+		slog.InfoContext(ctx, "Started builds", "duration", time.Since(start))
 		time.Sleep(1 * time.Second) // 1 second throttle between build checks to account for quick succession of repo checks
 		return nil
 	})
@@ -101,11 +101,11 @@ func NewService(
 	doLocalSyncDeploy := scutil.NewCoalescer(func(ctx context.Context) error {
 		start := time.Now()
 		if err := cd.syncDeployments(ctx); err != nil {
-			slog.Error("failed to sync deployments", "error", err)
+			slog.ErrorContext(ctx, "failed to sync deployments", "error", err)
 			return nil
 		}
 		elapsed := time.Since(start)
-		slog.Info("Synced deployments", "duration", elapsed)
+		slog.InfoContext(ctx, "Synced deployments", "duration", elapsed)
 		metrics.ObserveDeployDuration(elapsed)
 		return nil
 	})
@@ -122,9 +122,9 @@ func NewService(
 	doDetectBuildCrash := func(ctx context.Context) {
 		start := time.Now()
 		if err := cd.detectBuildCrash(ctx); err != nil {
-			slog.Error("failed to detect build crash", "error", err)
+			slog.ErrorContext(ctx, "failed to detect build crash", "error", err)
 		}
-		slog.Debug("Build crash detection complete", "duration", time.Since(start))
+		slog.DebugContext(ctx, "Build crash detection complete", "duration", time.Since(start))
 	}
 
 	cd.run = func() {
@@ -303,7 +303,7 @@ func (cd *service) _syncAppFields(ctx context.Context) error {
 			}
 			beforeBuild, err := cd.buildRepo.GetBuild(ctx, app.CurrentBuild)
 			if err != nil {
-				slog.Warn("failed to retrieve build", "build_id", app.CurrentBuild)
+				slog.WarnContext(ctx, "failed to retrieve build", "build_id", app.CurrentBuild)
 				return false
 			}
 			return beforeBuild.QueuedAt.Before(nextBuild.QueuedAt)
