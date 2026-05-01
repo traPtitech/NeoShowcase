@@ -38,7 +38,7 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     target: "esnext",
-    rollupOptions: {
+    rolldownOptions: {
       plugins: [
         mode === "analyze" &&
         (visualizer({
