@@ -1,3 +1,4 @@
+import path from "node:path";
 import { visualizer } from "rollup-plugin-visualizer";
 import UnoCSS from "unocss/vite";
 import Unfonts from "unplugin-fonts/vite";
@@ -30,6 +31,9 @@ export default defineConfig(({ mode }) => ({
     allowedHosts: ["ns.local.trapti.tech"],
   },
   resolve: {
+    alias: {
+      "/@": path.resolve(__dirname, "/src"),
+    },
     conditions: ["module", "browser", "default"],
   },
   build: {
