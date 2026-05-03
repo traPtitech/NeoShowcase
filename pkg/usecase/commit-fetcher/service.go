@@ -123,7 +123,7 @@ func (s *service) fetchLoop(ctx context.Context, fetcher <-chan queueItem) {
 		case item := <-fetcher:
 			err := s.fetchOne(ctx, item.repositoryID, item.hashes)
 			if err != nil {
-				slog.ErrorContext(ctx, "failed to fetch commits for repository", "count", len(item.hashes), "repository_id", item.repositoryID, "error", err)
+				slog.WarnContext(ctx, "failed to fetch commits for repository", "count", len(item.hashes), "repository_id", item.repositoryID, "error", err)
 			}
 		case <-ctx.Done():
 			return
