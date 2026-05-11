@@ -1,0 +1,64 @@
+name: Renovate
+
+permissions:
+  contents: write
+
+on:
+  # For manual dispatch
+  workflow_dispatch:
+    inputs:
+      dryRun:
+        description: Dry-Run
+        default: "false"
+        required: false
+      logLevel:
+        description: Log-Level
+        default: debug
+        required: false
+  # For auto-merge - should exclude non-renovate branch dispatches in job definitions below
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
+  schedule:
+    # 5 a.m. in JST(+9)
+    - cron: "0 20 * * *"
+  # For auto-merge and rebasing
+  push:
+    branches: ["main"]
+
+env:
+  LOG_LEVEL: debug
+  RENOVATE_DRY_RUN: false
+  RENOVATE_CONFIG_FILE: .github/renovate-bot.json5
+
+jobs:
+  renovate:
+    name: Renovate
+    runs-on: ubuntu-latest
+    # Exclude dispatch from non-renovate checks
+    if: ${{ !(github.event_name == 'workflow_run' && !startsWith(github.event.workflow_run.head_branch, 'renovate/')) }}
+    steps:
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.RENOVATE_APP_ID }}
+          private-key: ${{ secrets.RENOVATE_APP_PRIVATE_KEY }}
+      - uses: actions/checkout@v6
+      - name: Override default config from dispatch variables
+        shell: bash
+        env:
+          INPUT_DRY_RUN: ${{ github.event.inputs.dryRun }}
+          INPUT_LOG_LEVEL: ${{ github.event.inputs.logLevel }}
+        run: |
+          echo "RENOVATE_DRY_RUN=${INPUT_DRY_RUN:-$RENOVATE_DRY_RUN}" >> "${GITHUB_ENV}"
+          echo "LOG_LEVEL=${INPUT_LOG_LEVEL:-$LOG_LEVEL}" >> "${GITHUB_ENV}"
+      - name: Renovate
+        uses: renovatebot/github-action@v46.1.6
+        with:
+          renovate-image: "ghcr.io/renovatebot/renovate"
+          renovate-version: "latest"
+          configurationFile: "${{ env.RENOVATE_CONFIG_FILE }}"
+          token: "${{ steps.generate-token.outputs.token }}"
