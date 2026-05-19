@@ -1,3 +1,20 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json"
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "packageRules": [
+    {
+      "description": "go.modのマイナー・パッチアップデートを1つにまとめる",
+      "matchManagers": ["gomod"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "Go minor & patch dependencies"
+    },
+    {
+      "description": "package.jsonのマイナー・パッチアップデートを1つにまとめる",
+      "matchManagers": ["npm"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "Node.js minor & patch dependencies"
+    }
+  ]
 }
