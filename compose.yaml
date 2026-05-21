@@ -327,7 +327,7 @@ services:
       - default
 
   loki:
-    image: grafana/loki:3.1.0
+    image: grafana/loki:3.7.2
     command: "-config.file /etc/loki/loki.yaml"
     restart: always
     labels:
