@@ -268,15 +268,6 @@ require (
 	sigs.k8s.io/yaml v1.6.0 // indirect
 )
 
-// github.com/traefik/traefik
-replace (
-	github.com/abbot/go-http-auth => github.com/containous/go-http-auth v0.4.1-0.20200324110947-a37a7636d23e
-	github.com/go-check/check => github.com/containous/check v0.0.0-20170915194414-ca0bf163426a
-)
-
-// github.com/cert-manager/cert-manager
-replace github.com/Venafi/vcert/v4 => github.com/jetstack/vcert/v4 v4.9.6-0.20230127103832-3aa3dfd6613d
-
 tool (
 	github.com/google/wire/cmd/wire
 	github.com/matryer/moq
