@@ -16,5 +16,7 @@
       "matchUpdateTypes": ["minor", "patch"],
       "groupName": "Node.js minor & patch dependencies"
     }
-  ]
+  ],
+  "schedule": ["* 9-23 1 * *"],
+  "timezone": "Asia/Tokyo"
 }
