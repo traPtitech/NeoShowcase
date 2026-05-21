@@ -9,7 +9,7 @@ kustomize = "5.8.1"
 helm = "4.1.3"
 
 golangci-lint = "2.12.2"
-tbls = "1.93.0"
+tbls = "1.94.5"
 buf = "1.69.0"
 "go:github.com/aarondl/sqlboiler/v4" = "4.19.7"
 "go:github.com/aarondl/sqlboiler/v4/drivers/sqlboiler-mysql" = "4.19.7"
