@@ -14,7 +14,8 @@
       "description": "package.jsonのマイナー・パッチアップデートを1つにまとめる",
       "matchManagers": ["npm"],
       "matchUpdateTypes": ["minor", "patch"],
-      "groupName": "Node.js minor & patch dependencies"
+      "groupName": "Node.js minor & patch dependencies",
+      "minimumReleaseAge": "7d"
     }
   ],
   "schedule": ["* 9-23 1 * *"],
