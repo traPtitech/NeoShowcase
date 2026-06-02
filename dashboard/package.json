@@ -23,7 +23,7 @@
     "@iconify-json/material-symbols": "1.2.73",
     "@types/node": "25.9.1",
     "@unocss/preset-mini": "66.6.8",
-    "jsdom": "27.4.0",
+    "jsdom": "29.1.1",
     "rollup-plugin-visualizer": "7.0.1",
     "typescript": "6.0.3",
     "unocss": "66.6.8",
