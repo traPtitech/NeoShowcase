@@ -51,7 +51,5 @@ func (h *server) Start(_ context.Context) error {
 }
 
 func (h *server) Shutdown(ctx context.Context) error {
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
-	defer cancel()
 	return h.server.Shutdown(ctx)
 }
