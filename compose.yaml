@@ -353,7 +353,7 @@ services:
       - default
 
   victoria-metrics:
-    image: victoriametrics/victoria-metrics:v1.102.1
+    image: victoriametrics/victoria-metrics:v1.144.0
     command:
       - --promscrape.config=/etc/config/prometheus.yml
       - --promscrape.maxScrapeSize=256MB
