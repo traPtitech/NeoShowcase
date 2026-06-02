@@ -3,20 +3,20 @@ module github.com/traPtitech/neoshowcase
 go 1.26.0
 
 require (
-	code.gitea.io/sdk/gitea v0.24.1
-	connectrpc.com/connect v1.19.2
+	code.gitea.io/sdk/gitea v0.25.1
+	connectrpc.com/connect v1.20.0
 	connectrpc.com/otelconnect v0.9.0
 	github.com/aarondl/null/v8 v8.1.3
 	github.com/aarondl/sqlboiler/v4 v4.19.7
 	github.com/aarondl/strmangle v0.0.9
-	github.com/aws/aws-sdk-go-v2 v1.41.7
-	github.com/aws/aws-sdk-go-v2/config v1.32.17
-	github.com/aws/aws-sdk-go-v2/credentials v1.19.16
-	github.com/aws/aws-sdk-go-v2/feature/s3/transfermanager v0.1.20
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.100.1
+	github.com/aws/aws-sdk-go-v2 v1.41.9
+	github.com/aws/aws-sdk-go-v2/config v1.32.20
+	github.com/aws/aws-sdk-go-v2/credentials v1.19.19
+	github.com/aws/aws-sdk-go-v2/feature/s3/transfermanager v0.2.3
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.102.2
 	github.com/bep/debounce v1.2.1
 	github.com/cert-manager/cert-manager v1.20.2
-	github.com/docker/cli v29.4.2+incompatible
+	github.com/docker/cli v29.5.2+incompatible
 	github.com/friendsofgo/errors v0.9.2
 	github.com/gliderlabs/ssh v0.3.8
 	github.com/go-git/go-git/v5 v5.19.1
@@ -25,17 +25,17 @@ require (
 	github.com/google/go-cmp v0.7.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/google/wire v0.7.0
-	github.com/labstack/echo/v4 v4.15.1
+	github.com/labstack/echo/v4 v4.15.2
 	github.com/lukesampson/figlet v0.0.0-20190211215653-8a3ef4a6ac42
-	github.com/moby/buildkit v0.29.0
+	github.com/moby/buildkit v0.30.0
 	github.com/moby/moby/api v1.54.2
 	github.com/moby/moby/client v0.4.1
 	github.com/motoki317/sc v1.8.2
 	github.com/ncw/swift v1.0.53
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.23.2
-	github.com/prometheus/common v0.67.5
-	github.com/regclient/regclient v0.11.3
+	github.com/prometheus/common v0.68.0
+	github.com/regclient/regclient v0.11.5
 	github.com/samber/lo v1.53.0
 	github.com/shiguredo/websocket v1.6.1
 	github.com/sourcegraph/conc v0.3.1-0.20240121214520-5f936abd7ae8
@@ -45,22 +45,22 @@ require (
 	github.com/stretchr/testify v1.11.1
 	github.com/testcontainers/testcontainers-go v0.42.0
 	github.com/tonistiigi/fsutil v0.0.0-20251211185533-a2aa163d723f
-	github.com/traefik/traefik/v3 v3.6.17
+	github.com/traefik/traefik/v3 v3.7.1
 	github.com/zeebo/xxh3 v1.1.0
 	go.mongodb.org/mongo-driver v1.17.9
-	go.opentelemetry.io/otel v1.43.0
-	go.opentelemetry.io/otel/sdk v1.43.0
-	go.opentelemetry.io/otel/trace v1.43.0
+	go.opentelemetry.io/otel v1.44.0
+	go.opentelemetry.io/otel/sdk v1.44.0
+	go.opentelemetry.io/otel/trace v1.44.0
 	go.uber.org/dig v1.19.0
-	golang.org/x/crypto v0.50.0
-	golang.org/x/net v0.53.0
+	golang.org/x/crypto v0.52.0
+	golang.org/x/net v0.55.0
 	golang.org/x/sync v0.20.0
 	google.golang.org/protobuf v1.36.12-0.20260120151049-f2248ac996af
 	gopkg.in/yaml.v2 v2.4.0
-	k8s.io/api v0.36.0
-	k8s.io/apiextensions-apiserver v0.36.0
-	k8s.io/apimachinery v0.36.0
-	k8s.io/client-go v0.36.0
+	k8s.io/api v0.36.1
+	k8s.io/apiextensions-apiserver v0.36.1
+	k8s.io/apimachinery v0.36.1
+	k8s.io/client-go v0.36.1
 )
 
 require (
@@ -170,7 +170,7 @@ require (
 	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/lufia/plan9stats v0.0.0-20250317134145-8bc96cf8fc35 // indirect
 	github.com/magiconair/properties v1.8.10 // indirect
-	github.com/matryer/moq v0.5.3 // indirect
+	github.com/matryer/moq v0.7.1 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.21 // indirect
 	github.com/miekg/dns v1.1.72 // indirect
