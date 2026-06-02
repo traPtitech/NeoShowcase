@@ -10,7 +10,7 @@ helm = "4.2.0"
 
 golangci-lint = "2.12.2"
 tbls = "1.94.5"
-buf = "1.69.0"
+buf = "1.70.0"
 "go:github.com/aarondl/sqlboiler/v4" = "4.19.7"
 "go:github.com/aarondl/sqlboiler/v4/drivers/sqlboiler-mysql" = "4.19.7"
 "go:github.com/sqldef/sqldef/cmd/mysqldef" = "1.0.7"
