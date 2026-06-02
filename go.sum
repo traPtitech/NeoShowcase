@@ -31,6 +31,7 @@ github.com/aarondl/inflect v0.0.2 h1:XvH8K5g1wKS921tMmDOUsZ3zS1Eo8WwK5RHC0IGGT2s
 github.com/aarondl/inflect v0.0.2/go.mod h1:zjmCfdXHUDQ9jFOV6SeHknpo0Au6rQhV8GchS4Vzv/0=
 github.com/aarondl/null/v8 v8.1.3 h1:ZJcvvj34BkXAguqU7xzDqEmzG86cSBgM8HYxcqeK0+8=
 github.com/aarondl/null/v8 v8.1.3/go.mod h1:t30s8PEiGWof1orkBNQ6WKpxjoP8UZHJr7D0AHX3G/A=
+github.com/aarondl/null/v9 v9.0.1/go.mod h1:D2KNsZr8TFjkyB3CO/7BoZO+rA1js2C28bRAXzgAEjE=
 github.com/aarondl/randomize v0.0.2 h1:JP+3DMqbIMI/ndNFD3GojA8GXi3aRdN39wZL7EIw+HE=
 github.com/aarondl/randomize v0.0.2/go.mod h1:/4icd0VTMi5WGrfWGK/YY8UsHghSck8EWSfi2AFVbUM=
 github.com/aarondl/sqlboiler/v4 v4.19.7 h1:v18zMSFRCDg3/ntO+ltVXhN44eVyP/zL2XxxzUOnaF8=
