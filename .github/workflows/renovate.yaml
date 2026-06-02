@@ -15,18 +15,16 @@ on:
         description: Log-Level
         default: info
         required: false
-  # For auto-merge - should exclude non-renovate branch dispatches in job definitions below
-  workflow_run:
-    workflows:
-      - CI
-    types:
-      - completed
   schedule:
     # 5 a.m. in JST(+9)
     - cron: "0 20 * * *"
   # For auto-merge and rebasing
   push:
     branches: ["main"]
+
+concurrency:
+  group: renovate
+  cancel-in-progress: true
 
 env:
   LOG_LEVEL: info
@@ -37,8 +35,6 @@ jobs:
   renovate:
     name: Renovate
     runs-on: ubuntu-latest
-    # Exclude dispatch from non-renovate checks
-    if: ${{ !(github.event_name == 'workflow_run' && !startsWith(github.event.workflow_run.head_branch, 'renovate/')) }}
     steps:
       - name: Generate a token
         id: generate-token
