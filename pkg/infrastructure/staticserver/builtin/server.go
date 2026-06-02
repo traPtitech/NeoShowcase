@@ -2,13 +2,16 @@ package builtin
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"path/filepath"
 	"sync"
+	"time"
 
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+	"github.com/labstack/echo/v5"
+	"github.com/labstack/echo/v5/middleware"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
@@ -19,9 +22,8 @@ type Config struct {
 }
 
 type server struct {
-	port     int
 	docsRoot string
-	server   *echo.Echo
+	server   *http.Server
 	sites    map[string]*host
 
 	sitesLock sync.RWMutex
@@ -34,16 +36,13 @@ type host struct {
 
 func NewServer(c Config, docsRoot string) domain.StaticServer {
 	b := &server{
-		port:     c.Port,
 		docsRoot: docsRoot,
 		sites:    make(map[string]*host),
 	}
 
 	e := echo.New()
-	e.HidePort = true
-	e.HideBanner = true
 	e.Use(middleware.Recover())
-	e.Any("/*", func(c echo.Context) error {
+	e.Any("/*", func(c *echo.Context) error {
 		req := c.Request()
 		res := c.Response()
 
@@ -60,13 +59,20 @@ func NewServer(c Config, docsRoot string) domain.StaticServer {
 		host.Echo.ServeHTTP(res, req)
 		return nil
 	})
-	b.server = e
+	b.server = &http.Server{
+		Addr:        fmt.Sprintf(":%d", int(c.Port)),
+		Handler:     e,
+		ReadTimeout: 30 * time.Second,
+	}
 
 	return b
 }
 
 func (b *server) Start(_ context.Context) error {
-	return b.server.Start(fmt.Sprintf(":%d", b.port))
+	if err := b.server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		return err
+	}
+	return nil
 }
 
 func (b *server) Shutdown(ctx context.Context) error {
