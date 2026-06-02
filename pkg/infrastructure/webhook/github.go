@@ -3,15 +3,14 @@ package webhook
 import (
 	"net/http"
 
-	"github.com/friendsofgo/errors"
 	"github.com/go-playground/webhooks/v6/github"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/samber/lo"
 )
 
 var githubHook = lo.Must(github.New())
 
-func (r *Receiver) githubHandler(c echo.Context) error {
+func (r *Receiver) githubHandler(c *echo.Context) error {
 	rawPayload, err := githubHook.Parse(c.Request(), github.PingEvent, github.PushEvent)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
@@ -30,7 +29,7 @@ func (r *Receiver) githubHandler(c echo.Context) error {
 		}
 		go r.updateURLs(urls)
 	default:
-		return echo.NewHTTPError(http.StatusInternalServerError, errors.New("unsupported payload type"))
+		return echo.NewHTTPError(http.StatusInternalServerError, "unsupported payload type")
 	}
 
 	return c.NoContent(http.StatusOK)

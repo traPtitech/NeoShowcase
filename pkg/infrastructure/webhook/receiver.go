@@ -2,11 +2,14 @@ package webhook
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"path"
+	"time"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/repofetcher"
@@ -35,7 +38,7 @@ type Receiver struct {
 	fetcher          repofetcher.Service
 	giteaIntegration domain.GiteaIntegrationServiceClient
 
-	echo *echo.Echo
+	server *http.Server
 }
 
 func NewReceiver(
@@ -52,21 +55,26 @@ func NewReceiver(
 	}
 
 	e := echo.New()
-	e.HidePort = true
-	e.HideBanner = true
 	e.Any(path.Join(config.BasePath, "github"), r.githubHandler)
 	e.Any(path.Join(config.BasePath, "gitea"), r.giteaHandler)
-	r.echo = e
+	r.server = &http.Server{
+		Addr:        fmt.Sprintf(":%d", int(config.Port)),
+		Handler:     e,
+		ReadTimeout: 30 * time.Second,
+	}
 
 	return r
 }
 
 func (r *Receiver) Start(_ context.Context) error {
-	return r.echo.Start(fmt.Sprintf(":%d", r.config.Port))
+	if err := r.server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		return err
+	}
+	return nil
 }
 
 func (r *Receiver) Shutdown(ctx context.Context) error {
-	return r.echo.Shutdown(ctx)
+	return r.server.Shutdown(ctx)
 }
 
 // updateURLs notifies repositories to refresh.

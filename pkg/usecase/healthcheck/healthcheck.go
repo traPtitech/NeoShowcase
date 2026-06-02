@@ -2,10 +2,12 @@ package healthcheck
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
 type (
@@ -19,32 +21,37 @@ type Server interface {
 }
 
 type server struct {
-	server *echo.Echo
-	port   int
+	server *http.Server
 }
 
 func NewServer(port Port, fn Func) Server {
 	e := echo.New()
-	e.HidePort = true
-	e.HideBanner = true
-	e.GET("/healthz", func(c echo.Context) error {
+	e.GET("/healthz", func(c *echo.Context) error {
 		if fn() {
 			return c.NoContent(http.StatusOK)
 		} else {
-			return echo.NewHTTPError(http.StatusInternalServerError)
+			return echo.NewHTTPError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		}
 	})
 
 	return &server{
-		server: e,
-		port:   int(port),
+		server: &http.Server{
+			Addr:        fmt.Sprintf(":%d", int(port)),
+			Handler:     e,
+			ReadTimeout: 30 * time.Second,
+		},
 	}
 }
 
 func (h *server) Start(_ context.Context) error {
-	return h.server.Start(fmt.Sprintf(":%v", h.port))
+	if err := h.server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		return err
+	}
+	return nil
 }
 
 func (h *server) Shutdown(ctx context.Context) error {
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
 	return h.server.Shutdown(ctx)
 }
