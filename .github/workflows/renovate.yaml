@@ -13,7 +13,7 @@ on:
         required: false
       logLevel:
         description: Log-Level
-        default: debug
+        default: info
         required: false
   # For auto-merge - should exclude non-renovate branch dispatches in job definitions below
   workflow_run:
@@ -29,7 +29,7 @@ on:
     branches: ["main"]
 
 env:
-  LOG_LEVEL: debug
+  LOG_LEVEL: info
   RENOVATE_DRY_RUN: false
   RENOVATE_CONFIG_FILE: .github/renovate-bot.json5
 
