@@ -94,7 +94,7 @@ services:
   #      - default
 
   ns-auth:
-    image: ghcr.io/traptitech/traefik-forward-auth:3.3.4
+    image: ghcr.io/traptitech/traefik-forward-auth:3.3.4@sha256:6f1e7c0cccf869e068f3f483f472401c05fa55c6d2f267de8015cdcd62eea956
     restart: always
     command:
       - --config=/config.yaml
@@ -184,7 +184,7 @@ services:
           cpus: "1"
 
   static-server:
-    image: caddy:2-alpine
+    image: caddy:2-alpine@sha256:86deaf5e3d3408a6ccec08fbb79989783dd26e206ae10bcf78a801dc8c9ab794
     restart: always
     environment:
       # Do not bind to all addresses in production!
@@ -230,7 +230,7 @@ services:
       - default
 
   registry:
-    image: registry:2
+    image: registry:2@sha256:a3d8aaa63ed8681a604f1dea0aa03f100d5895b6a58ace528858a7b332415373
     restart: always
     environment:
       REGISTRY_STORAGE_DELETE_ENABLED: "true"
@@ -267,7 +267,7 @@ services:
       - default
 
   mysql:
-    image: mariadb:11.8
+    image: mariadb:11.8@sha256:be1ef4fe5f14589325c08a41c76334097ce66c86264b75e1d28342c742782a61
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: password
@@ -287,7 +287,7 @@ services:
       - apps
 
   mongo:
-    image: mongo:7
+    image: mongo:7@sha256:4b5bf3c2bb7516164f6dcb44acce4fdcb428abfe5771a1128304a0f34ab9ff7c
     restart: always
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
@@ -301,7 +301,7 @@ services:
       - apps
 
   adminer:
-    image: adminer:5.4.2
+    image: adminer:5.4.2@sha256:cc64d253db4f016cbcff2ff2f01e60ed07e74f38b4398f84d3c4fae4b5ce0e07
     restart: always
     environment:
       ADMINER_DEFAULT_SERVER: mysql
@@ -383,7 +383,7 @@ services:
   sablier:
     build:
       context: sablier
-    image: ghcr.io/traptitech/ns-sablier:main
+    image: ghcr.io/traptitech/ns-sablier:main@sha256:858c3f689d475e3974a89f31ef374943e62769b14f6d79642eef2ae1652e645f
     command:
       - start
       - --provider.name=docker
@@ -392,7 +392,7 @@ services:
       - ./.local-dev/config/sablier.yaml:/etc/sablier/sablier.yaml
 
   traefik:
-    image: traefik:v3.6.4
+    image: traefik:v3.6.4@sha256:c5bd185c41ba3dbb42cf8a1b9fbdc368bdc96f90c8e598134879935f64e7a7f1
     restart: always
     command:
       - --api.insecure=true
