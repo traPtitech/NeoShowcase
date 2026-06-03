@@ -18,6 +18,9 @@
       "minimumReleaseAge": "7d"
     }
   ],
+  "postUpdateOptions": [
+    "gomodTidy"
+  ],
   "schedule": ["* * 1 * *"],
   "timezone": "Asia/Tokyo"
 }
