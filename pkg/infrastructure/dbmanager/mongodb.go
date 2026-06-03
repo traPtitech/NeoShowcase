@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
@@ -27,9 +27,7 @@ type MongoDBConfig struct {
 
 func NewMongoDBManager(config MongoDBConfig) (domain.MongoDBManager, error) {
 	// DB接続
-	ctx := context.Background()
 	client, err := mongo.Connect(
-		ctx,
 		options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%s@%s:%d", config.AdminUser, config.AdminPassword, config.Host, config.Port)),
 	)
 	if err != nil {
