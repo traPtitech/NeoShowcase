@@ -122,6 +122,7 @@ jobs:
         id: single-cluster
         with:
           cluster-name: 'test-cluster'
+          k3d-version: v5.8.3
           args: >-
             --agents 1
             --no-lb
