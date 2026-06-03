@@ -9,7 +9,7 @@ import (
 
 	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
