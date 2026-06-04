@@ -97,7 +97,7 @@ docker bake --set=*.platform=linux/"$arch" --load
 [tasks.up]
 description = "Start development environment"
 depends = ["ensure:mounts", "build"]
-run = "docker compose up -d"
+run = "docker compose up -d --quiet-pull"
 
 [tasks.down]
 description = "Tear down development environment"
