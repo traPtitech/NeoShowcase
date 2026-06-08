@@ -65,8 +65,8 @@ export const TextField: Component<Props> = (props) => {
                   class={clsx(
                     'flex h-12 w-full gap-1 border-none bg-ui-primary px-4 text-regular text-text-black outline outline-1 outline-ui-border',
                     'focus-within:outline-2 focus-within:outline-primary-main',
-                    'data-[disabled]:has-[.input]:cursor-not-allowed data-[disabled]:has-[.input]:bg-ui-tertiary',
                     'data-[invalid]:has-[.input]:outline-2 data-[invalid]:has-[.input]:outline-accent-error',
+                    props.disabled ? 'cursor-not-allowed bg-ui-tertiary' : '',
                     props.copyable ? 'rounded-l-lg' : 'rounded-lg',
                   )}
                 >
@@ -74,7 +74,7 @@ export const TextField: Component<Props> = (props) => {
                     <Icon>{props.leftIcon}</Icon>
                   </Show>
                   <KTextField.Input
-                    class="input h-full w-full border-none p-0 placeholder-text-disabled focus-visible:outline-none"
+                    class="input h-full w-full border-none p-0 bg-transparent placeholder-text-disabled focus-visible:outline-none"
                     {...inputProps}
                     type={props.type}
                   />
