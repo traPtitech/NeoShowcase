@@ -502,8 +502,8 @@ github.com/tonistiigi/vt100 v0.0.0-20240514184818-90bafcd6abab h1:H6aJ0yKQ0gF49Q
 github.com/tonistiigi/vt100 v0.0.0-20240514184818-90bafcd6abab/go.mod h1:ulncasL3N9uLrVann0m+CDlJKWsIAP34MPcOJF6VRvc=
 github.com/traefik/paerser v0.2.2 h1:cpzW/ZrQrBh3mdwD/jnp6aXASiUFKOVr6ldP+keJTcQ=
 github.com/traefik/paerser v0.2.2/go.mod h1:7BBDd4FANoVgaTZG+yh26jI6CA2nds7D/4VTEdIsh24=
-github.com/traefik/traefik/v3 v3.6.19 h1:XvPhJhgRpEk8dISrsCdI3tTF5Q4AWe6RrBBEQGYaLqI=
-github.com/traefik/traefik/v3 v3.6.19/go.mod h1:tgbdMaviDNTET8FICez+A0+aR8cfUWg7w0T2XVwtCTI=
+github.com/traefik/traefik/v3 v3.6.21 h1:tCi+dRgpPOZ5OFJxk0WcUmEAC38ZYlXVhWuL96OG2tE=
+github.com/traefik/traefik/v3 v3.6.21/go.mod h1:/KftEAc1R7UhpsBNEsgNePYooHSjnGcDRqtNWpl58V8=
 github.com/ulikunitz/xz v0.5.15 h1:9DNdB5s+SgV3bQ2ApL10xRc35ck0DuIX/isZvIk+ubY=
 github.com/ulikunitz/xz v0.5.15/go.mod h1:nbz6k7qbPmH4IRqmfOplQw/tblSgqTqBwxkY0oWt/14=
 github.com/unrolled/render v1.0.2 h1:dGS3EmChQP3yOi1YeFNO/Dx+MbWZhdvhQJTXochM5bs=
