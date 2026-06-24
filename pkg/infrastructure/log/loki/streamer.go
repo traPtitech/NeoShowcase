@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"iter"
 	"log/slog"
 	"net/http"
 	"net/url"
@@ -131,60 +132,81 @@ func (l *lokiStreamer) Stream(ctx context.Context, app *domain.Application, begi
 		defer cancel()
 
 		lastSeenTime := begin
-		backoffCount := 0
-		maxBackoff := 5
 
-		for backoffCount < maxBackoff {
-			start := lastSeenTime.Add(time.Nanosecond)
-			q := make(url.Values)
-			q.Set("query", logQL)
-			q.Set("limit", "100")
-			q.Set("start", fmt.Sprintf("%d", start.UnixNano()))
-
-			conn, _, err := websocket.Dial(ctx, l.streamEndpoint()+"?"+q.Encode(), nil)
+		for {
+			logSeq, err := l.readStream(ctx, logQL, lastSeenTime)
 			if err != nil {
-				slog.ErrorContext(ctx, "failed to dial to stream ws endpoint", "error", err)
+				slog.ErrorContext(ctx, "failed to read log stream", "error", err)
 				return
 			}
-
-			for {
-				typ, b, err := conn.Read(ctx)
+			for l, err := range logSeq {
 				if errors.Is(err, context.Canceled) {
 					return
 				} else if err != nil {
-					slog.WarnContext(ctx, "failed to read ws message", "error", err)
-					backoffCount += 1
+					slog.WarnContext(ctx, "unexpected error occurred while reading log stream", "error", err)
 					break // retry
 				}
 
-				switch typ {
-				case websocket.MessageText:
-					var res streamResponse
-					err := json.Unmarshal(b, &res)
-					if err != nil {
-						slog.ErrorContext(ctx, "failed to decode ws message", "error", err)
-						continue // fail-safe
-					}
-					logs, err := res.Streams.toSortedResponse(true)
-					if err != nil {
-						slog.ErrorContext(ctx, "failed to decode ws message", "error", err)
-						continue // fail-safe
-					}
-					for _, l := range logs {
-						switch {
-						case l.Time.Before(lastSeenTime):
-							continue
-						case l.Time.After(lastSeenTime):
-							lastSeenTime = l.Time
-						}
-						ch <- l
-					}
-				case websocket.MessageBinary:
-					// ignore
+				switch {
+				case l.Time.After(lastSeenTime):
+					lastSeenTime = l.Time
+				case l.Time.Before(lastSeenTime):
+					continue
+				}
+				select {
+				case ch <- l:
+				case <-ctx.Done():
+					return
 				}
 			}
 		}
 	}()
 
 	return ch, nil
+}
+
+func (l *lokiStreamer) readStream(ctx context.Context, query string, start time.Time) (iter.Seq2[*domain.ContainerLog, error], error) {
+	q := make(url.Values)
+	q.Set("query", query)
+	q.Set("limit", "100")
+	q.Set("start", fmt.Sprintf("%d", start.UnixNano()))
+
+	conn, _, err := websocket.Dial(ctx, l.streamEndpoint()+"?"+q.Encode(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return func(yield func(*domain.ContainerLog, error) bool) {
+		defer conn.CloseNow()
+
+		for {
+			typ, b, err := conn.Read(ctx)
+			if err != nil {
+				yield(nil, err)
+				return
+			}
+
+			switch typ {
+			case websocket.MessageText:
+				var res streamResponse
+				err := json.Unmarshal(b, &res)
+				if err != nil {
+					slog.ErrorContext(ctx, "failed to decode ws message", "error", err)
+					continue // fail-safe
+				}
+				logs, err := res.Streams.toSortedResponse(true)
+				if err != nil {
+					slog.ErrorContext(ctx, "failed to decode ws message", "error", err)
+					continue // fail-safe
+				}
+				for _, l := range logs {
+					if !yield(l, nil) {
+						return
+					}
+				}
+			case websocket.MessageBinary:
+				// ignore
+			}
+		}
+	}, nil
 }
