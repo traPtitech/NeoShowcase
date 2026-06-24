@@ -5,14 +5,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"iter"
 	"log/slog"
 	"net/http"
 	"net/url"
 	"text/template"
 	"time"
 
+	"github.com/coder/websocket"
 	"github.com/friendsofgo/errors"
-	"github.com/shiguredo/websocket"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
@@ -122,46 +123,73 @@ func (l *lokiStreamer) Stream(ctx context.Context, app *domain.Application, begi
 	if err != nil {
 		return nil, errors.Wrap(err, "templating logQL")
 	}
-	q := make(url.Values)
-	q.Set("query", logQL)
-	q.Set("limit", "100")
-	// ensure start time is not in the future to prevent Loki API errors
-	start := min(time.Now().UnixNano(), begin.UnixNano())
-	q.Set("start", fmt.Sprintf("%d", start))
-
-	conn, _, err := websocket.DefaultDialer.DialContext(ctx, l.streamEndpoint()+"?"+q.Encode(), nil)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to dial to stream ws endpoint")
-	}
 
 	ch := make(chan *domain.ContainerLog, 100)
 
 	ctx, cancel := context.WithCancel(ctx)
 	go func() {
-		<-ctx.Done()
-		_ = conn.Close()
 		defer close(ch)
-	}()
-	go func() {
 		defer cancel()
-		defer slog.InfoContext(ctx, "closing loki websocket stream")
-		slog.InfoContext(ctx, "new loki websocket stream")
+
+		lastSeenTime := begin
 
 		for {
-			typ, b, err := conn.ReadMessage()
-			select { // check if context was cancelled
-			case <-ctx.Done():
-				return
-			default:
-			}
+			logSeq, err := l.readStream(ctx, logQL, lastSeenTime)
 			if err != nil {
-				slog.ErrorContext(ctx, "failed to read ws message", "error", err)
+				slog.ErrorContext(ctx, "failed to read log stream", "error", err)
 				return
 			}
+			for l, err := range logSeq {
+				if errors.Is(err, context.Canceled) {
+					return
+				} else if err != nil {
+					slog.WarnContext(ctx, "unexpected error occurred while reading log stream", "error", err)
+					break // retry
+				}
+
+				switch {
+				case l.Time.After(lastSeenTime):
+					lastSeenTime = l.Time
+				case l.Time.Before(lastSeenTime):
+					continue
+				}
+				select {
+				case ch <- l:
+				case <-ctx.Done():
+					return
+				}
+			}
+		}
+	}()
+
+	return ch, nil
+}
+
+func (l *lokiStreamer) readStream(ctx context.Context, query string, start time.Time) (iter.Seq2[*domain.ContainerLog, error], error) {
+	q := make(url.Values)
+	q.Set("query", query)
+	q.Set("limit", "100")
+	q.Set("start", fmt.Sprintf("%d", start.UnixNano()))
+
+	conn, _, err := websocket.Dial(ctx, l.streamEndpoint()+"?"+q.Encode(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return func(yield func(*domain.ContainerLog, error) bool) {
+		defer conn.CloseNow()
+
+		for {
+			typ, b, err := conn.Read(ctx)
+			if err != nil {
+				yield(nil, err)
+				return
+			}
+
 			switch typ {
-			case websocket.TextMessage:
+			case websocket.MessageText:
 				var res streamResponse
-				err = json.NewDecoder(bytes.NewReader(b)).Decode(&res)
+				err := json.Unmarshal(b, &res)
 				if err != nil {
 					slog.ErrorContext(ctx, "failed to decode ws message", "error", err)
 					continue // fail-safe
@@ -172,18 +200,13 @@ func (l *lokiStreamer) Stream(ctx context.Context, app *domain.Application, begi
 					continue // fail-safe
 				}
 				for _, l := range logs {
-					select {
-					case ch <- l:
-					default:
+					if !yield(l, nil) {
+						return
 					}
 				}
-			case websocket.BinaryMessage:
+			case websocket.MessageBinary:
 				// ignore
-			case websocket.CloseMessage:
-				return
 			}
 		}
-	}()
-
-	return ch, nil
+	}, nil
 }

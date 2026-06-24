@@ -16,6 +16,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.102.2
 	github.com/bep/debounce v1.2.1
 	github.com/cert-manager/cert-manager v1.20.2
+	github.com/coder/websocket v1.8.14
 	github.com/docker/cli v29.5.2+incompatible
 	github.com/friendsofgo/errors v0.9.2
 	github.com/gliderlabs/ssh v0.3.8
@@ -37,7 +38,6 @@ require (
 	github.com/prometheus/common v0.68.0
 	github.com/regclient/regclient v0.11.5
 	github.com/samber/lo v1.53.0
-	github.com/shiguredo/websocket v1.6.1
 	github.com/sourcegraph/conc v0.3.1-0.20240121214520-5f936abd7ae8
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/pflag v1.0.10
