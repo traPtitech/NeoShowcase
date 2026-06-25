@@ -136,7 +136,9 @@ func (l *lokiStreamer) Stream(ctx context.Context, app *domain.Application, begi
 		for {
 			logSeq, err := l.readStream(ctx, logQL, lastSeenTime)
 			if err != nil {
-				slog.ErrorContext(ctx, "failed to read log stream", "error", err)
+				if !errors.Is(err, context.Canceled) {
+					slog.ErrorContext(ctx, "failed to read log stream", "error", err)
+				}
 				return
 			}
 			for l, err := range logSeq {
