@@ -53,7 +53,6 @@ export const updateApplicationSchema = v.pipe(
   v.object({
     id: v.string(),
     name: v.optional(v.pipe(v.string(), v.nonEmpty('Enter Application Name'))),
-    repositoryId: v.optional(v.pipe(v.string(), v.nonEmpty('Enter Repository ID'))),
     refName: v.optional(v.pipe(v.string(), v.nonEmpty('Enter Branch Name'))),
     config: v.optional(applicationConfigSchema),
     websites: v.optional(v.array(createWebsiteSchema)),
@@ -66,7 +65,6 @@ export const updateApplicationSchema = v.pipe(
       $typeName: 'neoshowcase.protobuf.UpdateApplicationRequest',
       id: input.id,
       name: input.name,
-      repositoryId: input.repositoryId,
       refName: input.refName,
       config: input.config,
       websites: input.websites
@@ -93,7 +91,6 @@ export const getInitialValueOfUpdateAppForm = (input: Application): CreateOrUpda
   form: {
     id: input.id,
     name: input.name,
-    repositoryId: input.repositoryId,
     refName: input.refName,
     config: input.config ? configMessageToSchema(input.config) : undefined,
     websites: input.websites.map((w) => websiteMessageToSchema(w)),

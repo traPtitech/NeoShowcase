@@ -84,7 +84,6 @@ func (s *APIService) UpdateApplication(ctx context.Context, req *connect.Request
 	msg := req.Msg
 	err := s.svc.UpdateApplication(ctx, msg.Id, &domain.UpdateApplicationArgs{
 		Name:             optional.FromPtr(msg.Name),
-		RepositoryID:     optional.FromPtr(msg.RepositoryId),
 		RefName:          optional.FromPtr(msg.RefName),
 		UpdatedAt:        optional.From(time.Now()),
 		Config:           optional.Map(optional.FromNonZero(msg.Config), pbconvert.FromPBApplicationConfig),

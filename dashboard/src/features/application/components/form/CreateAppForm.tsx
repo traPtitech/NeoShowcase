@@ -1,4 +1,13 @@
-import { Field, Form, getValue, getValues, type SubmitHandler, setValue, validate } from '@modular-forms/solid'
+import {
+  Field,
+  Form,
+  type FormStore,
+  getValue,
+  getValues,
+  type SubmitHandler,
+  setValue,
+  validate,
+} from '@modular-forms/solid'
 import { useNavigate, useSearchParams } from '@solidjs/router'
 import {
   type Component,
@@ -30,6 +39,8 @@ enum formStep {
   website = 2,
 }
 
+type CreateApplicationInput = Extract<CreateOrUpdateApplicationInput, { type: 'create' }>
+
 const CreateAppForm: Component = () => {
   const { formStore } = useApplicationForm()
   const { formStore: envVarConfigFormStore } = useEnvVarConfigForm()
@@ -42,6 +53,7 @@ const CreateAppForm: Component = () => {
 
   const [searchParams, setParam] = useSearchParams()
   const [currentStep, setCurrentStep] = createSignal(formStep.repository)
+  const createFormStore = untrack(() => formStore as FormStore<CreateApplicationInput, undefined>)
 
   const goToRepoStep = () => {
     setCurrentStep(formStep.repository)
@@ -71,11 +83,7 @@ const CreateAppForm: Component = () => {
 
   // repoBySearchParam更新時にformのrepositoryIdを更新する
   createEffect(() => {
-    setValue(
-      untrack(() => formStore),
-      'form.repositoryId',
-      repoBySearchParam()?.id,
-    )
+    setValue(createFormStore, 'form.repositoryId', repoBySearchParam()?.id ?? '')
   })
 
   // リポジトリ選択ステップで中に、リポジトリが選択された場合は次のステップに遷移

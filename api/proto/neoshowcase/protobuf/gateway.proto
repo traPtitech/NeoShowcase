@@ -427,7 +427,9 @@ message GetApplicationsRequest {
 message UpdateApplicationRequest {
   string id = 1;
   optional string name = 2;
-  optional string repository_id = 3;
+
+  reserved 3; // 以前はrepository idとして使用してた
+
   optional string ref_name = 4;
   optional ApplicationConfig config = 5;
   message UpdateWebsites {
