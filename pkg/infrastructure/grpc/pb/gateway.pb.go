@@ -3911,7 +3911,6 @@ type UpdateApplicationRequest struct {
 	state            protoimpl.MessageState                   `protogen:"open.v1"`
 	Id               string                                   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name             *string                                  `protobuf:"bytes,2,opt,name=name,proto3,oneof" json:"name,omitempty"`
-	RepositoryId     *string                                  `protobuf:"bytes,3,opt,name=repository_id,json=repositoryId,proto3,oneof" json:"repository_id,omitempty"`
 	RefName          *string                                  `protobuf:"bytes,4,opt,name=ref_name,json=refName,proto3,oneof" json:"ref_name,omitempty"`
 	Config           *ApplicationConfig                       `protobuf:"bytes,5,opt,name=config,proto3,oneof" json:"config,omitempty"`
 	Websites         *UpdateApplicationRequest_UpdateWebsites `protobuf:"bytes,6,opt,name=websites,proto3,oneof" json:"websites,omitempty"`
@@ -3961,13 +3960,6 @@ func (x *UpdateApplicationRequest) GetId() string {
 func (x *UpdateApplicationRequest) GetName() string {
 	if x != nil && x.Name != nil {
 		return *x.Name
-	}
-	return ""
-}
-
-func (x *UpdateApplicationRequest) GetRepositoryId() string {
-	if x != nil && x.RepositoryId != nil {
-		return *x.RepositoryId
 	}
 	return ""
 }
@@ -5196,30 +5188,28 @@ const file_neoshowcase_protobuf_gateway_proto_rawDesc = "" +
 	"\x03ALL\x10\x01\x12\x0e\n" +
 	"\n" +
 	"REPOSITORY\x10\x02B\x10\n" +
-	"\x0e_repository_id\"\xce\x06\n" +
+	"\x0e_repository_id\"\x98\x06\n" +
 	"\x18UpdateApplicationRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
-	"\x04name\x18\x02 \x01(\tH\x00R\x04name\x88\x01\x01\x12(\n" +
-	"\rrepository_id\x18\x03 \x01(\tH\x01R\frepositoryId\x88\x01\x01\x12\x1e\n" +
-	"\bref_name\x18\x04 \x01(\tH\x02R\arefName\x88\x01\x01\x12D\n" +
-	"\x06config\x18\x05 \x01(\v2'.neoshowcase.protobuf.ApplicationConfigH\x03R\x06config\x88\x01\x01\x12^\n" +
-	"\bwebsites\x18\x06 \x01(\v2=.neoshowcase.protobuf.UpdateApplicationRequest.UpdateWebsitesH\x04R\bwebsites\x88\x01\x01\x12l\n" +
-	"\x11port_publications\x18\a \x01(\v2:.neoshowcase.protobuf.UpdateApplicationRequest.UpdatePortsH\x05R\x10portPublications\x88\x01\x01\x12]\n" +
-	"\towner_ids\x18\b \x01(\v2;.neoshowcase.protobuf.UpdateApplicationRequest.UpdateOwnersH\x06R\bownerIds\x88\x01\x01\x1aX\n" +
+	"\x04name\x18\x02 \x01(\tH\x00R\x04name\x88\x01\x01\x12\x1e\n" +
+	"\bref_name\x18\x04 \x01(\tH\x01R\arefName\x88\x01\x01\x12D\n" +
+	"\x06config\x18\x05 \x01(\v2'.neoshowcase.protobuf.ApplicationConfigH\x02R\x06config\x88\x01\x01\x12^\n" +
+	"\bwebsites\x18\x06 \x01(\v2=.neoshowcase.protobuf.UpdateApplicationRequest.UpdateWebsitesH\x03R\bwebsites\x88\x01\x01\x12l\n" +
+	"\x11port_publications\x18\a \x01(\v2:.neoshowcase.protobuf.UpdateApplicationRequest.UpdatePortsH\x04R\x10portPublications\x88\x01\x01\x12]\n" +
+	"\towner_ids\x18\b \x01(\v2;.neoshowcase.protobuf.UpdateApplicationRequest.UpdateOwnersH\x05R\bownerIds\x88\x01\x01\x1aX\n" +
 	"\x0eUpdateWebsites\x12F\n" +
 	"\bwebsites\x18\x01 \x03(\v2*.neoshowcase.protobuf.CreateWebsiteRequestR\bwebsites\x1aa\n" +
 	"\vUpdatePorts\x12R\n" +
 	"\x11port_publications\x18\x01 \x03(\v2%.neoshowcase.protobuf.PortPublicationR\x10portPublications\x1a+\n" +
 	"\fUpdateOwners\x12\x1b\n" +
 	"\towner_ids\x18\x01 \x03(\tR\bownerIdsB\a\n" +
-	"\x05_nameB\x10\n" +
-	"\x0e_repository_idB\v\n" +
+	"\x05_nameB\v\n" +
 	"\t_ref_nameB\t\n" +
 	"\a_configB\v\n" +
 	"\t_websitesB\x14\n" +
 	"\x12_port_publicationsB\f\n" +
 	"\n" +
-	"_owner_ids\"_\n" +
+	"_owner_idsJ\x04\b\x03\x10\x04\"_\n" +
 	"\x17GetRepositoriesResponse\x12D\n" +
 	"\frepositories\x18\x01 \x03(\v2 .neoshowcase.protobuf.RepositoryR\frepositories\"`\n" +
 	"\x17GetApplicationsResponse\x12E\n" +

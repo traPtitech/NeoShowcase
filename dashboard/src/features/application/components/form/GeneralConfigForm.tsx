@@ -13,7 +13,6 @@ import {
 } from '../../schema/applicationSchema'
 import BranchField from './general/BranchField'
 import NameField from './general/NameField'
-import RepositoryIdField from './general/RepositoryIdField'
 
 type Props = {
   app: Application
@@ -65,7 +64,6 @@ const GeneralConfigForm: Component<Props> = (props) => {
       <FormBox.Container>
         <FormBox.Forms>
           <NameField hasPermission={props.hasPermission} />
-          <RepositoryIdField hasPermission={props.hasPermission} />
           <BranchField repo={props.repo} hasPermission={props.hasPermission} />
         </FormBox.Forms>
         <FormBox.Actions>
