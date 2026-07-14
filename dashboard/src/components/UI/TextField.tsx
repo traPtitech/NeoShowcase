@@ -74,7 +74,7 @@ export const TextField: Component<Props> = (props) => {
                     <Icon>{props.leftIcon}</Icon>
                   </Show>
                   <KTextField.Input
-                    class="input h-full w-full border-none p-0 bg-transparent placeholder-text-disabled focus-visible:outline-none"
+                    class="input h-full w-full border-none bg-transparent p-0 placeholder-text-disabled focus-visible:outline-none"
                     {...inputProps}
                     type={props.type}
                   />
