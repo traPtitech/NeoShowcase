@@ -31,7 +31,6 @@ require (
 	github.com/moby/moby/api v1.54.2
 	github.com/moby/moby/client v0.4.1
 	github.com/motoki317/sc v1.8.2
-	github.com/ncw/swift v1.0.53
 	github.com/ncw/swift/v2 v2.0.5
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.23.2
