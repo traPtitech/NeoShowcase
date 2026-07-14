@@ -5,17 +5,22 @@
   ],
   "packageRules": [
     {
-      "description": "go.modのマイナー・パッチアップデートを1つにまとめる",
+      "matchManagers": ["npm"],
+      "minimumReleaseAge": "7d"
+    },
+    {
       "matchManagers": ["gomod"],
       "matchUpdateTypes": ["minor", "patch"],
       "groupName": "Go minor & patch dependencies"
     },
     {
-      "description": "package.jsonのマイナー・パッチアップデートを1つにまとめる",
       "matchManagers": ["npm"],
       "matchUpdateTypes": ["minor", "patch"],
-      "groupName": "Node.js minor & patch dependencies",
-      "minimumReleaseAge": "7d"
+      "groupName": "Node.js minor & patch dependencies"
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "groupName": "GitHub Actions dependencies"
     }
   ],
   "postUpdateOptions": [
