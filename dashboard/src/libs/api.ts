@@ -1,6 +1,6 @@
 import { createClient } from '@connectrpc/connect'
 import { createConnectTransport } from '@connectrpc/connect-web'
-import { cache, revalidate } from '@solidjs/router'
+import { query, revalidate } from '@solidjs/router'
 import AsyncLock from 'async-lock'
 import { createResource } from 'solid-js'
 import toast from 'solid-toast'
@@ -33,13 +33,13 @@ export const handleAPIError = (e: unknown, message: string) => {
   }
 }
 
-export const getRepository = cache((id) => client.getRepository({ repositoryId: id }), 'repository')
+export const getRepository = query((id) => client.getRepository({ repositoryId: id }), 'repository')
 export const revalidateRepository = (id: string) => revalidate(getRepository.keyFor(id))
 
 export const hasRepositoryPermission = (repo: () => Repository | undefined): boolean =>
   (user()?.admin || (user.latest !== undefined && repo()?.ownerIds.includes(user().id))) ?? false
 
-export const getRepositoryApps = cache(
+export const getRepositoryApps = query(
   (id) =>
     client
       .getApplications({
@@ -83,10 +83,10 @@ export const getRepositoryCommits = (() => {
   }
 })()
 
-export const getApplication = cache((id) => client.getApplication({ id }), 'application')
+export const getApplication = query((id) => client.getApplication({ id }), 'application')
 export const revalidateApplication = (id: string) => revalidate(getApplication.keyFor(id))
 
-export const getBuilds = cache(
+export const getBuilds = query(
   (appId) => client.getBuilds({ id: appId }).then((res) => res.builds),
   'application-builds',
 )
@@ -95,5 +95,5 @@ export const revalidateBuilds = (appId: string) => revalidate(getBuilds.keyFor(a
 export const hasApplicationPermission = (app: () => Application | undefined): boolean =>
   (user()?.admin || (user.latest !== undefined && app()?.ownerIds.includes(user().id))) ?? false
 
-export const getBuild = cache((id) => client.getBuild({ buildId: id }), 'build')
+export const getBuild = query((id) => client.getBuild({ buildId: id }), 'build')
 export const revalidateBuild = (id: string) => revalidate(getBuild.keyFor(id))
