@@ -13,7 +13,6 @@ tbls = "1.94.5"
 buf = "1.70.0"
 "go:github.com/aarondl/sqlboiler/v4" = "4.19.7"
 "go:github.com/aarondl/sqlboiler/v4/drivers/sqlboiler-mysql" = "4.19.7"
-"go:github.com/sqldef/sqldef/cmd/mysqldef" = "3.11.13"
 
 [env]
 APP_VERSION = "dev"
@@ -39,7 +38,7 @@ docker compose up -d --wait mysql mongo
 [tasks.migrate]
 description = "DB migration"
 depends = ["ensure:db"]
-run = "mysqldef --port=5004 --user=root --password=password neoshowcase < ./migrations/schema.sql"
+run = "docker compose run ns-migrate"
 
 [tasks."gen:proto"]
 description = "Generate protobuf"
