@@ -1,9 +1,10 @@
 package storage
 
 import (
+	"context"
 	"io"
 
-	"github.com/ncw/swift"
+	"github.com/ncw/swift/v2"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
@@ -24,11 +25,11 @@ func NewSwiftStorage(container, userName, apiKey, tenant, tenantID, authURL stri
 		TenantId: tenantID,
 	}
 
-	if err := conn.Authenticate(); err != nil {
+	if err := conn.Authenticate(context.Background()); err != nil {
 		return &SwiftStorage{}, err
 	}
 
-	if _, _, err := conn.Container(container); err != nil {
+	if _, _, err := conn.Container(context.Background(), container); err != nil {
 		return &SwiftStorage{}, err
 	}
 
@@ -41,13 +42,13 @@ func NewSwiftStorage(container, userName, apiKey, tenant, tenantID, authURL stri
 
 // Save ファイルを保存する
 func (ss *SwiftStorage) Save(filename string, src io.Reader) error {
-	_, err := ss.conn.ObjectPut(ss.container, filename, src, true, "", "", swift.Headers{})
+	_, err := ss.conn.ObjectPut(context.Background(), ss.container, filename, src, true, "", "", swift.Headers{})
 	return err
 }
 
 // Open ファイルを取得する
 func (ss *SwiftStorage) Open(filename string) (io.ReadCloser, error) {
-	file, _, err := ss.conn.ObjectOpen(ss.container, filename, true, nil)
+	file, _, err := ss.conn.ObjectOpen(context.Background(), ss.container, filename, true, nil)
 	if err != nil {
 		if err == swift.ObjectNotFound {
 			return nil, domain.ErrFileNotFound
@@ -59,7 +60,7 @@ func (ss *SwiftStorage) Open(filename string) (io.ReadCloser, error) {
 
 // Delete ファイルを削除する
 func (ss *SwiftStorage) Delete(filename string) error {
-	err := ss.conn.ObjectDelete(ss.container, filename)
+	err := ss.conn.ObjectDelete(context.Background(), ss.container, filename)
 	if err != nil {
 		if err == swift.ObjectNotFound {
 			return domain.ErrFileNotFound
