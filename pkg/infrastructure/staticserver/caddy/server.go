@@ -47,15 +47,13 @@ file_server @%v {
 
 const siteTemplateSPA = `@%v {
 	header %v %v
-	file {
-		root %v
-		try_files {path} {path}.html {path}/ {path}/index.html /index.html =404
-	}
 }
-rewrite @%v {file_match.relative}
-file_server @%v {
-	root %v
-	precompressed br gzip zstd
+handle @%v {
+	root * %v
+	try_files {path} {path}.html {path}/ {path}/index.html /index.html =404
+	file_server {
+		precompressed br gzip zstd
+	}
 }
 `
 
@@ -88,8 +86,6 @@ func (s *server) Reconcile(sites []*domain.StaticSite) error {
 			fmt.Fprintf(&b, siteTemplateSPA,
 				matcherName,
 				web.HeaderNameSSGenAppID, site.Application.ID,
-				filepath.Join(s.c.DocsRoot, site.ArtifactID),
-				matcherName,
 				matcherName,
 				filepath.Join(s.c.DocsRoot, site.ArtifactID))
 		} else {
