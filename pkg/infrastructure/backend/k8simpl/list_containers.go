@@ -20,7 +20,7 @@ func (b *Backend) GetContainer(ctx context.Context, appID string) (*domain.Conta
 		LabelSelector: toSelectorString(appSelector(appID)),
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to fetch pods")
+		return nil, errors.Wrap(err, "fetching pods")
 	}
 
 	if len(list.Items) == 0 {
@@ -42,7 +42,7 @@ func (b *Backend) ListContainers(ctx context.Context) ([]*domain.Container, erro
 		LabelSelector: toSelectorString(b.shardedAllSelector()),
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to fetch pods")
+		return nil, errors.Wrap(err, "fetching pods")
 	}
 
 	result := ds.Map(list.Items, func(pod v1.Pod) *domain.Container {

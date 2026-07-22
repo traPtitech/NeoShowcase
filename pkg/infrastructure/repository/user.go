@@ -42,7 +42,7 @@ func (r *userRepository) GetUsers(ctx context.Context, cond domain.GetUserCondit
 func (r *userRepository) EnsureUser(ctx context.Context, name string) (*domain.User, error) {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to begin transaction")
+		return nil, errors.Wrap(err, "beginning transaction")
 	}
 	defer tx.Rollback()
 
@@ -51,7 +51,7 @@ func (r *userRepository) EnsureUser(ctx context.Context, name string) (*domain.U
 		qm.For("UPDATE"),
 	).One(ctx, tx)
 	if err != nil && !isNoRowsErr(err) {
-		return nil, errors.Wrap(err, "failed to get user")
+		return nil, errors.Wrap(err, "getting user")
 	}
 
 	if isNoRowsErr(err) {
@@ -59,13 +59,13 @@ func (r *userRepository) EnsureUser(ctx context.Context, name string) (*domain.U
 		mu = repoconvert.FromDomainUser(user)
 		err = mu.Insert(ctx, tx, boil.Blacklist())
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to insert user")
+			return nil, errors.Wrap(err, "inserting user")
 		}
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to commit")
+		return nil, errors.Wrap(err, "committing")
 	}
 
 	return repoconvert.ToDomainUser(mu), nil
@@ -102,7 +102,7 @@ func (r *userRepository) EnsureUsers(ctx context.Context, names []string) ([]*do
 
 	err = tx.Commit()
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to commit")
+		return nil, errors.Wrap(err, "committing")
 	}
 
 	return lo.MapToSlice(modelUsers, func(name string, mu *models.User) *domain.User {

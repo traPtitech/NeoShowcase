@@ -24,9 +24,10 @@ type logWriter struct {
 func newLogWriter(buildID string, client domain.ControllerBuilderServiceClient) *logWriter {
 	send := make(chan []byte, 50)
 	go func() {
-		err := client.StreamBuildLog(context.Background(), buildID, send)
+		ctx := context.Background()
+		err := client.StreamBuildLog(ctx, buildID, send)
 		if err != nil {
-			slog.Error("failed to send build log", "error", err)
+			slog.WarnContext(ctx, "failed to send build log", "build_id", buildID, "error", err)
 		}
 	}()
 	return &logWriter{
@@ -84,11 +85,11 @@ func newState(app *domain.Application, envs []*domain.Environment, build *domain
 	var err error
 	st.repositoryTempDir, err = os.MkdirTemp("", "repository-")
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create tmp repository dir")
+		return nil, errors.Wrap(err, "creating tmp repository dir")
 	}
 	st.artifactTempFile, err = os.CreateTemp("", "artifacts-")
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create tmp artifact file")
+		return nil, errors.Wrap(err, "creating tmp artifact file")
 	}
 	return st, nil
 }

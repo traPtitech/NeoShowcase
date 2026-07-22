@@ -60,7 +60,7 @@ func createTempFile(pattern string, content string) (name string, cleanup func()
 	cleanup = func() {
 		err := os.Remove(f.Name())
 		if err != nil {
-			slog.Error("removing temp file", "file", f.Name(), "error", err)
+			slog.WarnContext(context.Background(), "removing temp file", "file", f.Name(), "error", err)
 		}
 	}
 	_, err = f.WriteString(content)

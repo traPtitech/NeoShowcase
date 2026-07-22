@@ -28,7 +28,7 @@ func (r *runtimeImageRepository) CreateRuntimeImage(ctx context.Context, image *
 	ri := repoconvert.FromDomainRuntimeImage(image)
 	err := ri.Insert(ctx, r.db, boil.Infer())
 	if err != nil {
-		return errors.Wrap(err, "failed to insert runtime image")
+		return errors.Wrap(err, "inserting runtime image")
 	}
 	return nil
 }
@@ -44,11 +44,11 @@ func (r *runtimeImageRepository) DeleteRuntimeImagesByAppID(ctx context.Context,
 		models.BuildWhere.ApplicationID.EQ(appID),
 	).All(ctx, r.db)
 	if err != nil {
-		return errors.Wrap(err, "failed to get runtime images")
+		return errors.Wrap(err, "getting runtime images")
 	}
 	_, err = images.DeleteAll(ctx, r.db)
 	if err != nil {
-		return errors.Wrap(err, "failed to delete runtime images")
+		return errors.Wrap(err, "deleting runtime images")
 	}
 	return nil
 }

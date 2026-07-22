@@ -54,14 +54,14 @@ func NewService(
 ) (*ServiceImpl, error) {
 	systemInfo, err := client.GetBuilderSystemInfo(context.Background())
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get builder system info")
+		return nil, errors.Wrap(err, "getting builder system info")
 	}
 	// FIXME: git service should be injected via DI,
 	// but it's currently created here because it requires a public key
 	// derived from a runtime value (SSHKey from systemInfo).
 	pubKey, err := domain.IntoPublicKey(systemInfo.SSHKey)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to convert into public key")
+		return nil, errors.Wrap(err, "converting into public key")
 	}
 	gitsvc := git.NewService(pubKey)
 	return &ServiceImpl{
@@ -127,7 +127,7 @@ func (s *ServiceImpl) cancelBuild(buildID string) {
 	if s.state != nil && s.stateCancel != nil && s.state.build.ID == buildID {
 		s.stateCancel()
 	} else {
-		slog.Warn("Skipping cancel build request - a race condition or builder scheduling malfunction?", "build_id", buildID)
+		slog.WarnContext(context.Background(), "Skipping cancel build request - a race condition or builder scheduling malfunction?", "build_id", buildID)
 	}
 }
 
@@ -137,12 +137,12 @@ func (s *ServiceImpl) onRequest(req *pb.BuilderRequest) {
 		b := req.Body.(*pb.BuilderRequest_StartBuild).StartBuild
 		err := s.startBuild(pbconvert.FromPBStartBuildRequest(b))
 		if err != nil {
-			slog.Error("failed to start build", "error", err)
+			slog.ErrorContext(context.Background(), "failed to start build", "error", err)
 		}
 	case pb.BuilderRequest_CANCEL_BUILD:
 		b := req.Body.(*pb.BuilderRequest_CancelBuild).CancelBuild
 		s.cancelBuild(b.BuildId)
 	default:
-		slog.Error("unknown builder request type", "value", req.Type)
+		slog.ErrorContext(context.Background(), "unknown builder request type", "value", req.Type)
 	}
 }

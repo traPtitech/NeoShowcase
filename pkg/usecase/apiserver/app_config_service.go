@@ -58,7 +58,7 @@ func (s *Service) StartApplication(ctx context.Context, id string) error {
 		UpdatedAt: optional.From(time.Now()),
 	})
 	if err != nil {
-		return errors.Wrap(err, "failed to mark application as running")
+		return errors.Wrap(err, "marking application as running")
 	}
 
 	app, err := s.appRepo.GetApplication(ctx, id)
@@ -67,11 +67,11 @@ func (s *Service) StartApplication(ctx context.Context, id string) error {
 	}
 	err = s.controller.FetchRepository(ctx, app.RepositoryID)
 	if err != nil {
-		return errors.Wrap(err, "failed to request repository fetch")
+		return errors.Wrap(err, "requesting repository fetch")
 	}
 	err = s.controller.SyncDeployments(ctx)
 	if err != nil {
-		return errors.Wrap(err, "failed to request sync deployment")
+		return errors.Wrap(err, "requesting sync deployment")
 	}
 	return nil
 }
@@ -87,12 +87,12 @@ func (s *Service) StopApplication(ctx context.Context, id string) error {
 		UpdatedAt: optional.From(time.Now()),
 	})
 	if err != nil {
-		return errors.Wrap(err, "failed to mark application as not running")
+		return errors.Wrap(err, "marking application as not running")
 	}
 
 	err = s.controller.SyncDeployments(ctx)
 	if err != nil {
-		return errors.Wrap(err, "failed to request sync deployment")
+		return errors.Wrap(err, "requesting sync deployment")
 	}
 	return nil
 }

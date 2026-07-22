@@ -52,11 +52,11 @@ func NewK8sDiscoverer(svcName string) (Discoverer, error) {
 	// sanity check
 	_, err = d.findService()
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to find service %s, is configuration done right?", svcName)
+		return nil, errors.Wrapf(err, "finding service (service_name=%s)", svcName)
 	}
 	_, err = d.discover()
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to discover targets, is configuration done right?")
+		return nil, errors.Wrap(err, "discovering targets")
 	}
 
 	return d, nil
@@ -134,7 +134,7 @@ func (k *k8sDiscoverer) watch(ctx context.Context, updates chan<- []Target) erro
 	// Send initial state
 	targets, err := k.discover()
 	if err != nil {
-		return fmt.Errorf("failed to discover targets: %w", err)
+		return errors.Wrap(err, "discovering targets")
 	}
 	if len(targets) > 0 {
 		updates <- targets
@@ -143,7 +143,7 @@ func (k *k8sDiscoverer) watch(ctx context.Context, updates chan<- []Target) erro
 	for range watcher.ResultChan() {
 		targets, err = k.discover()
 		if err != nil {
-			return fmt.Errorf("failed to discover targets: %w", err)
+			return errors.Wrap(err, "discovering targets")
 		}
 		if len(targets) > 0 {
 			updates <- targets

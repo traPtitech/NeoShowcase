@@ -3,7 +3,6 @@ package grpc
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"io"
 	"log/slog"
 	"slices"
@@ -126,7 +125,8 @@ func (s *ControllerBuilderService) StreamBuildLog(ctx context.Context, st *conne
 		s.logStream.AppendBuildLog(msg.BuildId, msg.Log)
 	}
 	if err := st.Err(); err != nil {
-		slog.ErrorContext(ctx, "receiving build log", "error", err)
+		// This service has no log interceptor, so this is the terminal log for the error.
+		slog.WarnContext(ctx, "receiving build log", "error", err)
 		return nil, errors.Wrap(err, "receiving build log")
 	}
 	res := connect.NewResponse(&emptypb.Empty{})
@@ -297,7 +297,7 @@ func (s *ControllerBuilderService) startBuild(ctx context.Context, conn *builder
 	// Construct payload to send to builder
 	req, err := s.startBuildPayload(ctx, buildID)
 	if err != nil {
-		return errors.Wrap(err, fmt.Sprintf("failed to construct start build payload for %v", buildID))
+		return errors.Wrapf(err, "constructing start build payload (build_id=%v)", buildID)
 	}
 	// Send payload to builder
 	conn.Send(&pb.BuilderRequest{
@@ -329,7 +329,7 @@ func (s *ControllerBuilderService) finishBuild(ctx context.Context, buildID stri
 		return err
 	}
 	if n == 0 {
-		return fmt.Errorf("failed to change build status from builing to finished for %v - builder scheduling may be malfunctioning", buildID)
+		return errors.Errorf("changing build status from building to finished (build_id=%v): no row updated, builder scheduling may be malfunctioning", buildID)
 	}
 
 	// metrics
@@ -372,7 +372,7 @@ func (s *ControllerBuilderService) StartBuilds(ctx context.Context, buildIDs []s
 			// It is possible that some other controller has acquired build lock first
 			slog.DebugContext(ctx, "failed to acquire build lock", "build_id", buildID)
 		} else {
-			slog.ErrorContext(ctx, "error starting build", "error", err)
+			slog.WarnContext(ctx, "error starting build", "error", err)
 		}
 	}
 }

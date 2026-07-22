@@ -81,7 +81,7 @@ func (l *victoriaLogsStreamer) LogLimit() int {
 func (l *victoriaLogsStreamer) Get(ctx context.Context, app *domain.Application, before time.Time, limit int) ([]*domain.ContainerLog, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", l.queryEndpoint(), nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create http request")
+		return nil, errors.Wrap(err, "creating http request")
 	}
 	logsQL, err := l.logsQL(app)
 	if err != nil {
@@ -101,7 +101,7 @@ func (l *victoriaLogsStreamer) Get(ctx context.Context, app *domain.Application,
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(res.Body)
-		return nil, fmt.Errorf("request failed with status %d: %s", res.StatusCode, string(body))
+		return nil, errors.Errorf("request failed with status %d: %s", res.StatusCode, string(body))
 	}
 
 	var lines []*domain.ContainerLog
@@ -118,7 +118,7 @@ func (l *victoriaLogsStreamer) Get(ctx context.Context, app *domain.Application,
 func (l *victoriaLogsStreamer) Stream(ctx context.Context, app *domain.Application, begin time.Time) (<-chan *domain.ContainerLog, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", l.tailEndpoint(), nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create http request")
+		return nil, errors.Wrap(err, "creating http request")
 	}
 	logsQL, err := l.logsQL(app)
 	if err != nil {
@@ -134,7 +134,7 @@ func (l *victoriaLogsStreamer) Stream(ctx context.Context, app *domain.Applicati
 	}
 	if res.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(res.Body)
-		return nil, fmt.Errorf("request failed with status %d: %s", res.StatusCode, string(body))
+		return nil, errors.Errorf("request failed with status %d: %s", res.StatusCode, string(body))
 	}
 
 	ch := make(chan *domain.ContainerLog, 100)
@@ -146,7 +146,7 @@ func (l *victoriaLogsStreamer) Stream(ctx context.Context, app *domain.Applicati
 
 		for line, err := range decodeQuery(res.Body) {
 			if err != nil {
-				slog.ErrorContext(ctx, "failed to decode query response", "error", err)
+				slog.WarnContext(ctx, "failed to decode query response", "error", err)
 				return
 			}
 			select {

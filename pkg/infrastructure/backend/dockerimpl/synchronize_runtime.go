@@ -31,7 +31,7 @@ func (b *Backend) syncAppContainer(ctx context.Context, app *domain.RuntimeDesir
 			Force:         true,
 		})
 		if err != nil {
-			return errors.Wrap(err, "failed to remove old container")
+			return errors.Wrap(err, "removing old container")
 		}
 	}
 
@@ -120,12 +120,12 @@ func (b *Backend) syncAppContainer(ctx context.Context, app *domain.RuntimeDesir
 		Name:             containerName(app.App.ID),
 	})
 	if err != nil {
-		return errors.Wrap(err, "failed to create container")
+		return errors.Wrap(err, "creating container")
 	}
 
 	_, err = b.c.ContainerStart(ctx, cont.ID, client.ContainerStartOptions{})
 	if err != nil {
-		return errors.Wrap(err, "failed to start container")
+		return errors.Wrap(err, "starting container")
 	}
 	return nil
 }
@@ -137,7 +137,7 @@ func (b *Backend) synchronizeRuntime(ctx context.Context, apps []*domain.Runtime
 		Filters: make(client.Filters).Add("label", fmt.Sprintf("%s=true", appLabel)),
 	})
 	if err != nil {
-		return errors.Wrap(err, "failed to list containers")
+		return errors.Wrap(err, "listing containers")
 	}
 	oldContainersMap := lo.SliceToMap(oldContainers.Items, func(c container.Summary) (string, *container.Summary) {
 		return c.Labels[appIDLabel], &c
@@ -147,7 +147,7 @@ func (b *Backend) synchronizeRuntime(ctx context.Context, apps []*domain.Runtime
 	for _, app := range apps {
 		err = b.syncAppContainer(ctx, app, oldContainersMap[app.App.ID])
 		if err != nil {
-			slog.ErrorContext(ctx, "failed to sync app", "error", err)
+			slog.WarnContext(ctx, "failed to sync app", "app_id", app.App.ID, "error", err)
 			continue // fail-safe
 		}
 	}
@@ -161,7 +161,7 @@ func (b *Backend) synchronizeRuntime(ctx context.Context, apps []*domain.Runtime
 	}
 	err = b.writeConfig(traefikRuntimeFilename, cb.build())
 	if err != nil {
-		return errors.Wrap(err, "failed to write runtime ingress config")
+		return errors.Wrap(err, "writing runtime ingress config")
 	}
 
 	// Prune old resources
@@ -177,7 +177,7 @@ func (b *Backend) synchronizeRuntime(ctx context.Context, apps []*domain.Runtime
 			Force:         true,
 		})
 		if err != nil {
-			slog.ErrorContext(ctx, "failed to remove old container", "error", err)
+			slog.WarnContext(ctx, "failed to remove old container", "app_id", appID, "container_id", oldContainer.ID, "error", err)
 			continue // fail-safe
 		}
 	}

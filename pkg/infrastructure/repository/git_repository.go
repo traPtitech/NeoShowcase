@@ -55,7 +55,7 @@ func (r *gitRepositoryRepository) GetRepositories(ctx context.Context, cond doma
 
 	modelRepos, err := models.Repositories(mods...).All(ctx, r.db)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get repositories")
+		return nil, errors.Wrap(err, "getting repositories")
 	}
 
 	repos := ds.Map(modelRepos, repoconvert.ToDomainRepository)
@@ -97,7 +97,7 @@ func (r *gitRepositoryRepository) GetRepository(ctx context.Context, id string) 
 		if isNoRowsErr(err) {
 			return nil, ErrNotFound
 		}
-		return nil, errors.Wrap(err, "failed to get repository")
+		return nil, errors.Wrap(err, "getting repository")
 	}
 	return repoconvert.ToDomainRepository(repo), nil
 }
@@ -105,21 +105,21 @@ func (r *gitRepositoryRepository) GetRepository(ctx context.Context, id string) 
 func (r *gitRepositoryRepository) CreateRepository(ctx context.Context, repo *domain.Repository) error {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
-		return errors.Wrap(err, "failed to start transaction")
+		return errors.Wrap(err, "starting transaction")
 	}
 	defer tx.Rollback()
 
 	mr := repoconvert.FromDomainRepository(repo)
 	err = mr.Insert(ctx, tx, boil.Blacklist())
 	if err != nil {
-		return errors.Wrap(err, "failed to insert repository")
+		return errors.Wrap(err, "inserting repository")
 	}
 
 	if repo.Auth.Valid {
 		mra := repoconvert.FromDomainRepositoryAuth(repo.ID, &repo.Auth.V)
 		err = mra.Insert(ctx, tx, boil.Blacklist())
 		if err != nil {
-			return errors.Wrap(err, "failed to insert repository auth")
+			return errors.Wrap(err, "inserting repository auth")
 		}
 	}
 
@@ -130,7 +130,7 @@ func (r *gitRepositoryRepository) CreateRepository(ctx context.Context, repo *do
 
 	err = tx.Commit()
 	if err != nil {
-		return errors.Wrap(err, "failed to commit transaction")
+		return errors.Wrap(err, "committing transaction")
 	}
 
 	return nil
@@ -139,13 +139,13 @@ func (r *gitRepositoryRepository) CreateRepository(ctx context.Context, repo *do
 func (r *gitRepositoryRepository) UpdateRepository(ctx context.Context, id string, args *domain.UpdateRepositoryArgs) error {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
-		return errors.Wrap(err, "failed to begin transaction")
+		return errors.Wrap(err, "beginning transaction")
 	}
 	defer tx.Rollback()
 
 	repo, err := r.getRepository(ctx, tx, id)
 	if err != nil {
-		return errors.Wrap(err, "failed to get repository")
+		return errors.Wrap(err, "getting repository")
 	}
 	var cols []string
 
@@ -161,7 +161,7 @@ func (r *gitRepositoryRepository) UpdateRepository(ctx context.Context, id strin
 	if len(cols) > 0 {
 		_, err = repo.Update(ctx, tx, boil.Whitelist(cols...))
 		if err != nil {
-			return errors.Wrap(err, "failed to update repository")
+			return errors.Wrap(err, "updating repository")
 		}
 	}
 
@@ -169,14 +169,14 @@ func (r *gitRepositoryRepository) UpdateRepository(ctx context.Context, id strin
 		if repo.R != nil && repo.R.RepositoryAuth != nil {
 			_, err = repo.R.RepositoryAuth.Delete(ctx, tx)
 			if err != nil {
-				return errors.Wrap(err, "failed to delete existing repository auth")
+				return errors.Wrap(err, "deleting existing repository auth")
 			}
 		}
 		if args.Auth.V.Valid {
 			mra := repoconvert.FromDomainRepositoryAuth(repo.ID, &args.Auth.V.V)
 			err = repo.SetRepositoryAuth(ctx, tx, true, mra)
 			if err != nil {
-				return errors.Wrap(err, "failed to set repository auth")
+				return errors.Wrap(err, "setting repository auth")
 			}
 		}
 	}
@@ -190,7 +190,7 @@ func (r *gitRepositoryRepository) UpdateRepository(ctx context.Context, id strin
 
 	err = tx.Commit()
 	if err != nil {
-		return errors.Wrap(err, "failed to commit transaction")
+		return errors.Wrap(err, "committing transaction")
 	}
 	return nil
 }
@@ -199,14 +199,14 @@ func (r *gitRepositoryRepository) setOwners(ctx context.Context, ex boil.Context
 	ownerIDs = lo.Uniq(ownerIDs)
 	users, err := models.Users(models.UserWhere.ID.IN(ownerIDs)).All(ctx, ex)
 	if err != nil {
-		return errors.Wrap(err, "failed to get users")
+		return errors.Wrap(err, "getting users")
 	}
 	if len(users) < len(ownerIDs) {
 		return ErrNotFound
 	}
 	err = repo.SetUsers(ctx, ex, false, users...)
 	if err != nil {
-		return errors.Wrap(err, "failed to")
+		return errors.Wrap(err, "setting repository owners")
 	}
 	return nil
 }
@@ -218,17 +218,17 @@ func (r *gitRepositoryRepository) DeleteRepository(ctx context.Context, id strin
 	}
 	err = repo.SetUsers(ctx, r.db, false)
 	if err != nil {
-		return errors.Wrap(err, "failed to delete repository owners")
+		return errors.Wrap(err, "deleting repository owners")
 	}
 	if repo.R.RepositoryAuth != nil {
 		_, err = repo.R.RepositoryAuth.Delete(ctx, r.db)
 		if err != nil {
-			return errors.Wrap(err, "failed to delete repository auth")
+			return errors.Wrap(err, "deleting repository auth")
 		}
 	}
 	_, err = repo.Delete(ctx, r.db)
 	if err != nil {
-		return errors.Wrap(err, "failed to delete repository")
+		return errors.Wrap(err, "deleting repository")
 	}
 	return nil
 }

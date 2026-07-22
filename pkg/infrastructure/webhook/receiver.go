@@ -82,7 +82,7 @@ func (r *Receiver) updateURLs(urls []string) {
 	ctx := context.Background()
 	repos, err := r.gitRepo.GetRepositories(ctx, domain.GetRepositoryCondition{URLs: optional.From(urls)})
 	if err != nil {
-		slog.ErrorContext(ctx, "failed to get repositories by url", "error", err)
+		slog.WarnContext(ctx, "failed to get repositories by url", "error", err)
 		return
 	}
 	for _, repo := range repos {

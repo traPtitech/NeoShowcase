@@ -109,9 +109,10 @@ func (s *generatorService) onRequest(req *pb.SSGenRequest) {
 }
 
 func (s *generatorService) reload() {
-	err := s.reloader.Do(context.Background())
+	ctx := context.Background()
+	err := s.reloader.Do(ctx)
 	if err != nil {
-		slog.Error("failed to reload static server", "error", err)
+		slog.WarnContext(ctx, "failed to reload static server", "error", err)
 	}
 }
 
@@ -140,7 +141,7 @@ func (s *generatorService) _reload(ctx context.Context) error {
 func (s *generatorService) syncArtifacts(sites []*domain.StaticSite) error {
 	entries, err := os.ReadDir(s.docsRoot)
 	if err != nil {
-		return errors.Wrap(err, "failed to read docs root")
+		return errors.Wrap(err, "reading docs root")
 	}
 	artifactsOnDisk := make(map[string]struct{}, len(entries))
 	for _, e := range entries {
@@ -170,7 +171,7 @@ func (s *generatorService) syncArtifacts(sites []*domain.StaticSite) error {
 		artifactDir := filepath.Join(s.docsRoot, artifactID)
 		err = os.RemoveAll(artifactDir)
 		if err != nil {
-			return errors.Wrap(err, "failed to delete unused artifact directory")
+			return errors.Wrapf(err, "deleting unused artifact directory (artifact_id=%s)", artifactID)
 		}
 	}
 
@@ -191,7 +192,7 @@ func (s *generatorService) extractArtifact(artifactID string) error {
 	defer tarReader.Close()
 	err = tarfs.Extract(tarReader, destDir)
 	if err != nil {
-		return errors.Wrap(err, "failed to extract artifact tar")
+		return errors.Wrap(err, "extracting artifact tar")
 	}
 	return nil
 }

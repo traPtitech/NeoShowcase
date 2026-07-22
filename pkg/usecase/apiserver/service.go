@@ -94,7 +94,7 @@ func (s *Service) isRepositoryOwner(ctx context.Context, repoID string) error {
 	user := web.GetUser(ctx)
 	repo, err := s.gitRepo.GetRepository(ctx, repoID)
 	if err != nil {
-		return errors.Wrap(err, "failed to get repository")
+		return errors.Wrap(err, "getting repository")
 	}
 	if !repo.IsOwner(user) {
 		return newError(ErrorTypeForbidden, "you do not have permission for this repository", nil)
@@ -106,7 +106,7 @@ func (s *Service) isApplicationOwner(ctx context.Context, appID string) error {
 	user := web.GetUser(ctx)
 	app, err := s.appRepo.GetApplication(ctx, appID)
 	if err != nil {
-		return errors.Wrap(err, "failed to get application")
+		return errors.Wrap(err, "getting application")
 	}
 	if !app.IsOwner(user) {
 		return newError(ErrorTypeForbidden, "you do not have permission for this application", nil)
@@ -118,11 +118,11 @@ func (s *Service) isBuildOwner(ctx context.Context, buildID string) error {
 	user := web.GetUser(ctx)
 	build, err := s.buildRepo.GetBuild(ctx, buildID)
 	if err != nil {
-		return errors.Wrap(err, "failed to get build")
+		return errors.Wrap(err, "getting build")
 	}
 	app, err := s.appRepo.GetApplication(ctx, build.ApplicationID)
 	if err != nil {
-		return errors.Wrap(err, "failed to get application")
+		return errors.Wrap(err, "getting application")
 	}
 	if !app.IsOwner(user) {
 		return newError(ErrorTypeForbidden, "you do not have permission for this application", nil)

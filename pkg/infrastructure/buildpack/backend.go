@@ -60,7 +60,7 @@ func (b *backend) exec(ctx context.Context, workDir string, cmd []string, env ma
 		return err
 	}
 	if code != 0 {
-		return fmt.Errorf("command exited with code %d", code)
+		return errors.Errorf("command exited with code %d", code)
 	}
 	return nil
 }
@@ -89,7 +89,7 @@ func (b *backend) prepareDir(ctx context.Context, localName, remoteName string) 
 	cleanup = func() {
 		err := b.exec(context.Background(), b.config.RemoteDir, []string{"rm", "-r", remotePath}, nil, io.Discard)
 		if err != nil {
-			slog.ErrorContext(ctx, "failed to remove tmp repo dir", "error", err)
+			slog.WarnContext(ctx, "failed to remove tmp repo dir", "error", err)
 		}
 	}
 

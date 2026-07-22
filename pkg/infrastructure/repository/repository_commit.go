@@ -30,7 +30,7 @@ func (r *repositoryCommitRepository) GetCommits(ctx context.Context, hashes []st
 		models.RepositoryCommitWhere.Hash.IN(hashes),
 	).All(ctx, r.db)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to query repository commits")
+		return nil, errors.Wrap(err, "querying repository commits")
 	}
 
 	return ds.Map(commits, repoconvert.ToDomainRepositoryCommit), nil
@@ -40,7 +40,7 @@ func (r *repositoryCommitRepository) RecordCommit(ctx context.Context, commit *d
 	m := repoconvert.FromDomainRepositoryCommit(commit)
 	err := m.Insert(ctx, r.db, boil.Blacklist())
 	if err != nil {
-		return errors.Wrap(err, "failed to insert repository commit")
+		return errors.Wrap(err, "inserting repository commit")
 	}
 	return nil
 }

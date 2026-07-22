@@ -70,7 +70,7 @@ func NewDockerBackend(
 func (b *Backend) Start(ctx context.Context) error {
 	// showcase用のネットワークを用意
 	if err := b.initNetworks(ctx); err != nil {
-		return errors.Wrap(err, "failed to init networks")
+		return errors.Wrap(err, "initializing networks")
 	}
 
 	eventCtx, eventCancel := context.WithCancel(context.Background())
@@ -135,7 +135,7 @@ func (b *Backend) ListenContainerEvents() (sub <-chan *domain.ContainerEvent, un
 func (b *Backend) initNetworks(ctx context.Context) error {
 	networks, err := b.c.NetworkList(ctx, client.NetworkListOptions{})
 	if err != nil {
-		return errors.Wrap(err, "failed to list networks")
+		return errors.Wrap(err, "listing networks")
 	}
 	for _, network := range networks.Items {
 		if network.Name == b.config.Network {

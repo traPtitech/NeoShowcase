@@ -91,7 +91,7 @@ func (b *Backend) eventListener(ctx context.Context) error {
 		}}),
 	})
 	if err != nil {
-		return errors.Wrap(err, "failed to watch pods")
+		return errors.Wrap(err, "watching pods")
 	}
 	defer podWatcher.Stop()
 

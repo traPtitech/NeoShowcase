@@ -69,7 +69,7 @@ func (values streamValues) toSortedResponse(asc bool) ([]*domain.ContainerLog, e
 		for _, v := range sv.Values {
 			logTime, err := v.time()
 			if err != nil {
-				return nil, errors.Wrap(err, "failed to decode response time")
+				return nil, errors.Wrap(err, "decoding response time")
 			}
 			logs = append(logs, &domain.ContainerLog{
 				Time: logTime,

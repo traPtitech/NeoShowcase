@@ -1,6 +1,7 @@
 package k8simpl
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -153,7 +154,7 @@ func (b *Backend) ingressRoute(
 			}
 		}
 	} else if website.Authentication != domain.AuthenticationTypeOff {
-		slog.Warn("auth config not available", "fqdn", website.FQDN)
+		slog.WarnContext(context.Background(), "auth config not available", "fqdn", website.FQDN)
 	}
 
 	var rule string

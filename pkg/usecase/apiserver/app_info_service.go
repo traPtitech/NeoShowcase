@@ -59,7 +59,7 @@ func (s *Service) GetOutputStream(ctx context.Context, id string, begin time.Tim
 
 	ch, err := s.containerLogger.Stream(ctx, app, begin)
 	if err != nil {
-		return errors.Wrap(err, "failed to connect to stream")
+		return errors.Wrap(err, "connecting to stream")
 	}
 
 	for {
@@ -70,7 +70,7 @@ func (s *Service) GetOutputStream(ctx context.Context, id string, begin time.Tim
 			}
 			err = send(d)
 			if err != nil {
-				return errors.Wrap(err, "failed to send log")
+				return errors.Wrap(err, "sending log")
 			}
 		case <-ctx.Done():
 			return nil

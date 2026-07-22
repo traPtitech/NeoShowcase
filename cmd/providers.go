@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"os"
 	"strings"
@@ -39,7 +38,7 @@ import (
 func provideRepositoryPrivateKey(c Config) (domain.PrivateKey, error) {
 	bytes, err := os.ReadFile(c.PrivateKeyFile)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to open private key file")
+		return nil, errors.Wrap(err, "opening private key file")
 	}
 	return bytes, nil
 }
@@ -53,7 +52,7 @@ func provideStorage(c domain.StorageConfig) (domain.Storage, error) {
 	case "swift":
 		return storage.NewSwiftStorage(c.Swift.Container, c.Swift.UserName, c.Swift.APIKey, c.Swift.TenantName, c.Swift.TenantID, c.Swift.AuthURL)
 	default:
-		return nil, fmt.Errorf("unknown storage: %s", c.Type)
+		return nil, errors.Errorf("unknown storage: %s", c.Type)
 	}
 }
 
@@ -108,7 +107,7 @@ func provideBuilderConfig(c Config) (*ubuilder.Config, error) {
 	stepTimeoutStr := c.Components.Builder.StepTimeout
 	stepTimeout, err := time.ParseDuration(stepTimeoutStr)
 	if err != nil {
-		return nil, errors.Wrap(err, fmt.Sprintf("failed to parse components.builder.stepTimeout value: %s", stepTimeoutStr))
+		return nil, errors.Wrapf(err, "parsing components.builder.stepTimeout value: %s", stepTimeoutStr)
 	}
 	if stepTimeout <= 0 {
 		return nil, errors.Errorf("components.builder.stepTimeout must be positive: %s", stepTimeoutStr)
@@ -124,7 +123,7 @@ func provideBuildkitClient(c Config) (*buildkit.Client, error) {
 	defer cancel()
 	client, err := buildkit.New(ctx, cc.Buildkit.Address)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to initialize Buildkit Client")
+		return nil, errors.Wrap(err, "initializing Buildkit Client")
 	}
 	return client, nil
 }

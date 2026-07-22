@@ -148,7 +148,7 @@ loop:
 			}
 			err := c2.Send(&pb.BuildLog{Log: l})
 			if err != nil {
-				return errors.New("failed to send message")
+				return errors.Wrap(err, "sending message")
 			}
 		case <-ctx.Done():
 			break loop

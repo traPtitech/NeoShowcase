@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pkg/errors"
+	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -82,7 +82,7 @@ func (s *service) Run() {
 func (s *service) resolveCommits(ctx context.Context) {
 	apps, err := s.appRepo.GetApplications(ctx, domain.GetApplicationCondition{})
 	if err != nil {
-		slog.ErrorContext(ctx, "failed to get applications", "error", err)
+		slog.WarnContext(ctx, "failed to get applications", "error", err)
 		return
 	}
 
@@ -94,7 +94,7 @@ func (s *service) resolveCommits(ctx context.Context) {
 
 		builds, err := s.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{ApplicationID: optional.From(app.ID)})
 		if err != nil {
-			slog.ErrorContext(ctx, "failed to get builds", "error", err)
+			slog.WarnContext(ctx, "failed to get builds", "app_id", app.ID, "error", err)
 			return
 		}
 
@@ -113,7 +113,7 @@ func (s *service) Fetch(repositoryID string, hashes []string) {
 	select {
 	case s.queue <- queueItem{repositoryID, hashes}:
 	default:
-		slog.Warn("commit fetcher: queue is full, skipping request for repository and hashes", "repository_id", repositoryID, "hash_count", len(hashes))
+		slog.WarnContext(context.Background(), "commit fetcher: queue is full, skipping request for repository and hashes", "repository_id", repositoryID, "hash_count", len(hashes))
 	}
 }
 
@@ -141,7 +141,7 @@ func (s *service) fetchOne(ctx context.Context, repositoryID string, hashes []st
 	// Check if we have already tried
 	recordedCommits, err := s.commitsRepo.GetCommits(ctx, hashes)
 	if err != nil {
-		return errors.Wrap(err, "failed to get recorded commits")
+		return errors.Wrap(err, "getting recorded commits")
 	}
 	recordedCommitMap := lo.SliceToMap(recordedCommits, func(c *domain.RepositoryCommit) (string, bool) {
 		return c.Hash, true
@@ -155,24 +155,24 @@ func (s *service) fetchOne(ctx context.Context, repositoryID string, hashes []st
 
 	repo, err := s.gitRepo.GetRepository(ctx, repositoryID)
 	if err != nil {
-		return errors.Wrap(err, "failed to get repository")
+		return errors.Wrapf(err, "getting repository (repository_id=%s)", repositoryID)
 	}
 
 	// Init local git directory
 	tmpDir, err := os.MkdirTemp("", "commit-fetcher-")
 	if err != nil {
-		return errors.Wrap(err, "failed to create temp dir")
+		return errors.Wrap(err, "creating temp dir")
 	}
 	defer os.RemoveAll(tmpDir)
 
 	localRepo, err := s.gitsvc.CreateBareRepository(tmpDir, repo)
 	if err != nil {
-		return errors.Wrap(err, "failed to initialize git repo")
+		return errors.Wrap(err, "initializing git repo")
 	}
 
 	err = localRepo.Fetch(ctx, hashes)
 	if err != nil {
-		return errors.Wrap(err, "failed to fetch")
+		return errors.Wrap(err, "fetching commits")
 	}
 
 	// Get commit objects and record, in a *fail-safe* manner -
@@ -180,13 +180,13 @@ func (s *service) fetchOne(ctx context.Context, repositoryID string, hashes []st
 	for _, hash := range hashes {
 		commit, err := localRepo.GetCommit(hash)
 		if err != nil {
-			slog.ErrorContext(ctx, "failed to fetch commit for repository", "hash", hash, "repository_id", repositoryID, "error", err)
+			slog.WarnContext(ctx, "failed to fetch commit for repository", "hash", hash, "repository_id", repositoryID, "error", err)
 			commit = domain.ToErroredRepositoryCommit(hash)
 		}
 
 		err = s.commitsRepo.RecordCommit(ctx, commit)
 		if err != nil {
-			return errors.Wrap(err, "failed to record commit")
+			return errors.Wrap(err, "recording commit")
 		}
 	}
 

@@ -14,6 +14,11 @@ Quick start: run `mise trust && mise run up`.
 
 See [development.md](./docs/development.md) for more.
 
+## Coding guidelines
+
+See [docs/guidelines/](./docs/guidelines/):
+- [error-handling.md](./docs/guidelines/error-handling.md) for the error-handling rules
+
 ## Architecture
 
 See:

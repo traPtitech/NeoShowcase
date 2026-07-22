@@ -2,7 +2,6 @@ package cleaner
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"sync"
 	"time"
@@ -64,7 +63,7 @@ func NewService(
 			start := time.Now()
 			err := c.pruneImages(ctx, c.regclient)
 			if err != nil {
-				slog.ErrorContext(ctx, "failed to prune images", "error", err)
+				slog.WarnContext(ctx, "failed to prune images", "error", err)
 				return
 			}
 			slog.InfoContext(ctx, "Pruned images", "duration", time.Since(start))
@@ -73,7 +72,7 @@ func NewService(
 			start := time.Now()
 			err := c.pruneArtifacts(ctx)
 			if err != nil {
-				slog.ErrorContext(ctx, "failed to prune artifacts", "error", err)
+				slog.WarnContext(ctx, "failed to prune artifacts", "error", err)
 				return
 			}
 			slog.InfoContext(ctx, "Pruned artifacts", "duration", time.Since(start))
@@ -108,7 +107,7 @@ func (c *cleanerService) pruneImages(ctx context.Context, r builder.RegistryClie
 
 		err = c.pruneImage(ctx, r, app)
 		if err != nil {
-			slog.ErrorContext(ctx, "failed to prune image", "image", c.image.NamePrefix+app.ID, "error", err)
+			slog.WarnContext(ctx, "failed to prune image", "image", c.image.NamePrefix+app.ID, "error", err)
 		}
 	}
 
@@ -140,7 +139,7 @@ func (c *cleanerService) pruneImage(ctx context.Context, r builder.RegistryClien
 		// https://docs.docker.com/registry/garbage-collection/
 		err = r.DeleteImage(ctx, imageName, tag)
 		if err != nil {
-			slog.ErrorContext(ctx, "failed to delete tag", "image_name", imageName, "tag", tag, "error", err)
+			slog.WarnContext(ctx, "failed to delete tag", "image_name", imageName, "tag", tag, "error", err)
 			// fail-safe and continue
 		}
 	}
@@ -157,7 +156,7 @@ func (c *cleanerService) getOlderBuilds(ctx context.Context, appID string, targe
 	}
 	current, ok := lo.Find(builds, func(b *domain.Build) bool { return b.ID == targetBuildID })
 	if !ok {
-		return nil, errors.Errorf("failed to find build %v in retrieved builds", targetBuildID)
+		return nil, errors.Errorf("build %v not found in retrieved builds", targetBuildID)
 	}
 	return lo.Filter(builds, func(b *domain.Build, _ int) bool { return b.QueuedAt.Before(current.QueuedAt) }), nil
 }
@@ -165,17 +164,17 @@ func (c *cleanerService) getOlderBuilds(ctx context.Context, appID string, targe
 func (c *cleanerService) pruneArtifacts(ctx context.Context) error {
 	notInUse, err := c.getArtifactsNoLongerInUse(ctx)
 	if err != nil {
-		return errors.Wrap(err, "failed to get artifacts in use")
+		return errors.Wrap(err, "getting artifacts in use")
 	}
 
 	for _, artifact := range notInUse {
 		err = domain.DeleteArtifact(c.storage, artifact.ID)
 		if err != nil {
-			return errors.Wrap(err, fmt.Sprintf("deleting artifact %v", artifact.ID))
+			return errors.Wrapf(err, "deleting artifact %v", artifact.ID)
 		}
 		err = c.artifactRepo.UpdateArtifact(ctx, artifact.ID, domain.UpdateArtifactArgs{DeletedAt: optional.From(time.Now())})
 		if err != nil {
-			return errors.Wrap(err, "failed to mark artifact as deleted")
+			return errors.Wrapf(err, "marking artifact as deleted (artifact_id=%s)", artifact.ID)
 		}
 	}
 	return nil

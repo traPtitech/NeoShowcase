@@ -88,7 +88,7 @@ func (i *Integration) sync(ctx context.Context) error {
 			// Get users with write access
 			members, _, err := i.c.GetAssignees(repo.Owner.UserName, repo.Name)
 			if err != nil {
-				return errors.Wrap(err, fmt.Sprintf("syncing repository %v/%v: getting users", repo.Owner.UserName, repo.Name))
+				return errors.Wrapf(err, "getting assignees (repo=%v/%v)", repo.Owner.UserName, repo.Name)
 			}
 			memberIDs := lo.Flatten(ds.Map(members, func(member *gitea.User) []string {
 				user, ok := usersMap[member.UserName]
@@ -110,7 +110,7 @@ func (i *Integration) syncRepository(ctx context.Context, username string, gitea
 	// NOTE: no transaction, creating repository is assumed rare
 	repos, err := i.gitRepo.GetRepositories(ctx, domain.GetRepositoryCondition{URLs: optional.From([]string{giteaRepo.SSHURL})})
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "getting repository (ssh_url=%s)", giteaRepo.SSHURL)
 	}
 
 	if len(repos) == 0 {
@@ -122,7 +122,10 @@ func (i *Integration) syncRepository(ctx context.Context, username string, gitea
 			giteaOwnerIDs,
 		)
 		slog.InfoContext(ctx, "New repository found", "name", repo.Name, "id", repo.ID)
-		return i.gitRepo.CreateRepository(ctx, repo)
+		if err := i.gitRepo.CreateRepository(ctx, repo); err != nil {
+			return errors.Wrapf(err, "creating repository (name=%s)", repo.Name)
+		}
+		return nil
 	}
 
 	// Already exists
@@ -136,14 +139,14 @@ func (i *Integration) syncRepository(ctx context.Context, username string, gitea
 		slog.InfoContext(ctx, "Syncing repository owners", "repo_name", repo.Name, "repo_id", repo.ID, "old_count", len(repo.OwnerIDs), "new_count", len(newOwners))
 		err = i.gitRepo.UpdateRepository(ctx, repo.ID, &domain.UpdateRepositoryArgs{OwnerIDs: optional.From(newOwners)})
 		if err != nil {
-			return err
+			return errors.Wrapf(err, "updating repository owners (repo_id=%s)", repo.ID)
 		}
 	}
 
 	// Sync owners of generated applications
 	apps, err := i.appRepo.GetApplications(ctx, domain.GetApplicationCondition{RepositoryID: optional.From(repo.ID)})
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "getting applications (repo_id=%s)", repo.ID)
 	}
 	for _, app := range apps {
 		err = i.syncApplication(ctx, app, giteaOwnerIDs)
@@ -163,7 +166,7 @@ func (i *Integration) syncApplication(ctx context.Context, app *domain.Applicati
 		slog.InfoContext(ctx, "Syncing application owners", "app_name", app.Name, "app_id", app.ID, "old_count", len(app.OwnerIDs), "new_count", len(newOwners))
 		err := i.appRepo.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{OwnerIDs: optional.From(newOwners)})
 		if err != nil {
-			return err
+			return errors.Wrapf(err, "updating application owners (app_id=%s)", app.ID)
 		}
 	}
 	return nil
