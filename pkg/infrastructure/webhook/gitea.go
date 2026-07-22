@@ -30,7 +30,7 @@ func (r *Receiver) giteaHandler(c *echo.Context) error {
 	case gitea.RepositoryPayload:
 		slog.Info("Repository event received", "action", p.Action)
 		if err := r.giteaIntegration.Sync(context.Background()); err != nil {
-			slog.Error("Failed to sync gitea repositories", "error", err)
+			slog.Warn("failed to sync gitea repositories", "error", err)
 		}
 	default:
 		return echo.NewHTTPError(http.StatusInternalServerError, "unsupported payload type")

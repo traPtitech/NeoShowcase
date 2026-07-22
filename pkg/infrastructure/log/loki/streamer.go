@@ -137,7 +137,7 @@ func (l *lokiStreamer) Stream(ctx context.Context, app *domain.Application, begi
 			logSeq, err := l.readStream(ctx, logQL, lastSeenTime)
 			if err != nil {
 				if !errors.Is(err, context.Canceled) {
-					slog.ErrorContext(ctx, "failed to read log stream", "error", err)
+					slog.WarnContext(ctx, "failed to read log stream", "error", err)
 				}
 				return
 			}
@@ -193,12 +193,12 @@ func (l *lokiStreamer) readStream(ctx context.Context, query string, start time.
 				var res streamResponse
 				err := json.Unmarshal(b, &res)
 				if err != nil {
-					slog.ErrorContext(ctx, "failed to decode ws message", "error", err)
+					slog.WarnContext(ctx, "failed to decode ws message", "error", err)
 					continue // fail-safe
 				}
 				logs, err := res.Streams.toSortedResponse(true)
 				if err != nil {
-					slog.ErrorContext(ctx, "failed to decode ws message", "error", err)
+					slog.WarnContext(ctx, "failed to decode ws message", "error", err)
 					continue // fail-safe
 				}
 				for _, l := range logs {

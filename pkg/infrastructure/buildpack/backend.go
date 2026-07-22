@@ -89,7 +89,7 @@ func (b *backend) prepareDir(ctx context.Context, localName, remoteName string) 
 	cleanup = func() {
 		err := b.exec(context.Background(), b.config.RemoteDir, []string{"rm", "-r", remotePath}, nil, io.Discard)
 		if err != nil {
-			slog.ErrorContext(ctx, "failed to remove tmp repo dir", "error", err)
+			slog.WarnContext(ctx, "failed to remove tmp repo dir", "error", err)
 		}
 	}
 

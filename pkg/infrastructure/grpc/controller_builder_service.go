@@ -125,7 +125,8 @@ func (s *ControllerBuilderService) StreamBuildLog(ctx context.Context, st *conne
 		s.logStream.AppendBuildLog(msg.BuildId, msg.Log)
 	}
 	if err := st.Err(); err != nil {
-		slog.ErrorContext(ctx, "receiving build log", "error", err)
+		// This service has no log interceptor, so this is the terminal log for the error.
+		slog.WarnContext(ctx, "receiving build log", "error", err)
 		return nil, errors.Wrap(err, "receiving build log")
 	}
 	res := connect.NewResponse(&emptypb.Empty{})
@@ -371,7 +372,7 @@ func (s *ControllerBuilderService) StartBuilds(ctx context.Context, buildIDs []s
 			// It is possible that some other controller has acquired build lock first
 			slog.DebugContext(ctx, "failed to acquire build lock", "build_id", buildID)
 		} else {
-			slog.ErrorContext(ctx, "error starting build", "error", err)
+			slog.WarnContext(ctx, "error starting build", "error", err)
 		}
 	}
 }

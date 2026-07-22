@@ -146,7 +146,7 @@ func (l *victoriaLogsStreamer) Stream(ctx context.Context, app *domain.Applicati
 
 		for line, err := range decodeQuery(res.Body) {
 			if err != nil {
-				slog.ErrorContext(ctx, "failed to decode query response", "error", err)
+				slog.WarnContext(ctx, "failed to decode query response", "error", err)
 				return
 			}
 			select {
