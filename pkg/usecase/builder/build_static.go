@@ -26,7 +26,7 @@ func (s *ServiceImpl) buildStaticExtract(
 		})).
 		Marshal(ctx)
 	if err != nil {
-		return errors.Wrap(err, "failed to marshal llb")
+		return errors.Wrap(err, "marshaling llb")
 	}
 	mount, err := fsutil.NewFS(st.repositoryTempDir)
 	if err != nil {

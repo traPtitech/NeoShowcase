@@ -105,7 +105,7 @@ func (r *service) fetchLoop(ctx context.Context, fetcher <-chan string) {
 		start := time.Now()
 		n, err := r.doFetchEpoch(ctx, epoch)
 		if err != nil {
-			slog.ErrorContext(ctx, "failed to fetch repositories", "error", err)
+			slog.WarnContext(ctx, "failed to fetch repositories", "error", err)
 		}
 		slog.InfoContext(ctx, "Fetched repositories", "count", n, "duration", time.Since(start))
 		epoch++
@@ -118,7 +118,7 @@ func (r *service) fetchLoop(ctx context.Context, fetcher <-chan string) {
 		case id := <-fetcher:
 			err := r.fetchOne(ctx, id)
 			if err != nil {
-				slog.ErrorContext(ctx, "failed to fetch repository", "repository_id", id, "error", err)
+				slog.WarnContext(ctx, "failed to fetch repository", "repository_id", id, "error", err)
 			}
 		case <-ticker.C:
 			runFetchEpoch()
@@ -169,7 +169,7 @@ func (r *service) doFetchEpoch(ctx context.Context, epoch int) (int, error) {
 				}
 				err := r.updateApps(ctx, repo, apps)
 				if err != nil {
-					slog.WarnContext(ctx, "failed to update repo", "error", err)
+					slog.WarnContext(ctx, "failed to update repo", "repository_id", repo.ID, "error", err)
 				}
 			})
 		}
@@ -210,7 +210,7 @@ func (r *service) updateApps(ctx context.Context, repo *domain.Repository, apps 
 
 		err = r.appRepo.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{Commit: optional.From(commit)})
 		if err != nil {
-			return errors.Wrap(err, "failed to update application")
+			return errors.Wrapf(err, "updating application (app_id=%s)", app.ID)
 		}
 		// Notify builds
 		r.cd.RegisterBuild(app.ID)

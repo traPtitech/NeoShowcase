@@ -28,7 +28,7 @@ func Do(ctx context.Context, fn func(ctx context.Context) error, msg string) {
 		if err == nil {
 			slog.InfoContext(ctx, "Retrier: retrying", "backoff", backoff, "message", msg)
 		} else {
-			slog.ErrorContext(ctx, "Retrier: retrying", "backoff", backoff, "message", msg, "error", err)
+			slog.WarnContext(ctx, "Retrier: retrying", "backoff", backoff, "message", msg, "error", err)
 		}
 		select {
 		case <-time.After(backoff):

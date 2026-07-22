@@ -20,7 +20,7 @@ func (b *Backend) GetContainer(ctx context.Context, appID string) (*domain.Conta
 			Add("label", fmt.Sprintf("%s=true", appLabel), fmt.Sprintf("%s=%s", appIDLabel, appID)),
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to fetch containers")
+		return nil, errors.Wrap(err, "fetching containers")
 	}
 
 	if len(containers.Items) == 0 {
@@ -43,7 +43,7 @@ func (b *Backend) ListContainers(ctx context.Context) ([]*domain.Container, erro
 		Filters: make(client.Filters).Add("label", fmt.Sprintf("%s=true", appLabel)),
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to fetch containers")
+		return nil, errors.Wrap(err, "fetching containers")
 	}
 
 	result := ds.Map(containers.Items, func(c container.Summary) *domain.Container {

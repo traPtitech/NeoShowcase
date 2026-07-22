@@ -116,7 +116,7 @@ func syncResources[T apiResource](ctx context.Context, cluster *discovery.Cluste
 		}
 		_, err = s.Patch(ctx, rc.GetName(), types.ApplyPatchType, b, metav1.PatchOptions{Force: lo.ToPtr(true), FieldManager: fieldManager})
 		if err != nil {
-			slog.ErrorContext(ctx, "failed to patch", "resource", rcName+"/"+rc.GetName(), "error", err)
+			slog.WarnContext(ctx, "failed to patch", "resource", rcName+"/"+rc.GetName(), "error", err)
 			continue // skip this resource if patch fails
 		}
 		patched++
@@ -209,7 +209,7 @@ func syncResourcesWithReplace[T apiResource](
 	}
 
 	if err := replacePool.Wait(); err != nil {
-		slog.ErrorContext(ctx, "error occurred while waiting for replace", "error", err)
+		slog.WarnContext(ctx, "error occurred while waiting for replace", "error", err)
 		// no return here, continue to prune old resources
 	}
 
@@ -230,7 +230,7 @@ func pruneResources[T apiResource](ctx context.Context, cluster *discovery.Clust
 		}
 		err := s.Delete(ctx, rc.GetName(), metav1.DeleteOptions{PropagationPolicy: lo.ToPtr(metav1.DeletePropagationForeground)})
 		if err != nil {
-			slog.ErrorContext(ctx, "failed to delete resource", "resource", rcName+"/"+rc.GetName(), "error", err)
+			slog.WarnContext(ctx, "failed to delete resource", "resource", rcName+"/"+rc.GetName(), "error", err)
 			continue // skip this resource if delete fails
 		}
 		pruned++

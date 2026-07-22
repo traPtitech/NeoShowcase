@@ -20,11 +20,11 @@ func (s *ServiceImpl) startBuild(req *domain.StartBuildRequest) error {
 	defer s.statusLock.Unlock()
 
 	if s.state != nil {
-		slog.Warn("Skipping build request, builder busy - builder scheduling may be malfunctioning?", "build_id", req.Build.ID)
+		slog.WarnContext(context.Background(), "Skipping build request, builder busy - builder scheduling may be malfunctioning?", "build_id", req.Build.ID)
 		return nil // Builder busy - skip
 	}
 
-	slog.Info("Starting build", "build_id", req.Build.ID)
+	slog.InfoContext(context.Background(), "Starting build", "build_id", req.Build.ID)
 
 	st, err := newState(req.App, req.Envs, req.Build, req.Repo, s.client)
 	if err != nil {
@@ -47,7 +47,7 @@ func (s *ServiceImpl) startBuild(req *domain.StartBuildRequest) error {
 		s.state = nil
 		s.stateCancel = nil
 		s.statusLock.Unlock()
-		slog.Info("Build settled", "build_id", st.build.ID)
+		slog.InfoContext(ctx, "Build settled", "build_id", st.build.ID)
 		// Send settled response *after* unlocking internal state for next build
 		s.response <- &pb.BuilderResponse{Type: pb.BuilderResponse_BUILD_SETTLED, Body: &pb.BuilderResponse_Settled{Settled: &pb.BuildSettled{
 			BuildId: st.build.ID,
@@ -230,7 +230,7 @@ func (s *ServiceImpl) finalize(ctx context.Context, st *state, status domain.Bui
 func (s *ServiceImpl) fetchImageSize(ctx context.Context, st *state) (int64, error) {
 	size, err := s.regclient.GetImageSize(ctx, s.imageConfig.ImageName(st.app.ID), s.imageTag(st.build))
 	if err != nil {
-		return 0, errors.Wrap(err, "failed to get image size")
+		return 0, errors.Wrap(err, "getting image size")
 	}
 
 	return size, nil

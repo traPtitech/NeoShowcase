@@ -32,31 +32,31 @@ func (b *Backend) listCurrentResources(ctx context.Context) (*resources, error) 
 
 	ss, err := b.client.AppsV1().StatefulSets(b.config.Namespace).List(ctx, listOpt)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get stateful sets")
+		return nil, errors.Wrap(err, "getting stateful sets")
 	}
 	rsc.statefulSets = ds.SliceOfPtr(ss.Items)
 
 	secrets, err := b.client.CoreV1().Secrets(b.config.Namespace).List(ctx, listOpt)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get secrets")
+		return nil, errors.Wrap(err, "getting secrets")
 	}
 	rsc.secrets = ds.SliceOfPtr(secrets.Items)
 
 	svc, err := b.client.CoreV1().Services(b.config.Namespace).List(ctx, listOpt)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get services")
+		return nil, errors.Wrap(err, "getting services")
 	}
 	rsc.services = ds.SliceOfPtr(svc.Items)
 
 	mw, err := b.traefikClient.Middlewares(b.config.Namespace).List(ctx, listOpt)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get middlewares")
+		return nil, errors.Wrap(err, "getting middlewares")
 	}
 	rsc.middlewares = ds.SliceOfPtr(mw.Items)
 
 	ir, err := b.traefikClient.IngressRoutes(b.config.Namespace).List(ctx, listOpt)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get ingress routes")
+		return nil, errors.Wrap(err, "getting ingress routes")
 	}
 	rsc.ingressRoutes = ds.SliceOfPtr(ir.Items)
 
@@ -70,7 +70,7 @@ func (b *Backend) listCurrentSharedResources(ctx context.Context) (*sharedResour
 	if b.config.TLS.Type == tlsTypeCertManager {
 		certs, err := b.certManagerClient.CertmanagerV1().Certificates(b.config.Namespace).List(ctx, listOpt)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to get certificates")
+			return nil, errors.Wrap(err, "getting certificates")
 		}
 		rsc.certificates = ds.SliceOfPtr(certs.Items)
 	}
@@ -96,23 +96,23 @@ func (b *Backend) Synchronize(ctx context.Context, s *domain.DesiredState) error
 	// Synchronize resources
 	err = syncResourcesWithReplace[*appsv1.StatefulSet](ctx, b.cluster, "statefulsets", old.statefulSets, next.statefulSets, b.client.AppsV1().StatefulSets(b.config.Namespace))
 	if err != nil {
-		return errors.Wrap(err, "failed to sync stateful sets")
+		return errors.Wrap(err, "syncing stateful sets")
 	}
 	err = syncResources[*v1.Secret](ctx, b.cluster, "secrets", old.secrets, next.secrets, b.client.CoreV1().Secrets(b.config.Namespace))
 	if err != nil {
-		return errors.Wrap(err, "failed to sync secrets")
+		return errors.Wrap(err, "syncing secrets")
 	}
 	err = syncResources[*v1.Service](ctx, b.cluster, "services", old.services, next.services, b.client.CoreV1().Services(b.config.Namespace))
 	if err != nil {
-		return errors.Wrap(err, "failed to sync services")
+		return errors.Wrap(err, "syncing services")
 	}
 	err = syncResources[*traefikv1alpha1.Middleware](ctx, b.cluster, "middlewares", old.middlewares, next.middlewares, b.traefikClient.Middlewares(b.config.Namespace))
 	if err != nil {
-		return errors.Wrap(err, "failed to sync middlewares")
+		return errors.Wrap(err, "syncing middlewares")
 	}
 	err = syncResources[*traefikv1alpha1.IngressRoute](ctx, b.cluster, "ingressroutes", old.ingressRoutes, next.ingressRoutes, b.traefikClient.IngressRoutes(b.config.Namespace))
 	if err != nil {
-		return errors.Wrap(err, "failed to sync ingressroutes")
+		return errors.Wrap(err, "syncing ingressroutes")
 	}
 
 	return nil
@@ -132,7 +132,7 @@ func (b *Backend) SynchronizeShared(ctx context.Context, s *domain.DesiredStateL
 	// Synchronize resources
 	err = syncResources[*certmanagerv1.Certificate](ctx, b.cluster, "certificates", old.certificates, next.certificates, b.certManagerClient.CertmanagerV1().Certificates(b.config.Namespace))
 	if err != nil {
-		return errors.Wrap(err, "failed to sync certificates")
+		return errors.Wrap(err, "syncing certificates")
 	}
 
 	return nil

@@ -99,7 +99,6 @@ func (i *Integration) Sync(ctx context.Context) error {
 func (i *Integration) syncAndLog(ctx context.Context) error {
 	err := i.sync(ctx)
 	if err != nil {
-		// Reconcile loop: the next tick retries, so a failure is expected/transient (Warn, not Error).
 		slog.WarnContext(ctx, "failed to sync gitea", "error", err)
 	}
 	return nil

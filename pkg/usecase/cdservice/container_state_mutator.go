@@ -42,9 +42,10 @@ func (m *ContainerStateMutator) _subscribe(backend domain.Backend) {
 	for e := range sub {
 		// coalesce events
 		go func(appID string) {
-			_, err := updateOne.Get(context.Background(), appID)
+			ctx := context.Background()
+			_, err := updateOne.Get(ctx, appID)
 			if err != nil {
-				slog.Error("failed to update app container state", "error", err)
+				slog.WarnContext(ctx, "failed to update app container state", "app_id", appID, "error", err)
 			}
 		}(e.ApplicationID)
 	}
@@ -56,14 +57,14 @@ func (m *ContainerStateMutator) _updateOne(ctx context.Context, appID string) (s
 
 	container, err := m.backend.GetContainer(ctx, appID)
 	if err != nil {
-		return struct{}{}, errors.Wrap(err, "failed to get container state")
+		return struct{}{}, errors.Wrapf(err, "getting container state (app_id=%s)", appID)
 	}
 	err = m.appRepo.UpdateApplication(ctx, appID, &domain.UpdateApplicationArgs{
 		Container:        optional.From(container.State),
 		ContainerMessage: optional.From(container.Message),
 	})
 	if err != nil {
-		return struct{}{}, errors.Wrap(err, "failed to update application")
+		return struct{}{}, errors.Wrapf(err, "updating application (app_id=%s)", appID)
 	}
 
 	return struct{}{}, nil
@@ -76,7 +77,7 @@ func (m *ContainerStateMutator) updateAll(ctx context.Context) error {
 	// Fetch all runtime apps
 	allRuntimeApps, err := m.appRepo.GetApplications(ctx, domain.GetApplicationCondition{DeployType: optional.From(domain.DeployTypeRuntime)})
 	if err != nil {
-		return errors.Wrap(err, "failed to get all runtime applications")
+		return errors.Wrap(err, "getting all runtime applications")
 	}
 	// Shard by app ID
 	allRuntimeApps = lo.Filter(allRuntimeApps, func(app *domain.Application, _ int) bool {
@@ -86,7 +87,7 @@ func (m *ContainerStateMutator) updateAll(ctx context.Context) error {
 	// Fetch actual states
 	containers, err := m.backend.ListContainers(ctx)
 	if err != nil {
-		return errors.Wrap(err, "failed to list containers")
+		return errors.Wrap(err, "listing containers")
 	}
 
 	// If actual state is not found, update state as "missing"
@@ -105,7 +106,7 @@ func (m *ContainerStateMutator) updateAll(ctx context.Context) error {
 	// Update
 	err = m.appRepo.BulkUpdateState(ctx, containers)
 	if err != nil {
-		return errors.Wrap(err, "failed to bulk update state")
+		return errors.Wrap(err, "bulk-updating container state")
 	}
 	return nil
 }

@@ -1,6 +1,7 @@
 package dockerimpl
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"maps"
@@ -40,7 +41,7 @@ func (b *Backend) routerBase(app *domain.Application, website *domain.Website, s
 			middlewareNames = append(middlewareNames, authConfig.Hard...)
 		}
 	} else if website.Authentication != domain.AuthenticationTypeOff {
-		slog.Warn("auth config not available", "fqdn", website.FQDN)
+		slog.WarnContext(context.Background(), "auth config not available", "fqdn", website.FQDN)
 	}
 
 	if b.useSablier(app) {
@@ -151,7 +152,7 @@ func (b *runtimeConfigBuilder) build() m {
 func (b *Backend) writeConfig(filename string, config any) error {
 	file, err := os.OpenFile(filepath.Join(b.config.ConfDir, filename), os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 	if err != nil {
-		return errors.Wrap(err, "failed to open config file")
+		return errors.Wrap(err, "opening config file")
 	}
 	defer file.Close()
 	enc := yaml.NewEncoder(file)
