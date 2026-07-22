@@ -41,7 +41,7 @@ func (s *Service) RetryCommitBuild(ctx context.Context, applicationID string, co
 	// NOTE: requires the app to be running for builds to register
 	err = s.controller.RegisterBuild(ctx, applicationID)
 	if err != nil {
-		return errors.Wrap(err, "failed to request new build registration")
+		return errors.Wrap(err, "requesting new build registration")
 	}
 	return nil
 }
@@ -54,7 +54,7 @@ func (s *Service) CancelBuild(ctx context.Context, buildID string) error {
 
 	err = s.controller.CancelBuild(ctx, buildID)
 	if err != nil {
-		return errors.Wrap(err, "failed to request cancel build")
+		return errors.Wrap(err, "requesting cancel build")
 	}
 	return nil
 }
@@ -83,14 +83,14 @@ func (s *Service) GetBuildLogStream(ctx context.Context, buildID string) (<-chan
 
 	addr, err := s.controller.DiscoverBuildLogInstance(ctx, buildID)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to discover build log instance")
+		return nil, errors.Wrap(err, "discovering build log instance")
 	}
 	if addr.Address == nil {
 		return nil, newError(ErrorTypeBadRequest, "build log instance not found", nil)
 	}
 	ch, err := s.controller.StreamBuildLog(ctx, *addr.Address, buildID)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to connect to build log stream")
+		return nil, errors.Wrap(err, "connecting to build log stream")
 	}
 	return ch, nil
 }

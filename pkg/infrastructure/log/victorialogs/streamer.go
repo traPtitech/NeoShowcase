@@ -81,7 +81,7 @@ func (l *victoriaLogsStreamer) LogLimit() int {
 func (l *victoriaLogsStreamer) Get(ctx context.Context, app *domain.Application, before time.Time, limit int) ([]*domain.ContainerLog, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", l.queryEndpoint(), nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create http request")
+		return nil, errors.Wrap(err, "creating http request")
 	}
 	logsQL, err := l.logsQL(app)
 	if err != nil {
@@ -118,7 +118,7 @@ func (l *victoriaLogsStreamer) Get(ctx context.Context, app *domain.Application,
 func (l *victoriaLogsStreamer) Stream(ctx context.Context, app *domain.Application, begin time.Time) (<-chan *domain.ContainerLog, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", l.tailEndpoint(), nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create http request")
+		return nil, errors.Wrap(err, "creating http request")
 	}
 	logsQL, err := l.logsQL(app)
 	if err != nil {

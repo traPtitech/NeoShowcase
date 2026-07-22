@@ -42,22 +42,22 @@ func Extract(tarStream io.Reader, destPath string) error {
 		switch header.Typeflag {
 		case tar.TypeDir:
 			if err = os.MkdirAll(path, header.FileInfo().Mode()); err != nil {
-				return errors.Wrap(err, "failed to create directory")
+				return errors.Wrap(err, "creating directory")
 			}
 
 		case tar.TypeReg:
 			if err = os.MkdirAll(filepath.Dir(path), header.FileInfo().Mode()|os.ModeDir|100); err != nil {
-				return errors.Wrap(err, "failed to create directory")
+				return errors.Wrap(err, "creating directory")
 			}
 
 			file, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, header.FileInfo().Mode())
 			if err != nil {
-				return errors.Wrap(err, "failed to create file")
+				return errors.Wrap(err, "creating file")
 			}
 			_, err = io.Copy(file, tr)
 			_ = file.Close()
 			if err != nil {
-				return errors.Wrap(err, "failed to write file")
+				return errors.Wrap(err, "writing file")
 			}
 
 		default:

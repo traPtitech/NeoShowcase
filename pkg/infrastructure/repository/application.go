@@ -61,7 +61,7 @@ func (r *applicationRepository) GetApplications(ctx context.Context, cond domain
 
 	applications, err := models.Applications(mods...).All(ctx, r.db)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get applications")
+		return nil, errors.Wrap(err, "getting applications")
 	}
 	return ds.Map(applications, repoconvert.ToDomainApplication), nil
 }
@@ -83,7 +83,7 @@ func (r *applicationRepository) getApplication(ctx context.Context, id string, f
 		if isNoRowsErr(err) {
 			return nil, ErrNotFound
 		}
-		return nil, errors.Wrap(err, "failed to get application")
+		return nil, errors.Wrap(err, "getting application")
 	}
 	return app, nil
 }
@@ -99,13 +99,13 @@ func (r *applicationRepository) GetApplication(ctx context.Context, id string) (
 func (r *applicationRepository) CreateApplication(ctx context.Context, app *domain.Application) error {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
-		return errors.Wrap(err, "failed to start transaction")
+		return errors.Wrap(err, "starting transaction")
 	}
 	defer tx.Rollback()
 
 	ma := repoconvert.FromDomainApplication(app)
 	if err = ma.Insert(ctx, tx, boil.Blacklist()); err != nil {
-		return errors.Wrap(err, "failed to create application")
+		return errors.Wrap(err, "creating application")
 	}
 
 	mc := repoconvert.FromDomainApplicationConfig(app.ID, &app.Config)
@@ -130,7 +130,7 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, app *doma
 	}
 
 	if err = tx.Commit(); err != nil {
-		return errors.Wrap(err, "failed to commit transaction")
+		return errors.Wrap(err, "committing transaction")
 	}
 
 	return nil
@@ -139,7 +139,7 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, app *doma
 func (r *applicationRepository) UpdateApplication(ctx context.Context, id string, args *domain.UpdateApplicationArgs) error {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
-		return errors.Wrap(err, "failed to start transaction")
+		return errors.Wrap(err, "starting transaction")
 	}
 	defer tx.Rollback()
 
@@ -199,7 +199,7 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 		mac := repoconvert.FromDomainApplicationConfig(app.ID, &args.Config.V)
 		err = mac.Upsert(ctx, tx, boil.Blacklist(), boil.Blacklist())
 		if err != nil {
-			return errors.Wrap(err, "failed to update config")
+			return errors.Wrap(err, "updating config")
 		}
 	}
 	if args.Websites.Valid {
@@ -223,7 +223,7 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 
 	err = tx.Commit()
 	if err != nil {
-		return errors.Wrap(err, "failed to commit transaction")
+		return errors.Wrap(err, "committing transaction")
 	}
 
 	return err
@@ -242,7 +242,7 @@ func (r *applicationRepository) BulkUpdateState(ctx context.Context, states []*d
 			models.ApplicationColumns.ContainerMessage,
 		))
 		if err != nil {
-			return errors.Wrap(err, "failed to update container state")
+			return errors.Wrap(err, "updating container state")
 		}
 	}
 	return nil
@@ -255,23 +255,23 @@ func (r *applicationRepository) DeleteApplication(ctx context.Context, id string
 	}
 	err = app.SetUsers(ctx, r.db, false)
 	if err != nil {
-		return errors.Wrap(err, "failed to delete application owners")
+		return errors.Wrap(err, "deleting application owners")
 	}
 	_, err = app.R.PortPublications.DeleteAll(ctx, r.db)
 	if err != nil {
-		return errors.Wrap(err, "failed to delete port publications")
+		return errors.Wrap(err, "deleting port publications")
 	}
 	_, err = app.R.Websites.DeleteAll(ctx, r.db)
 	if err != nil {
-		return errors.Wrap(err, "failed to delete websites")
+		return errors.Wrap(err, "deleting websites")
 	}
 	_, err = app.R.ApplicationConfig.Delete(ctx, r.db)
 	if err != nil {
-		return errors.Wrap(err, "failed to delete application config")
+		return errors.Wrap(err, "deleting application config")
 	}
 	_, err = app.Delete(ctx, r.db)
 	if err != nil {
-		return errors.Wrap(err, "failed to delete application")
+		return errors.Wrap(err, "deleting application")
 	}
 	return nil
 }
@@ -280,14 +280,14 @@ func (r *applicationRepository) setWebsites(ctx context.Context, ex boil.Context
 	if app.R != nil && app.R.Websites != nil {
 		_, err := app.R.Websites.DeleteAll(ctx, ex)
 		if err != nil {
-			return errors.Wrap(err, "failed to delete existing app websites")
+			return errors.Wrap(err, "deleting existing app websites")
 		}
 	}
 	for _, w := range websites {
 		mw := repoconvert.FromDomainWebsite(app.ID, w)
 		err := mw.Insert(ctx, ex, boil.Blacklist())
 		if err != nil {
-			return errors.Wrap(err, "failed to insert website")
+			return errors.Wrap(err, "inserting website")
 		}
 	}
 	return nil
@@ -314,14 +314,14 @@ func (r *applicationRepository) setOwners(ctx context.Context, ex boil.ContextEx
 	ownerIDs = lo.Uniq(ownerIDs)
 	users, err := models.Users(models.UserWhere.ID.IN(ownerIDs)).All(ctx, ex)
 	if err != nil {
-		return errors.Wrap(err, "failed to get owners")
+		return errors.Wrap(err, "getting owners")
 	}
 	if len(users) < len(ownerIDs) {
 		return ErrNotFound
 	}
 	err = app.SetUsers(ctx, ex, false, users...)
 	if err != nil {
-		return errors.Wrap(err, "failed to add owners")
+		return errors.Wrap(err, "adding owners")
 	}
 	return nil
 }

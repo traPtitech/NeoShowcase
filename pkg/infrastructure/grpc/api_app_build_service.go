@@ -83,7 +83,7 @@ func (s *APIService) GetBuildLogStream(ctx context.Context, req *connect.Request
 	for l := range ch {
 		err = st.Send(l)
 		if err != nil {
-			return errors.New("failed to send event")
+			return errors.Wrap(err, "sending event")
 		}
 	}
 	return nil

@@ -60,7 +60,7 @@ func (r *artifactRepository) GetArtifact(ctx context.Context, id string) (*domai
 func (r *artifactRepository) GetArtifacts(ctx context.Context, cond domain.GetArtifactCondition) ([]*domain.Artifact, error) {
 	artifacts, err := models.Artifacts(r.buildMods(cond)...).All(ctx, r.db)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get artifacts")
+		return nil, errors.Wrap(err, "getting artifacts")
 	}
 	return ds.Map(artifacts, repoconvert.ToDomainArtifact), nil
 }
@@ -68,7 +68,7 @@ func (r *artifactRepository) GetArtifacts(ctx context.Context, cond domain.GetAr
 func (r *artifactRepository) CreateArtifact(ctx context.Context, artifact *domain.Artifact) error {
 	ma := repoconvert.FromDomainArtifact(artifact)
 	if err := ma.Insert(ctx, r.db, boil.Blacklist()); err != nil {
-		return errors.Wrap(err, "failed to insert artifact")
+		return errors.Wrap(err, "inserting artifact")
 	}
 	return nil
 }
@@ -76,7 +76,7 @@ func (r *artifactRepository) CreateArtifact(ctx context.Context, artifact *domai
 func (r *artifactRepository) UpdateArtifact(ctx context.Context, id string, args domain.UpdateArtifactArgs) error {
 	artifact, err := models.Artifacts(models.ArtifactWhere.ID.EQ(id)).One(ctx, r.db)
 	if err != nil {
-		return errors.Wrap(err, "failed to get artifact")
+		return errors.Wrap(err, "getting artifact")
 	}
 
 	var cols []string
@@ -88,7 +88,7 @@ func (r *artifactRepository) UpdateArtifact(ctx context.Context, id string, args
 	if len(cols) > 0 {
 		_, err = artifact.Update(ctx, r.db, boil.Whitelist(cols...))
 		if err != nil {
-			return errors.Wrap(err, "failed to update artifact")
+			return errors.Wrap(err, "updating artifact")
 		}
 	}
 
@@ -98,11 +98,11 @@ func (r *artifactRepository) UpdateArtifact(ctx context.Context, id string, args
 func (r *artifactRepository) HardDeleteArtifacts(ctx context.Context, cond domain.GetArtifactCondition) error {
 	artifacts, err := models.Artifacts(r.buildMods(cond)...).All(ctx, r.db)
 	if err != nil {
-		return errors.Wrap(err, "failed to get artifacts")
+		return errors.Wrap(err, "getting artifacts")
 	}
 	_, err = artifacts.DeleteAll(ctx, r.db)
 	if err != nil {
-		return errors.Wrap(err, "failed to delete artifacts")
+		return errors.Wrap(err, "deleting artifacts")
 	}
 	return nil
 }

@@ -38,11 +38,11 @@ func NewMariaDBManager(c MariaDBConfig) (domain.MariaDBManager, error) {
 	// DB接続
 	connector, err := mysql.NewConnector(conf)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create new connector")
+		return nil, errors.Wrap(err, "creating new connector")
 	}
 	db := sql.OpenDB(connector)
 	if err := db.Ping(); err != nil {
-		return nil, errors.Wrap(err, "failed to ping db")
+		return nil, errors.Wrap(err, "pinging db")
 	}
 	db.SetMaxOpenConns(1024)
 	db.SetMaxIdleConns(1024)

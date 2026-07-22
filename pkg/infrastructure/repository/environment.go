@@ -48,7 +48,7 @@ func (r *environmentRepository) SetEnv(ctx context.Context, env *domain.Environm
 	// NOTE: sqlboiler does not recognize multiple column unique keys: https://github.com/aarondl/sqlboiler/issues/328
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
-		return errors.Wrap(err, "failed to start transaction")
+		return errors.Wrap(err, "starting transaction")
 	}
 	defer tx.Rollback()
 
@@ -58,7 +58,7 @@ func (r *environmentRepository) SetEnv(ctx context.Context, env *domain.Environm
 		qm.For("UPDATE"),
 	).One(ctx, tx)
 	if err != nil {
-		return errors.Wrap(err, "failed to get application")
+		return errors.Wrap(err, "getting application")
 	}
 
 	exists, err := models.Environments(
@@ -66,7 +66,7 @@ func (r *environmentRepository) SetEnv(ctx context.Context, env *domain.Environm
 		models.EnvironmentWhere.Key.EQ(env.Key),
 	).Exists(ctx, tx)
 	if err != nil && !isNoRowsErr(err) {
-		return errors.Wrap(err, "failed to get environment")
+		return errors.Wrap(err, "getting environment")
 	}
 
 	me := repoconvert.FromDomainEnvironment(env)
@@ -77,12 +77,12 @@ func (r *environmentRepository) SetEnv(ctx context.Context, env *domain.Environm
 		err = me.Insert(ctx, tx, boil.Blacklist())
 	}
 	if err != nil {
-		return errors.Wrap(err, "failed to upsert environment")
+		return errors.Wrap(err, "upserting environment")
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		return errors.Wrap(err, "failed to commit")
+		return errors.Wrap(err, "committing")
 	}
 
 	return nil
@@ -91,11 +91,11 @@ func (r *environmentRepository) SetEnv(ctx context.Context, env *domain.Environm
 func (r *environmentRepository) DeleteEnv(ctx context.Context, cond domain.GetEnvCondition) error {
 	envs, err := models.Environments(r.buildMods(cond)...).All(ctx, r.db)
 	if err != nil {
-		return errors.Wrap(err, "failed to get env")
+		return errors.Wrap(err, "getting env")
 	}
 	_, err = envs.DeleteAll(ctx, r.db)
 	if err != nil {
-		return errors.Wrap(err, "failed to delete env")
+		return errors.Wrap(err, "deleting env")
 	}
 	return nil
 }

@@ -25,7 +25,7 @@ func NewWebsiteRepository(db *sql.DB) domain.WebsiteRepository {
 func (w *websiteRepository) GetWebsites(ctx context.Context) ([]*domain.Website, error) {
 	websites, err := models.Websites().All(ctx, w.db)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get websites")
+		return nil, errors.Wrap(err, "getting websites")
 	}
 	return ds.Map(websites, repoconvert.ToDomainWebsite), nil
 }

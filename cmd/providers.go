@@ -38,7 +38,7 @@ import (
 func provideRepositoryPrivateKey(c Config) (domain.PrivateKey, error) {
 	bytes, err := os.ReadFile(c.PrivateKeyFile)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to open private key file")
+		return nil, errors.Wrap(err, "opening private key file")
 	}
 	return bytes, nil
 }
@@ -123,7 +123,7 @@ func provideBuildkitClient(c Config) (*buildkit.Client, error) {
 	defer cancel()
 	client, err := buildkit.New(ctx, cc.Buildkit.Address)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to initialize Buildkit Client")
+		return nil, errors.Wrap(err, "initializing Buildkit Client")
 	}
 	return client, nil
 }

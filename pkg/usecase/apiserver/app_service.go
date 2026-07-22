@@ -49,7 +49,7 @@ func (s *Service) validateApp(ctx context.Context, app *domain.Application) erro
 func (s *Service) CreateApplication(ctx context.Context, app *domain.Application) (*domain.Application, error) {
 	repo, err := s.gitRepo.GetRepository(ctx, app.RepositoryID)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get repository metadata")
+		return nil, errors.Wrap(err, "getting repository metadata")
 	}
 
 	for _, website := range app.Websites {
@@ -80,7 +80,7 @@ func (s *Service) CreateApplication(ctx context.Context, app *domain.Application
 	s.systemInfo.Purge()
 	err = s.controller.FetchRepository(ctx, app.RepositoryID)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to request to fetch repository")
+		return nil, errors.Wrap(err, "requesting repository fetch")
 	}
 
 	return handleRepoError(s.appRepo.GetApplication(ctx, app.ID))
@@ -282,7 +282,7 @@ func (s *Service) deleteApplicationDatabase(ctx context.Context, app *domain.App
 	if app.Config.BuildConfig.MariaDB() {
 		dbKey, ok := lo.Find(envs, func(e *domain.Environment) bool { return e.Key == domain.EnvMariaDBDatabaseKey })
 		if !ok {
-			return errors.New("failed to find mariadb name from env key")
+			return errors.New("mariadb name not found in env key")
 		}
 		err := s.mariaDBManager.Delete(ctx, domain.DeleteArgs{Database: dbKey.Value})
 		if err != nil {
@@ -293,7 +293,7 @@ func (s *Service) deleteApplicationDatabase(ctx context.Context, app *domain.App
 	if app.Config.BuildConfig.MongoDB() {
 		dbKey, ok := lo.Find(envs, func(e *domain.Environment) bool { return e.Key == domain.EnvMongoDBDatabaseKey })
 		if !ok {
-			return errors.New("failed to find mongodb name from env key")
+			return errors.New("mongodb name not found in env key")
 		}
 		err := s.mongoDBManager.Delete(ctx, domain.DeleteArgs{Database: dbKey.Value})
 		if err != nil {

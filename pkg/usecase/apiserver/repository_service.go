@@ -181,7 +181,7 @@ func (s *Service) DeleteRepository(ctx context.Context, id string) error {
 
 	apps, err := s.appRepo.GetApplications(ctx, domain.GetApplicationCondition{RepositoryID: optional.From(id)})
 	if err != nil {
-		return errors.Wrap(err, "failed to get related applications")
+		return errors.Wrap(err, "getting related applications")
 	}
 	if len(apps) > 0 {
 		return newError(ErrorTypeBadRequest, "all related applications must be deleted first", nil)

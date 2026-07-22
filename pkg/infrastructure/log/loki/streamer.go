@@ -85,7 +85,7 @@ func (l *lokiStreamer) LogLimit() int {
 func (l *lokiStreamer) Get(ctx context.Context, app *domain.Application, before time.Time, limit int) ([]*domain.ContainerLog, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", l.queryRangeEndpoint(), nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create http request")
+		return nil, errors.Wrap(err, "creating http request")
 	}
 	logQL, err := l.logQL(app)
 	if err != nil {
@@ -101,12 +101,12 @@ func (l *lokiStreamer) Get(ctx context.Context, app *domain.Application, before 
 
 	hres, err := l.client.Do(req)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to perform http request")
+		return nil, errors.Wrap(err, "performing http request")
 	}
 	var res queryRangeResponse
 	err = json.NewDecoder(hres.Body).Decode(&res)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to decode response")
+		return nil, errors.Wrap(err, "decoding response")
 	}
 
 	if res.Status != "success" {

@@ -28,7 +28,7 @@ func NewS3Storage(bucket, accessKey, accessSecret, region, endpoint string) (*S3
 		config.WithRegion(region),
 	)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to load AWS config")
+		return nil, errors.Wrap(err, "loading AWS config")
 	}
 
 	client := s3.NewFromConfig(cfg, func(o *s3.Options) {
