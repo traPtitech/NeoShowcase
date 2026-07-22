@@ -134,7 +134,7 @@ func (k *k8sDiscoverer) watch(ctx context.Context, updates chan<- []Target) erro
 	// Send initial state
 	targets, err := k.discover()
 	if err != nil {
-		return fmt.Errorf("failed to discover targets: %w", err)
+		return errors.Wrap(err, "discovering targets")
 	}
 	if len(targets) > 0 {
 		updates <- targets
@@ -143,7 +143,7 @@ func (k *k8sDiscoverer) watch(ctx context.Context, updates chan<- []Target) erro
 	for range watcher.ResultChan() {
 		targets, err = k.discover()
 		if err != nil {
-			return fmt.Errorf("failed to discover targets: %w", err)
+			return errors.Wrap(err, "discovering targets")
 		}
 		if len(targets) > 0 {
 			updates <- targets

@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"os"
 	"strings"
@@ -53,7 +52,7 @@ func provideStorage(c domain.StorageConfig) (domain.Storage, error) {
 	case "swift":
 		return storage.NewSwiftStorage(c.Swift.Container, c.Swift.UserName, c.Swift.APIKey, c.Swift.TenantName, c.Swift.TenantID, c.Swift.AuthURL)
 	default:
-		return nil, fmt.Errorf("unknown storage: %s", c.Type)
+		return nil, errors.Errorf("unknown storage: %s", c.Type)
 	}
 }
 
@@ -108,7 +107,7 @@ func provideBuilderConfig(c Config) (*ubuilder.Config, error) {
 	stepTimeoutStr := c.Components.Builder.StepTimeout
 	stepTimeout, err := time.ParseDuration(stepTimeoutStr)
 	if err != nil {
-		return nil, errors.Wrap(err, fmt.Sprintf("failed to parse components.builder.stepTimeout value: %s", stepTimeoutStr))
+		return nil, errors.Wrapf(err, "parsing components.builder.stepTimeout value: %s", stepTimeoutStr)
 	}
 	if stepTimeout <= 0 {
 		return nil, errors.Errorf("components.builder.stepTimeout must be positive: %s", stepTimeoutStr)

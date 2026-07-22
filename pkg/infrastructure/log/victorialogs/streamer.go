@@ -101,7 +101,7 @@ func (l *victoriaLogsStreamer) Get(ctx context.Context, app *domain.Application,
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(res.Body)
-		return nil, fmt.Errorf("request failed with status %d: %s", res.StatusCode, string(body))
+		return nil, errors.Errorf("request failed with status %d: %s", res.StatusCode, string(body))
 	}
 
 	var lines []*domain.ContainerLog
@@ -134,7 +134,7 @@ func (l *victoriaLogsStreamer) Stream(ctx context.Context, app *domain.Applicati
 	}
 	if res.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(res.Body)
-		return nil, fmt.Errorf("request failed with status %d: %s", res.StatusCode, string(body))
+		return nil, errors.Errorf("request failed with status %d: %s", res.StatusCode, string(body))
 	}
 
 	ch := make(chan *domain.ContainerLog, 100)

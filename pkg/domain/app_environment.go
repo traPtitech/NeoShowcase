@@ -1,8 +1,9 @@
 package domain
 
 import (
-	"fmt"
 	"regexp"
+
+	"github.com/friendsofgo/errors"
 )
 
 type Environment struct {
@@ -20,7 +21,7 @@ var environmentVariableKeyFormat = regexp.MustCompile(`^[A-Z_][A-Z0-9_]*$`)
 
 func (e *Environment) Validate() error {
 	if !environmentVariableKeyFormat.MatchString(e.Key) {
-		return fmt.Errorf("bad key format: %s", e.Key)
+		return errors.Errorf("bad key format: %s", e.Key)
 	}
 	return nil
 }

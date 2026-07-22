@@ -58,7 +58,7 @@ func (m *mariaDBManagerImpl) GetHost() (host string, port int) {
 
 func (m *mariaDBManagerImpl) Create(ctx context.Context, args domain.CreateArgs) error {
 	if strings.ContainsRune(args.Database, '`') {
-		return fmt.Errorf("backtick(`) in database name are not permitted")
+		return errors.New("backtick(`) in database name are not permitted")
 	}
 	if _, err := m.db.ExecContext(ctx, fmt.Sprintf("CREATE DATABASE IF NOT EXISTS `%s`", args.Database)); err != nil {
 		return err
@@ -74,7 +74,7 @@ func (m *mariaDBManagerImpl) Create(ctx context.Context, args domain.CreateArgs)
 
 func (m *mariaDBManagerImpl) Delete(ctx context.Context, args domain.DeleteArgs) error {
 	if strings.ContainsRune(args.Database, '`') {
-		return fmt.Errorf("backtick(`) in database name are not permitted")
+		return errors.New("backtick(`) in database name are not permitted")
 	}
 	if _, err := m.db.ExecContext(ctx, fmt.Sprintf("DROP DATABASE IF EXISTS `%s`", args.Database)); err != nil {
 		return err

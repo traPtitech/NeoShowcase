@@ -3,7 +3,6 @@ package grpc
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"io"
 	"log/slog"
 	"slices"
@@ -297,7 +296,7 @@ func (s *ControllerBuilderService) startBuild(ctx context.Context, conn *builder
 	// Construct payload to send to builder
 	req, err := s.startBuildPayload(ctx, buildID)
 	if err != nil {
-		return errors.Wrap(err, fmt.Sprintf("failed to construct start build payload for %v", buildID))
+		return errors.Wrapf(err, "constructing start build payload (build_id=%v)", buildID)
 	}
 	// Send payload to builder
 	conn.Send(&pb.BuilderRequest{
@@ -329,7 +328,7 @@ func (s *ControllerBuilderService) finishBuild(ctx context.Context, buildID stri
 		return err
 	}
 	if n == 0 {
-		return fmt.Errorf("failed to change build status from builing to finished for %v - builder scheduling may be malfunctioning", buildID)
+		return errors.Errorf("changing build status from building to finished (build_id=%v): no row updated, builder scheduling may be malfunctioning", buildID)
 	}
 
 	// metrics

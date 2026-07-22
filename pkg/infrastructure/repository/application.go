@@ -111,7 +111,7 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, app *doma
 	mc := repoconvert.FromDomainApplicationConfig(app.ID, &app.Config)
 	err = mc.Insert(ctx, tx, boil.Blacklist())
 	if err != nil {
-		return fmt.Errorf("failed to create application config")
+		return errors.Wrap(err, "creating application config")
 	}
 
 	err = r.setWebsites(ctx, tx, ma, app.Websites)

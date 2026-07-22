@@ -2,11 +2,11 @@ package giteaintegration
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"time"
 
 	"code.gitea.io/sdk/gitea"
+	"github.com/friendsofgo/errors"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/util/loop"
@@ -22,13 +22,13 @@ type Config struct {
 
 func (c *Config) Validate() error {
 	if c.Token == "" {
-		return fmt.Errorf("provide admin gitea token (got empty string)")
+		return errors.New("provide admin gitea token (got empty string)")
 	}
 	if c.IntervalSeconds <= 0 {
-		return fmt.Errorf("provide positive interval seconds (got %v)", c.IntervalSeconds)
+		return errors.Errorf("provide positive interval seconds (got %v)", c.IntervalSeconds)
 	}
 	if c.Concurrency <= 0 {
-		return fmt.Errorf("provide positive concurrency (got %v)", c.Concurrency)
+		return errors.Errorf("provide positive concurrency (got %v)", c.Concurrency)
 	}
 	return nil
 }
@@ -65,7 +65,7 @@ func NewIntegration(
 		gitea.SetGiteaVersion(""),
 	)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "creating gitea client")
 	}
 
 	i := &Integration{
@@ -99,7 +99,8 @@ func (i *Integration) Sync(ctx context.Context) error {
 func (i *Integration) syncAndLog(ctx context.Context) error {
 	err := i.sync(ctx)
 	if err != nil {
-		slog.ErrorContext(ctx, "failed to sync", "error", err)
+		// Reconcile loop: the next tick retries, so a failure is expected/transient (Warn, not Error).
+		slog.WarnContext(ctx, "failed to sync gitea", "error", err)
 	}
 	return nil
 }
