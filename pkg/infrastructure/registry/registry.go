@@ -91,7 +91,7 @@ func (c *client) GetImageSize(ctx context.Context, image, tag string) (int64, er
 	}
 	imager, ok := m.(manifest.Imager)
 	if !ok {
-		return 0, errors.New("manifest is not an Imager")
+		return 0, errors.Errorf("manifest %T is not an Imager", m)
 	}
 	layers, err := imager.GetLayers()
 	if err != nil {

@@ -87,6 +87,12 @@ Wrap and error messages **MUST**:
   every layer produces `failed to sync: failed to update: failed to query`, whereas
   gerunds read as a clean path: `syncing deployments: updating app: querying db`.
 
+This style applies to **wrap and internal error messages**. It does **not** apply to
+the classified, client-facing messages produced at the usecase layer (rule 5) or the
+generic message returned to the client (rule 6): those describe a *condition*, not an
+operation, and are written as plain phrases — `"application not found"`,
+`"internal server error"` — never gerunds.
+
 ```go
 // Good
 return errors.Wrap(err, "reading docs root")

@@ -52,11 +52,11 @@ func NewK8sDiscoverer(svcName string) (Discoverer, error) {
 	// sanity check
 	_, err = d.findService()
 	if err != nil {
-		return nil, errors.Wrapf(err, "finding service %s, is configuration done right?", svcName)
+		return nil, errors.Wrapf(err, "finding service (service_name=%s)", svcName)
 	}
 	_, err = d.discover()
 	if err != nil {
-		return nil, errors.Wrapf(err, "discovering targets, is configuration done right?")
+		return nil, errors.Wrap(err, "discovering targets")
 	}
 
 	return d, nil
