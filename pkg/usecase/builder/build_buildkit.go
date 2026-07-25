@@ -127,11 +127,11 @@ func (s *ServiceImpl) solveDockerfile(
 
 	ctxMount, err := fsutil.NewFS(contextDir)
 	if err != nil {
-		return oops.Wrapf(err, "invalid context mount dir")
+		return oops.Wrapf(err, "creating context mount")
 	}
 	dockerfileMount, err := fsutil.NewFS(dockerfileDir)
 	if err != nil {
-		return oops.Wrapf(err, "invalid dockerfile mount dir")
+		return oops.Wrapf(err, "creating dockerfile mount")
 	}
 
 	opts := buildkit.SolveOpt{

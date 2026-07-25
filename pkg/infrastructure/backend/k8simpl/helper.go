@@ -258,7 +258,7 @@ func replaceResource[T apiResource](
 	// This timeout provides sufficient buffer for most deletion scenarios while
 	// preventing indefinite waits for stuck resources.
 	case <-time.After(2 * time.Minute):
-		return oops.New("timeout while waiting for resource to be deleted")
+		return oops.With("resource_name", rc.GetName()).New("timeout while waiting for resource to be deleted")
 	case <-ctx.Done():
 		return ctx.Err()
 	}

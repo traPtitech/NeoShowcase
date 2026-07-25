@@ -35,7 +35,7 @@ type victoriaLogsStreamer struct {
 func NewVictoriaLogsStreamer(config Config) (domain.ContainerLogger, error) {
 	tmpl, err := template.New("logsQL templater").Parse(config.QueryTemplate)
 	if err != nil {
-		return nil, oops.Wrapf(err, "invalid logsQL template")
+		return nil, oops.Wrapf(err, "parsing logsQL template")
 	}
 
 	l := &victoriaLogsStreamer{

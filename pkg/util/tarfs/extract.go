@@ -32,7 +32,7 @@ func Extract(tarStream io.Reader, destPath string) error {
 			break
 		}
 		if err != nil {
-			return oops.Wrapf(err, "bad tar file")
+			return oops.Wrapf(err, "reading tar file")
 		}
 
 		if !isValidRelPath(header.Name) {

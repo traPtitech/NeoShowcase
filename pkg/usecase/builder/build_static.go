@@ -30,7 +30,7 @@ func (s *ServiceImpl) buildStaticExtract(
 	}
 	mount, err := fsutil.NewFS(st.repositoryTempDir)
 	if err != nil {
-		return oops.Wrapf(err, "invalid mount dir")
+		return oops.Wrapf(err, "creating mount")
 	}
 	_, err = s.buildkit.Solve(ctx, def, buildkit.SolveOpt{
 		Exports: []buildkit.ExportEntry{{

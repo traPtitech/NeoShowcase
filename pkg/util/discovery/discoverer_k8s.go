@@ -56,7 +56,7 @@ func NewK8sDiscoverer(svcName string) (Discoverer, error) {
 	}
 	_, err = d.discover()
 	if err != nil {
-		return nil, oops.Wrapf(err, "discovering targets")
+		return nil, oops.With("service_name", d.svcName).Wrapf(err, "discovering targets")
 	}
 
 	return d, nil
@@ -134,7 +134,7 @@ func (k *k8sDiscoverer) watch(ctx context.Context, updates chan<- []Target) erro
 	// Send initial state
 	targets, err := k.discover()
 	if err != nil {
-		return oops.Wrapf(err, "discovering targets")
+		return oops.With("service_name", k.svcName).Wrapf(err, "discovering targets")
 	}
 	if len(targets) > 0 {
 		updates <- targets
@@ -143,7 +143,7 @@ func (k *k8sDiscoverer) watch(ctx context.Context, updates chan<- []Target) erro
 	for range watcher.ResultChan() {
 		targets, err = k.discover()
 		if err != nil {
-			return oops.Wrapf(err, "discovering targets")
+			return oops.With("service_name", k.svcName).Wrapf(err, "discovering targets")
 		}
 		if len(targets) > 0 {
 			updates <- targets
