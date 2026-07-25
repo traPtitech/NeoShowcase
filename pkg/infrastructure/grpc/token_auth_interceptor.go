@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"connectrpc.com/connect"
-	"github.com/friendsofgo/errors"
+	"github.com/samber/oops"
 )
 
 type TokenAuthInterceptor struct {
@@ -20,10 +20,10 @@ func NewTokenAuthInterceptor(
 	token string,
 ) (*TokenAuthInterceptor, error) {
 	if header == "" {
-		return nil, errors.New("header name cannot be empty")
+		return nil, oops.New("header name cannot be empty")
 	}
 	if token == "" {
-		return nil, errors.New("token cannot be empty")
+		return nil, oops.New("token cannot be empty")
 	}
 	return &TokenAuthInterceptor{
 		header: header,

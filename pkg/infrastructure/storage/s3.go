@@ -9,7 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/transfermanager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/friendsofgo/errors"
+	"github.com/samber/oops"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
@@ -28,7 +28,7 @@ func NewS3Storage(bucket, accessKey, accessSecret, region, endpoint string) (*S3
 		config.WithRegion(region),
 	)
 	if err != nil {
-		return nil, errors.Wrap(err, "loading AWS config")
+		return nil, oops.Wrapf(err, "loading AWS config")
 	}
 
 	client := s3.NewFromConfig(cfg, func(o *s3.Options) {

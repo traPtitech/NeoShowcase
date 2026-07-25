@@ -1,34 +1,48 @@
 package apiserver
 
 import (
-	"github.com/friendsofgo/errors"
+	"github.com/samber/oops"
 )
 
-type ErrorType int
+// ErrorType is the business meaning attached to an error at the usecase layer.
+// It travels with the error as the oops error code, and the transport boundary
+// maps it to a Connect code. An error without one is Internal by definition.
+type ErrorType string
 
 const (
-	ErrorTypeBadRequest ErrorType = iota
-	ErrorTypeNotFound
-	ErrorTypeAlreadyExists
-	ErrorTypeForbidden
+	ErrorTypeBadRequest    ErrorType = "bad_request"
+	ErrorTypeNotFound      ErrorType = "not_found"
+	ErrorTypeAlreadyExists ErrorType = "already_exists"
+	ErrorTypeForbidden     ErrorType = "forbidden"
 )
 
-type customError struct {
-	error
-	typ ErrorType
-}
-
+// newError tags err with a business meaning and with the message the client is
+// allowed to see.
+//
+// message is attached as the oops "public" message: it is the only thing the
+// boundary returns to the client. The wrap chain underneath stays internal and
+// reaches the single boundary log instead.
 func newError(typ ErrorType, message string, err error) error {
+	b := oops.Code(string(typ)).Public(message)
 	if err == nil {
-		return customError{error: errors.New(message), typ: typ}
+		return b.New(message)
 	}
-	return customError{error: errors.Wrap(err, message), typ: typ}
+	return b.Wrapf(err, "%s", message)
 }
 
-func DecomposeError(err error) (underlying error, typ ErrorType, ok bool) { //nolint:staticcheck
-	var cErr customError
-	if errors.As(err, &cErr) {
-		return cErr.error, cErr.typ, true
+// DecomposeError reports the business meaning a usecase attached to err, along
+// with the client-facing message.
+//
+// It searches the whole error chain, so an error stays classified even after an
+// outer layer wraps it with more context.
+func DecomposeError(err error) (publicMessage string, typ ErrorType, ok bool) {
+	oopsErr, found := oops.AsOops(err)
+	if !found {
+		return "", "", false
 	}
-	return
+	code, isString := oopsErr.Code().(string)
+	if !isString || code == "" {
+		return "", "", false
+	}
+	return oopsErr.Public(), ErrorType(code), true
 }

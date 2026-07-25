@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/friendsofgo/errors"
 	"github.com/go-sql-driver/mysql"
+	"github.com/samber/oops"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
@@ -38,11 +38,11 @@ func NewMariaDBManager(c MariaDBConfig) (domain.MariaDBManager, error) {
 	// DB接続
 	connector, err := mysql.NewConnector(conf)
 	if err != nil {
-		return nil, errors.Wrap(err, "creating new connector")
+		return nil, oops.Wrapf(err, "creating new connector")
 	}
 	db := sql.OpenDB(connector)
 	if err := db.Ping(); err != nil {
-		return nil, errors.Wrap(err, "pinging db")
+		return nil, oops.Wrapf(err, "pinging db")
 	}
 	db.SetMaxOpenConns(1024)
 	db.SetMaxIdleConns(1024)
@@ -58,7 +58,7 @@ func (m *mariaDBManagerImpl) GetHost() (host string, port int) {
 
 func (m *mariaDBManagerImpl) Create(ctx context.Context, args domain.CreateArgs) error {
 	if strings.ContainsRune(args.Database, '`') {
-		return errors.New("backtick(`) in database name are not permitted")
+		return oops.New("backtick(`) in database name are not permitted")
 	}
 	if _, err := m.db.ExecContext(ctx, fmt.Sprintf("CREATE DATABASE IF NOT EXISTS `%s`", args.Database)); err != nil {
 		return err
@@ -74,7 +74,7 @@ func (m *mariaDBManagerImpl) Create(ctx context.Context, args domain.CreateArgs)
 
 func (m *mariaDBManagerImpl) Delete(ctx context.Context, args domain.DeleteArgs) error {
 	if strings.ContainsRune(args.Database, '`') {
-		return errors.New("backtick(`) in database name are not permitted")
+		return oops.New("backtick(`) in database name are not permitted")
 	}
 	if _, err := m.db.ExecContext(ctx, fmt.Sprintf("DROP DATABASE IF EXISTS `%s`", args.Database)); err != nil {
 		return err

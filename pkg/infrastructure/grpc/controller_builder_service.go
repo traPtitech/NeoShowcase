@@ -3,6 +3,7 @@ package grpc
 import (
 	"bytes"
 	"context"
+	"errors"
 	"io"
 	"log/slog"
 	"slices"
@@ -10,8 +11,8 @@ import (
 	"time"
 
 	"connectrpc.com/connect"
-	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
+	"github.com/samber/oops"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -127,7 +128,7 @@ func (s *ControllerBuilderService) StreamBuildLog(ctx context.Context, st *conne
 	if err := st.Err(); err != nil {
 		// This service has no log interceptor, so this is the terminal log for the error.
 		slog.WarnContext(ctx, "receiving build log", "error", err)
-		return nil, errors.Wrap(err, "receiving build log")
+		return nil, oops.Wrapf(err, "receiving build log")
 	}
 	res := connect.NewResponse(&emptypb.Empty{})
 	return res, nil
@@ -272,7 +273,7 @@ func (s *ControllerBuilderService) startBuildPayload(ctx context.Context, buildI
 	}, nil
 }
 
-var errBuildLockConflict = errors.New("build lock conflict")
+var errBuildLockConflict = oops.New("build lock conflict")
 
 func (s *ControllerBuilderService) startBuild(ctx context.Context, conn *builderConnection, buildID string) error {
 	// Change build status in order to acquire lock
@@ -297,7 +298,7 @@ func (s *ControllerBuilderService) startBuild(ctx context.Context, conn *builder
 	// Construct payload to send to builder
 	req, err := s.startBuildPayload(ctx, buildID)
 	if err != nil {
-		return errors.Wrapf(err, "constructing start build payload (build_id=%v)", buildID)
+		return oops.With("build_id", buildID).Wrapf(err, "constructing start build payload")
 	}
 	// Send payload to builder
 	conn.Send(&pb.BuilderRequest{
@@ -329,7 +330,7 @@ func (s *ControllerBuilderService) finishBuild(ctx context.Context, buildID stri
 		return err
 	}
 	if n == 0 {
-		return errors.Errorf("changing build status from building to finished (build_id=%v): no row updated, builder scheduling may be malfunctioning", buildID)
+		return oops.With("build_id", buildID).New("changing build status from building to finished: no row updated, builder scheduling may be malfunctioning")
 	}
 
 	// metrics

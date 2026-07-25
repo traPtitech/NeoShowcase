@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/friendsofgo/errors"
+	"github.com/samber/oops"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
@@ -31,7 +31,7 @@ func NewMongoDBManager(config MongoDBConfig) (domain.MongoDBManager, error) {
 		options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%s@%s:%d", config.AdminUser, config.AdminPassword, config.Host, config.Port)),
 	)
 	if err != nil {
-		return nil, errors.Wrap(err, "creating new client")
+		return nil, oops.Wrapf(err, "creating new client")
 	}
 
 	return &mongoDBManagerImpl{client: client, c: config}, nil

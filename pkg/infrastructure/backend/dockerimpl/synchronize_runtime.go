@@ -8,11 +8,11 @@ import (
 	"net/netip"
 	"strconv"
 
-	"github.com/friendsofgo/errors"
 	"github.com/moby/moby/api/types/container"
 	"github.com/moby/moby/api/types/network"
 	"github.com/moby/moby/client"
 	"github.com/samber/lo"
+	"github.com/samber/oops"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
@@ -31,27 +31,27 @@ func (b *Backend) syncAppContainer(ctx context.Context, app *domain.RuntimeDesir
 			Force:         true,
 		})
 		if err != nil {
-			return errors.Wrap(err, "removing old container")
+			return oops.Wrapf(err, "removing old container")
 		}
 	}
 
 	registryAuth, err := b.authConfig()
 	if err != nil {
-		return errors.Wrap(err, "getting auth config")
+		return oops.Wrapf(err, "getting auth config")
 	}
 	res, err := b.c.ImagePull(ctx, app.ImageName+":"+app.ImageTag, client.ImagePullOptions{
 		RegistryAuth: registryAuth,
 	})
 	if err != nil {
-		return errors.Wrap(err, "pulling image")
+		return oops.Wrapf(err, "pulling image")
 	}
 	_, err = io.ReadAll(res)
 	if err != nil {
-		return errors.Wrap(err, "pulling image")
+		return oops.Wrapf(err, "pulling image")
 	}
 	err = res.Close()
 	if err != nil {
-		return errors.Wrap(err, "pulling image")
+		return oops.Wrapf(err, "pulling image")
 	}
 
 	envs := lo.MapToSlice(app.Envs, func(key string, value string) string {
@@ -120,12 +120,12 @@ func (b *Backend) syncAppContainer(ctx context.Context, app *domain.RuntimeDesir
 		Name:             containerName(app.App.ID),
 	})
 	if err != nil {
-		return errors.Wrap(err, "creating container")
+		return oops.Wrapf(err, "creating container")
 	}
 
 	_, err = b.c.ContainerStart(ctx, cont.ID, client.ContainerStartOptions{})
 	if err != nil {
-		return errors.Wrap(err, "starting container")
+		return oops.Wrapf(err, "starting container")
 	}
 	return nil
 }
@@ -137,7 +137,7 @@ func (b *Backend) synchronizeRuntime(ctx context.Context, apps []*domain.Runtime
 		Filters: make(client.Filters).Add("label", fmt.Sprintf("%s=true", appLabel)),
 	})
 	if err != nil {
-		return errors.Wrap(err, "listing containers")
+		return oops.Wrapf(err, "listing containers")
 	}
 	oldContainersMap := lo.SliceToMap(oldContainers.Items, func(c container.Summary) (string, *container.Summary) {
 		return c.Labels[appIDLabel], &c
@@ -161,7 +161,7 @@ func (b *Backend) synchronizeRuntime(ctx context.Context, apps []*domain.Runtime
 	}
 	err = b.writeConfig(traefikRuntimeFilename, cb.build())
 	if err != nil {
-		return errors.Wrap(err, "writing runtime ingress config")
+		return oops.Wrapf(err, "writing runtime ingress config")
 	}
 
 	// Prune old resources

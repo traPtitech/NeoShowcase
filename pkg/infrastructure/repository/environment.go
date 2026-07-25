@@ -6,7 +6,7 @@ import (
 
 	"github.com/aarondl/sqlboiler/v4/boil"
 	"github.com/aarondl/sqlboiler/v4/queries/qm"
-	"github.com/friendsofgo/errors"
+	"github.com/samber/oops"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository/models"
@@ -48,7 +48,7 @@ func (r *environmentRepository) SetEnv(ctx context.Context, env *domain.Environm
 	// NOTE: sqlboiler does not recognize multiple column unique keys: https://github.com/aarondl/sqlboiler/issues/328
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
-		return errors.Wrap(err, "starting transaction")
+		return oops.Wrapf(err, "starting transaction")
 	}
 	defer tx.Rollback()
 
@@ -58,7 +58,7 @@ func (r *environmentRepository) SetEnv(ctx context.Context, env *domain.Environm
 		qm.For("UPDATE"),
 	).One(ctx, tx)
 	if err != nil {
-		return errors.Wrap(err, "getting application")
+		return oops.Wrapf(err, "getting application")
 	}
 
 	exists, err := models.Environments(
@@ -66,7 +66,7 @@ func (r *environmentRepository) SetEnv(ctx context.Context, env *domain.Environm
 		models.EnvironmentWhere.Key.EQ(env.Key),
 	).Exists(ctx, tx)
 	if err != nil && !isNoRowsErr(err) {
-		return errors.Wrap(err, "getting environment")
+		return oops.Wrapf(err, "getting environment")
 	}
 
 	me := repoconvert.FromDomainEnvironment(env)
@@ -77,12 +77,12 @@ func (r *environmentRepository) SetEnv(ctx context.Context, env *domain.Environm
 		err = me.Insert(ctx, tx, boil.Blacklist())
 	}
 	if err != nil {
-		return errors.Wrap(err, "upserting environment")
+		return oops.Wrapf(err, "upserting environment")
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		return errors.Wrap(err, "committing")
+		return oops.Wrapf(err, "committing")
 	}
 
 	return nil
@@ -91,11 +91,11 @@ func (r *environmentRepository) SetEnv(ctx context.Context, env *domain.Environm
 func (r *environmentRepository) DeleteEnv(ctx context.Context, cond domain.GetEnvCondition) error {
 	envs, err := models.Environments(r.buildMods(cond)...).All(ctx, r.db)
 	if err != nil {
-		return errors.Wrap(err, "getting env")
+		return oops.Wrapf(err, "getting env")
 	}
 	_, err = envs.DeleteAll(ctx, r.db)
 	if err != nil {
-		return errors.Wrap(err, "deleting env")
+		return oops.Wrapf(err, "deleting env")
 	}
 	return nil
 }

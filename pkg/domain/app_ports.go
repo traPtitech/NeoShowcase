@@ -3,8 +3,8 @@ package domain
 import (
 	"strings"
 
-	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
+	"github.com/samber/oops"
 )
 
 type PortPublicationProtocol string
@@ -24,20 +24,20 @@ type AvailablePortSlice []*AvailablePort
 
 func isValidPort(port int) error {
 	if port < 0 || 65535 < port {
-		return errors.New("invalid port (needs to be within 0 to 65535)")
+		return oops.New("invalid port (needs to be within 0 to 65535)")
 	}
 	return nil
 }
 
 func (ap *AvailablePort) Validate() error {
 	if err := isValidPort(ap.StartPort); err != nil {
-		return errors.Wrap(err, "invalid start port")
+		return oops.Wrapf(err, "invalid start port")
 	}
 	if err := isValidPort(ap.EndPort); err != nil {
-		return errors.Wrap(err, "invalid end port")
+		return oops.Wrapf(err, "invalid end port")
 	}
 	if ap.EndPort < ap.StartPort {
-		return errors.New("end port comes before start port")
+		return oops.New("end port comes before start port")
 	}
 	return nil
 }
@@ -56,10 +56,10 @@ type PortPublication struct {
 
 func (p *PortPublication) Validate() error {
 	if err := isValidPort(p.InternetPort); err != nil {
-		return errors.Wrap(err, "invalid internet port")
+		return oops.Wrapf(err, "invalid internet port")
 	}
 	if err := isValidPort(p.ApplicationPort); err != nil {
-		return errors.Wrap(err, "invalid application port")
+		return oops.Wrapf(err, "invalid application port")
 	}
 	return nil
 }

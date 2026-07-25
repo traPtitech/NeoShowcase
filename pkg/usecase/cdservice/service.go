@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
+	"github.com/samber/oops"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
@@ -248,7 +248,7 @@ func (cd *service) detectBuildCrash(ctx context.Context) error {
 
 	builds, err := cd.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{Status: optional.From(domain.BuildStatusBuilding)})
 	if err != nil {
-		return errors.Wrap(err, "getting running builds")
+		return oops.Wrapf(err, "getting running builds")
 	}
 	crashed := lo.Filter(builds, func(build *domain.Build, _ int) bool {
 		return now.Sub(build.UpdatedAt.ValueOrZero()) > crashDetectThreshold
@@ -317,7 +317,7 @@ func (cd *service) _syncAppFields(ctx context.Context) error {
 				UpdatedAt:    optional.From(nextBuild.FinishedAt.V),
 			})
 			if err != nil {
-				return errors.Wrapf(err, "syncing application commit (app_id=%s)", app.ID)
+				return oops.With("app_id", app.ID).Wrapf(err, "syncing application commit")
 			}
 		}
 	}
@@ -334,7 +334,7 @@ func (cd *service) syncDeployments(ctx context.Context) error {
 	// Synchronize
 	err = cd.deployer.synchronize(ctx)
 	if err != nil {
-		return errors.Wrap(err, "synchronizing deployments")
+		return oops.Wrapf(err, "synchronizing deployments")
 	}
 
 	// Update container states

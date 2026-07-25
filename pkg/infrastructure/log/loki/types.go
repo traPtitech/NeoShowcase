@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/friendsofgo/errors"
+	"github.com/samber/oops"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
@@ -69,7 +69,7 @@ func (values streamValues) toSortedResponse(asc bool) ([]*domain.ContainerLog, e
 		for _, v := range sv.Values {
 			logTime, err := v.time()
 			if err != nil {
-				return nil, errors.Wrap(err, "decoding response time")
+				return nil, oops.Wrapf(err, "decoding response time")
 			}
 			logs = append(logs, &domain.ContainerLog{
 				Time: logTime,

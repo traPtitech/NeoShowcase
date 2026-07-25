@@ -2,13 +2,14 @@ package tarfs
 
 import (
 	"archive/tar"
+	"errors"
 	"io"
 	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
 
-	"github.com/friendsofgo/errors"
+	"github.com/samber/oops"
 )
 
 func isValidRelPath(relPath string) bool {
@@ -31,33 +32,33 @@ func Extract(tarStream io.Reader, destPath string) error {
 			break
 		}
 		if err != nil {
-			return errors.Wrap(err, "bad tar file")
+			return oops.Wrapf(err, "bad tar file")
 		}
 
 		if !isValidRelPath(header.Name) {
-			return errors.Errorf("invalid path %v", header.Name)
+			return oops.Errorf("invalid path %v", header.Name)
 		}
 
 		path := filepath.Join(destPath, header.Name)
 		switch header.Typeflag {
 		case tar.TypeDir:
 			if err = os.MkdirAll(path, header.FileInfo().Mode()); err != nil {
-				return errors.Wrap(err, "creating directory")
+				return oops.Wrapf(err, "creating directory")
 			}
 
 		case tar.TypeReg:
 			if err = os.MkdirAll(filepath.Dir(path), header.FileInfo().Mode()|os.ModeDir|100); err != nil {
-				return errors.Wrap(err, "creating directory")
+				return oops.Wrapf(err, "creating directory")
 			}
 
 			file, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, header.FileInfo().Mode())
 			if err != nil {
-				return errors.Wrap(err, "creating file")
+				return oops.Wrapf(err, "creating file")
 			}
 			_, err = io.Copy(file, tr)
 			_ = file.Close()
 			if err != nil {
-				return errors.Wrap(err, "writing file")
+				return oops.Wrapf(err, "writing file")
 			}
 
 		default:

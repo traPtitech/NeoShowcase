@@ -4,7 +4,7 @@ import (
 	"context"
 
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
-	"github.com/friendsofgo/errors"
+	"github.com/samber/oops"
 	traefikv1alpha1 "github.com/traefik/traefik/v3/pkg/provider/kubernetes/crd/traefikio/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
@@ -32,31 +32,31 @@ func (b *Backend) listCurrentResources(ctx context.Context) (*resources, error) 
 
 	ss, err := b.client.AppsV1().StatefulSets(b.config.Namespace).List(ctx, listOpt)
 	if err != nil {
-		return nil, errors.Wrap(err, "getting stateful sets")
+		return nil, oops.Wrapf(err, "getting stateful sets")
 	}
 	rsc.statefulSets = ds.SliceOfPtr(ss.Items)
 
 	secrets, err := b.client.CoreV1().Secrets(b.config.Namespace).List(ctx, listOpt)
 	if err != nil {
-		return nil, errors.Wrap(err, "getting secrets")
+		return nil, oops.Wrapf(err, "getting secrets")
 	}
 	rsc.secrets = ds.SliceOfPtr(secrets.Items)
 
 	svc, err := b.client.CoreV1().Services(b.config.Namespace).List(ctx, listOpt)
 	if err != nil {
-		return nil, errors.Wrap(err, "getting services")
+		return nil, oops.Wrapf(err, "getting services")
 	}
 	rsc.services = ds.SliceOfPtr(svc.Items)
 
 	mw, err := b.traefikClient.Middlewares(b.config.Namespace).List(ctx, listOpt)
 	if err != nil {
-		return nil, errors.Wrap(err, "getting middlewares")
+		return nil, oops.Wrapf(err, "getting middlewares")
 	}
 	rsc.middlewares = ds.SliceOfPtr(mw.Items)
 
 	ir, err := b.traefikClient.IngressRoutes(b.config.Namespace).List(ctx, listOpt)
 	if err != nil {
-		return nil, errors.Wrap(err, "getting ingress routes")
+		return nil, oops.Wrapf(err, "getting ingress routes")
 	}
 	rsc.ingressRoutes = ds.SliceOfPtr(ir.Items)
 
@@ -70,7 +70,7 @@ func (b *Backend) listCurrentSharedResources(ctx context.Context) (*sharedResour
 	if b.config.TLS.Type == tlsTypeCertManager {
 		certs, err := b.certManagerClient.CertmanagerV1().Certificates(b.config.Namespace).List(ctx, listOpt)
 		if err != nil {
-			return nil, errors.Wrap(err, "getting certificates")
+			return nil, oops.Wrapf(err, "getting certificates")
 		}
 		rsc.certificates = ds.SliceOfPtr(certs.Items)
 	}
@@ -96,23 +96,23 @@ func (b *Backend) Synchronize(ctx context.Context, s *domain.DesiredState) error
 	// Synchronize resources
 	err = syncResourcesWithReplace[*appsv1.StatefulSet](ctx, b.cluster, "statefulsets", old.statefulSets, next.statefulSets, b.client.AppsV1().StatefulSets(b.config.Namespace))
 	if err != nil {
-		return errors.Wrap(err, "syncing stateful sets")
+		return oops.Wrapf(err, "syncing stateful sets")
 	}
 	err = syncResources[*v1.Secret](ctx, b.cluster, "secrets", old.secrets, next.secrets, b.client.CoreV1().Secrets(b.config.Namespace))
 	if err != nil {
-		return errors.Wrap(err, "syncing secrets")
+		return oops.Wrapf(err, "syncing secrets")
 	}
 	err = syncResources[*v1.Service](ctx, b.cluster, "services", old.services, next.services, b.client.CoreV1().Services(b.config.Namespace))
 	if err != nil {
-		return errors.Wrap(err, "syncing services")
+		return oops.Wrapf(err, "syncing services")
 	}
 	err = syncResources[*traefikv1alpha1.Middleware](ctx, b.cluster, "middlewares", old.middlewares, next.middlewares, b.traefikClient.Middlewares(b.config.Namespace))
 	if err != nil {
-		return errors.Wrap(err, "syncing middlewares")
+		return oops.Wrapf(err, "syncing middlewares")
 	}
 	err = syncResources[*traefikv1alpha1.IngressRoute](ctx, b.cluster, "ingressroutes", old.ingressRoutes, next.ingressRoutes, b.traefikClient.IngressRoutes(b.config.Namespace))
 	if err != nil {
-		return errors.Wrap(err, "syncing ingressroutes")
+		return oops.Wrapf(err, "syncing ingressroutes")
 	}
 
 	return nil
@@ -132,7 +132,7 @@ func (b *Backend) SynchronizeShared(ctx context.Context, s *domain.DesiredStateL
 	// Synchronize resources
 	err = syncResources[*certmanagerv1.Certificate](ctx, b.cluster, "certificates", old.certificates, next.certificates, b.certManagerClient.CertmanagerV1().Certificates(b.config.Namespace))
 	if err != nil {
-		return errors.Wrap(err, "syncing certificates")
+		return oops.Wrapf(err, "syncing certificates")
 	}
 
 	return nil

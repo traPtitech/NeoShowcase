@@ -6,8 +6,8 @@ import (
 	"log/slog"
 	"strconv"
 
-	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
+	"github.com/samber/oops"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
@@ -20,11 +20,11 @@ func (s *Service) validateApp(ctx context.Context, app *domain.Application) erro
 	// Validate app fields and conflict
 	existingApps, err := s.appRepo.GetApplications(ctx, domain.GetApplicationCondition{})
 	if err != nil {
-		return errors.Wrap(err, "getting existing applications")
+		return oops.Wrapf(err, "getting existing applications")
 	}
 	si, err := s.systemInfo.Get(ctx, struct{}{})
 	if err != nil {
-		return errors.Wrap(err, "getting system info")
+		return oops.Wrapf(err, "getting system info")
 	}
 	err = app.Validate(web.GetUser(ctx), existingApps, si.AvailableDomains, si.AvailablePorts)
 	if err != nil {
@@ -49,7 +49,7 @@ func (s *Service) validateApp(ctx context.Context, app *domain.Application) erro
 func (s *Service) CreateApplication(ctx context.Context, app *domain.Application) (*domain.Application, error) {
 	repo, err := s.gitRepo.GetRepository(ctx, app.RepositoryID)
 	if err != nil {
-		return nil, errors.Wrap(err, "getting repository metadata")
+		return nil, oops.Wrapf(err, "getting repository metadata")
 	}
 
 	for _, website := range app.Websites {
@@ -80,7 +80,7 @@ func (s *Service) CreateApplication(ctx context.Context, app *domain.Application
 	s.systemInfo.Purge()
 	err = s.controller.FetchRepository(ctx, app.RepositoryID)
 	if err != nil {
-		return nil, errors.Wrap(err, "requesting repository fetch")
+		return nil, oops.Wrapf(err, "requesting repository fetch")
 	}
 
 	return handleRepoError(s.appRepo.GetApplication(ctx, app.ID))
@@ -174,11 +174,11 @@ func (s *Service) GetApplications(ctx context.Context, scope GetAppScope) ([]*To
 		// No scope
 	case GetAppScopeRepository:
 		if !scope.RepositoryID.Valid {
-			return nil, errors.New("repository id not set")
+			return nil, oops.New("repository id not set")
 		}
 		cond.RepositoryID = scope.RepositoryID
 	default:
-		return nil, errors.New("unexpected scope type")
+		return nil, oops.New("unexpected scope type")
 	}
 
 	// Fetch apps
@@ -261,18 +261,18 @@ func (s *Service) UpdateApplication(ctx context.Context, id string, args *domain
 	// Update
 	err = s.appRepo.UpdateApplication(ctx, id, args)
 	if err != nil {
-		return errors.Wrap(err, "updating application")
+		return oops.Wrapf(err, "updating application")
 	}
 
 	// Sync
 	s.systemInfo.Purge()
 	err = s.controller.FetchRepository(ctx, app.RepositoryID)
 	if err != nil {
-		return errors.Wrap(err, "requesting fetch repository")
+		return oops.Wrapf(err, "requesting fetch repository")
 	}
 	err = s.controller.SyncDeployments(ctx)
 	if err != nil {
-		return errors.Wrap(err, "requesting sync deployments")
+		return oops.Wrapf(err, "requesting sync deployments")
 	}
 
 	return nil
@@ -282,7 +282,7 @@ func (s *Service) deleteApplicationDatabase(ctx context.Context, app *domain.App
 	if app.Config.BuildConfig.MariaDB() {
 		dbKey, ok := lo.Find(envs, func(e *domain.Environment) bool { return e.Key == domain.EnvMariaDBDatabaseKey })
 		if !ok {
-			return errors.New("mariadb name not found in env key")
+			return oops.New("mariadb name not found in env key")
 		}
 		err := s.mariaDBManager.Delete(ctx, domain.DeleteArgs{Database: dbKey.Value})
 		if err != nil {
@@ -293,7 +293,7 @@ func (s *Service) deleteApplicationDatabase(ctx context.Context, app *domain.App
 	if app.Config.BuildConfig.MongoDB() {
 		dbKey, ok := lo.Find(envs, func(e *domain.Environment) bool { return e.Key == domain.EnvMongoDBDatabaseKey })
 		if !ok {
-			return errors.New("mongodb name not found in env key")
+			return oops.New("mongodb name not found in env key")
 		}
 		err := s.mongoDBManager.Delete(ctx, domain.DeleteArgs{Database: dbKey.Value})
 		if err != nil {

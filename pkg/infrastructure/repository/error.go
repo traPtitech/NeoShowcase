@@ -2,12 +2,13 @@ package repository
 
 import (
 	"database/sql"
+	"errors"
 
-	"github.com/friendsofgo/errors"
+	"github.com/samber/oops"
 )
 
 var (
-	ErrNotFound = errors.New("not found")
+	ErrNotFound = oops.New("not found")
 )
 
 func isNoRowsErr(err error) bool {

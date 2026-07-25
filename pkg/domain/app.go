@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
+	"github.com/samber/oops"
 
 	"github.com/traPtitech/neoshowcase/pkg/util/hash"
 )
@@ -18,10 +18,10 @@ type ApplicationConfig struct {
 
 func (c *ApplicationConfig) Validate(deployType DeployType) error {
 	if c.BuildConfig.BuildType().DeployType() != deployType {
-		return errors.New("deploy type doesn't match build type")
+		return oops.New("deploy type doesn't match build type")
 	}
 	if err := c.BuildConfig.Validate(); err != nil {
-		return errors.Wrap(err, "invalid build_config")
+		return oops.Wrapf(err, "invalid build_config")
 	}
 	return nil
 }
@@ -65,29 +65,29 @@ type Application struct {
 
 func (a *Application) SelfValidate() error {
 	if a.Name == "" {
-		return errors.New("name is required")
+		return oops.New("name is required")
 	}
 	if a.RepositoryID == "" {
-		return errors.New("repository_id is required")
+		return oops.New("repository_id is required")
 	}
 	if a.RefName == "" {
-		return errors.New("ref_name is required")
+		return oops.New("ref_name is required")
 	}
 	if err := a.Config.Validate(a.DeployType); err != nil {
-		return errors.Wrap(err, "invalid config")
+		return oops.Wrapf(err, "invalid config")
 	}
 	for _, website := range a.Websites {
 		if err := website.Validate(); err != nil {
-			return errors.Wrap(err, "invalid website")
+			return oops.Wrapf(err, "invalid website")
 		}
 	}
 	for _, p := range a.PortPublications {
 		if err := p.Validate(); err != nil {
-			return errors.Wrap(err, "invalid port publication")
+			return oops.Wrapf(err, "invalid port publication")
 		}
 	}
 	if len(a.OwnerIDs) == 0 {
-		return errors.New("owner_ids cannot be empty")
+		return oops.New("owner_ids cannot be empty")
 	}
 	return nil
 }
@@ -105,15 +105,15 @@ func (a *Application) Validate(
 	// resource availability check
 	for _, website := range a.Websites {
 		if website.Authentication != AuthenticationTypeOff && !domains.IsAuthAvailable(website.FQDN) {
-			return errors.Errorf("auth not available for domain %s", website.FQDN)
+			return oops.Errorf("auth not available for domain %s", website.FQDN)
 		}
 		if !domains.IsAvailable(website.FQDN) {
-			return errors.Errorf("domain %s not available", website.FQDN)
+			return oops.Errorf("domain %s not available", website.FQDN)
 		}
 	}
 	for _, p := range a.PortPublications {
 		if !ports.IsAvailable(p.InternetPort, p.Protocol) {
-			return errors.Errorf("port %d/%s not available", p.InternetPort, p.Protocol)
+			return oops.Errorf("port %d/%s not available", p.InternetPort, p.Protocol)
 		}
 	}
 
@@ -121,11 +121,11 @@ func (a *Application) Validate(
 	// exclude self if contained
 	existingApps = lo.Filter(existingApps, func(app *Application, _ int) bool { return app.ID != a.ID })
 	if a.WebsiteConflicts(existingApps, actor) {
-		return errors.New("website conflict")
+		return oops.New("website conflict")
 	}
 	for _, p := range a.PortPublications {
 		if p.ConflictsWith(existingApps) {
-			return errors.Errorf("port %d/%s conflicts with existing port publication", p.InternetPort, p.Protocol)
+			return oops.Errorf("port %d/%s conflicts with existing port publication", p.InternetPort, p.Protocol)
 		}
 	}
 

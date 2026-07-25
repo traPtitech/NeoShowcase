@@ -3,7 +3,6 @@ package registry
 import (
 	"context"
 
-	"github.com/friendsofgo/errors"
 	"github.com/regclient/regclient"
 	"github.com/regclient/regclient/config"
 	"github.com/regclient/regclient/scheme"
@@ -11,6 +10,7 @@ import (
 	"github.com/regclient/regclient/types/manifest"
 	"github.com/regclient/regclient/types/ref"
 	"github.com/samber/lo"
+	"github.com/samber/oops"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 )
 
@@ -44,11 +44,11 @@ func NewClient(conf builder.ImageConfig) builder.RegistryClient {
 func (c *client) DeleteImage(ctx context.Context, image, tag string) error {
 	ref, err := ref.New(image + ":" + tag)
 	if err != nil {
-		return errors.Wrap(err, "parsing image reference")
+		return oops.Wrapf(err, "parsing image reference")
 	}
 	err = c.regclient.TagDelete(ctx, ref)
 	if err != nil {
-		return errors.Wrap(err, "deleting image")
+		return oops.Wrapf(err, "deleting image")
 	}
 	return nil
 }
@@ -56,7 +56,7 @@ func (c *client) DeleteImage(ctx context.Context, image, tag string) error {
 func (c *client) GetTags(ctx context.Context, image string) ([]string, error) {
 	ref, err := ref.New(image)
 	if err != nil {
-		return nil, errors.Wrap(err, "parsing image reference")
+		return nil, oops.Wrapf(err, "parsing image reference")
 	}
 
 	const limit = 100
@@ -69,7 +69,7 @@ func (c *client) GetTags(ctx context.Context, image string) ([]string, error) {
 		}
 		tagList, err := c.regclient.TagList(ctx, ref, opts...)
 		if err != nil {
-			return nil, errors.Wrap(err, "listing tags")
+			return nil, oops.Wrapf(err, "listing tags")
 		}
 		tags = append(tags, tagList.Tags...)
 		if len(tagList.Tags) < limit {
@@ -83,19 +83,19 @@ func (c *client) GetTags(ctx context.Context, image string) ([]string, error) {
 func (c *client) GetImageSize(ctx context.Context, image, tag string) (int64, error) {
 	ref, err := ref.New(image + ":" + tag)
 	if err != nil {
-		return 0, errors.Wrap(err, "parsing image reference")
+		return 0, oops.Wrapf(err, "parsing image reference")
 	}
 	m, err := c.regclient.ManifestGet(ctx, ref)
 	if err != nil {
-		return 0, errors.Wrap(err, "getting manifest")
+		return 0, oops.Wrapf(err, "getting manifest")
 	}
 	imager, ok := m.(manifest.Imager)
 	if !ok {
-		return 0, errors.Errorf("manifest %T is not an Imager", m)
+		return 0, oops.Errorf("manifest %T is not an Imager", m)
 	}
 	layers, err := imager.GetLayers()
 	if err != nil {
-		return 0, errors.Wrap(err, "getting image layers")
+		return 0, oops.Wrapf(err, "getting image layers")
 	}
 
 	size := lo.SumBy(layers, func(l descriptor.Descriptor) int64 { return l.Size })

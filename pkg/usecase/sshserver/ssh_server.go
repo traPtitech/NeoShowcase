@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/friendsofgo/errors"
 	"github.com/gliderlabs/ssh"
 	ssh2 "github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/samber/lo"
+	"github.com/samber/oops"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
@@ -138,7 +138,7 @@ func (s *sshServer) handle(sess ssh.Session) error {
 
 	app, err := s.appRepo.GetApplication(sess.Context(), appID)
 	if err != nil {
-		return errors.Wrapf(err, "retrieving app with id %v", appID)
+		return oops.With("app_id", appID).Wrapf(err, "retrieving app")
 	}
 
 	_, _ = sess.Write([]byte(figWelcome))
@@ -163,7 +163,7 @@ func (s *sshServer) handle(sess ssh.Session) error {
 		var resp [1]byte
 		_, err = sess.Read(resp[:])
 		if err != nil {
-			return errors.Wrap(err, "reading response")
+			return oops.Wrapf(err, "reading response")
 		}
 
 		_, _ = sess.Write(resp[:])

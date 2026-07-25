@@ -7,7 +7,7 @@ import (
 
 	"github.com/aarondl/sqlboiler/v4/boil"
 	"github.com/aarondl/sqlboiler/v4/queries/qm"
-	"github.com/friendsofgo/errors"
+	"github.com/samber/oops"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository/models"
@@ -73,7 +73,7 @@ func (r *buildRepository) GetBuilds(ctx context.Context, cond domain.GetBuildCon
 	mods = append(mods, r.buildMods(cond)...)
 	builds, err := models.Builds(mods...).All(ctx, r.db)
 	if err != nil {
-		return nil, errors.Wrap(err, "getting builds")
+		return nil, oops.Wrapf(err, "getting builds")
 	}
 	return ds.Map(builds, repoconvert.ToDomainBuild), nil
 }
@@ -95,7 +95,7 @@ FROM builds b1
 WHERE b2.application_id IS NULL AND b1.application_id IN (`+inClause+`)`),
 	).All(ctx, r.db)
 	if err != nil {
-		return nil, errors.Wrap(err, "listing latest builds")
+		return nil, oops.Wrapf(err, "listing latest builds")
 	}
 	return ds.Map(builds, repoconvert.ToDomainBuild), nil
 }
@@ -110,7 +110,7 @@ func (r *buildRepository) GetBuild(ctx context.Context, buildID string) (*domain
 		if isNoRowsErr(err) {
 			return nil, ErrNotFound
 		}
-		return nil, errors.Wrap(err, "finding build")
+		return nil, oops.Wrapf(err, "finding build")
 	}
 	return repoconvert.ToDomainBuild(build), nil
 }
@@ -119,7 +119,7 @@ func (r *buildRepository) CreateBuild(ctx context.Context, build *domain.Build) 
 	mb := repoconvert.FromDomainBuild(build)
 	err := mb.Insert(ctx, r.db, boil.Blacklist())
 	if err != nil {
-		return errors.Wrap(err, "inserting build")
+		return oops.Wrapf(err, "inserting build")
 	}
 	return nil
 }
@@ -144,7 +144,7 @@ func (r *buildRepository) UpdateBuild(ctx context.Context, cond domain.GetBuildC
 
 	n, err := models.Builds(r.buildMods(cond)...).UpdateAll(ctx, r.db, cols)
 	if err != nil {
-		return 0, errors.Wrap(err, "updating build")
+		return 0, oops.Wrapf(err, "updating build")
 	}
 	return n, nil
 }
@@ -157,7 +157,7 @@ func (r *buildRepository) MarkCommitAsRetriable(ctx context.Context, application
 		models.BuildColumns.Retriable: true,
 	})
 	if err != nil {
-		return errors.Wrap(err, "marking commit as retriable")
+		return oops.Wrapf(err, "marking commit as retriable")
 	}
 	return nil
 }
@@ -165,11 +165,11 @@ func (r *buildRepository) MarkCommitAsRetriable(ctx context.Context, application
 func (r *buildRepository) DeleteBuilds(ctx context.Context, cond domain.GetBuildCondition) error {
 	builds, err := models.Builds(r.buildMods(cond)...).All(ctx, r.db)
 	if err != nil {
-		return errors.Wrap(err, "getting builds")
+		return oops.Wrapf(err, "getting builds")
 	}
 	_, err = builds.DeleteAll(ctx, r.db)
 	if err != nil {
-		return errors.Wrap(err, "deleting builds")
+		return oops.Wrapf(err, "deleting builds")
 	}
 	return nil
 }

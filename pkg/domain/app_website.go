@@ -1,13 +1,12 @@
 package domain
 
 import (
-	"fmt"
 	"net/url"
 	"regexp"
 	"strings"
 
-	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
+	"github.com/samber/oops"
 	"golang.org/x/net/idna"
 
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
@@ -18,33 +17,33 @@ var domainRegexp = regexp.MustCompile(`^[a-z0-9-_]+(\.[a-z0-9-_]+)*$`)
 func ValidateDomain(domain string) error {
 	// ドメインが大文字を含むときはエラー
 	if domain != strings.ToLower(domain) {
-		return errors.Errorf("domain %v must be lower case", domain)
+		return oops.Errorf("domain %v must be lower case", domain)
 	}
 
 	// 半角数字と英小文字以外を含むときはエラー
 	if !domainRegexp.MatchString(domain) {
-		return errors.Errorf("domain %v must consist of lower alpha-numeric letters, hyphen (-), or underscore (_)", domain)
+		return oops.Errorf("domain %v must consist of lower alpha-numeric letters, hyphen (-), or underscore (_)", domain)
 	}
 
 	// 面倒なのでtrailing dotは無しで統一
 	if strings.HasSuffix(domain, ".") {
-		return errors.Errorf("trailing dot not allowed in domain %v", domain)
+		return oops.Errorf("trailing dot not allowed in domain %v", domain)
 	}
 	if strings.HasPrefix(domain, ".") {
-		return errors.Errorf("leading dot not allowed in domain %v", domain)
+		return oops.Errorf("leading dot not allowed in domain %v", domain)
 	}
 	// allow underscore; Showcaseとのcompatibilityのため 本来はホスト名にunderscoreが入るのはダメ
 	// https://stackoverflow.com/questions/2180465/can-domain-name-subdomains-have-an-underscore-in-it
 	_, err := idna.Lookup.ToUnicode(strings.ReplaceAll(domain, "_", "-"))
 	if err != nil {
-		return errors.Wrap(err, fmt.Sprintf("invalid domain %v", domain))
+		return oops.Wrapf(err, "invalid domain %v", domain)
 	}
 	return nil
 }
 
 func ValidateWildcardDomain(domain string) error {
 	if !strings.HasPrefix(domain, "*.") {
-		return errors.Errorf("wildcard domain needs to begin with *. (got %v)", domain)
+		return oops.Errorf("wildcard domain needs to begin with *. (got %v)", domain)
 	}
 	baseDomain := strings.TrimPrefix(domain, "*.")
 	return ValidateDomain(baseDomain)
@@ -89,7 +88,7 @@ func (a *AvailableDomain) Validate() error {
 			return err
 		}
 		if !ContainsDomain(a.Domain, excludeDomain) {
-			return errors.Errorf("exclude domain %v is not contained within %v", excludeDomain, a.Domain)
+			return oops.Errorf("exclude domain %v is not contained within %v", excludeDomain, a.Domain)
 		}
 	}
 	return nil
@@ -154,26 +153,26 @@ func (w *Website) Compare(other *Website) bool {
 
 func (w *Website) Validate() error {
 	if err := ValidateDomain(w.FQDN); err != nil {
-		return errors.Wrap(err, "invalid domain")
+		return oops.Wrapf(err, "invalid domain")
 	}
 	if !strings.HasPrefix(w.PathPrefix, "/") {
-		return errors.New("path_prefix has to start with /")
+		return oops.New("path_prefix has to start with /")
 	}
 	if w.PathPrefix != "/" && strings.HasSuffix(w.PathPrefix, "/") {
-		return errors.New("path_prefix requires no trailing slash")
+		return oops.New("path_prefix requires no trailing slash")
 	}
 	if w.StripPrefix && w.PathPrefix == "/" {
-		return errors.New("strip_prefix has to be false when path_prefix is /")
+		return oops.New("strip_prefix has to be false when path_prefix is /")
 	}
 	u, err := url.ParseRequestURI(w.PathPrefix)
 	if err != nil {
-		return errors.Wrap(err, "invalid path")
+		return oops.Wrapf(err, "invalid path")
 	}
 	if u.EscapedPath() != w.PathPrefix {
-		return errors.New("invalid path: either not escaped or contains non-path elements")
+		return oops.New("invalid path: either not escaped or contains non-path elements")
 	}
 	if err = isValidPort(w.HTTPPort); err != nil {
-		return errors.Wrap(err, "invalid http port")
+		return oops.Wrapf(err, "invalid http port")
 	}
 	return nil
 }

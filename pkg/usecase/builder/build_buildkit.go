@@ -11,12 +11,12 @@ import (
 
 	"github.com/docker/cli/cli/config/configfile"
 	"github.com/docker/cli/cli/config/types"
-	"github.com/friendsofgo/errors"
 	buildkit "github.com/moby/buildkit/client"
 	"github.com/moby/buildkit/session"
 	"github.com/moby/buildkit/session/auth/authprovider"
 	"github.com/moby/buildkit/util/progress/progressui"
 	"github.com/samber/lo"
+	"github.com/samber/oops"
 	"github.com/tonistiigi/fsutil"
 	"golang.org/x/sync/errgroup"
 
@@ -54,7 +54,7 @@ func withBuildkitProgress(ctx context.Context, logger io.Writer, buildFn func(ct
 func createTempFile(pattern string, content string) (name string, cleanup func(), err error) {
 	f, err := os.CreateTemp("", pattern)
 	if err != nil {
-		return "", nil, errors.Wrap(err, "creating temp "+pattern+" file")
+		return "", nil, oops.With("pattern", pattern).Wrapf(err, "creating temp file")
 	}
 	defer f.Close()
 	cleanup = func() {
@@ -66,7 +66,7 @@ func createTempFile(pattern string, content string) (name string, cleanup func()
 	_, err = f.WriteString(content)
 	if err != nil {
 		cleanup()
-		return "", nil, errors.Wrap(err, "writing to temp file "+f.Name())
+		return "", nil, oops.With("file", f.Name()).Wrapf(err, "writing to temp file")
 	}
 	return f.Name(), cleanup, nil
 }
@@ -127,11 +127,11 @@ func (s *ServiceImpl) solveDockerfile(
 
 	ctxMount, err := fsutil.NewFS(contextDir)
 	if err != nil {
-		return errors.Wrap(err, "invalid context mount dir")
+		return oops.Wrapf(err, "invalid context mount dir")
 	}
 	dockerfileMount, err := fsutil.NewFS(dockerfileDir)
 	if err != nil {
-		return errors.Wrap(err, "invalid dockerfile mount dir")
+		return oops.Wrapf(err, "invalid dockerfile mount dir")
 	}
 
 	opts := buildkit.SolveOpt{
@@ -179,7 +179,7 @@ func (s *ServiceImpl) buildRuntimeCmd(
 	if dockerignoreExists {
 		err := os.Rename(filepath.Join(st.repositoryTempDir, ".dockerignore"), filepath.Join(st.repositoryTempDir, temporaryDockerignoreName))
 		if err != nil {
-			return errors.Wrap(err, "renaming .dockerignore")
+			return oops.Wrapf(err, "renaming .dockerignore")
 		}
 	}
 
@@ -258,7 +258,7 @@ func (s *ServiceImpl) buildStaticCmd(
 	if dockerignoreExists {
 		err := os.Rename(filepath.Join(st.repositoryTempDir, ".dockerignore"), filepath.Join(st.repositoryTempDir, temporaryDockerignoreName))
 		if err != nil {
-			return errors.Wrap(err, "renaming .dockerignore")
+			return oops.Wrapf(err, "renaming .dockerignore")
 		}
 	}
 

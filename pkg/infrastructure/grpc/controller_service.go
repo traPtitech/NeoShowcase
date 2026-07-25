@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"connectrpc.com/connect"
-	"github.com/friendsofgo/errors"
 	"github.com/motoki317/sc"
 	"github.com/samber/lo"
+	"github.com/samber/oops"
 	"github.com/sourcegraph/conc/pool"
 	"google.golang.org/protobuf/types/known/emptypb"
 
@@ -126,7 +126,7 @@ func (s *ControllerService) DiscoverBuildLogInstance(ctx context.Context, c *con
 		return r.Address != nil
 	})
 	if !ok {
-		return nil, errors.New("build log not available")
+		return nil, oops.New("build log not available")
 	}
 	return connect.NewResponse(neighborResult), nil
 }
@@ -135,7 +135,7 @@ func (s *ControllerService) StreamBuildLog(ctx context.Context, c *connect.Reque
 	sub := make(chan []byte, 100)
 	ok, unsubscribe := s.logStream.SubscribeBuildLog(c.Msg.BuildId, sub)
 	if !ok {
-		return errors.New("build log stream unavailable")
+		return oops.New("build log stream unavailable")
 	}
 	defer unsubscribe()
 
@@ -148,7 +148,7 @@ loop:
 			}
 			err := c2.Send(&pb.BuildLog{Log: l})
 			if err != nil {
-				return errors.Wrap(err, "sending message")
+				return oops.Wrapf(err, "sending message")
 			}
 		case <-ctx.Done():
 			break loop
@@ -204,7 +204,7 @@ func (s *ControllerService) DiscoverBuildLogLocal(_ context.Context, c *connect.
 	}
 	addr, ok := s.cluster.MyAddress(s.Port)
 	if !ok {
-		return nil, errors.New("self address not available")
+		return nil, oops.New("self address not available")
 	}
 	return connect.NewResponse(&pb.AddressInfo{Address: &addr}), nil
 }

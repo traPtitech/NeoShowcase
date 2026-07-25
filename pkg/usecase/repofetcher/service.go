@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
+	"github.com/samber/oops"
 	"github.com/sourcegraph/conc/pool"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -210,7 +210,7 @@ func (r *service) updateApps(ctx context.Context, repo *domain.Repository, apps 
 
 		err = r.appRepo.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{Commit: optional.From(commit)})
 		if err != nil {
-			return errors.Wrapf(err, "updating application (app_id=%s)", app.ID)
+			return oops.With("app_id", app.ID).Wrapf(err, "updating application")
 		}
 		// Notify builds
 		r.cd.RegisterBuild(app.ID)

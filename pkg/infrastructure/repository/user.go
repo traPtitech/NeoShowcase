@@ -6,8 +6,8 @@ import (
 
 	"github.com/aarondl/sqlboiler/v4/boil"
 	"github.com/aarondl/sqlboiler/v4/queries/qm"
-	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
+	"github.com/samber/oops"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository/models"
@@ -34,7 +34,7 @@ func (r *userRepository) GetUsers(ctx context.Context, cond domain.GetUserCondit
 
 	users, err := models.Users(mods...).All(ctx, r.db)
 	if err != nil {
-		return nil, errors.Wrap(err, "getting users")
+		return nil, oops.Wrapf(err, "getting users")
 	}
 	return ds.Map(users, repoconvert.ToDomainUser), nil
 }
@@ -42,7 +42,7 @@ func (r *userRepository) GetUsers(ctx context.Context, cond domain.GetUserCondit
 func (r *userRepository) EnsureUser(ctx context.Context, name string) (*domain.User, error) {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "beginning transaction")
+		return nil, oops.Wrapf(err, "beginning transaction")
 	}
 	defer tx.Rollback()
 
@@ -51,7 +51,7 @@ func (r *userRepository) EnsureUser(ctx context.Context, name string) (*domain.U
 		qm.For("UPDATE"),
 	).One(ctx, tx)
 	if err != nil && !isNoRowsErr(err) {
-		return nil, errors.Wrap(err, "getting user")
+		return nil, oops.Wrapf(err, "getting user")
 	}
 
 	if isNoRowsErr(err) {
@@ -59,13 +59,13 @@ func (r *userRepository) EnsureUser(ctx context.Context, name string) (*domain.U
 		mu = repoconvert.FromDomainUser(user)
 		err = mu.Insert(ctx, tx, boil.Blacklist())
 		if err != nil {
-			return nil, errors.Wrap(err, "inserting user")
+			return nil, oops.Wrapf(err, "inserting user")
 		}
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		return nil, errors.Wrap(err, "committing")
+		return nil, oops.Wrapf(err, "committing")
 	}
 
 	return repoconvert.ToDomainUser(mu), nil
@@ -74,7 +74,7 @@ func (r *userRepository) EnsureUser(ctx context.Context, name string) (*domain.U
 func (r *userRepository) EnsureUsers(ctx context.Context, names []string) ([]*domain.User, error) {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "beginning transaction")
+		return nil, oops.Wrapf(err, "beginning transaction")
 	}
 	defer tx.Rollback()
 
@@ -83,7 +83,7 @@ func (r *userRepository) EnsureUsers(ctx context.Context, names []string) ([]*do
 		qm.For("UPDATE"),
 	).All(ctx, tx)
 	if err != nil {
-		return nil, errors.Wrap(err, "getting users")
+		return nil, oops.Wrapf(err, "getting users")
 	}
 
 	modelUsers := lo.SliceToMap(mus, func(mu *models.User) (string, *models.User) { return mu.Name, mu })
@@ -95,14 +95,14 @@ func (r *userRepository) EnsureUsers(ctx context.Context, names []string) ([]*do
 		mu := repoconvert.FromDomainUser(user)
 		err = mu.Insert(ctx, tx, boil.Blacklist())
 		if err != nil {
-			return nil, errors.Wrap(err, "inserting user")
+			return nil, oops.Wrapf(err, "inserting user")
 		}
 		modelUsers[name] = mu
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		return nil, errors.Wrap(err, "committing")
+		return nil, oops.Wrapf(err, "committing")
 	}
 
 	return lo.MapToSlice(modelUsers, func(name string, mu *models.User) *domain.User {
@@ -119,7 +119,7 @@ func (r *userRepository) GetUserKeys(ctx context.Context, cond domain.GetUserKey
 
 	keys, err := models.UserKeys(mods...).All(ctx, r.db)
 	if err != nil {
-		return nil, errors.Wrap(err, "getting user keys")
+		return nil, oops.Wrapf(err, "getting user keys")
 	}
 	return ds.Map(keys, repoconvert.ToDomainUserKey), nil
 }
@@ -128,7 +128,7 @@ func (r *userRepository) CreateUserKey(ctx context.Context, key *domain.UserKey)
 	mk := repoconvert.FromDomainUserKey(key)
 	err := mk.Insert(ctx, r.db, boil.Blacklist())
 	if err != nil {
-		return errors.Wrap(err, "inserting user key")
+		return oops.Wrapf(err, "inserting user key")
 	}
 	return nil
 }
@@ -139,7 +139,7 @@ func (r *userRepository) DeleteUserKey(ctx context.Context, keyID string, userID
 		models.UserKeyWhere.UserID.EQ(userID),
 	).DeleteAll(ctx, r.db)
 	if err != nil {
-		return errors.Wrap(err, "deleting user key")
+		return oops.Wrapf(err, "deleting user key")
 	}
 	return nil
 }

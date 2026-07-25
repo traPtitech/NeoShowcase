@@ -6,7 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 
-	"github.com/friendsofgo/errors"
+	"github.com/samber/oops"
 )
 
 // Escape char
@@ -69,7 +69,7 @@ func (tc TrueColor) GetSuffix() string {
 func NewTrueColorFromHexString(c string) (*TrueColor, error) {
 	rgb, err := hex.DecodeString(c)
 	if err != nil {
-		return nil, errors.Errorf("invalid color given (%s)", c)
+		return nil, oops.Errorf("invalid color given (%s)", c)
 	}
 
 	return &TrueColor{

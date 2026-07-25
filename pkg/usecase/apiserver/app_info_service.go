@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/friendsofgo/errors"
+	"github.com/samber/oops"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
@@ -59,18 +59,18 @@ func (s *Service) GetOutputStream(ctx context.Context, id string, begin time.Tim
 
 	ch, err := s.containerLogger.Stream(ctx, app, begin)
 	if err != nil {
-		return errors.Wrap(err, "connecting to stream")
+		return oops.Wrapf(err, "connecting to stream")
 	}
 
 	for {
 		select {
 		case d, ok := <-ch:
 			if !ok {
-				return errors.Wrap(err, "log stream closed")
+				return oops.Wrapf(err, "log stream closed")
 			}
 			err = send(d)
 			if err != nil {
-				return errors.Wrap(err, "sending log")
+				return oops.Wrapf(err, "sending log")
 			}
 		case <-ctx.Done():
 			return nil

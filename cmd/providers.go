@@ -9,8 +9,8 @@ import (
 
 	"connectrpc.com/connect"
 	"connectrpc.com/otelconnect"
-	"github.com/friendsofgo/errors"
 	buildkit "github.com/moby/buildkit/client"
+	"github.com/samber/oops"
 
 	authdev "github.com/traPtitech/neoshowcase/cmd/auth-dev"
 	buildpackhelper "github.com/traPtitech/neoshowcase/cmd/buildpack-helper"
@@ -38,7 +38,7 @@ import (
 func provideRepositoryPrivateKey(c Config) (domain.PrivateKey, error) {
 	bytes, err := os.ReadFile(c.PrivateKeyFile)
 	if err != nil {
-		return nil, errors.Wrap(err, "opening private key file")
+		return nil, oops.Wrapf(err, "opening private key file")
 	}
 	return bytes, nil
 }
@@ -52,7 +52,7 @@ func provideStorage(c domain.StorageConfig) (domain.Storage, error) {
 	case "swift":
 		return storage.NewSwiftStorage(c.Swift.Container, c.Swift.UserName, c.Swift.APIKey, c.Swift.TenantName, c.Swift.TenantID, c.Swift.AuthURL)
 	default:
-		return nil, errors.Errorf("unknown storage: %s", c.Type)
+		return nil, oops.Errorf("unknown storage: %s", c.Type)
 	}
 }
 
@@ -100,17 +100,17 @@ func provideDiscoverer(c Config) (discovery.Discoverer, error) {
 	case "k8s", "kubernetes":
 		return discovery.NewK8sDiscoverer(c.Components.Controller.K8s.ServiceName)
 	}
-	return nil, errors.New("unknown mode: " + c.Components.Controller.Mode)
+	return nil, oops.New("unknown mode: " + c.Components.Controller.Mode)
 }
 
 func provideBuilderConfig(c Config) (*ubuilder.Config, error) {
 	stepTimeoutStr := c.Components.Builder.StepTimeout
 	stepTimeout, err := time.ParseDuration(stepTimeoutStr)
 	if err != nil {
-		return nil, errors.Wrapf(err, "parsing components.builder.stepTimeout value: %s", stepTimeoutStr)
+		return nil, oops.Wrapf(err, "parsing components.builder.stepTimeout value: %s", stepTimeoutStr)
 	}
 	if stepTimeout <= 0 {
-		return nil, errors.Errorf("components.builder.stepTimeout must be positive: %s", stepTimeoutStr)
+		return nil, oops.Errorf("components.builder.stepTimeout must be positive: %s", stepTimeoutStr)
 	}
 	return &ubuilder.Config{
 		StepTimeout: stepTimeout,
@@ -123,7 +123,7 @@ func provideBuildkitClient(c Config) (*buildkit.Client, error) {
 	defer cancel()
 	client, err := buildkit.New(ctx, cc.Buildkit.Address)
 	if err != nil {
-		return nil, errors.Wrap(err, "initializing Buildkit Client")
+		return nil, oops.Wrapf(err, "initializing Buildkit Client")
 	}
 	return client, nil
 }
@@ -167,7 +167,7 @@ func provideContainerLogger(c Config) (domain.ContainerLogger, error) {
 	case "victorialogs":
 		return victorialogs.NewVictoriaLogsStreamer(cc.Log.VictoriaLogs)
 	default:
-		return nil, errors.Errorf("invalid log type: %v (supported values: loki, victorialogs)", cc.Log.Type)
+		return nil, oops.Errorf("invalid log type: %v (supported values: loki, victorialogs)", cc.Log.Type)
 	}
 }
 
@@ -177,7 +177,7 @@ func provideMetricsService(c Config) (domain.MetricsService, error) {
 	case "prometheus":
 		return prometheus.NewPromClient(cc.Metrics.Prometheus)
 	default:
-		return nil, errors.Errorf("invalid metrics type: %v (supported values: prometheus)", cc.Metrics.Type)
+		return nil, oops.Errorf("invalid metrics type: %v (supported values: prometheus)", cc.Metrics.Type)
 	}
 }
 
@@ -251,7 +251,7 @@ func provideStaticServer(c Config) (domain.StaticServer, error) {
 	case "caddy":
 		return caddy.NewServer(cc.Server.Caddy), nil
 	default:
-		return nil, errors.Errorf("invalid static server type: %v", cc.Server.Type)
+		return nil, oops.Errorf("invalid static server type: %v", cc.Server.Type)
 	}
 }
 

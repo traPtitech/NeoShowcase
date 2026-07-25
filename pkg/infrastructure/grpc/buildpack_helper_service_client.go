@@ -5,8 +5,8 @@ import (
 	"io"
 
 	"connectrpc.com/connect"
-	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
+	"github.com/samber/oops"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
@@ -53,7 +53,7 @@ func (b *BuildpackHelperServiceClient) Exec(ctx context.Context, workDir string,
 	})
 	st, err := b.client.Exec(ctx, req)
 	if err != nil {
-		return 0, errors.Wrap(err, "requesting exec")
+		return 0, oops.Wrapf(err, "requesting exec")
 	}
 	var exitCode *int
 	for st.Receive() {
@@ -71,10 +71,10 @@ func (b *BuildpackHelperServiceClient) Exec(ctx context.Context, workDir string,
 		}
 	}
 	if err := st.Err(); err != nil {
-		return 0, errors.Wrap(err, "receiving logs")
+		return 0, oops.Wrapf(err, "receiving logs")
 	}
 	if exitCode == nil {
-		return 0, errors.New("exit code not received")
+		return 0, oops.New("exit code not received")
 	}
 	return *exitCode, nil
 }

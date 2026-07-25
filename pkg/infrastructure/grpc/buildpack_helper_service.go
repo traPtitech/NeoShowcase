@@ -3,12 +3,13 @@ package grpc
 import (
 	"bytes"
 	"context"
+	"errors"
 	"io"
 	"os"
 	"os/exec"
 
 	"connectrpc.com/connect"
-	"github.com/friendsofgo/errors"
+	"github.com/samber/oops"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb/pbconnect"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
@@ -51,7 +52,7 @@ func (b *buildpackHelperExec) Write(p []byte) (n int, err error) {
 
 func (b *BuildpackHelperService) Exec(ctx context.Context, req *connect.Request[pb.HelperExecRequest], st *connect.ServerStream[pb.HelperExecResponse]) error {
 	if len(req.Msg.Cmd) == 0 {
-		return connect.NewError(connect.CodeInvalidArgument, errors.New("cmd cannot have length of 0"))
+		return connect.NewError(connect.CodeInvalidArgument, oops.New("cmd cannot have length of 0"))
 	}
 
 	// Prepare command

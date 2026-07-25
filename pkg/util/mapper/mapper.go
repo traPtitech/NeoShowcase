@@ -1,8 +1,8 @@
 package mapper
 
 import (
-	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
+	"github.com/samber/oops"
 )
 
 func reverse[V1, V2 comparable](m map[V1]V2) map[V2]V1 {
@@ -28,7 +28,7 @@ type ValueMapper[V1, V2 comparable] struct {
 func NewValueMapper[V1, V2 comparable](m map[V1]V2) (*ValueMapper[V1, V2], error) {
 	m2 := reverse(m)
 	if len(m2) != len(m) {
-		return nil, errors.New("reverse map len does not match: possible typo")
+		return nil, oops.New("reverse map len does not match: possible typo")
 	}
 	return &ValueMapper[V1, V2]{
 		m1: m,

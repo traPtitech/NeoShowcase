@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/friendsofgo/errors"
+	"github.com/samber/oops"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
@@ -58,20 +58,20 @@ func (s *Service) StartApplication(ctx context.Context, id string) error {
 		UpdatedAt: optional.From(time.Now()),
 	})
 	if err != nil {
-		return errors.Wrap(err, "marking application as running")
+		return oops.Wrapf(err, "marking application as running")
 	}
 
 	app, err := s.appRepo.GetApplication(ctx, id)
 	if err != nil {
-		return errors.Wrap(err, "getting application")
+		return oops.Wrapf(err, "getting application")
 	}
 	err = s.controller.FetchRepository(ctx, app.RepositoryID)
 	if err != nil {
-		return errors.Wrap(err, "requesting repository fetch")
+		return oops.Wrapf(err, "requesting repository fetch")
 	}
 	err = s.controller.SyncDeployments(ctx)
 	if err != nil {
-		return errors.Wrap(err, "requesting sync deployment")
+		return oops.Wrapf(err, "requesting sync deployment")
 	}
 	return nil
 }
@@ -87,12 +87,12 @@ func (s *Service) StopApplication(ctx context.Context, id string) error {
 		UpdatedAt: optional.From(time.Now()),
 	})
 	if err != nil {
-		return errors.Wrap(err, "marking application as not running")
+		return oops.Wrapf(err, "marking application as not running")
 	}
 
 	err = s.controller.SyncDeployments(ctx)
 	if err != nil {
-		return errors.Wrap(err, "requesting sync deployment")
+		return oops.Wrapf(err, "requesting sync deployment")
 	}
 	return nil
 }

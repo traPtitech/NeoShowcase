@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/friendsofgo/errors"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing"
@@ -15,6 +14,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/samber/lo"
+	"github.com/samber/oops"
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
@@ -66,7 +66,7 @@ func (s *service) ResolveRefs(ctx context.Context, repo *domain.Repository) (map
 		Auth: auth,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, fmt.Sprintf("list remote refs at %v", repo.URL))
+		return nil, oops.With("repo_url", repo.URL).Wrapf(err, "listing remote refs")
 	}
 
 	refToCommit := make(map[string]string, 2*len(refs))
@@ -106,16 +106,16 @@ func (s *service) CloneRepository(ctx context.Context, dir string, repo *domain.
 		Auth:       auth,
 	})
 	if err != nil {
-		return errors.Wrap(err, "fetch commit")
+		return oops.Wrapf(err, "fetch commit")
 	}
 
 	wt, err := localRepo.Worktree()
 	if err != nil {
-		return errors.Wrap(err, "get worktree")
+		return oops.Wrapf(err, "get worktree")
 	}
 	err = wt.Checkout(&git.CheckoutOptions{Branch: targetRef})
 	if err != nil {
-		return errors.Wrap(err, "checkout")
+		return oops.Wrapf(err, "checkout")
 	}
 
 	err = updateSubModules(wt, auth)
@@ -134,7 +134,7 @@ func (s *service) CloneRepository(ctx context.Context, dir string, repo *domain.
 func updateSubModules(wt *git.Worktree, auth transport.AuthMethod) error {
 	sm, err := wt.Submodules()
 	if err != nil {
-		return errors.Wrap(err, "get submodules")
+		return oops.Wrapf(err, "get submodules")
 	}
 	// Try with auth first, then try without auth
 	err = sm.Update(&git.SubmoduleUpdateOptions{
@@ -150,7 +150,7 @@ func updateSubModules(wt *git.Worktree, auth transport.AuthMethod) error {
 			Depth:             1,
 		})
 		if err != nil {
-			return errors.Wrap(err, "update submodules")
+			return oops.Wrapf(err, "update submodules")
 		}
 	}
 	return nil
@@ -171,14 +171,14 @@ func (s *service) CreateBareRepository(dir string, repo *domain.Repository) (dom
 func initializeGitRepo(dir, remoteURL string, isBare bool) (*git.Repository, *git.Remote, error) {
 	localRepo, err := git.PlainInit(dir, isBare)
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "init repository")
+		return nil, nil, oops.Wrapf(err, "init repository")
 	}
 	remote, err := localRepo.CreateRemote(&config.RemoteConfig{
 		Name: "origin",
 		URLs: []string{remoteURL},
 	})
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "create remote")
+		return nil, nil, oops.Wrapf(err, "create remote")
 	}
 	return localRepo, remote, nil
 }
@@ -203,7 +203,7 @@ func (r *repository) Fetch(ctx context.Context, hashes []string) error {
 		Auth:       r.auth,
 	})
 	if err != nil {
-		return errors.Wrap(err, "fetch commits")
+		return oops.Wrapf(err, "fetch commits")
 	}
 
 	return nil
@@ -212,7 +212,7 @@ func (r *repository) Fetch(ctx context.Context, hashes []string) error {
 func (r *repository) GetCommit(hash string) (*domain.RepositoryCommit, error) {
 	commit, err := r.repo.CommitObject(plumbing.NewHash(hash))
 	if err != nil {
-		return nil, errors.Wrap(err, "get commit")
+		return nil, oops.Wrapf(err, "get commit")
 	}
 	return toRepositoryCommit(commit), nil
 }

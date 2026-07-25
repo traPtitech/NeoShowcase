@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/friendsofgo/errors"
+	"github.com/samber/oops"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
@@ -19,10 +19,10 @@ type LocalStorage struct {
 func NewLocalStorage(dir string) (*LocalStorage, error) {
 	fi, err := os.Stat(dir)
 	if err != nil {
-		return &LocalStorage{}, errors.Wrapf(err, "checking dir %s", dir)
+		return &LocalStorage{}, oops.With("dir", dir).Wrapf(err, "checking dir")
 	}
 	if !fi.IsDir() {
-		return &LocalStorage{}, errors.Errorf("dir %s is not a directory", dir)
+		return &LocalStorage{}, oops.Errorf("dir %s is not a directory", dir)
 	}
 
 	return &LocalStorage{localDir: dir}, nil

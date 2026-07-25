@@ -2,12 +2,13 @@ package builder
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"time"
 
-	"github.com/friendsofgo/errors"
 	buildkit "github.com/moby/buildkit/client"
+	"github.com/samber/oops"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
@@ -137,7 +138,7 @@ func (s *ServiceImpl) buildSteps(st *state) ([]buildStep, error) {
 			return s.saveArtifact(ctx, st)
 		}})
 	default:
-		return nil, errors.New("unknown build config type")
+		return nil, oops.New("unknown build config type")
 	}
 
 	return steps, nil
@@ -230,7 +231,7 @@ func (s *ServiceImpl) finalize(ctx context.Context, st *state, status domain.Bui
 func (s *ServiceImpl) fetchImageSize(ctx context.Context, st *state) (int64, error) {
 	size, err := s.regclient.GetImageSize(ctx, s.imageConfig.ImageName(st.app.ID), s.imageTag(st.build))
 	if err != nil {
-		return 0, errors.Wrap(err, "getting image size")
+		return 0, oops.Wrapf(err, "getting image size")
 	}
 
 	return size, nil

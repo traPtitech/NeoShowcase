@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
+	"github.com/samber/oops"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
@@ -48,7 +48,7 @@ func (s *Service) convertRepositoryAuth(a CreateRepositoryAuth) (domain.Reposito
 			SSHKey: pem,
 		}, nil
 	default:
-		return domain.RepositoryAuth{}, errors.Errorf("unknown auth method: %v", a.Method)
+		return domain.RepositoryAuth{}, oops.Errorf("unknown auth method: %v", a.Method)
 	}
 }
 
@@ -168,7 +168,7 @@ func (s *Service) UpdateRepository(ctx context.Context, id string, args *UpdateR
 func (s *Service) RefreshRepository(ctx context.Context, id string) error {
 	err := s.controller.FetchRepository(ctx, id)
 	if err != nil {
-		return errors.Wrap(err, "requesting controller")
+		return oops.Wrapf(err, "requesting controller")
 	}
 	return nil
 }
@@ -181,7 +181,7 @@ func (s *Service) DeleteRepository(ctx context.Context, id string) error {
 
 	apps, err := s.appRepo.GetApplications(ctx, domain.GetApplicationCondition{RepositoryID: optional.From(id)})
 	if err != nil {
-		return errors.Wrap(err, "getting related applications")
+		return oops.Wrapf(err, "getting related applications")
 	}
 	if len(apps) > 0 {
 		return newError(ErrorTypeBadRequest, "all related applications must be deleted first", nil)

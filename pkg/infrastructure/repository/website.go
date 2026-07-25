@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/friendsofgo/errors"
+	"github.com/samber/oops"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository/models"
@@ -25,7 +25,7 @@ func NewWebsiteRepository(db *sql.DB) domain.WebsiteRepository {
 func (w *websiteRepository) GetWebsites(ctx context.Context) ([]*domain.Website, error) {
 	websites, err := models.Websites().All(ctx, w.db)
 	if err != nil {
-		return nil, errors.Wrap(err, "getting websites")
+		return nil, oops.Wrapf(err, "getting websites")
 	}
 	return ds.Map(websites, repoconvert.ToDomainWebsite), nil
 }

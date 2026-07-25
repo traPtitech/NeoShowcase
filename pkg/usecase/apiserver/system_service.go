@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/friendsofgo/errors"
 	"github.com/motoki317/sc"
+	"github.com/samber/oops"
 	"golang.org/x/crypto/ed25519"
 	"golang.org/x/crypto/ssh"
 
@@ -36,11 +36,11 @@ func (s *Service) GenerateKeyPair(ctx context.Context) (keyID string, publicKey 
 	keyID = domain.NewID()
 	privKey, err := s.tmpKeys.Get(ctx, keyID)
 	if err != nil {
-		return "", "", errors.Wrap(err, "generating ed25519 key")
+		return "", "", oops.Wrapf(err, "generating ed25519 key")
 	}
 	pubKey, err := ssh.NewPublicKey(privKey.Public())
 	if err != nil {
-		return "", "", errors.Wrap(err, "creating public key")
+		return "", "", oops.Wrapf(err, "creating public key")
 	}
 	encoded := domain.Base64EncodedPublicKey(pubKey)
 	return keyID, encoded + " neoshowcase", nil

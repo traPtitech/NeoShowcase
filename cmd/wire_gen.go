@@ -8,8 +8,8 @@ package main
 
 import (
 	"github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
-	"github.com/friendsofgo/errors"
 	"github.com/google/wire"
+	"github.com/samber/oops"
 	builder2 "github.com/traPtitech/neoshowcase/cmd/builder"
 	"github.com/traPtitech/neoshowcase/cmd/buildpack-helper"
 	"github.com/traPtitech/neoshowcase/cmd/controller"
@@ -506,5 +506,5 @@ func NewController(c Config) (component, error) {
 	case "k8s", "kubernetes":
 		return NewControllerK8s(c)
 	}
-	return nil, errors.New("unknown mode: " + c.Components.Controller.Mode)
+	return nil, oops.New("unknown mode: " + c.Components.Controller.Mode)
 }

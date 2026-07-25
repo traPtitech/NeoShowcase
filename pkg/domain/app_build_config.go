@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/friendsofgo/errors"
 	"github.com/google/shlex"
 	"github.com/samber/lo"
+	"github.com/samber/oops"
 )
 
 type BuildType int
@@ -86,7 +86,7 @@ func ParseArgs(s string) ([]string, error) {
 	}
 	args, err := shlex.Split(s)
 	if err != nil {
-		return nil, errors.Wrap(err, "cannot parse command")
+		return nil, oops.Wrapf(err, "cannot parse command")
 	}
 	shellSyntax := lo.ContainsBy(args, func(arg string) bool {
 		return strings.ContainsAny(arg, shellSpecialCharacters)
@@ -99,13 +99,13 @@ func ParseArgs(s string) ([]string, error) {
 
 func (rc *RuntimeConfig) Validate() error {
 	if _, err := ParseArgs(rc.Entrypoint); err != nil {
-		return errors.Wrap(err, "entrypoint")
+		return oops.Wrapf(err, "entrypoint")
 	}
 	if _, err := ParseArgs(rc.Command); err != nil {
-		return errors.Wrap(err, "command")
+		return oops.Wrapf(err, "command")
 	}
 	if rc.AutoShutdown.Enabled && rc.AutoShutdown.Startup == StartupBehaviorUndefined {
-		return errors.New("startup is required if auto shutdown is enabled")
+		return oops.New("startup is required if auto shutdown is enabled")
 	}
 	return nil
 }
@@ -133,7 +133,7 @@ type StaticConfig struct {
 
 func (sc *StaticConfig) Validate() error {
 	if sc.ArtifactPath == "" {
-		return errors.New("artifact_path is required for static builds")
+		return oops.New("artifact_path is required for static builds")
 	}
 	return nil
 }
@@ -205,7 +205,7 @@ func (bc *BuildConfigRuntimeCmd) Validate() error {
 	}
 	// NOTE: Base image could have no entrypoint/command but is impossible to catch only from config
 	if bc.BaseImage == "" && bc.Entrypoint == "" && bc.Command == "" {
-		return errors.New("entrypoint or command is required")
+		return oops.New("entrypoint or command is required")
 	}
 	// NOTE: base image is not necessary (default: scratch)
 	// NOTE: build cmd is not necessary
@@ -228,7 +228,7 @@ func (bc *BuildConfigRuntimeDockerfile) Validate() error {
 		return err
 	}
 	if bc.DockerfileName == "" {
-		return errors.New("dockerfile_name is required")
+		return oops.New("dockerfile_name is required")
 	}
 	// NOTE: Runtime Dockerfile build could have no entrypoint/command but is impossible to catch only from config
 	// (can only catch at runtime)
@@ -271,7 +271,7 @@ func (bc *BuildConfigStaticCmd) Validate() error {
 	// NOTE: base image is not necessary (default: scratch)
 	// NOTE: build cmd is not necessary
 	if bc.ArtifactPath == "" {
-		return errors.New("artifact_path is required")
+		return oops.New("artifact_path is required")
 	}
 	return nil
 }
@@ -292,7 +292,7 @@ func (bc *BuildConfigStaticDockerfile) Validate() error {
 		return err
 	}
 	if bc.DockerfileName == "" {
-		return errors.New("dockerfile_name is required")
+		return oops.New("dockerfile_name is required")
 	}
 	return nil
 }
