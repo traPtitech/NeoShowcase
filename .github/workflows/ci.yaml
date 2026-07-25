@@ -91,9 +91,11 @@ jobs:
       - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
         with:
           go-version-file: ./go.mod
+      - uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
+        with:
+          install_args: go:github.com/sqldef/sqldef/v3/cmd/mysqldef
       - name: Run migration
         run: |
-          go install github.com/sqldef/sqldef/v3/cmd/mysqldef@v3.11.16
           DB_PORT=5004 ./migrations/entrypoint.sh ./migrations/schema.sql
       - name: Run tests
         run: go test ./... -v ${{ matrix.race }} -coverprofile=coverage.out -covermode=atomic -vet=off
@@ -163,9 +165,11 @@ jobs:
       - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
         with:
           go-version-file: ./go.mod
+      - uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
+        with:
+          install_args: go:github.com/sqldef/sqldef/v3/cmd/mysqldef
       - name: Run migration
         run: |
-          go install github.com/sqldef/sqldef/v3/cmd/mysqldef@v3.11.16
           DB_PORT=5004 ./migrations/entrypoint.sh ./migrations/schema.sql
       - uses: k1low/setup-tbls@f25e3d013a596865b2db90dac7ee19e9f15b5780 # v1.4.0
         with:
