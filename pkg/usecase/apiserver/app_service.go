@@ -174,7 +174,7 @@ func (s *Service) GetApplications(ctx context.Context, scope GetAppScope) ([]*To
 		// No scope
 	case GetAppScopeRepository:
 		if !scope.RepositoryID.Valid {
-			return nil, oops.New("repository id not set")
+			return nil, newError(ErrorTypeBadRequest, "repository id is required", nil)
 		}
 		cond.RepositoryID = scope.RepositoryID
 	default:

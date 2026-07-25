@@ -273,7 +273,7 @@ func (s *ControllerBuilderService) startBuildPayload(ctx context.Context, buildI
 	}, nil
 }
 
-var errBuildLockConflict = oops.New("build lock conflict")
+var errBuildLockConflict = errors.New("build lock conflict")
 
 func (s *ControllerBuilderService) startBuild(ctx context.Context, conn *builderConnection, buildID string) error {
 	// Change build status in order to acquire lock

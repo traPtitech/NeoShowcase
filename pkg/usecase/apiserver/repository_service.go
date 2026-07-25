@@ -48,7 +48,7 @@ func (s *Service) convertRepositoryAuth(a CreateRepositoryAuth) (domain.Reposito
 			SSHKey: pem,
 		}, nil
 	default:
-		return domain.RepositoryAuth{}, oops.Errorf("unknown auth method: %v", a.Method)
+		return domain.RepositoryAuth{}, newError(ErrorTypeBadRequest, fmt.Sprintf("unknown auth method: %v", a.Method), nil)
 	}
 }
 

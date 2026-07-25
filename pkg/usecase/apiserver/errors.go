@@ -33,16 +33,21 @@ func newError(typ ErrorType, message string, err error) error {
 // DecomposeError reports the business meaning a usecase attached to err, along
 // with the client-facing message.
 //
-// It searches the whole error chain, so an error stays classified even after an
-// outer layer wraps it with more context.
+// It reads the classification from the outermost layer that carries one, not from
+// oopsErr.Code()/Public() directly: those resolve to the *deepest* value in the
+// chain, so a classified error wrapped as the cause of another would otherwise
+// hijack the tag and public message. Walking Layers() (outermost to innermost)
+// keeps the classification the top-most newError set.
 func DecomposeError(err error) (publicMessage string, typ ErrorType, ok bool) {
 	oopsErr, found := oops.AsOops(err)
 	if !found {
 		return "", "", false
 	}
-	code, isString := oopsErr.Code().(string)
-	if !isString || code == "" {
-		return "", "", false
+	for _, layer := range oopsErr.Layers() {
+		code, isString := layer.Code.(string)
+		if isString && code != "" {
+			return layer.Public, ErrorType(code), true
+		}
 	}
-	return oopsErr.Public(), ErrorType(code), true
+	return "", "", false
 }

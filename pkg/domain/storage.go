@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"errors"
 	"io"
 	"path/filepath"
 
@@ -9,7 +10,7 @@ import (
 
 var (
 	// ErrFileNotFound ファイルが存在しない
-	ErrFileNotFound = oops.New("not found")
+	ErrFileNotFound = errors.New("not found")
 )
 
 // Storage ストレージインターフェース
