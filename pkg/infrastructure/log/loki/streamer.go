@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"iter"
 	"log/slog"
@@ -13,7 +14,7 @@ import (
 	"time"
 
 	"github.com/coder/websocket"
-	"github.com/friendsofgo/errors"
+	"github.com/samber/oops"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
@@ -39,7 +40,7 @@ func NewLokiStreamer(
 ) (domain.ContainerLogger, error) {
 	tmpl, err := template.New("logQL templater").Parse(config.QueryTemplate)
 	if err != nil {
-		return nil, errors.Wrap(err, "invalid logQL template")
+		return nil, oops.Wrapf(err, "invalid logQL template")
 	}
 
 	l := &lokiStreamer{
@@ -57,7 +58,7 @@ func NewLokiStreamer(
 	var dummy domain.Application
 	_, err = l.logQL(&dummy)
 	if err != nil {
-		return nil, errors.Wrap(err, "executing logQL template")
+		return nil, oops.Wrapf(err, "executing logQL template")
 	}
 
 	return l, nil
@@ -85,11 +86,11 @@ func (l *lokiStreamer) LogLimit() int {
 func (l *lokiStreamer) Get(ctx context.Context, app *domain.Application, before time.Time, limit int) ([]*domain.ContainerLog, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", l.queryRangeEndpoint(), nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "creating http request")
+		return nil, oops.Wrapf(err, "creating http request")
 	}
 	logQL, err := l.logQL(app)
 	if err != nil {
-		return nil, errors.Wrap(err, "templating logQL")
+		return nil, oops.Wrapf(err, "templating logQL")
 	}
 	q := req.URL.Query()
 	q.Set("query", logQL)
@@ -101,19 +102,19 @@ func (l *lokiStreamer) Get(ctx context.Context, app *domain.Application, before 
 
 	hres, err := l.client.Do(req)
 	if err != nil {
-		return nil, errors.Wrap(err, "performing http request")
+		return nil, oops.Wrapf(err, "performing http request")
 	}
 	var res queryRangeResponse
 	err = json.NewDecoder(hres.Body).Decode(&res)
 	if err != nil {
-		return nil, errors.Wrap(err, "decoding response")
+		return nil, oops.Wrapf(err, "decoding response")
 	}
 
 	if res.Status != "success" {
-		return nil, errors.Errorf("expected response status to be success, got %s", res.Status)
+		return nil, oops.Errorf("expected response status to be success, got %s", res.Status)
 	}
 	if res.Data.ResultType != "streams" {
-		return nil, errors.Errorf("expected result type to be streams, got %s", res.Data.ResultType)
+		return nil, oops.Errorf("expected result type to be streams, got %s", res.Data.ResultType)
 	}
 	return res.Data.Result.toSortedResponse(true)
 }
@@ -121,7 +122,7 @@ func (l *lokiStreamer) Get(ctx context.Context, app *domain.Application, before 
 func (l *lokiStreamer) Stream(ctx context.Context, app *domain.Application, begin time.Time) (<-chan *domain.ContainerLog, error) {
 	logQL, err := l.logQL(app)
 	if err != nil {
-		return nil, errors.Wrap(err, "templating logQL")
+		return nil, oops.Wrapf(err, "templating logQL")
 	}
 
 	ch := make(chan *domain.ContainerLog, 100)

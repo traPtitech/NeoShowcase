@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"path/filepath"
 
-	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
+	"github.com/samber/oops"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
@@ -115,7 +115,7 @@ func (s *server) postConfig(b []byte) error {
 	defer res.Body.Close()
 	if res.StatusCode < 200 || 300 <= res.StatusCode {
 		resBody, _ := io.ReadAll(res.Body)
-		return errors.Errorf("expected 2xx, invalid status code %v: %v", res.StatusCode, string(resBody))
+		return oops.Errorf("expected 2xx, invalid status code %v: %v", res.StatusCode, string(resBody))
 	}
 	return nil
 }

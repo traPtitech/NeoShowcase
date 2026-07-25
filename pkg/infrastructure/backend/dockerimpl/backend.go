@@ -12,9 +12,9 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/retry"
 
 	clitypes "github.com/docker/cli/cli/config/types"
-	"github.com/friendsofgo/errors"
 	"github.com/moby/moby/api/types/container"
 	"github.com/moby/moby/client"
+	"github.com/samber/oops"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
@@ -70,7 +70,7 @@ func NewDockerBackend(
 func (b *Backend) Start(ctx context.Context) error {
 	// showcase用のネットワークを用意
 	if err := b.initNetworks(ctx); err != nil {
-		return errors.Wrap(err, "initializing networks")
+		return oops.Wrapf(err, "initializing networks")
 	}
 
 	eventCtx, eventCancel := context.WithCancel(context.Background())
@@ -135,7 +135,7 @@ func (b *Backend) ListenContainerEvents() (sub <-chan *domain.ContainerEvent, un
 func (b *Backend) initNetworks(ctx context.Context) error {
 	networks, err := b.c.NetworkList(ctx, client.NetworkListOptions{})
 	if err != nil {
-		return errors.Wrap(err, "listing networks")
+		return oops.Wrapf(err, "listing networks")
 	}
 	for _, network := range networks.Items {
 		if network.Name == b.config.Network {

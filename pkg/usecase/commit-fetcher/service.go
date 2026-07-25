@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
+	"github.com/samber/oops"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/util/discovery"
@@ -141,7 +141,7 @@ func (s *service) fetchOne(ctx context.Context, repositoryID string, hashes []st
 	// Check if we have already tried
 	recordedCommits, err := s.commitsRepo.GetCommits(ctx, hashes)
 	if err != nil {
-		return errors.Wrap(err, "getting recorded commits")
+		return oops.Wrapf(err, "getting recorded commits")
 	}
 	recordedCommitMap := lo.SliceToMap(recordedCommits, func(c *domain.RepositoryCommit) (string, bool) {
 		return c.Hash, true
@@ -155,24 +155,24 @@ func (s *service) fetchOne(ctx context.Context, repositoryID string, hashes []st
 
 	repo, err := s.gitRepo.GetRepository(ctx, repositoryID)
 	if err != nil {
-		return errors.Wrapf(err, "getting repository (repository_id=%s)", repositoryID)
+		return oops.With("repository_id", repositoryID).Wrapf(err, "getting repository")
 	}
 
 	// Init local git directory
 	tmpDir, err := os.MkdirTemp("", "commit-fetcher-")
 	if err != nil {
-		return errors.Wrap(err, "creating temp dir")
+		return oops.Wrapf(err, "creating temp dir")
 	}
 	defer os.RemoveAll(tmpDir)
 
 	localRepo, err := s.gitsvc.CreateBareRepository(tmpDir, repo)
 	if err != nil {
-		return errors.Wrap(err, "initializing git repo")
+		return oops.Wrapf(err, "initializing git repo")
 	}
 
 	err = localRepo.Fetch(ctx, hashes)
 	if err != nil {
-		return errors.Wrap(err, "fetching commits")
+		return oops.Wrapf(err, "fetching commits")
 	}
 
 	// Get commit objects and record, in a *fail-safe* manner -
@@ -186,7 +186,7 @@ func (s *service) fetchOne(ctx context.Context, repositoryID string, hashes []st
 
 		err = s.commitsRepo.RecordCommit(ctx, commit)
 		if err != nil {
-			return errors.Wrap(err, "recording commit")
+			return oops.Wrapf(err, "recording commit")
 		}
 	}
 

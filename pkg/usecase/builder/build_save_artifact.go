@@ -7,7 +7,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/friendsofgo/errors"
+	"github.com/samber/oops"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
@@ -17,7 +17,7 @@ func (s *ServiceImpl) saveArtifact(ctx context.Context, st *state) error {
 	filename := st.artifactTempFile.Name()
 	stat, err := os.Stat(filename)
 	if err != nil {
-		return errors.Wrap(err, "opening artifact")
+		return oops.Wrapf(err, "opening artifact")
 	}
 
 	// Create artifact meta
@@ -26,7 +26,7 @@ func (s *ServiceImpl) saveArtifact(ctx context.Context, st *state) error {
 	// Create artifact .tar.gz
 	file, err := os.Open(filename)
 	if err != nil {
-		return errors.Wrap(err, "opening artifact")
+		return oops.Wrapf(err, "opening artifact")
 	}
 	defer file.Close()
 
@@ -34,17 +34,17 @@ func (s *ServiceImpl) saveArtifact(ctx context.Context, st *state) error {
 	gzipWriter := gzip.NewWriter(&artifactBytes)
 	_, err = io.Copy(gzipWriter, file)
 	if err != nil {
-		return errors.Wrap(err, "copying file to gzip write")
+		return oops.Wrapf(err, "copying file to gzip write")
 	}
 	err = gzipWriter.Close()
 	if err != nil {
-		return errors.Wrap(err, "flushing gzip write")
+		return oops.Wrapf(err, "flushing gzip write")
 	}
 
 	// Save artifact by requesting to controller
 	err = s.client.SaveArtifact(ctx, artifact, artifactBytes.Bytes())
 	if err != nil {
-		return errors.Wrap(err, "saving artifact")
+		return oops.Wrapf(err, "saving artifact")
 	}
 
 	return nil

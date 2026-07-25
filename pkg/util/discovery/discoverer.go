@@ -3,7 +3,7 @@ package discovery
 import (
 	"context"
 
-	"github.com/friendsofgo/errors"
+	"github.com/samber/oops"
 )
 
 type Target struct {
@@ -28,11 +28,11 @@ func validateTargets(targets []Target) error {
 	}
 	// Note that it is possible there are no targets marked as "me".
 	if meCnt > 1 {
-		return errors.Errorf("too many targets marked as \"me\": %d", meCnt)
+		return oops.Errorf("too many targets marked as \"me\": %d", meCnt)
 	}
 	for i := 0; i < len(targets)-1; i++ {
 		if targets[i].IP == targets[i+1].IP {
-			return errors.Errorf("duplicate target: %s", targets[i].IP)
+			return oops.Errorf("duplicate target: %s", targets[i].IP)
 		}
 	}
 	return nil

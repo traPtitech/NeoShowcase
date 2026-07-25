@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"code.gitea.io/sdk/gitea"
-	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
+	"github.com/samber/oops"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -49,7 +49,7 @@ func (i *Integration) sync(ctx context.Context) error {
 		return users, err
 	})
 	if err != nil {
-		return errors.Wrap(err, "listing users")
+		return oops.Wrapf(err, "listing users")
 	}
 	userNames := ds.Map(giteaUsers, func(user *gitea.User) string { return user.UserName })
 
@@ -75,7 +75,7 @@ func (i *Integration) sync(ctx context.Context) error {
 		return repos, err
 	})
 	if err != nil {
-		return errors.Wrap(err, "listing repositories")
+		return oops.Wrapf(err, "listing repositories")
 	}
 
 	// Sync repositories
@@ -88,7 +88,7 @@ func (i *Integration) sync(ctx context.Context) error {
 			// Get users with write access
 			members, _, err := i.c.GetAssignees(repo.Owner.UserName, repo.Name)
 			if err != nil {
-				return errors.Wrapf(err, "getting assignees (repo=%v/%v)", repo.Owner.UserName, repo.Name)
+				return oops.With("repo_owner", repo.Owner.UserName, "repo_name", repo.Name).Wrapf(err, "getting assignees")
 			}
 			memberIDs := lo.Flatten(ds.Map(members, func(member *gitea.User) []string {
 				user, ok := usersMap[member.UserName]
@@ -110,7 +110,7 @@ func (i *Integration) syncRepository(ctx context.Context, username string, gitea
 	// NOTE: no transaction, creating repository is assumed rare
 	repos, err := i.gitRepo.GetRepositories(ctx, domain.GetRepositoryCondition{URLs: optional.From([]string{giteaRepo.SSHURL})})
 	if err != nil {
-		return errors.Wrapf(err, "getting repository (ssh_url=%s)", giteaRepo.SSHURL)
+		return oops.With("ssh_url", giteaRepo.SSHURL).Wrapf(err, "getting repository")
 	}
 
 	if len(repos) == 0 {
@@ -123,7 +123,7 @@ func (i *Integration) syncRepository(ctx context.Context, username string, gitea
 		)
 		slog.InfoContext(ctx, "New repository found", "name", repo.Name, "id", repo.ID)
 		if err := i.gitRepo.CreateRepository(ctx, repo); err != nil {
-			return errors.Wrapf(err, "creating repository (name=%s)", repo.Name)
+			return oops.With("name", repo.Name).Wrapf(err, "creating repository")
 		}
 		return nil
 	}
@@ -139,14 +139,14 @@ func (i *Integration) syncRepository(ctx context.Context, username string, gitea
 		slog.InfoContext(ctx, "Syncing repository owners", "repo_name", repo.Name, "repo_id", repo.ID, "old_count", len(repo.OwnerIDs), "new_count", len(newOwners))
 		err = i.gitRepo.UpdateRepository(ctx, repo.ID, &domain.UpdateRepositoryArgs{OwnerIDs: optional.From(newOwners)})
 		if err != nil {
-			return errors.Wrapf(err, "updating repository owners (repo_id=%s)", repo.ID)
+			return oops.With("repo_id", repo.ID).Wrapf(err, "updating repository owners")
 		}
 	}
 
 	// Sync owners of generated applications
 	apps, err := i.appRepo.GetApplications(ctx, domain.GetApplicationCondition{RepositoryID: optional.From(repo.ID)})
 	if err != nil {
-		return errors.Wrapf(err, "getting applications (repo_id=%s)", repo.ID)
+		return oops.With("repo_id", repo.ID).Wrapf(err, "getting applications")
 	}
 	for _, app := range apps {
 		err = i.syncApplication(ctx, app, giteaOwnerIDs)
@@ -166,7 +166,7 @@ func (i *Integration) syncApplication(ctx context.Context, app *domain.Applicati
 		slog.InfoContext(ctx, "Syncing application owners", "app_name", app.Name, "app_id", app.ID, "old_count", len(app.OwnerIDs), "new_count", len(newOwners))
 		err := i.appRepo.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{OwnerIDs: optional.From(newOwners)})
 		if err != nil {
-			return errors.Wrapf(err, "updating application owners (app_id=%s)", app.ID)
+			return oops.With("app_id", app.ID).Wrapf(err, "updating application owners")
 		}
 	}
 	return nil

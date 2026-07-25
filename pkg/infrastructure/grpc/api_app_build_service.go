@@ -5,7 +5,7 @@ import (
 	"io"
 
 	"connectrpc.com/connect"
-	"github.com/friendsofgo/errors"
+	"github.com/samber/oops"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
@@ -83,7 +83,7 @@ func (s *APIService) GetBuildLogStream(ctx context.Context, req *connect.Request
 	for l := range ch {
 		err = st.Send(l)
 		if err != nil {
-			return errors.Wrap(err, "sending event")
+			return oops.Wrapf(err, "sending event")
 		}
 	}
 	return nil

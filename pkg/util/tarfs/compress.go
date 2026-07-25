@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/friendsofgo/errors"
+	"github.com/samber/oops"
 )
 
 func Compress(srcPath string) io.Reader {
@@ -55,10 +55,10 @@ func Compress(srcPath string) io.Reader {
 			return nil
 		})
 		if err != nil {
-			_ = pw.CloseWithError(errors.Wrap(err, "walking srcPath"))
+			_ = pw.CloseWithError(oops.Wrapf(err, "walking srcPath"))
 		}
 		if err = tw.Close(); err != nil {
-			_ = pw.CloseWithError(errors.Wrap(err, "closing tar writer"))
+			_ = pw.CloseWithError(oops.Wrapf(err, "closing tar writer"))
 		}
 	}()
 

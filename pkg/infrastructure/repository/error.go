@@ -2,8 +2,7 @@ package repository
 
 import (
 	"database/sql"
-
-	"github.com/friendsofgo/errors"
+	"errors"
 )
 
 var (

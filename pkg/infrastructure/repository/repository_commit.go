@@ -5,7 +5,7 @@ import (
 	"database/sql"
 
 	"github.com/aarondl/sqlboiler/v4/boil"
-	"github.com/friendsofgo/errors"
+	"github.com/samber/oops"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository/models"
@@ -30,7 +30,7 @@ func (r *repositoryCommitRepository) GetCommits(ctx context.Context, hashes []st
 		models.RepositoryCommitWhere.Hash.IN(hashes),
 	).All(ctx, r.db)
 	if err != nil {
-		return nil, errors.Wrap(err, "querying repository commits")
+		return nil, oops.Wrapf(err, "querying repository commits")
 	}
 
 	return ds.Map(commits, repoconvert.ToDomainRepositoryCommit), nil
@@ -40,7 +40,7 @@ func (r *repositoryCommitRepository) RecordCommit(ctx context.Context, commit *d
 	m := repoconvert.FromDomainRepositoryCommit(commit)
 	err := m.Insert(ctx, r.db, boil.Blacklist())
 	if err != nil {
-		return errors.Wrap(err, "inserting repository commit")
+		return oops.Wrapf(err, "inserting repository commit")
 	}
 	return nil
 }

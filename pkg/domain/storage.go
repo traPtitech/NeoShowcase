@@ -1,10 +1,11 @@
 package domain
 
 import (
+	"errors"
 	"io"
 	"path/filepath"
 
-	"github.com/friendsofgo/errors"
+	"github.com/samber/oops"
 )
 
 var (
@@ -27,7 +28,7 @@ func buildLogPath(buildID string) string {
 func SaveBuildLog(s Storage, buildID string, src io.Reader) error {
 	err := s.Save(buildLogPath(buildID), src)
 	if err != nil {
-		return errors.Wrap(err, "saving build log")
+		return oops.Wrapf(err, "saving build log")
 	}
 	return nil
 }
@@ -35,7 +36,7 @@ func SaveBuildLog(s Storage, buildID string, src io.Reader) error {
 func GetBuildLog(s Storage, buildID string) ([]byte, error) {
 	r, err := s.Open(buildLogPath(buildID))
 	if err != nil {
-		return nil, errors.Wrap(err, "opening build log")
+		return nil, oops.Wrapf(err, "opening build log")
 	}
 	defer r.Close()
 	return io.ReadAll(r)
@@ -44,7 +45,7 @@ func GetBuildLog(s Storage, buildID string) ([]byte, error) {
 func DeleteBuildLog(s Storage, buildID string) error {
 	err := s.Delete(buildLogPath(buildID))
 	if err != nil {
-		return errors.Wrap(err, "deleting build log")
+		return oops.Wrapf(err, "deleting build log")
 	}
 	return nil
 }
@@ -60,7 +61,7 @@ func artifactFilename(artifactID string) string {
 // SaveArtifact Artifactをtar形式で保存する
 func SaveArtifact(s Storage, artifactID string, src io.Reader) error {
 	if err := s.Save(artifactPath(artifactID), src); err != nil {
-		return errors.Wrap(err, "saving artifact")
+		return oops.Wrapf(err, "saving artifact")
 	}
 	return nil
 }
@@ -68,7 +69,7 @@ func SaveArtifact(s Storage, artifactID string, src io.Reader) error {
 func GetArtifact(s Storage, artifactID string) (r io.ReadCloser, err error) {
 	r, err = s.Open(artifactPath(artifactID))
 	if err != nil {
-		return nil, errors.Wrap(err, "opening artifact")
+		return nil, oops.Wrapf(err, "opening artifact")
 	}
 	return r, nil
 }
@@ -76,7 +77,7 @@ func GetArtifact(s Storage, artifactID string) (r io.ReadCloser, err error) {
 func DeleteArtifact(s Storage, artifactID string) error {
 	err := s.Delete(artifactPath(artifactID))
 	if err != nil {
-		return errors.Wrap(err, "deleting artifact")
+		return oops.Wrapf(err, "deleting artifact")
 	}
 	return nil
 }

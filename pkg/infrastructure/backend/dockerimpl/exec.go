@@ -4,9 +4,9 @@ import (
 	"context"
 	"io"
 
-	"github.com/friendsofgo/errors"
 	"github.com/moby/moby/api/pkg/stdcopy"
 	"github.com/moby/moby/client"
+	"github.com/samber/oops"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -17,7 +17,7 @@ func streamHijackedResp(ctx context.Context, res client.HijackedResponse, stdin 
 		defer cancel()
 		_, err := io.Copy(res.Conn, stdin)
 		if err != nil {
-			return errors.Wrap(err, "writing into exec conn")
+			return oops.Wrapf(err, "writing into exec conn")
 		}
 		return nil
 	})
@@ -25,7 +25,7 @@ func streamHijackedResp(ctx context.Context, res client.HijackedResponse, stdin 
 		defer cancel()
 		_, err := stdcopy.StdCopy(stdout, stderr, res.Reader)
 		if err != nil {
-			return errors.Wrap(err, "reading exec response")
+			return oops.Wrapf(err, "reading exec response")
 		}
 		return nil
 	})
@@ -47,7 +47,7 @@ func (b *Backend) AttachContainer(ctx context.Context, appID string, stdin io.Re
 		Logs:       true,
 	})
 	if err != nil {
-		return errors.Wrap(err, "attaching to container")
+		return oops.Wrapf(err, "attaching to container")
 	}
 	return streamHijackedResp(ctx, res.HijackedResponse, stdin, stdout, stderr)
 }
@@ -63,12 +63,12 @@ func (b *Backend) ExecContainer(ctx context.Context, appID string, cmd []string,
 	}
 	execID, err := b.c.ExecCreate(ctx, containerName(appID), execConf)
 	if err != nil {
-		return errors.Wrap(err, "creating exec")
+		return oops.Wrapf(err, "creating exec")
 	}
 
 	res, err := b.c.ExecAttach(ctx, execID.ID, client.ExecAttachOptions{})
 	if err != nil {
-		return errors.Wrap(err, "attaching exec process")
+		return oops.Wrapf(err, "attaching exec process")
 	}
 
 	return streamHijackedResp(ctx, res.HijackedResponse, stdin, stdout, stderr)

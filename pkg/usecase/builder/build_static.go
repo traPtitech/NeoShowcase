@@ -4,9 +4,9 @@ import (
 	"context"
 	"io"
 
-	"github.com/friendsofgo/errors"
 	buildkit "github.com/moby/buildkit/client"
 	"github.com/moby/buildkit/client/llb"
+	"github.com/samber/oops"
 	"github.com/tonistiigi/fsutil"
 )
 
@@ -26,11 +26,11 @@ func (s *ServiceImpl) buildStaticExtract(
 		})).
 		Marshal(ctx)
 	if err != nil {
-		return errors.Wrap(err, "marshaling llb")
+		return oops.Wrapf(err, "marshaling llb")
 	}
 	mount, err := fsutil.NewFS(st.repositoryTempDir)
 	if err != nil {
-		return errors.Wrap(err, "invalid mount dir")
+		return oops.Wrapf(err, "creating mount")
 	}
 	_, err = s.buildkit.Solve(ctx, def, buildkit.SolveOpt{
 		Exports: []buildkit.ExportEntry{{

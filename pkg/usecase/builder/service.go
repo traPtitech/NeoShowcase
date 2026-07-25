@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/friendsofgo/errors"
+	"github.com/samber/oops"
 
 	buildkit "github.com/moby/buildkit/client"
 
@@ -54,14 +54,14 @@ func NewService(
 ) (*ServiceImpl, error) {
 	systemInfo, err := client.GetBuilderSystemInfo(context.Background())
 	if err != nil {
-		return nil, errors.Wrap(err, "getting builder system info")
+		return nil, oops.Wrapf(err, "getting builder system info")
 	}
 	// FIXME: git service should be injected via DI,
 	// but it's currently created here because it requires a public key
 	// derived from a runtime value (SSHKey from systemInfo).
 	pubKey, err := domain.IntoPublicKey(systemInfo.SSHKey)
 	if err != nil {
-		return nil, errors.Wrap(err, "converting into public key")
+		return nil, oops.Wrapf(err, "converting into public key")
 	}
 	gitsvc := git.NewService(pubKey)
 	return &ServiceImpl{

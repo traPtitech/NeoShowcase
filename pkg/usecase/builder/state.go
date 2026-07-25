@@ -10,7 +10,7 @@ import (
 
 	"github.com/samber/lo"
 
-	"github.com/friendsofgo/errors"
+	"github.com/samber/oops"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
@@ -85,11 +85,11 @@ func newState(app *domain.Application, envs []*domain.Environment, build *domain
 	var err error
 	st.repositoryTempDir, err = os.MkdirTemp("", "repository-")
 	if err != nil {
-		return nil, errors.Wrap(err, "creating tmp repository dir")
+		return nil, oops.Wrapf(err, "creating tmp repository dir")
 	}
 	st.artifactTempFile, err = os.CreateTemp("", "artifacts-")
 	if err != nil {
-		return nil, errors.Wrap(err, "creating tmp artifact file")
+		return nil, oops.Wrapf(err, "creating tmp artifact file")
 	}
 	return st, nil
 }

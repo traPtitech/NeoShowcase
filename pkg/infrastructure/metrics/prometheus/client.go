@@ -8,10 +8,10 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/friendsofgo/errors"
 	"github.com/prometheus/client_golang/api"
 	promv1 "github.com/prometheus/client_golang/api/prometheus/v1"
 	"github.com/prometheus/common/model"
+	"github.com/samber/oops"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
@@ -57,14 +57,14 @@ func NewPromClient(
 	for _, qc := range config.Queries {
 		tmpl, err := template.New(fmt.Sprintf("promQL templater %v", qc.Name)).Parse(qc.Template)
 		if err != nil {
-			return nil, errors.Wrap(err, fmt.Sprintf("invalid promQL template %v", qc.Name))
+			return nil, oops.With("query_name", qc.Name).Wrapf(err, "parsing promQL template")
 		}
 		templates[qc.Name] = tmpl
 	}
 
 	client, err := api.NewClient(api.Config{Address: config.Endpoint})
 	if err != nil {
-		return nil, errors.Wrap(err, "creating prom cleint")
+		return nil, oops.Wrapf(err, "creating prom cleint")
 	}
 	p := &promClient{
 		config:    config,
@@ -77,7 +77,7 @@ func NewPromClient(
 	for _, qc := range config.Queries {
 		_, err = p.promQL(qc.Name, &dummy)
 		if err != nil {
-			return nil, errors.Wrap(err, fmt.Sprintf("executing logQL template %v", qc.Name))
+			return nil, oops.With("query_name", qc.Name).Wrapf(err, "executing logQL template")
 		}
 	}
 
@@ -98,7 +98,7 @@ func templateStr(tmpl *template.Template, data any) (string, error) {
 func (p *promClient) promQL(name string, app *domain.Application) (string, error) {
 	tmpl, ok := p.templates[name]
 	if !ok {
-		return "", errors.Errorf("no such template: %v", name)
+		return "", oops.Errorf("no such template: %v", name)
 	}
 	return templateStr(tmpl, m{"App": app})
 }
@@ -110,7 +110,7 @@ func (p *promClient) AvailableNames() []string {
 func (p *promClient) Get(ctx context.Context, name string, app *domain.Application, before time.Time, limit time.Duration) ([]*domain.AppMetric, error) {
 	promQL, err := p.promQL(name, app)
 	if err != nil {
-		return nil, errors.Wrap(err, "templating promQL")
+		return nil, oops.Wrapf(err, "templating promQL")
 	}
 	v, _, err := p.client.QueryRange(ctx, promQL, promv1.Range{
 		Start: before.Add(-limit),
@@ -118,15 +118,15 @@ func (p *promClient) Get(ctx context.Context, name string, app *domain.Applicati
 		Step:  defaultStep,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "executing query")
+		return nil, oops.Wrapf(err, "executing query")
 	}
 
 	if v.Type() != model.ValMatrix {
-		return nil, errors.Errorf("expected result type to be matrix, but got %v", v.Type().String())
+		return nil, oops.Errorf("expected result type to be matrix, but got %v", v.Type().String())
 	}
 	mv, ok := v.(model.Matrix)
 	if !ok {
-		return nil, errors.New("cast value failed")
+		return nil, oops.New("cast value failed")
 	}
 	return toSortedResponse(mv), nil
 }

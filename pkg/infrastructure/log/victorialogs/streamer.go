@@ -10,8 +10,8 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/friendsofgo/errors"
 	"github.com/samber/lo/mutable"
+	"github.com/samber/oops"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
@@ -35,7 +35,7 @@ type victoriaLogsStreamer struct {
 func NewVictoriaLogsStreamer(config Config) (domain.ContainerLogger, error) {
 	tmpl, err := template.New("logsQL templater").Parse(config.QueryTemplate)
 	if err != nil {
-		return nil, errors.Wrap(err, "invalid logsQL template")
+		return nil, oops.Wrapf(err, "parsing logsQL template")
 	}
 
 	l := &victoriaLogsStreamer{
@@ -53,7 +53,7 @@ func NewVictoriaLogsStreamer(config Config) (domain.ContainerLogger, error) {
 	var dummy domain.Application
 	_, err = l.logsQL(&dummy)
 	if err != nil {
-		return nil, errors.Wrap(err, "executing logsQL template")
+		return nil, oops.Wrapf(err, "executing logsQL template")
 	}
 
 	return l, nil
@@ -81,11 +81,11 @@ func (l *victoriaLogsStreamer) LogLimit() int {
 func (l *victoriaLogsStreamer) Get(ctx context.Context, app *domain.Application, before time.Time, limit int) ([]*domain.ContainerLog, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", l.queryEndpoint(), nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "creating http request")
+		return nil, oops.Wrapf(err, "creating http request")
 	}
 	logsQL, err := l.logsQL(app)
 	if err != nil {
-		return nil, errors.Wrap(err, "templating logsQL")
+		return nil, oops.Wrapf(err, "templating logsQL")
 	}
 
 	start := before.Add(-24 * time.Hour)
@@ -96,18 +96,18 @@ func (l *victoriaLogsStreamer) Get(ctx context.Context, app *domain.Application,
 
 	res, err := l.client.Do(req)
 	if err != nil {
-		return nil, errors.Wrap(err, "executing http request")
+		return nil, oops.Wrapf(err, "executing http request")
 	}
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(res.Body)
-		return nil, errors.Errorf("request failed with status %d: %s", res.StatusCode, string(body))
+		return nil, oops.Errorf("request failed with status %d: %s", res.StatusCode, string(body))
 	}
 
 	var lines []*domain.ContainerLog
 	for line, err := range decodeQuery(res.Body) {
 		if err != nil {
-			return nil, errors.Wrap(err, "decoding query response")
+			return nil, oops.Wrapf(err, "decoding query response")
 		}
 		lines = append(lines, line)
 	}
@@ -118,11 +118,11 @@ func (l *victoriaLogsStreamer) Get(ctx context.Context, app *domain.Application,
 func (l *victoriaLogsStreamer) Stream(ctx context.Context, app *domain.Application, begin time.Time) (<-chan *domain.ContainerLog, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", l.tailEndpoint(), nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "creating http request")
+		return nil, oops.Wrapf(err, "creating http request")
 	}
 	logsQL, err := l.logsQL(app)
 	if err != nil {
-		return nil, errors.Wrap(err, "templating logsQL")
+		return nil, oops.Wrapf(err, "templating logsQL")
 	}
 
 	q := req.URL.Query()
@@ -130,11 +130,11 @@ func (l *victoriaLogsStreamer) Stream(ctx context.Context, app *domain.Applicati
 	req.URL.RawQuery = q.Encode()
 	res, err := l.client.Do(req)
 	if err != nil {
-		return nil, errors.Wrap(err, "executing http request")
+		return nil, oops.Wrapf(err, "executing http request")
 	}
 	if res.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(res.Body)
-		return nil, errors.Errorf("request failed with status %d: %s", res.StatusCode, string(body))
+		return nil, oops.Errorf("request failed with status %d: %s", res.StatusCode, string(body))
 	}
 
 	ch := make(chan *domain.ContainerLog, 100)

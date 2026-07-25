@@ -8,7 +8,7 @@ import (
 	"slices"
 	"time"
 
-	"github.com/friendsofgo/errors"
+	"github.com/samber/oops"
 	corev1 "k8s.io/api/core/v1"
 	discoveryv1 "k8s.io/api/discovery/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -52,11 +52,11 @@ func NewK8sDiscoverer(svcName string) (Discoverer, error) {
 	// sanity check
 	_, err = d.findService()
 	if err != nil {
-		return nil, errors.Wrapf(err, "finding service (service_name=%s)", svcName)
+		return nil, oops.With("service_name", svcName).Wrapf(err, "finding service")
 	}
 	_, err = d.discover()
 	if err != nil {
-		return nil, errors.Wrap(err, "discovering targets")
+		return nil, oops.With("service_name", d.svcName).Wrapf(err, "discovering targets")
 	}
 
 	return d, nil
@@ -134,7 +134,7 @@ func (k *k8sDiscoverer) watch(ctx context.Context, updates chan<- []Target) erro
 	// Send initial state
 	targets, err := k.discover()
 	if err != nil {
-		return errors.Wrap(err, "discovering targets")
+		return oops.With("service_name", k.svcName).Wrapf(err, "discovering targets")
 	}
 	if len(targets) > 0 {
 		updates <- targets
@@ -143,7 +143,7 @@ func (k *k8sDiscoverer) watch(ctx context.Context, updates chan<- []Target) erro
 	for range watcher.ResultChan() {
 		targets, err = k.discover()
 		if err != nil {
-			return errors.Wrap(err, "discovering targets")
+			return oops.With("service_name", k.svcName).Wrapf(err, "discovering targets")
 		}
 		if len(targets) > 0 {
 			updates <- targets

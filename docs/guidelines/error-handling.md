@@ -15,11 +15,12 @@ them.
 
 ## Rules at a glance
 
-1. **One library.** Use `github.com/friendsofgo/errors` everywhere. It preserves
-   stack traces. Do not create errors with the standard `errors.New` / `fmt.Errorf`.
-2. **Wrap with context, don't log while propagating.** As an error travels up,
-   add context (IDs, state) to the *message*. Never log an error you are also
-   returning.
+1. **One library.** Create and wrap errors with `github.com/samber/oops` everywhere.
+   It captures stack traces and carries structured context. Do not create errors
+   with the standard `errors.New` / `fmt.Errorf`.
+2. **Wrap with context, don't log while propagating.** As an error travels up, add
+   context: the operation as the wrap message, identifiers and state as `With()`
+   attributes. Never log an error you are also returning.
 3. **Log once, where the error stops.** The single place that handles an error
    terminally (an interceptor, a reconcile loop tick) logs it once — with the full
    wrap chain, stack trace, `trace_id`, and `user_id`.
@@ -37,43 +38,71 @@ The rest of this document explains each rule and shows the intended shape of the
 
 ## 1. Error library and stack traces
 
-Use `github.com/friendsofgo/errors` (a `pkg/errors` fork) as the **only** error
-constructor library. It attaches a stack trace at the point the error is created or
-wrapped, which is the single most valuable thing for locating where a failure
-originated.
+Use `github.com/samber/oops` as the **only** error constructor library. It attaches
+a stack trace at the point the error is created or wrapped — the single most valuable
+thing for locating where a failure originated — and lets identifiers ride along as
+structured attributes instead of being interpolated into a string.
 
-- **MUST** create and wrap errors with `errors.New`, `errors.Wrap`, and
-  `errors.Wrapf` from this package.
+- **MUST** create and wrap errors with `oops.New`, `oops.Errorf`, and `oops.Wrapf`.
+  Note that `oops.Wrap(err)` takes **no message**; use `oops.Wrapf` whenever you are
+  adding one.
 - **MUST NOT** use the standard library's `errors.New` or `fmt.Errorf` to create or
-  wrap errors — they discard the stack trace and are the reason the two libraries
-  currently mix.
-- Inspecting errors with the standard `errors.Is` / `errors.As` is fine;
-  `friendsofgo/errors` exposes the same functions and chains interoperate.
+  wrap errors — they discard the stack trace.
+- **Inspect** errors with the **standard library** `errors.Is` / `errors.As`. `oops`
+  does not re-export them, and its errors unwrap normally, so import `"errors"`
+  alongside it when a file needs both.
+
+> The SQLBoiler-generated models under `pkg/infrastructure/repository/models/` still
+> import `github.com/friendsofgo/errors`: that import is baked into SQLBoiler's
+> templates and comes back on every `mise run gen`. It is expected — leave it alone,
+> and do not use that package in hand-written code.
 
 **Capture the stack once, at the origin.** Wrap an external/library error the moment
 it enters our code so the stack points at the boundary where it happened. Higher up,
-keep adding *context* with `Wrap`, but do not re-wrap an error without adding new
-information — that only adds noise to the chain.
+keep adding *context*, but do not re-wrap an error without adding new information —
+that only adds noise to the chain.
 
 ```go
 // Good: the DB error is wrapped as it enters our code; the stack is captured here.
 row, err := models.Applications(...).One(ctx, db)
 if err != nil {
-    return errors.Wrap(err, "querying application")
+    return oops.Wrapf(err, "querying application")
 }
 ```
 
 ## 2. Creating and wrapping errors
 
 As an error propagates, attach the **local context** that will matter during an
-investigation — identifiers and relevant state — onto the wrap message, not into a
+investigation — identifiers and relevant state — onto the error itself, not into a
 separate log line. One log at the boundary then carries everything.
 
+**Prefer `With()` over interpolation.** Attributes attached with `With()` are emitted
+as their own log fields, so they can be queried (`error.context.app_id`) rather than
+grepped out of a message.
+
 ```go
-// Good: app_id and step are on the message; no local log needed.
+// Good: app_id and step become queryable fields; no local log needed.
 if err := b.updateApp(ctx, appID); err != nil {
-    return errors.Wrapf(err, "updating app (app_id=%s, step=%s)", appID, step)
+    return oops.With("app_id", appID, "step", step).Wrapf(err, "updating app")
 }
+
+// Acceptable, but the identifiers are only greppable prose.
+return oops.Wrapf(err, "updating app (app_id=%s, step=%s)", appID, step)
+```
+
+**Keep the value in the message when it *is* the message.** `With()` is for the
+identifiers and state surrounding a failed *operation*. A validation or
+configuration error describes a *condition*, and its value belongs in the sentence —
+splitting it out only makes the message vague, and these messages often reach the
+client through rule 5.
+
+```go
+// Good: the condition reads as one sentence.
+return oops.Errorf("domain %v must be lower case", domain)
+return oops.Errorf("unknown auth method: %v", a.Method)
+
+// Bad: the message no longer says what is wrong with what.
+return oops.With("domain", domain).New("domain must be lower case")
 ```
 
 ### Message style
@@ -95,12 +124,13 @@ operation, and are written as plain phrases — `"application not found"`,
 
 ```go
 // Good
-return errors.Wrap(err, "reading docs root")
-return errors.Wrapf(err, "resolving ref (ref=%s, app_id=%s)", ref, appID)
+return oops.Wrapf(err, "reading docs root")
+return oops.With("ref", ref, "app_id", appID).Wrapf(err, "resolving ref")
 
 // Bad
-return errors.Wrap(err, "Failed to read docs root.")   // "failed to", capitalized, punctuation
-return fmt.Errorf("read docs root: %w", err)            // stdlib, no stack trace
+return oops.Wrapf(err, "Failed to read docs root.")  // "failed to", capitalized, punctuation
+return fmt.Errorf("read docs root: %w", err)         // stdlib, no stack trace
+return oops.Wrapf(err, msg)                          // non-constant format string
 ```
 
 ## 3. Where to log: log once, at the point the error stops
@@ -130,7 +160,7 @@ if err != nil {
 
 // Good: attach context, return; the boundary logs it exactly once.
 if err != nil {
-    return errors.Wrapf(err, "updating app (app_id=%s)", appID)
+    return oops.With("app_id", appID).Wrapf(err, "updating app")
 }
 ```
 
@@ -158,12 +188,17 @@ intent, so **classification is the usecase layer's job**.
 - **Infrastructure and domain layers** return plain wrapped errors. They do not know
   or decide HTTP/Connect semantics.
 - **The usecase layer** tags an error with its business meaning using the helper in
-  `pkg/usecase/apiserver/errors.go` (`newError(ErrorType..., "message", cause)`).
-  Use `errors.Is` to detect a known low-level condition and translate it into a tag.
+  `pkg/usecase/apiserver/errors.go` (`newError(ErrorType..., "message", cause)`). The
+  helper records the tag as the `oops` error **code** and the message as the `oops`
+  **public** message. Use the standard `errors.Is` to detect a known low-level
+  condition and translate it into a tag.
 - **The transport boundary** (`handleUseCaseError` in
   `pkg/infrastructure/grpc/api_service.go`) decomposes the tag and maps it to a
   Connect code. **Anything untagged maps to `Internal`** — an untagged error is by
   definition something we did not anticipate.
+
+Because the code travels *with* the error, an outer layer may keep wrapping a
+classified error without losing its classification.
 
 ```go
 // usecase layer: detect a known condition and classify it.
@@ -172,7 +207,7 @@ if errors.Is(err, repository.ErrNotFound) {
     return nil, newError(ErrorTypeNotFound, "application not found", err)
 }
 if err != nil {
-    return nil, errors.Wrap(err, "getting application") // stays Internal at the boundary
+    return nil, oops.Wrapf(err, "getting application") // stays Internal at the boundary
 }
 ```
 
@@ -184,11 +219,17 @@ appears — keep the set small and meaningful.
 Split what the client receives from what we record:
 
 - **Classified errors** (bad request, not found, forbidden, already exists) **MUST**
-  return their message to the client — the user can act on it.
-- **`Internal` errors MUST return only a generic message** (e.g. "internal server
-  error"). The wrapped detail — DB errors, file paths, internal state — stays in the
-  logs only, never in the response. The full detail is already captured by the single
-  boundary log (rule 3), correlated by `user_id`, `procedure`, and timestamp.
+  return their message to the client — the user can act on it. That message is
+  exactly the one given to `newError`, i.e. the `oops` public message; the wrap chain
+  beneath it is *not* sent.
+- **`Internal` errors MUST return only a generic message** ("internal server error").
+  The wrapped detail — DB errors, file paths, internal state — stays in the logs only,
+  never in the response. The full detail is already captured by the single boundary
+  log (rule 3), correlated by `user_id`, `procedure`, and timestamp.
+
+This is enforced mechanically rather than by convention: `handleUseCaseError` returns
+a small `publicError` whose `Error()` is the client-facing message only, while it
+still unwraps to the internal chain so the interceptor can log the whole thing.
 
 ## 7. Reconcile loops
 
@@ -227,12 +268,17 @@ for _, app := range apps {
 - **MUST NOT** `panic` inside a goroutine for control flow — an unrecovered goroutine
   panic takes the whole process down.
 
-## 9. Structured logging
+### How the error attribute is rendered
 
-- **MUST** use `slog` with the `Context` variants (`slog.ErrorContext`,
-  `slog.WarnContext`, `slog.InfoContext`) so that `trace_id` and `user_id`, injected
-  by the interceptor, travel with every line.
-- **MUST** pass the error as a structured attribute: `slog.ErrorContext(ctx, "…",
-  "error", err)`. Do not format the error into the message string.
-- Prefer stable, queryable attribute keys (`app_id`, `build_id`, `procedure`) over
-  interpolated prose.
+`oops` errors implement `slog.LogValuer`, so **the log handler expands them by
+itself**, for any output format. Logging one produces a group of fields:
+
+| field | contents |
+|---|---|
+| `error.err` | the wrap chain (`getting application: querying application`) — greppable and aggregatable |
+| `error.message` | the outermost wrap message |
+| `error.code` | the classification from rule 5, when the usecase tagged it |
+| `error.public` | the message the client received |
+| `error.context.*` | everything attached with `With()` — queryable, one field per key |
+| `error.stacktrace` | the stack, captured where the error was created or wrapped |
+

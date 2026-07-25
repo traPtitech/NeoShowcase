@@ -2,12 +2,12 @@ package grpc
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"time"
 
 	"connectrpc.com/connect"
 	"connectrpc.com/otelconnect"
-	"github.com/friendsofgo/errors"
 	"github.com/motoki317/sc"
 	"google.golang.org/protobuf/types/known/emptypb"
 

@@ -12,7 +12,7 @@ import (
 
 	"github.com/docker/cli/cli/config/configfile"
 	types2 "github.com/docker/cli/cli/config/types"
-	"github.com/friendsofgo/errors"
+	"github.com/samber/oops"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
@@ -60,7 +60,7 @@ func (b *backend) exec(ctx context.Context, workDir string, cmd []string, env ma
 		return err
 	}
 	if code != 0 {
-		return errors.Errorf("command exited with code %d", code)
+		return oops.Errorf("command exited with code %d", code)
 	}
 	return nil
 }
@@ -70,11 +70,11 @@ func (b *backend) prepareAuth(imageConfig builder.ImageConfig) error {
 	if ok {
 		err := b.exec(context.Background(), "/", []string{"sh", "-c", "mkdir -p ~/.docker"}, nil, io.Discard)
 		if err != nil {
-			return errors.Wrap(err, "making ~/.docker directory")
+			return oops.Wrapf(err, "making ~/.docker directory")
 		}
 		err = b.exec(context.Background(), "/", []string{"sh", "-c", fmt.Sprintf(`echo '%s' > ~/.docker/config.json`, escapeSingleQuote(auth))}, nil, io.Discard)
 		if err != nil {
-			return errors.Wrap(err, "writing ~/.docker/config.json to builder")
+			return oops.Wrapf(err, "writing ~/.docker/config.json to builder")
 		}
 	}
 	return nil
@@ -84,7 +84,7 @@ func (b *backend) prepareDir(ctx context.Context, localName, remoteName string) 
 	remotePath = filepath.Join(b.config.RemoteDir, remoteName)
 	err = b.exec(ctx, b.config.RemoteDir, []string{"mkdir", remotePath}, nil, io.Discard)
 	if err != nil {
-		return "", nil, errors.Wrap(err, "making remote tmp dir")
+		return "", nil, oops.Wrapf(err, "making remote tmp dir")
 	}
 	cleanup = func() {
 		err := b.exec(context.Background(), b.config.RemoteDir, []string{"rm", "-r", remotePath}, nil, io.Discard)
@@ -96,7 +96,7 @@ func (b *backend) prepareDir(ctx context.Context, localName, remoteName string) 
 	err = b.client.CopyFileTree(ctx, remotePath, tarfs.Compress(localName))
 	if err != nil {
 		cleanup()
-		return "", nil, errors.Wrap(err, "copying files to container")
+		return "", nil, oops.Wrapf(err, "copying files to container")
 	}
 	return remotePath, cleanup, nil
 }
@@ -122,17 +122,17 @@ func (b *backend) Pack(
 
 	localEnvTmp, err := os.MkdirTemp("", "env-")
 	if err != nil {
-		return "", errors.Wrap(err, "creating env temp dir")
+		return "", oops.Wrapf(err, "creating env temp dir")
 	}
 	defer os.RemoveAll(localEnvTmp)
 	err = os.Mkdir(filepath.Join(localEnvTmp, "env"), 0700)
 	if err != nil {
-		return "", errors.Wrap(err, "creating platform env dir")
+		return "", oops.Wrapf(err, "creating platform env dir")
 	}
 	for k, v := range env {
 		err = os.WriteFile(filepath.Join(localEnvTmp, "env", k), []byte(v), 0600)
 		if err != nil {
-			return "", errors.Wrap(err, "creating env file")
+			return "", oops.Wrapf(err, "creating env file")
 		}
 	}
 	remoteEnvPath, cleanupEnvDir, err := b.prepareDir(ctx, localEnvTmp, "ns-env")

@@ -7,8 +7,8 @@ import (
 
 	"github.com/aarondl/sqlboiler/v4/boil"
 	"github.com/aarondl/sqlboiler/v4/queries/qm"
-	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
+	"github.com/samber/oops"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository/models"
@@ -61,7 +61,7 @@ func (r *applicationRepository) GetApplications(ctx context.Context, cond domain
 
 	applications, err := models.Applications(mods...).All(ctx, r.db)
 	if err != nil {
-		return nil, errors.Wrap(err, "getting applications")
+		return nil, oops.Wrapf(err, "getting applications")
 	}
 	return ds.Map(applications, repoconvert.ToDomainApplication), nil
 }
@@ -83,7 +83,7 @@ func (r *applicationRepository) getApplication(ctx context.Context, id string, f
 		if isNoRowsErr(err) {
 			return nil, ErrNotFound
 		}
-		return nil, errors.Wrap(err, "getting application")
+		return nil, oops.Wrapf(err, "getting application")
 	}
 	return app, nil
 }
@@ -99,19 +99,19 @@ func (r *applicationRepository) GetApplication(ctx context.Context, id string) (
 func (r *applicationRepository) CreateApplication(ctx context.Context, app *domain.Application) error {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
-		return errors.Wrap(err, "starting transaction")
+		return oops.Wrapf(err, "starting transaction")
 	}
 	defer tx.Rollback()
 
 	ma := repoconvert.FromDomainApplication(app)
 	if err = ma.Insert(ctx, tx, boil.Blacklist()); err != nil {
-		return errors.Wrap(err, "creating application")
+		return oops.Wrapf(err, "creating application")
 	}
 
 	mc := repoconvert.FromDomainApplicationConfig(app.ID, &app.Config)
 	err = mc.Insert(ctx, tx, boil.Blacklist())
 	if err != nil {
-		return errors.Wrap(err, "creating application config")
+		return oops.Wrapf(err, "creating application config")
 	}
 
 	err = r.setWebsites(ctx, tx, ma, app.Websites)
@@ -130,7 +130,7 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, app *doma
 	}
 
 	if err = tx.Commit(); err != nil {
-		return errors.Wrap(err, "committing transaction")
+		return oops.Wrapf(err, "committing transaction")
 	}
 
 	return nil
@@ -139,7 +139,7 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, app *doma
 func (r *applicationRepository) UpdateApplication(ctx context.Context, id string, args *domain.UpdateApplicationArgs) error {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
-		return errors.Wrap(err, "starting transaction")
+		return oops.Wrapf(err, "starting transaction")
 	}
 	defer tx.Rollback()
 
@@ -191,7 +191,7 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 	if len(cols) > 0 {
 		_, err = app.Update(ctx, tx, boil.Whitelist(cols...))
 		if err != nil {
-			return errors.Wrap(err, "updating application")
+			return oops.Wrapf(err, "updating application")
 		}
 	}
 
@@ -199,7 +199,7 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 		mac := repoconvert.FromDomainApplicationConfig(app.ID, &args.Config.V)
 		err = mac.Upsert(ctx, tx, boil.Blacklist(), boil.Blacklist())
 		if err != nil {
-			return errors.Wrap(err, "updating config")
+			return oops.Wrapf(err, "updating config")
 		}
 	}
 	if args.Websites.Valid {
@@ -223,7 +223,7 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 
 	err = tx.Commit()
 	if err != nil {
-		return errors.Wrap(err, "committing transaction")
+		return oops.Wrapf(err, "committing transaction")
 	}
 
 	return err
@@ -242,7 +242,7 @@ func (r *applicationRepository) BulkUpdateState(ctx context.Context, states []*d
 			models.ApplicationColumns.ContainerMessage,
 		))
 		if err != nil {
-			return errors.Wrap(err, "updating container state")
+			return oops.Wrapf(err, "updating container state")
 		}
 	}
 	return nil
@@ -255,23 +255,23 @@ func (r *applicationRepository) DeleteApplication(ctx context.Context, id string
 	}
 	err = app.SetUsers(ctx, r.db, false)
 	if err != nil {
-		return errors.Wrap(err, "deleting application owners")
+		return oops.Wrapf(err, "deleting application owners")
 	}
 	_, err = app.R.PortPublications.DeleteAll(ctx, r.db)
 	if err != nil {
-		return errors.Wrap(err, "deleting port publications")
+		return oops.Wrapf(err, "deleting port publications")
 	}
 	_, err = app.R.Websites.DeleteAll(ctx, r.db)
 	if err != nil {
-		return errors.Wrap(err, "deleting websites")
+		return oops.Wrapf(err, "deleting websites")
 	}
 	_, err = app.R.ApplicationConfig.Delete(ctx, r.db)
 	if err != nil {
-		return errors.Wrap(err, "deleting application config")
+		return oops.Wrapf(err, "deleting application config")
 	}
 	_, err = app.Delete(ctx, r.db)
 	if err != nil {
-		return errors.Wrap(err, "deleting application")
+		return oops.Wrapf(err, "deleting application")
 	}
 	return nil
 }
@@ -280,14 +280,14 @@ func (r *applicationRepository) setWebsites(ctx context.Context, ex boil.Context
 	if app.R != nil && app.R.Websites != nil {
 		_, err := app.R.Websites.DeleteAll(ctx, ex)
 		if err != nil {
-			return errors.Wrap(err, "deleting existing app websites")
+			return oops.Wrapf(err, "deleting existing app websites")
 		}
 	}
 	for _, w := range websites {
 		mw := repoconvert.FromDomainWebsite(app.ID, w)
 		err := mw.Insert(ctx, ex, boil.Blacklist())
 		if err != nil {
-			return errors.Wrap(err, "inserting website")
+			return oops.Wrapf(err, "inserting website")
 		}
 	}
 	return nil
@@ -297,14 +297,14 @@ func (r *applicationRepository) setPortPublications(ctx context.Context, ex boil
 	if app.R != nil && app.R.PortPublications != nil {
 		_, err := app.R.PortPublications.DeleteAll(ctx, ex)
 		if err != nil {
-			return errors.Wrap(err, "deleting existing port publications")
+			return oops.Wrapf(err, "deleting existing port publications")
 		}
 	}
 	for _, p := range ports {
 		mp := repoconvert.FromDomainPortPublication(app.ID, p)
 		err := mp.Insert(ctx, ex, boil.Blacklist())
 		if err != nil {
-			return errors.Wrap(err, "inserting port publication")
+			return oops.Wrapf(err, "inserting port publication")
 		}
 	}
 	return nil
@@ -314,14 +314,14 @@ func (r *applicationRepository) setOwners(ctx context.Context, ex boil.ContextEx
 	ownerIDs = lo.Uniq(ownerIDs)
 	users, err := models.Users(models.UserWhere.ID.IN(ownerIDs)).All(ctx, ex)
 	if err != nil {
-		return errors.Wrap(err, "getting owners")
+		return oops.Wrapf(err, "getting owners")
 	}
 	if len(users) < len(ownerIDs) {
 		return ErrNotFound
 	}
 	err = app.SetUsers(ctx, ex, false, users...)
 	if err != nil {
-		return errors.Wrap(err, "adding owners")
+		return oops.Wrapf(err, "adding owners")
 	}
 	return nil
 }

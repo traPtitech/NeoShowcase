@@ -2,13 +2,13 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
 	"time"
 
-	"github.com/friendsofgo/errors"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/spf13/cobra"
 

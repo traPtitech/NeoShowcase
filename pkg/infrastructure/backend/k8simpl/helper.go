@@ -8,8 +8,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
+	"github.com/samber/oops"
 	"github.com/sourcegraph/conc/pool"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -258,7 +258,7 @@ func replaceResource[T apiResource](
 	// This timeout provides sufficient buffer for most deletion scenarios while
 	// preventing indefinite waits for stuck resources.
 	case <-time.After(2 * time.Minute):
-		return errors.New("timeout while waiting for resource to be deleted")
+		return oops.With("resource_name", rc.GetName()).New("timeout while waiting for resource to be deleted")
 	case <-ctx.Done():
 		return ctx.Err()
 	}

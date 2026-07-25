@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
+	"github.com/samber/oops"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -20,7 +20,7 @@ func (b *Backend) GetContainer(ctx context.Context, appID string) (*domain.Conta
 		LabelSelector: toSelectorString(appSelector(appID)),
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "fetching pods")
+		return nil, oops.Wrapf(err, "fetching pods")
 	}
 
 	if len(list.Items) == 0 {
@@ -42,7 +42,7 @@ func (b *Backend) ListContainers(ctx context.Context) ([]*domain.Container, erro
 		LabelSelector: toSelectorString(b.shardedAllSelector()),
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "fetching pods")
+		return nil, oops.Wrapf(err, "fetching pods")
 	}
 
 	result := ds.Map(list.Items, func(pod v1.Pod) *domain.Container {

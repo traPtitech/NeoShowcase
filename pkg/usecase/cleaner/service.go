@@ -2,13 +2,14 @@ package cleaner
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"sync"
 	"time"
 
-	"github.com/friendsofgo/errors"
 	"github.com/regclient/regclient/types/errs"
 	"github.com/samber/lo"
+	"github.com/samber/oops"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
@@ -122,7 +123,7 @@ func (c *cleanerService) pruneImage(ctx context.Context, r builder.RegistryClien
 		return nil
 	}
 	if err != nil {
-		return errors.Wrap(err, "getting tags")
+		return oops.Wrapf(err, "getting tags")
 	}
 
 	// compare by queued_at time, then delete any older builds
@@ -156,7 +157,7 @@ func (c *cleanerService) getOlderBuilds(ctx context.Context, appID string, targe
 	}
 	current, ok := lo.Find(builds, func(b *domain.Build) bool { return b.ID == targetBuildID })
 	if !ok {
-		return nil, errors.Errorf("build %v not found in retrieved builds", targetBuildID)
+		return nil, oops.Errorf("build %v not found in retrieved builds", targetBuildID)
 	}
 	return lo.Filter(builds, func(b *domain.Build, _ int) bool { return b.QueuedAt.Before(current.QueuedAt) }), nil
 }
@@ -164,17 +165,17 @@ func (c *cleanerService) getOlderBuilds(ctx context.Context, appID string, targe
 func (c *cleanerService) pruneArtifacts(ctx context.Context) error {
 	notInUse, err := c.getArtifactsNoLongerInUse(ctx)
 	if err != nil {
-		return errors.Wrap(err, "getting artifacts in use")
+		return oops.Wrapf(err, "getting artifacts in use")
 	}
 
 	for _, artifact := range notInUse {
 		err = domain.DeleteArtifact(c.storage, artifact.ID)
 		if err != nil {
-			return errors.Wrapf(err, "deleting artifact %v", artifact.ID)
+			return oops.With("artifact_id", artifact.ID).Wrapf(err, "deleting artifact")
 		}
 		err = c.artifactRepo.UpdateArtifact(ctx, artifact.ID, domain.UpdateArtifactArgs{DeletedAt: optional.From(time.Now())})
 		if err != nil {
-			return errors.Wrapf(err, "marking artifact as deleted (artifact_id=%s)", artifact.ID)
+			return oops.With("artifact_id", artifact.ID).Wrapf(err, "marking artifact as deleted")
 		}
 	}
 	return nil

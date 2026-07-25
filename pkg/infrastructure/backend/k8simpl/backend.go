@@ -9,7 +9,7 @@ import (
 	"sync"
 
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
-	"github.com/friendsofgo/errors"
+	"github.com/samber/oops"
 	traefikv1alpha1 "github.com/traefik/traefik/v3/pkg/provider/kubernetes/crd/generated/clientset/versioned/typed/traefikio/v1alpha1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -91,7 +91,7 @@ func (b *Backend) eventListener(ctx context.Context) error {
 		}}),
 	})
 	if err != nil {
-		return errors.Wrap(err, "watching pods")
+		return oops.Wrapf(err, "watching pods")
 	}
 	defer podWatcher.Stop()
 

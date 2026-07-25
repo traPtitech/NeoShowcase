@@ -7,7 +7,7 @@ import (
 
 	"github.com/aarondl/sqlboiler/v4/boil"
 	"github.com/aarondl/sqlboiler/v4/queries/qm"
-	"github.com/friendsofgo/errors"
+	"github.com/samber/oops"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository/models"
@@ -28,7 +28,7 @@ func (r *runtimeImageRepository) CreateRuntimeImage(ctx context.Context, image *
 	ri := repoconvert.FromDomainRuntimeImage(image)
 	err := ri.Insert(ctx, r.db, boil.Infer())
 	if err != nil {
-		return errors.Wrap(err, "inserting runtime image")
+		return oops.Wrapf(err, "inserting runtime image")
 	}
 	return nil
 }
@@ -44,11 +44,11 @@ func (r *runtimeImageRepository) DeleteRuntimeImagesByAppID(ctx context.Context,
 		models.BuildWhere.ApplicationID.EQ(appID),
 	).All(ctx, r.db)
 	if err != nil {
-		return errors.Wrap(err, "getting runtime images")
+		return oops.Wrapf(err, "getting runtime images")
 	}
 	_, err = images.DeleteAll(ctx, r.db)
 	if err != nil {
-		return errors.Wrap(err, "deleting runtime images")
+		return oops.Wrapf(err, "deleting runtime images")
 	}
 	return nil
 }

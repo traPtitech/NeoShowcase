@@ -4,8 +4,8 @@ package main
 
 import (
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
-	"github.com/friendsofgo/errors"
 	"github.com/google/wire"
+	"github.com/samber/oops"
 	traefikv1alpha1 "github.com/traefik/traefik/v3/pkg/provider/kubernetes/crd/generated/clientset/versioned/typed/traefikio/v1alpha1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -176,7 +176,7 @@ func NewController(c Config) (component, error) {
 	case "k8s", "kubernetes":
 		return NewControllerK8s(c)
 	}
-	return nil, errors.New("unknown mode: " + c.Components.Controller.Mode)
+	return nil, oops.New("unknown mode: " + c.Components.Controller.Mode)
 }
 
 func NewControllerDocker(c Config) (component, error) {

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
+	"github.com/samber/oops"
 	traefikv1alpha1 "github.com/traefik/traefik/v3/pkg/provider/kubernetes/crd/traefikio/v1alpha1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -376,12 +376,12 @@ func validateResourceQuantity(s string) error {
 func (c *Config) Validate() error {
 	for _, dc := range c.Domains {
 		if err := dc.toDomainAD().Validate(); err != nil {
-			return errors.Wrap(err, "invalid domain config")
+			return oops.Wrapf(err, "invalid domain config")
 		}
 	}
 	for _, pc := range c.Ports {
 		if err := pc.toDomainAP().Validate(); err != nil {
-			return errors.Wrap(err, "invalid port config")
+			return oops.Wrapf(err, "invalid port config")
 		}
 	}
 
@@ -389,12 +389,12 @@ func (c *Config) Validate() error {
 	case routingTypeTraefik:
 		// Nothing to validate as of now
 	default:
-		return errors.New(fmt.Sprintf("k8s.routing.type is invalid: %s", c.Routing.Type))
+		return oops.New(fmt.Sprintf("k8s.routing.type is invalid: %s", c.Routing.Type))
 	}
 
 	for _, family := range c.Service.IPFamilies {
 		if !lo.Contains([]v1.IPFamily{v1.IPv4Protocol, v1.IPv6Protocol}, family) {
-			return errors.New(fmt.Sprintf("invalid IPFamily %s", family))
+			return oops.New(fmt.Sprintf("invalid IPFamily %s", family))
 		}
 	}
 	if !lo.Contains([]v1.IPFamilyPolicy{
@@ -404,49 +404,49 @@ func (c *Config) Validate() error {
 		v1.IPFamilyPolicyPreferDualStack,
 		v1.IPFamilyPolicyRequireDualStack,
 	}, c.Service.IPFamilyPolicy) {
-		return errors.New(fmt.Sprintf("invalid IPFamily policy: %s", c.Service.IPFamilyPolicy))
+		return oops.New(fmt.Sprintf("invalid IPFamily policy: %s", c.Service.IPFamilyPolicy))
 	}
 
 	switch c.TLS.Type {
 	case tlsTypeTraefik:
 		if err := c.TLS.Traefik.Wildcard.Domains.Validate(); err != nil {
-			return errors.Wrap(err, "k8s.tls.traefik.wildcard.domains is invalid")
+			return oops.Wrapf(err, "k8s.tls.traefik.wildcard.domains is invalid")
 		}
 	case tlsTypeCertManager:
 		if err := c.TLS.CertManager.Wildcard.Domains.Validate(); err != nil {
-			return errors.Wrap(err, "k8s.tls.certManager.wildcard.domains is invalid")
+			return oops.Wrapf(err, "k8s.tls.certManager.wildcard.domains is invalid")
 		}
 	default:
-		return errors.New("k8s.tls.type needs to be one of 'traefik' or 'cert-manager'")
+		return oops.New("k8s.tls.type needs to be one of 'traefik' or 'cert-manager'")
 	}
 
 	for _, t := range c.Scheduling.Tolerations {
 		if _, ok := tolerationOperatorMapper.Into(t.Operator); !ok {
-			return errors.Errorf("k8s.scheduling.tolerations: unknown toleration operator: %v", t.Operator)
+			return oops.Errorf("k8s.scheduling.tolerations: unknown toleration operator: %v", t.Operator)
 		}
 		if _, ok := taintEffectMapper.Into(t.Effect); !ok {
-			return errors.Errorf("k8s.scheduling.tolerations: unknown taint effect: %v", t.Effect)
+			return oops.Errorf("k8s.scheduling.tolerations: unknown taint effect: %v", t.Effect)
 		}
 	}
 
 	if c.Resources.Requests.CPU != "" {
 		if err := validateResourceQuantity(c.Resources.Requests.CPU); err != nil {
-			return errors.Wrap(err, "k8s.resources.requests.cpu: invalid quantity")
+			return oops.Wrapf(err, "k8s.resources.requests.cpu: invalid quantity")
 		}
 	}
 	if c.Resources.Requests.Memory != "" {
 		if err := validateResourceQuantity(c.Resources.Requests.Memory); err != nil {
-			return errors.Wrap(err, "k8s.resources.requests.memory: invalid quantity")
+			return oops.Wrapf(err, "k8s.resources.requests.memory: invalid quantity")
 		}
 	}
 	if c.Resources.Limits.CPU != "" {
 		if err := validateResourceQuantity(c.Resources.Limits.CPU); err != nil {
-			return errors.Wrap(err, "k8s.resources.limits.cpu: invalid quantity")
+			return oops.Wrapf(err, "k8s.resources.limits.cpu: invalid quantity")
 		}
 	}
 	if c.Resources.Limits.Memory != "" {
 		if err := validateResourceQuantity(c.Resources.Limits.Memory); err != nil {
-			return errors.Wrap(err, "k8s.resources.limits.memory: invalid quantity")
+			return oops.Wrapf(err, "k8s.resources.limits.memory: invalid quantity")
 		}
 	}
 

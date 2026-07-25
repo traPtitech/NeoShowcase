@@ -2,12 +2,13 @@ package grpc
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"time"
 
 	"connectrpc.com/connect"
-	"github.com/friendsofgo/errors"
+	"github.com/samber/oops"
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/util/slogutil"
@@ -19,6 +20,19 @@ type LogInterceptor struct {
 
 func NewLogInterceptor() *LogInterceptor {
 	return &LogInterceptor{}
+}
+
+// logError picks the value to log for err.
+//
+// oops.OopsError implements slog.LogValuer, so logging it expands into structured
+// fields (the wrap chain, the code, With() attributes and the stack trace). The
+// *connect.Error the boundary returns implements neither, so logging it directly
+// would flatten everything to its message — hence the unwrap.
+func logError(err error) any {
+	if oopsErr, ok := oops.AsOops(err); ok {
+		return oopsErr
+	}
+	return err
 }
 
 func (l *LogInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
@@ -54,7 +68,7 @@ func (l *LogInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
 				slog.ErrorContext(ctx, "unary request failed with server error",
 					"procedure", request.Spec().Procedure,
 					"duration_sec", elapsed,
-					"error", err,
+					"error", logError(err),
 					"status", connect.CodeOf(err).String(),
 				)
 
@@ -62,7 +76,7 @@ func (l *LogInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
 				slog.WarnContext(ctx, "unary request failed with client error",
 					"procedure", request.Spec().Procedure,
 					"duration_sec", elapsed,
-					"error", err,
+					"error", logError(err),
 					"status", connect.CodeOf(err).String(),
 				)
 			}
@@ -111,7 +125,7 @@ func (l *LogInterceptor) WrapStreamingHandler(next connect.StreamingHandlerFunc)
 				"stream_id", streamID,
 				"procedure", shc.Spec().Procedure,
 				"duration_sec", elapsed,
-				"error", err,
+				"error", logError(err),
 				"status", connect.CodeOf(err).String(),
 			)
 		}

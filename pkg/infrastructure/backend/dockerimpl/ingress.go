@@ -8,8 +8,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
+	"github.com/samber/oops"
 	"gopkg.in/yaml.v3"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -152,7 +152,7 @@ func (b *runtimeConfigBuilder) build() m {
 func (b *Backend) writeConfig(filename string, config any) error {
 	file, err := os.OpenFile(filepath.Join(b.config.ConfDir, filename), os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 	if err != nil {
-		return errors.Wrap(err, "opening config file")
+		return oops.Wrapf(err, "opening config file")
 	}
 	defer file.Close()
 	enc := yaml.NewEncoder(file)

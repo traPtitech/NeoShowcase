@@ -6,7 +6,12 @@ import (
 	"log/slog"
 )
 
-// CustomHandler adds trace_id and user_id from context
+// CustomHandler adds trace_id and user_id from the context to every record.
+//
+// Rendering errors is deliberately not its job. Errors created with
+// github.com/samber/oops implement slog.LogValuer, so the base handler expands
+// their wrap chain, code, attached attributes and stack trace by itself — for any
+// output format.
 type CustomHandler struct {
 	baseHandler slog.Handler
 }
@@ -23,17 +28,20 @@ func (h *CustomHandler) Enabled(ctx context.Context, level slog.Level) bool {
 }
 
 func (h *CustomHandler) Handle(ctx context.Context, record slog.Record) error {
-	// Extract trace_id from context
-	if traceID := ctx.Value(TraceIDKey); traceID != nil {
-		if traceIDStr, ok := traceID.(string); ok && traceIDStr != "" {
-			record.AddAttrs(slog.String("trace_id", traceIDStr))
-		}
-	}
+	traceID, hasTrace := ctx.Value(TraceIDKey).(string)
+	userID, hasUser := ctx.Value(UserIDKey).(string)
+	hasTrace = hasTrace && traceID != ""
+	hasUser = hasUser && userID != ""
 
-	// Extract user_id from context
-	if userID := ctx.Value(UserIDKey); userID != nil {
-		if userIDStr, ok := userID.(string); ok && userIDStr != "" {
-			record.AddAttrs(slog.String("user_id", userIDStr))
+	if hasTrace || hasUser {
+		// Clone before adding: the record's attributes may share backing storage
+		// with the caller's.
+		record = record.Clone()
+		if hasTrace {
+			record.AddAttrs(slog.String("trace_id", traceID))
+		}
+		if hasUser {
+			record.AddAttrs(slog.String("user_id", userID))
 		}
 	}
 

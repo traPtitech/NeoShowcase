@@ -4,7 +4,7 @@ import (
 	"context"
 	"io"
 
-	"github.com/friendsofgo/errors"
+	"github.com/samber/oops"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/remotecommand"
@@ -24,7 +24,7 @@ func (b *Backend) AttachContainer(ctx context.Context, appID string, stdin io.Re
 	req.VersionedParams(option, scheme.ParameterCodec)
 	ex, err := remotecommand.NewSPDYExecutor(b.restConfig, "POST", req.URL())
 	if err != nil {
-		return errors.Wrap(err, "creating SPDY executor")
+		return oops.Wrapf(err, "creating SPDY executor")
 	}
 	err = ex.StreamWithContext(ctx, remotecommand.StreamOptions{
 		Stdin:  stdin,
@@ -33,7 +33,7 @@ func (b *Backend) AttachContainer(ctx context.Context, appID string, stdin io.Re
 		Tty:    true,
 	})
 	if err != nil {
-		return errors.Wrap(err, "streaming")
+		return oops.Wrapf(err, "streaming")
 	}
 	return nil
 }
@@ -53,7 +53,7 @@ func (b *Backend) ExecContainer(ctx context.Context, appID string, cmd []string,
 	req.VersionedParams(option, scheme.ParameterCodec)
 	ex, err := remotecommand.NewSPDYExecutor(b.restConfig, "POST", req.URL())
 	if err != nil {
-		return errors.Wrap(err, "creating SPDY executor")
+		return oops.Wrapf(err, "creating SPDY executor")
 	}
 	err = ex.StreamWithContext(ctx, remotecommand.StreamOptions{
 		Stdin:  stdin,
@@ -62,7 +62,7 @@ func (b *Backend) ExecContainer(ctx context.Context, appID string, cmd []string,
 		Tty:    true,
 	})
 	if err != nil {
-		return errors.Wrap(err, "streaming")
+		return oops.Wrapf(err, "streaming")
 	}
 	return nil
 }

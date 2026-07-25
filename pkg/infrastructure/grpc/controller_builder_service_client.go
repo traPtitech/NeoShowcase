@@ -2,13 +2,12 @@ package grpc
 
 import (
 	"context"
+	"errors"
 	"io"
 	"log/slog"
 
 	"connectrpc.com/connect"
 	"google.golang.org/protobuf/types/known/emptypb"
-
-	"github.com/friendsofgo/errors"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"

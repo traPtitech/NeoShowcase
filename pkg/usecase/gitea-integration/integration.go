@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"code.gitea.io/sdk/gitea"
-	"github.com/friendsofgo/errors"
+	"github.com/samber/oops"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/util/loop"
@@ -22,13 +22,13 @@ type Config struct {
 
 func (c *Config) Validate() error {
 	if c.Token == "" {
-		return errors.New("provide admin gitea token (got empty string)")
+		return oops.New("provide admin gitea token (got empty string)")
 	}
 	if c.IntervalSeconds <= 0 {
-		return errors.Errorf("provide positive interval seconds (got %v)", c.IntervalSeconds)
+		return oops.Errorf("provide positive interval seconds (got %v)", c.IntervalSeconds)
 	}
 	if c.Concurrency <= 0 {
-		return errors.Errorf("provide positive concurrency (got %v)", c.Concurrency)
+		return oops.Errorf("provide positive concurrency (got %v)", c.Concurrency)
 	}
 	return nil
 }
@@ -65,7 +65,7 @@ func NewIntegration(
 		gitea.SetGiteaVersion(""),
 	)
 	if err != nil {
-		return nil, errors.Wrap(err, "creating gitea client")
+		return nil, oops.Wrapf(err, "creating gitea client")
 	}
 
 	i := &Integration{

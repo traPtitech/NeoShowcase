@@ -9,8 +9,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
+	"github.com/samber/oops"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
@@ -141,7 +141,7 @@ func (s *generatorService) _reload(ctx context.Context) error {
 func (s *generatorService) syncArtifacts(sites []*domain.StaticSite) error {
 	entries, err := os.ReadDir(s.docsRoot)
 	if err != nil {
-		return errors.Wrap(err, "reading docs root")
+		return oops.Wrapf(err, "reading docs root")
 	}
 	artifactsOnDisk := make(map[string]struct{}, len(entries))
 	for _, e := range entries {
@@ -171,7 +171,7 @@ func (s *generatorService) syncArtifacts(sites []*domain.StaticSite) error {
 		artifactDir := filepath.Join(s.docsRoot, artifactID)
 		err = os.RemoveAll(artifactDir)
 		if err != nil {
-			return errors.Wrapf(err, "deleting unused artifact directory (artifact_id=%s)", artifactID)
+			return oops.With("artifact_id", artifactID).Wrapf(err, "deleting unused artifact directory")
 		}
 	}
 
@@ -182,17 +182,17 @@ func (s *generatorService) extractArtifact(artifactID string) error {
 	destDir := filepath.Join(s.docsRoot, artifactID)
 	r, err := domain.GetArtifact(s.storage, artifactID)
 	if err != nil {
-		return errors.Wrap(err, "getting artifact")
+		return oops.Wrapf(err, "getting artifact")
 	}
 	defer r.Close()
 	tarReader, err := gzip.NewReader(r)
 	if err != nil {
-		return errors.Wrap(err, "preparing gzip reader")
+		return oops.Wrapf(err, "preparing gzip reader")
 	}
 	defer tarReader.Close()
 	err = tarfs.Extract(tarReader, destDir)
 	if err != nil {
-		return errors.Wrap(err, "extracting artifact tar")
+		return oops.Wrapf(err, "extracting artifact tar")
 	}
 	return nil
 }

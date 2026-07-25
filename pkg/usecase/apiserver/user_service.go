@@ -3,7 +3,7 @@ package apiserver
 import (
 	"context"
 
-	"github.com/friendsofgo/errors"
+	"github.com/samber/oops"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
@@ -26,7 +26,7 @@ func (s *Service) CreateUserKey(ctx context.Context, publicKey string, name stri
 	}
 	err = s.userRepo.CreateUserKey(ctx, key)
 	if err != nil {
-		return nil, errors.Wrap(err, "creating user key")
+		return nil, oops.Wrapf(err, "creating user key")
 	}
 	return key, nil
 }
@@ -37,7 +37,7 @@ func (s *Service) GetUserKeys(ctx context.Context) ([]*domain.UserKey, error) {
 		UserIDs: optional.From([]string{user.ID}),
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "getting user keys")
+		return nil, oops.Wrapf(err, "getting user keys")
 	}
 	return keys, nil
 }

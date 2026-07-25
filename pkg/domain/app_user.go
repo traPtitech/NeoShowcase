@@ -3,7 +3,7 @@ package domain
 import (
 	"time"
 
-	"github.com/friendsofgo/errors"
+	"github.com/samber/oops"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -57,7 +57,7 @@ func (u *UserKey) MarshalKey() []byte {
 func (u *UserKey) Validate() error {
 	_, _, _, _, err := ssh.ParseAuthorizedKey([]byte(u.PublicKey))
 	if err != nil {
-		return errors.Wrap(err, "invalid public key format")
+		return oops.Wrapf(err, "invalid public key format")
 	}
 	return nil
 }

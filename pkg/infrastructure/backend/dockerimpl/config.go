@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
+	"github.com/samber/oops"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/util/mapper"
@@ -134,12 +134,12 @@ func (c *Config) labels() map[string]string {
 func (c *Config) Validate() error {
 	for _, dc := range c.Domains {
 		if err := dc.toDomainAD().Validate(); err != nil {
-			return errors.Wrap(err, "invalid domain config")
+			return oops.Wrapf(err, "invalid domain config")
 		}
 	}
 	for _, pc := range c.Ports {
 		if err := pc.toDomainAP().Validate(); err != nil {
-			return errors.Wrap(err, "invalid port config")
+			return oops.Wrapf(err, "invalid port config")
 		}
 	}
 
@@ -147,23 +147,23 @@ func (c *Config) Validate() error {
 	case routingTypeTraefik:
 		// Nothing to validate as of now
 	default:
-		return errors.New(fmt.Sprintf("docker.routing.type is invalid: %s", c.Routing.Type))
+		return oops.New(fmt.Sprintf("docker.routing.type is invalid: %s", c.Routing.Type))
 	}
 	if err := c.TLS.Wildcard.Domains.Validate(); err != nil {
-		return errors.Wrap(err, "docker.tls.wildcard.domains is invalid")
+		return oops.Wrapf(err, "docker.tls.wildcard.domains is invalid")
 	}
 
 	if c.Resources.CPUs < 0 || math.IsNaN(c.Resources.CPUs) || math.IsInf(c.Resources.CPUs, 0) {
-		return errors.New("docker.resources.cpus needs to be a positive number")
+		return oops.New("docker.resources.cpus needs to be a positive number")
 	}
 	if c.Resources.Memory < 0 {
-		return errors.New("docker.resources.memory needs to be a positive number")
+		return oops.New("docker.resources.memory needs to be a positive number")
 	}
 	if c.Resources.MemorySwap < -1 {
-		return errors.New("docker.resources.memorySwap needs to be a positive number, or -1 for unlimited swap")
+		return oops.New("docker.resources.memorySwap needs to be a positive number, or -1 for unlimited swap")
 	}
 	if c.Resources.MemoryReservation < 0 {
-		return errors.New("docker.resources.memoryReservation needs to be a positive number")
+		return oops.New("docker.resources.memoryReservation needs to be a positive number")
 	}
 
 	return nil
