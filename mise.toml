@@ -13,6 +13,7 @@ tbls = "1.94.5"
 buf = "1.70.0"
 "go:github.com/aarondl/sqlboiler/v4" = "4.19.7"
 "go:github.com/aarondl/sqlboiler/v4/drivers/sqlboiler-mysql" = "4.19.7"
+"go:github.com/sqldef/sqldef/v3/cmd/mysqldef" = "3.11.16"
 
 [env]
 APP_VERSION = "dev"
