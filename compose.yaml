@@ -314,7 +314,7 @@ services:
       - default
 
   grafana:
-    image: grafana/grafana:13.0.2
+    image: grafana/grafana:13.1.3
     restart: always
     labels:
       - "traefik.enable=true"
