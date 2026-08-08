@@ -30,8 +30,8 @@ importers:
         specifier: 0.29.4
         version: 0.29.4(solid-js@1.9.14)
       '@solidjs/router':
-        specifier: 0.16.3
-        version: 0.16.3(solid-js@1.9.14)
+        specifier: 1.0.0
+        version: 1.0.0(solid-js@1.9.14)
       '@types/async-lock':
         specifier: 1.4.2
         version: 1.4.2
@@ -768,8 +768,8 @@ packages:
     peerDependencies:
       solid-js: '>=1.8.4'
 
-  '@solidjs/router@0.16.3':
-    resolution: {integrity: sha512-WWQkmSmSpl+15HgUktGPbeXkgWmonj4XwPOcZVHJz1EQV3dz5qWHIyQ/BKXFevor6u/0dKvC9FlUmKmDwE1QHw==}
+  '@solidjs/router@1.0.0':
+    resolution: {integrity: sha512-cCSk1hvgCowiMa9bzzYWHiLu1U4E22+DfJe6/rOwAyECKrxc3jrd5QnoW3sDDJtW+e077cz/M67bPl3DqOBw1Q==}
     peerDependencies:
       solid-js: ^1.8.6
 
@@ -2669,7 +2669,7 @@ snapshots:
     dependencies:
       solid-js: 1.9.14
 
-  '@solidjs/router@0.16.3(solid-js@1.9.14)':
+  '@solidjs/router@1.0.0(solid-js@1.9.14)':
     dependencies:
       solid-js: 1.9.14
 

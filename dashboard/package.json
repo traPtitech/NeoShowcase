@@ -42,7 +42,7 @@
     "@modular-forms/solid": "0.25.1",
     "@solid-primitives/refs": "1.1.4",
     "@solidjs/meta": "0.29.4",
-    "@solidjs/router": "0.16.3",
+    "@solidjs/router": "1.0.0",
     "@types/async-lock": "1.4.2",
     "@unocss/reset": "66.7.5",
     "ansi-to-html": "0.7.2",
