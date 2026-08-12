@@ -20,10 +20,11 @@ func (e publicError) Error() string { return e.public }
 func (e publicError) Unwrap() error { return e.cause }
 
 var connectCodes = map[apiserver.ErrorType]connect.Code{
-	apiserver.ErrorTypeBadRequest:    connect.CodeInvalidArgument,
-	apiserver.ErrorTypeNotFound:      connect.CodeNotFound,
-	apiserver.ErrorTypeAlreadyExists: connect.CodeAlreadyExists,
-	apiserver.ErrorTypeForbidden:     connect.CodePermissionDenied,
+	apiserver.ErrorTypeBadRequest:         connect.CodeInvalidArgument,
+	apiserver.ErrorTypeNotFound:           connect.CodeNotFound,
+	apiserver.ErrorTypeAlreadyExists:      connect.CodeAlreadyExists,
+	apiserver.ErrorTypeForbidden:          connect.CodePermissionDenied,
+	apiserver.ErrorTypeFailedPrecondition: connect.CodeFailedPrecondition,
 }
 
 func handleUseCaseError(err error) error {
