@@ -35,6 +35,25 @@ func logError(err error) any {
 	return err
 }
 
+// errorLevel maps err to the level the boundary logs it at.
+//
+// A client error means the server behaved correctly and rejected the request, so
+// only failures on our side reach Error. Unclassified codes are ours by default.
+func errorLevel(err error) slog.Level {
+	if errors.Is(err, context.Canceled) {
+		return slog.LevelWarn
+	}
+	switch connect.CodeOf(err) {
+	case connect.CodeCanceled, connect.CodeInvalidArgument, connect.CodeNotFound,
+		connect.CodeAlreadyExists, connect.CodePermissionDenied, connect.CodeFailedPrecondition,
+		connect.CodeAborted, connect.CodeOutOfRange, connect.CodeUnauthenticated,
+		connect.CodeResourceExhausted:
+		return slog.LevelWarn
+	default:
+		return slog.LevelError
+	}
+}
+
 func (l *LogInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
 	return func(ctx context.Context, request connect.AnyRequest) (connect.AnyResponse, error) {
 		// Add trace_id to context if available
@@ -63,23 +82,12 @@ func (l *LogInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
 			if errors.Is(err, context.Canceled) {
 				err = connect.NewError(connect.CodeCanceled, err)
 			}
-			switch connect.CodeOf(err) {
-			case connect.CodeUnknown, connect.CodeInternal, connect.CodeUnavailable, connect.CodeDeadlineExceeded, connect.CodeUnimplemented, connect.CodeDataLoss:
-				slog.ErrorContext(ctx, "unary request failed with server error",
-					"procedure", request.Spec().Procedure,
-					"duration_sec", elapsed,
-					"error", logError(err),
-					"status", connect.CodeOf(err).String(),
-				)
-
-			case connect.CodeCanceled, connect.CodeInvalidArgument, connect.CodeNotFound, connect.CodeAlreadyExists, connect.CodePermissionDenied, connect.CodeFailedPrecondition, connect.CodeAborted, connect.CodeOutOfRange, connect.CodeUnauthenticated, connect.CodeResourceExhausted:
-				slog.WarnContext(ctx, "unary request failed with client error",
-					"procedure", request.Spec().Procedure,
-					"duration_sec", elapsed,
-					"error", logError(err),
-					"status", connect.CodeOf(err).String(),
-				)
-			}
+			slog.Log(ctx, errorLevel(err), "unary request failed",
+				"procedure", request.Spec().Procedure,
+				"duration_sec", elapsed,
+				"error", logError(err),
+				"status", connect.CodeOf(err).String(),
+			)
 		}
 
 		return response, err
@@ -121,7 +129,7 @@ func (l *LogInterceptor) WrapStreamingHandler(next connect.StreamingHandlerFunc)
 				"duration_sec", elapsed,
 			)
 		} else {
-			slog.ErrorContext(ctx, "stream closed",
+			slog.Log(ctx, errorLevel(err), "stream closed",
 				"stream_id", streamID,
 				"procedure", shc.Spec().Procedure,
 				"duration_sec", elapsed,
