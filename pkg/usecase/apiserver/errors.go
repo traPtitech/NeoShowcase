@@ -10,10 +10,11 @@ import (
 type ErrorType string
 
 const (
-	ErrorTypeBadRequest    ErrorType = "bad_request"
-	ErrorTypeNotFound      ErrorType = "not_found"
-	ErrorTypeAlreadyExists ErrorType = "already_exists"
-	ErrorTypeForbidden     ErrorType = "forbidden"
+	ErrorTypeBadRequest         ErrorType = "bad_request"
+	ErrorTypeNotFound           ErrorType = "not_found"
+	ErrorTypeAlreadyExists      ErrorType = "already_exists"
+	ErrorTypeForbidden          ErrorType = "forbidden"
+	ErrorTypeFailedPrecondition ErrorType = "failed_precondition"
 )
 
 // newError tags err with a business meaning and with the message the client is

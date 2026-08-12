@@ -81,12 +81,25 @@ func (s *Service) GetBuildLogStream(ctx context.Context, buildID string) (<-chan
 		return nil, err
 	}
 
+	build, err := s.buildRepo.GetBuild(ctx, buildID)
+	if err != nil {
+		return nil, err
+	}
+	if build.Status.IsFinished() {
+		return nil, newError(ErrorTypeFailedPrecondition, "build already finished", nil)
+	}
+
 	addr, err := s.controller.DiscoverBuildLogInstance(ctx, buildID)
 	if err != nil {
-		return nil, oops.Wrapf(err, "discovering build log instance")
+		return nil, oops.With("build_id", buildID).Wrapf(err, "discovering build log instance")
 	}
 	if addr.Address == nil {
-		return nil, newError(ErrorTypeBadRequest, "build log instance not found", nil)
+		if build.Status == domain.BuildStatusQueued {
+			return nil, newError(ErrorTypeFailedPrecondition, "build not started yet", nil)
+		}
+		// Marked as building, yet no instance streams it: the controller holding the
+		// in-memory log restarted, so it is gone for good.
+		return nil, newError(ErrorTypeFailedPrecondition, "build log stream no longer available", nil)
 	}
 	ch, err := s.controller.StreamBuildLog(ctx, *addr.Address, buildID)
 	if err != nil {

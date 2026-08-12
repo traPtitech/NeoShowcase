@@ -126,7 +126,8 @@ func (s *ControllerService) DiscoverBuildLogInstance(ctx context.Context, c *con
 		return r.Address != nil
 	})
 	if !ok {
-		return nil, oops.New("build log not available")
+		// No instance holds the log: not an error, the caller decides what that means.
+		return connect.NewResponse(&pb.AddressInfo{}), nil
 	}
 	return connect.NewResponse(neighborResult), nil
 }
