@@ -383,7 +383,7 @@ services:
   sablier:
     build:
       context: sablier
-    image: ghcr.io/traptitech/ns-sablier:main@sha256:858c3f689d475e3974a89f31ef374943e62769b14f6d79642eef2ae1652e645f
+    image: ghcr.io/traptitech/ns-sablier:main
     command:
       - start
       - --provider.name=docker
