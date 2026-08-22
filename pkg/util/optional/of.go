@@ -27,14 +27,14 @@ func (o Of[T]) ValueOrZero() T {
 	return t
 }
 
-func Map[T, U any](o Of[T], mapper func(T) U) Of[U] {
+func (o Of[T]) Map[U any](mapper func(T) U) Of[U] {
 	if o.Valid {
 		return From(mapper(o.V))
 	}
 	return None[U]()
 }
 
-func MapErr[T, U any](o Of[T], mapper func(T) (U, error)) (Of[U], error) {
+func (o Of[T]) MapErr[U any](mapper func(T) (U, error)) (Of[U], error) {
 	if o.Valid {
 		v, err := mapper(o.V)
 		return From(v), err

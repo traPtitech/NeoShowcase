@@ -28,10 +28,8 @@ func (b *Backend) runtimeSpec(app *domain.RuntimeDesiredState) (*appsv1.Stateful
 	var envs []v1.EnvVar
 	if len(app.Envs) > 0 {
 		secret = &v1.Secret{
-			TypeMeta: metav1.TypeMeta{
-				Kind:       "Secret",
-				APIVersion: "v1",
-			},
+			Kind:       "Secret",
+			APIVersion: "v1",
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      deploymentName(app.App.ID),
 				Namespace: b.config.Namespace,
@@ -45,8 +43,8 @@ func (b *Backend) runtimeSpec(app *domain.RuntimeDesiredState) (*appsv1.Stateful
 
 		envs = lo.MapToSlice(app.Envs, func(key string, value string) v1.EnvVar {
 			return v1.EnvVar{Name: key, ValueFrom: &v1.EnvVarSource{SecretKeyRef: &v1.SecretKeySelector{
-				LocalObjectReference: v1.LocalObjectReference{Name: secret.Name},
-				Key:                  key,
+				Name: secret.Name,
+				Key:  key,
 			}}}
 		})
 		// make sure computed result is stable
@@ -94,10 +92,8 @@ func (b *Backend) runtimeSpec(app *domain.RuntimeDesiredState) (*appsv1.Stateful
 	}
 
 	ss := &appsv1.StatefulSet{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "StatefulSet",
-			APIVersion: "apps/v1",
-		},
+		Kind:       "StatefulSet",
+		APIVersion: "apps/v1",
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      deploymentName(app.App.ID),
 			Namespace: b.config.Namespace,
@@ -119,15 +115,15 @@ func (b *Backend) runtimeSpec(app *domain.RuntimeDesiredState) (*appsv1.Stateful
 					},
 				},
 				Spec: v1.PodSpec{
-					AutomountServiceAccountToken: lo.ToPtr(false),
-					EnableServiceLinks:           lo.ToPtr(false),
+					AutomountServiceAccountToken: new(false),
+					EnableServiceLinks:           new(false),
 					Containers:                   []v1.Container{cont},
 					NodeSelector:                 b.config.podSchedulingNodeSelector(app.App.ID),
 					Tolerations:                  b.config.podSchedulingTolerations(),
 					TopologySpreadConstraints:    b.config.podSpreadConstraints(),
 				},
 			},
-			RevisionHistoryLimit: lo.ToPtr(int32(0)),
+			RevisionHistoryLimit: new(int32(0)),
 		},
 	}
 
@@ -138,10 +134,8 @@ func (b *Backend) runtimeSpec(app *domain.RuntimeDesiredState) (*appsv1.Stateful
 	var svc *v1.Service
 	if len(cont.Ports) > 0 {
 		svc = &v1.Service{
-			TypeMeta: metav1.TypeMeta{
-				Kind:       "Service",
-				APIVersion: "v1",
-			},
+			Kind:       "Service",
+			APIVersion: "v1",
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      deploymentName(app.App.ID),
 				Namespace: b.config.Namespace,
@@ -169,13 +163,11 @@ func (b *Backend) runtimeSpec(app *domain.RuntimeDesiredState) (*appsv1.Stateful
 
 func (b *Backend) runtimeServiceRef(app *domain.Application, website *domain.Website) []traefikv1alpha1.Service {
 	return []traefikv1alpha1.Service{{
-		LoadBalancerSpec: traefikv1alpha1.LoadBalancerSpec{
-			Name:      deploymentName(app.ID),
-			Kind:      "Service",
-			Namespace: b.config.Namespace,
-			Port:      intstr.FromInt(website.HTTPPort),
-			Scheme:    lo.Ternary(website.H2C, "h2c", "http"),
-		},
+		Name:      deploymentName(app.ID),
+		Kind:      "Service",
+		Namespace: b.config.Namespace,
+		Port:      intstr.FromInt(website.HTTPPort),
+		Scheme:    lo.Ternary(website.H2C, "h2c", "http"),
 	}}
 }
 
@@ -186,10 +178,8 @@ var protocolMapper = mapper.MustNewValueMapper(map[domain.PortPublicationProtoco
 
 func (b *Backend) runtimePortService(app *domain.Application, port *domain.PortPublication) *v1.Service {
 	return &v1.Service{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Service",
-			APIVersion: "v1",
-		},
+		Kind:       "Service",
+		APIVersion: "v1",
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      portServiceName(port),
 			Namespace: b.config.Namespace,

@@ -12,22 +12,18 @@ import (
 
 func (b *Backend) ssServiceRef() []traefikv1alpha1.Service {
 	return []traefikv1alpha1.Service{{
-		LoadBalancerSpec: traefikv1alpha1.LoadBalancerSpec{
-			Name:      b.config.SS.Name,
-			Kind:      b.config.SS.Kind,
-			Namespace: b.config.SS.Namespace,
-			Port:      intstr.FromInt(b.config.SS.Port),
-			Scheme:    b.config.SS.Scheme,
-		},
+		Name:      b.config.SS.Name,
+		Kind:      b.config.SS.Kind,
+		Namespace: b.config.SS.Namespace,
+		Port:      intstr.FromInt(b.config.SS.Port),
+		Scheme:    b.config.SS.Scheme,
 	}}
 }
 
 func (b *Backend) ssHeaderMiddleware(ss *domain.StaticSite) *traefikv1alpha1.Middleware {
 	return &traefikv1alpha1.Middleware{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Middleware",
-			APIVersion: "traefik.io/v1alpha1",
-		},
+		Kind:       "Middleware",
+		APIVersion: "traefik.io/v1alpha1",
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      ssHeaderMiddlewareName(ss),
 			Namespace: b.config.Namespace,

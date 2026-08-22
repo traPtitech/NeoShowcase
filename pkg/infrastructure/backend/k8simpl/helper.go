@@ -114,7 +114,7 @@ func syncResources[T apiResource](ctx context.Context, cluster *discovery.Cluste
 		if err != nil {
 			return err
 		}
-		_, err = s.Patch(ctx, rc.GetName(), types.ApplyPatchType, b, metav1.PatchOptions{Force: lo.ToPtr(true), FieldManager: fieldManager})
+		_, err = s.Patch(ctx, rc.GetName(), types.ApplyPatchType, b, metav1.PatchOptions{Force: new(true), FieldManager: fieldManager})
 		if err != nil {
 			slog.WarnContext(ctx, "failed to patch", "resource", rcName+"/"+rc.GetName(), "error", err)
 			continue // skip this resource if patch fails
@@ -191,7 +191,7 @@ func syncResourcesWithReplace[T apiResource](
 		}
 		// For StatefulSets, delete the resource before applying again - StatefulSet has many immutable fields
 		// Example: StatefulSet.apps "nsapp-add177a080c4c78936e192" is invalid: spec: Forbidden: updates to statefulset spec for fields other than 'replicas', 'ordinals', 'template', 'updateStrategy', 'revisionHistoryLimit', 'persistentVolumeClaimRetentionPolicy' and 'minReadySeconds' are forbidden
-		_, err = s.Patch(ctx, rc.GetName(), types.ApplyPatchType, b, metav1.PatchOptions{Force: lo.ToPtr(true), FieldManager: fieldManager})
+		_, err = s.Patch(ctx, rc.GetName(), types.ApplyPatchType, b, metav1.PatchOptions{Force: new(true), FieldManager: fieldManager})
 		if err != nil {
 			// Try to replace the resource if patch fails.
 			// This may take a while, so run it in a goroutine.
@@ -228,7 +228,7 @@ func pruneResources[T apiResource](ctx context.Context, cluster *discovery.Clust
 		if ok && cluster.AssignedShardIndex(appID) != cluster.MyShardIndex() {
 			continue
 		}
-		err := s.Delete(ctx, rc.GetName(), metav1.DeleteOptions{PropagationPolicy: lo.ToPtr(metav1.DeletePropagationForeground)})
+		err := s.Delete(ctx, rc.GetName(), metav1.DeleteOptions{PropagationPolicy: new(metav1.DeletePropagationForeground)})
 		if err != nil {
 			slog.WarnContext(ctx, "failed to delete resource", "resource", rcName+"/"+rc.GetName(), "error", err)
 			continue // skip this resource if delete fails
@@ -246,9 +246,9 @@ func replaceResource[T apiResource](
 	notifier *deletionNotifier,
 ) error {
 	ch := notifier.add(rc.GetName())
-	err := s.Delete(ctx, rc.GetName(), metav1.DeleteOptions{PropagationPolicy: lo.ToPtr(metav1.DeletePropagationForeground)})
+	err := s.Delete(ctx, rc.GetName(), metav1.DeleteOptions{PropagationPolicy: new(metav1.DeletePropagationForeground)})
 	if apierrors.IsNotFound(err) {
-		_, err = s.Patch(ctx, rc.GetName(), types.ApplyPatchType, data, metav1.PatchOptions{Force: lo.ToPtr(true), FieldManager: fieldManager})
+		_, err = s.Patch(ctx, rc.GetName(), types.ApplyPatchType, data, metav1.PatchOptions{Force: new(true), FieldManager: fieldManager})
 		return err
 	}
 
@@ -263,6 +263,6 @@ func replaceResource[T apiResource](
 		return ctx.Err()
 	}
 
-	_, err = s.Patch(ctx, rc.GetName(), types.ApplyPatchType, data, metav1.PatchOptions{Force: lo.ToPtr(true), FieldManager: fieldManager})
+	_, err = s.Patch(ctx, rc.GetName(), types.ApplyPatchType, data, metav1.PatchOptions{Force: new(true), FieldManager: fieldManager})
 	return err
 }

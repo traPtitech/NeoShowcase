@@ -81,8 +81,7 @@ func (b *BuildpackHelperService) Exec(ctx context.Context, req *connect.Request[
 	}
 
 	// Check exit code
-	var exitError *exec.ExitError
-	if errors.As(cmdErr, &exitError) {
+	if exitError, ok := errors.AsType[*exec.ExitError](cmdErr); ok {
 		return st.Send(&pb.HelperExecResponse{
 			Type: pb.HelperExecResponse_EXIT_CODE,
 			Body: &pb.HelperExecResponse_ExitCode{ExitCode: int32(exitError.ExitCode())},

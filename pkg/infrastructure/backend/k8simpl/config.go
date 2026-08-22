@@ -305,7 +305,7 @@ func (c *Config) serviceIPFamilyPolicy() *v1.IPFamilyPolicy {
 	if c.Service.IPFamilyPolicy == "" {
 		return nil
 	}
-	return lo.ToPtr(c.Service.IPFamilyPolicy)
+	return new(c.Service.IPFamilyPolicy)
 }
 
 var tolerationOperatorMapper = mapper.MustNewValueMapper(map[string]v1.TolerationOperator{

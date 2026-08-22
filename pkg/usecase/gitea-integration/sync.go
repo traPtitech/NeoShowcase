@@ -44,7 +44,7 @@ func (i *Integration) sync(ctx context.Context) error {
 	slog.InfoContext(ctx, "Retrieving users from Gitea")
 	giteaUsers, err := listAllPages(func(page, perPage int) ([]*gitea.User, error) {
 		users, _, err := i.c.AdminListUsers(gitea.AdminListUsersOptions{
-			ListOptions: gitea.ListOptions{Page: page, PageSize: perPage},
+			Page: page, PageSize: perPage,
 		})
 		return users, err
 	})
@@ -65,12 +65,10 @@ func (i *Integration) sync(ctx context.Context) error {
 	slog.InfoContext(ctx, "Retrieving repositories from Gitea")
 	repos, err := listAllPages(func(page, perPage int) ([]*gitea.Repository, error) {
 		repos, _, err := i.c.SearchRepos(gitea.SearchRepoOptions{
-			ListOptions: gitea.ListOptions{
-				Page:     page,
-				PageSize: perPage,
-			},
-			Sort:  "created",
-			Order: "desc",
+			Page:     page,
+			PageSize: perPage,
+			Sort:     "created",
+			Order:    "desc",
 		})
 		return repos, err
 	})
@@ -83,7 +81,6 @@ func (i *Integration) sync(ctx context.Context) error {
 	var eg errgroup.Group
 	eg.SetLimit(i.concurrency)
 	for _, repo := range repos {
-		repo := repo
 		eg.Go(func() error {
 			// Get users with write access
 			members, _, err := i.c.GetAssignees(repo.Owner.UserName, repo.Name)

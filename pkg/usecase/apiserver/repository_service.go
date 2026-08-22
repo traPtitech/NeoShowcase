@@ -53,7 +53,7 @@ func (s *Service) convertRepositoryAuth(a CreateRepositoryAuth) (domain.Reposito
 }
 
 func (s *Service) CreateRepository(ctx context.Context, name, url string, auth optional.Of[CreateRepositoryAuth]) (*domain.Repository, error) {
-	dAuth, err := optional.MapErr(auth, s.convertRepositoryAuth)
+	dAuth, err := auth.MapErr(s.convertRepositoryAuth)
 	if err != nil {
 		return nil, err
 	}
@@ -125,8 +125,8 @@ type UpdateRepositoryArgs struct {
 }
 
 func (s *Service) convertUpdateRepositoryArgs(a *UpdateRepositoryArgs) (*domain.UpdateRepositoryArgs, error) {
-	dAuth, err := optional.MapErr(a.Auth, func(t optional.Of[CreateRepositoryAuth]) (optional.Of[domain.RepositoryAuth], error) {
-		return optional.MapErr(t, s.convertRepositoryAuth)
+	dAuth, err := a.Auth.MapErr(func(t optional.Of[CreateRepositoryAuth]) (optional.Of[domain.RepositoryAuth], error) {
+		return t.MapErr(s.convertRepositoryAuth)
 	})
 	if err != nil {
 		return nil, err
