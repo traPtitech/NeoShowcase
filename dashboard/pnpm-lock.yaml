@@ -23,9 +23,6 @@ importers:
       '@modular-forms/solid':
         specifier: 0.25.1
         version: 0.25.1(solid-js@1.9.14)(typescript@7.0.2)
-      '@solid-primitives/refs':
-        specifier: 1.1.4
-        version: 1.1.4(solid-js@1.9.14)
       '@solidjs/meta':
         specifier: 0.29.4
         version: 0.29.4(solid-js@1.9.14)
@@ -107,10 +104,10 @@ importers:
         version: 8.2.0(@types/node@25.9.5)(jiti@2.6.1)
       vite-plugin-compression:
         specifier: 0.5.1
-        version: 0.5.1(vite@8.2.0(@types/node@25.9.5)(jiti@2.6.1))
+        version: 0.5.1(supports-color@7.2.0)(vite@8.2.0(@types/node@25.9.5)(jiti@2.6.1))
       vite-plugin-solid:
         specifier: 2.11.14
-        version: 2.11.14(solid-js@1.9.14)(vite@8.2.0(@types/node@25.9.5)(jiti@2.6.1))
+        version: 2.11.14(solid-js@1.9.14)(supports-color@7.2.0)(vite@8.2.0(@types/node@25.9.5)(jiti@2.6.1))
       vite-plugin-solid-svg:
         specifier: 0.8.1
         version: 0.8.1(solid-js@1.9.14)(vite@8.2.0(@types/node@25.9.5)(jiti@2.6.1))
@@ -2130,20 +2127,20 @@ snapshots:
 
   '@babel/compat-data@7.25.2': {}
 
-  '@babel/core@7.25.2':
+  '@babel/core@7.25.2(supports-color@7.2.0)':
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@babel/code-frame': 7.24.7
       '@babel/generator': 7.25.5
       '@babel/helper-compilation-targets': 7.25.2
-      '@babel/helper-module-transforms': 7.25.2(@babel/core@7.25.2)
+      '@babel/helper-module-transforms': 7.25.2(@babel/core@7.25.2(supports-color@7.2.0))(supports-color@7.2.0)
       '@babel/helpers': 7.25.0
       '@babel/parser': 7.25.4
       '@babel/template': 7.25.0
-      '@babel/traverse': 7.25.4
+      '@babel/traverse': 7.25.4(supports-color@7.2.0)
       '@babel/types': 7.25.4
       convert-source-map: 2.0.0
-      debug: 4.3.6
+      debug: 4.3.6(supports-color@7.2.0)
       gensync: 1.0.0-beta.2
       json5: 2.2.3
       semver: 6.3.1
@@ -2169,28 +2166,28 @@ snapshots:
     dependencies:
       '@babel/types': 7.25.4
 
-  '@babel/helper-module-imports@7.24.7':
+  '@babel/helper-module-imports@7.24.7(supports-color@7.2.0)':
     dependencies:
-      '@babel/traverse': 7.25.4
+      '@babel/traverse': 7.25.4(supports-color@7.2.0)
       '@babel/types': 7.25.4
     transitivePeerDependencies:
       - supports-color
 
-  '@babel/helper-module-transforms@7.25.2(@babel/core@7.25.2)':
+  '@babel/helper-module-transforms@7.25.2(@babel/core@7.25.2(supports-color@7.2.0))(supports-color@7.2.0)':
     dependencies:
-      '@babel/core': 7.25.2
-      '@babel/helper-module-imports': 7.24.7
-      '@babel/helper-simple-access': 7.24.7
+      '@babel/core': 7.25.2(supports-color@7.2.0)
+      '@babel/helper-module-imports': 7.24.7(supports-color@7.2.0)
+      '@babel/helper-simple-access': 7.24.7(supports-color@7.2.0)
       '@babel/helper-validator-identifier': 7.24.7
-      '@babel/traverse': 7.25.4
+      '@babel/traverse': 7.25.4(supports-color@7.2.0)
     transitivePeerDependencies:
       - supports-color
 
   '@babel/helper-plugin-utils@7.24.8': {}
 
-  '@babel/helper-simple-access@7.24.7':
+  '@babel/helper-simple-access@7.24.7(supports-color@7.2.0)':
     dependencies:
-      '@babel/traverse': 7.25.4
+      '@babel/traverse': 7.25.4(supports-color@7.2.0)
       '@babel/types': 7.25.4
     transitivePeerDependencies:
       - supports-color
@@ -2217,9 +2214,9 @@ snapshots:
     dependencies:
       '@babel/types': 7.25.4
 
-  '@babel/plugin-syntax-jsx@7.24.7(@babel/core@7.25.2)':
+  '@babel/plugin-syntax-jsx@7.24.7(@babel/core@7.25.2(supports-color@7.2.0))':
     dependencies:
-      '@babel/core': 7.25.2
+      '@babel/core': 7.25.2(supports-color@7.2.0)
       '@babel/helper-plugin-utils': 7.24.8
 
   '@babel/template@7.25.0':
@@ -2228,14 +2225,14 @@ snapshots:
       '@babel/parser': 7.25.4
       '@babel/types': 7.25.4
 
-  '@babel/traverse@7.25.4':
+  '@babel/traverse@7.25.4(supports-color@7.2.0)':
     dependencies:
       '@babel/code-frame': 7.24.7
       '@babel/generator': 7.25.5
       '@babel/parser': 7.25.4
       '@babel/template': 7.25.0
       '@babel/types': 7.25.4
-      debug: 4.3.6
+      debug: 4.3.6(supports-color@7.2.0)
       globals: 11.12.0
     transitivePeerDependencies:
       - supports-color
@@ -2979,19 +2976,19 @@ snapshots:
 
   async-lock@1.4.1: {}
 
-  babel-plugin-jsx-dom-expressions@0.37.9(@babel/core@7.25.2):
+  babel-plugin-jsx-dom-expressions@0.37.9(@babel/core@7.25.2(supports-color@7.2.0)):
     dependencies:
-      '@babel/core': 7.25.2
+      '@babel/core': 7.25.2(supports-color@7.2.0)
       '@babel/helper-module-imports': 7.18.6
-      '@babel/plugin-syntax-jsx': 7.24.7(@babel/core@7.25.2)
+      '@babel/plugin-syntax-jsx': 7.24.7(@babel/core@7.25.2(supports-color@7.2.0))
       '@babel/types': 7.25.4
       html-entities: 2.3.3
       validate-html-nesting: 1.2.2
 
-  babel-preset-solid@1.8.6(@babel/core@7.25.2):
+  babel-preset-solid@1.8.6(@babel/core@7.25.2(supports-color@7.2.0)):
     dependencies:
-      '@babel/core': 7.25.2
-      babel-plugin-jsx-dom-expressions: 0.37.9(@babel/core@7.25.2)
+      '@babel/core': 7.25.2(supports-color@7.2.0)
+      babel-plugin-jsx-dom-expressions: 0.37.9(@babel/core@7.25.2(supports-color@7.2.0))
 
   bidi-js@1.0.3:
     dependencies:
@@ -3105,9 +3102,11 @@ snapshots:
     transitivePeerDependencies:
       - '@noble/hashes'
 
-  debug@4.3.6:
+  debug@4.3.6(supports-color@7.2.0):
     dependencies:
       ms: 2.1.2
+    optionalDependencies:
+      supports-color: 7.2.0
 
   decimal.js@10.6.0: {}
 
@@ -3590,10 +3589,10 @@ snapshots:
       '@corvu/utils': 0.1.0(solid-js@1.9.14)
       solid-js: 1.9.14
 
-  solid-refresh@0.6.3(solid-js@1.9.14):
+  solid-refresh@0.6.3(solid-js@1.9.14)(supports-color@7.2.0):
     dependencies:
       '@babel/generator': 7.25.5
-      '@babel/helper-module-imports': 7.24.7
+      '@babel/helper-module-imports': 7.24.7(supports-color@7.2.0)
       '@babel/types': 7.25.4
       solid-js: 1.9.14
     transitivePeerDependencies:
@@ -3801,10 +3800,10 @@ snapshots:
     optionalDependencies:
       solid-js: 1.9.14
 
-  vite-plugin-compression@0.5.1(vite@8.2.0(@types/node@25.9.5)(jiti@2.6.1)):
+  vite-plugin-compression@0.5.1(supports-color@7.2.0)(vite@8.2.0(@types/node@25.9.5)(jiti@2.6.1)):
     dependencies:
       chalk: 4.1.2
-      debug: 4.3.6
+      debug: 4.3.6(supports-color@7.2.0)
       fs-extra: 10.1.0
       vite: 8.2.0(@types/node@25.9.5)(jiti@2.6.1)
     transitivePeerDependencies:
@@ -3816,14 +3815,14 @@ snapshots:
       svgo: 3.3.3
       vite: 8.2.0(@types/node@25.9.5)(jiti@2.6.1)
 
-  vite-plugin-solid@2.11.14(solid-js@1.9.14)(vite@8.2.0(@types/node@25.9.5)(jiti@2.6.1)):
+  vite-plugin-solid@2.11.14(solid-js@1.9.14)(supports-color@7.2.0)(vite@8.2.0(@types/node@25.9.5)(jiti@2.6.1)):
     dependencies:
-      '@babel/core': 7.25.2
+      '@babel/core': 7.25.2(supports-color@7.2.0)
       '@types/babel__core': 7.20.5
-      babel-preset-solid: 1.8.6(@babel/core@7.25.2)
+      babel-preset-solid: 1.8.6(@babel/core@7.25.2(supports-color@7.2.0))
       merge-anything: 5.1.7
       solid-js: 1.9.14
-      solid-refresh: 0.6.3(solid-js@1.9.14)
+      solid-refresh: 0.6.3(solid-js@1.9.14)(supports-color@7.2.0)
       vite: 8.2.0(@types/node@25.9.5)(jiti@2.6.1)
       vitefu: 1.0.4(vite@8.2.0(@types/node@25.9.5)(jiti@2.6.1))
     transitivePeerDependencies:
