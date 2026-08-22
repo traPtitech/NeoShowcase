@@ -86,10 +86,10 @@ func (s *APIService) UpdateApplication(ctx context.Context, req *connect.Request
 		Name:             optional.FromPtr(msg.Name),
 		RefName:          optional.FromPtr(msg.RefName),
 		UpdatedAt:        optional.From(time.Now()),
-		Config:           optional.Map(optional.FromNonZero(msg.Config), pbconvert.FromPBApplicationConfig),
-		Websites:         optional.Map(optional.FromNonZero(msg.Websites), pbconvert.FromPBUpdateWebsites),
-		PortPublications: optional.Map(optional.FromNonZero(msg.PortPublications), pbconvert.FromPBUpdatePorts),
-		OwnerIDs:         optional.Map(optional.FromNonZero(msg.OwnerIds), pbconvert.FromPBUpdateOwners),
+		Config:           optional.FromNonZero(msg.Config).Map(pbconvert.FromPBApplicationConfig),
+		Websites:         optional.FromNonZero(msg.Websites).Map(pbconvert.FromPBUpdateWebsites),
+		PortPublications: optional.FromNonZero(msg.PortPublications).Map(pbconvert.FromPBUpdatePorts),
+		OwnerIDs:         optional.FromNonZero(msg.OwnerIds).Map(pbconvert.FromPBUpdateOwners),
 	})
 	if err != nil {
 		return nil, handleUseCaseError(err)
