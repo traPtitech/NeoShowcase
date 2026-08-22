@@ -21,10 +21,8 @@ import (
 
 func (b *Backend) stripMiddleware(app *domain.Application, website *domain.Website) *traefikv1alpha1.Middleware {
 	return &traefikv1alpha1.Middleware{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Middleware",
-			APIVersion: "traefik.io/v1alpha1",
-		},
+		Kind:       "Middleware",
+		APIVersion: "traefik.io/v1alpha1",
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      stripMiddlewareName(website),
 			Namespace: b.config.Namespace,
@@ -40,10 +38,8 @@ func (b *Backend) stripMiddleware(app *domain.Application, website *domain.Websi
 
 func (b *Backend) certificate(targetDomain string) *certmanagerv1.Certificate {
 	return &certmanagerv1.Certificate{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "cert-manager.io/v1",
-			Kind:       "Certificate",
-		},
+		APIVersion: "cert-manager.io/v1",
+		Kind:       "Certificate",
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      certificateName(targetDomain),
 			Namespace: b.config.Namespace,
@@ -108,10 +104,8 @@ func (b *Backend) jsonSablierConfig(app *domain.Application) []byte {
 func (b *Backend) sablierMiddleware(app *domain.Application) *traefikv1alpha1.Middleware {
 	configData := b.jsonSablierConfig(app)
 	return &traefikv1alpha1.Middleware{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Middleware",
-			APIVersion: "traefik.io/v1alpha1",
-		},
+		Kind:       "Middleware",
+		APIVersion: "traefik.io/v1alpha1",
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      sablierMiddlewareName(app.ID),
 			Namespace: b.config.Namespace,
@@ -199,10 +193,8 @@ func (b *Backend) ingressRoute(
 	}
 
 	ingressRoute := &traefikv1alpha1.IngressRoute{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "IngressRoute",
-			APIVersion: "traefik.io/v1alpha1",
-		},
+		Kind:       "IngressRoute",
+		APIVersion: "traefik.io/v1alpha1",
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      serviceName(website),
 			Namespace: b.config.Namespace,

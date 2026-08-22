@@ -91,10 +91,8 @@ func TestCreateApplication(t *testing.T) {
 				DeployType:   domain.DeployTypeRuntime,
 				Config: domain.ApplicationConfig{
 					BuildConfig: &domain.BuildConfigRuntimeBuildpack{
-						RuntimeConfig: domain.RuntimeConfig{
-							UseMariaDB: tt.useMariaDB,
-						},
-						Context: ".",
+						UseMariaDB: tt.useMariaDB,
+						Context:    ".",
 					},
 				},
 				Websites: []*domain.Website{
@@ -217,10 +215,8 @@ func TestCreateApplication_DuplicateURL(t *testing.T) {
 				DeployType:   domain.DeployTypeRuntime,
 				Config: domain.ApplicationConfig{
 					BuildConfig: &domain.BuildConfigRuntimeBuildpack{
-						RuntimeConfig: domain.RuntimeConfig{
-							UseMariaDB: false,
-						},
-						Context: ".",
+						UseMariaDB: false,
+						Context:    ".",
 					},
 				},
 				Websites: []*domain.Website{
@@ -253,10 +249,8 @@ func TestCreateApplication_DuplicateURL(t *testing.T) {
 				DeployType:   domain.DeployTypeRuntime,
 				Config: domain.ApplicationConfig{
 					BuildConfig: &domain.BuildConfigRuntimeBuildpack{
-						RuntimeConfig: domain.RuntimeConfig{
-							UseMariaDB: false,
-						},
-						Context: ".",
+						UseMariaDB: false,
+						Context:    ".",
 					},
 				},
 				Websites: []*domain.Website{
@@ -372,10 +366,8 @@ func TestDeleteApplication(t *testing.T) {
 				DeployType:   domain.DeployTypeRuntime,
 				Config: domain.ApplicationConfig{
 					BuildConfig: &domain.BuildConfigRuntimeBuildpack{
-						RuntimeConfig: domain.RuntimeConfig{
-							UseMariaDB: tt.useMariaDB,
-						},
-						Context: ".",
+						UseMariaDB: tt.useMariaDB,
+						Context:    ".",
 					},
 				},
 				Websites: []*domain.Website{
@@ -473,10 +465,8 @@ func TestUpdateApplication(t *testing.T) {
 				DeployType:   domain.DeployTypeRuntime,
 				Config: domain.ApplicationConfig{
 					BuildConfig: &domain.BuildConfigRuntimeBuildpack{
-						RuntimeConfig: domain.RuntimeConfig{
-							UseMariaDB: false,
-						},
-						Context: ".",
+						UseMariaDB: false,
+						Context:    ".",
 					},
 				},
 				Websites: []*domain.Website{
@@ -588,10 +578,8 @@ func TestUpdateApplication_UpdateMariaDBConfigIsNotAllowed(t *testing.T) {
 				Commit:       domain.EmptyCommit,
 				Config: domain.ApplicationConfig{
 					BuildConfig: &domain.BuildConfigRuntimeBuildpack{
-						RuntimeConfig: domain.RuntimeConfig{
-							UseMariaDB: tt.initialUseMariaDB,
-						},
-						Context: ".",
+						UseMariaDB: tt.initialUseMariaDB,
+						Context:    ".",
 					},
 				},
 				Websites: []*domain.Website{
@@ -615,9 +603,7 @@ func TestUpdateApplication_UpdateMariaDBConfigIsNotAllowed(t *testing.T) {
 			err = svc.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{
 				Config: optional.From(domain.ApplicationConfig{
 					BuildConfig: &domain.BuildConfigRuntimeBuildpack{
-						RuntimeConfig: domain.RuntimeConfig{
-							UseMariaDB: tt.updatedUseMariaDB,
-						},
+						UseMariaDB: tt.updatedUseMariaDB,
 					},
 				}),
 			})

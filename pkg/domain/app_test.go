@@ -30,11 +30,9 @@ func TestApplicationConfig_Validate(t *testing.T) {
 			deployType: DeployTypeRuntime,
 			config: ApplicationConfig{
 				BuildConfig: &BuildConfigRuntimeCmd{
-					RuntimeConfig: RuntimeConfig{
-						Entrypoint: "./main",
-					},
-					BaseImage: "golang:1.20",
-					BuildCmd:  "go build -o main",
+					Entrypoint: "./main",
+					BaseImage:  "golang:1.20",
+					BuildCmd:   "go build -o main",
 				},
 			},
 			wantErr: false,
@@ -44,11 +42,9 @@ func TestApplicationConfig_Validate(t *testing.T) {
 			deployType: DeployTypeRuntime,
 			config: ApplicationConfig{
 				BuildConfig: &BuildConfigRuntimeCmd{
-					RuntimeConfig: RuntimeConfig{
-						Entrypoint: "python3 main.py",
-					},
-					BaseImage: "python:3",
-					BuildCmd:  "",
+					Entrypoint: "python3 main.py",
+					BaseImage:  "python:3",
+					BuildCmd:   "",
 				},
 			},
 			wantErr: false,
@@ -58,11 +54,9 @@ func TestApplicationConfig_Validate(t *testing.T) {
 			deployType: DeployTypeRuntime,
 			config: ApplicationConfig{
 				BuildConfig: &BuildConfigRuntimeCmd{
-					RuntimeConfig: RuntimeConfig{
-						Entrypoint: "./my-binary",
-					},
-					BaseImage: "",
-					BuildCmd:  "",
+					Entrypoint: "./my-binary",
+					BaseImage:  "",
+					BuildCmd:   "",
 				},
 			},
 			wantErr: false,
@@ -72,11 +66,9 @@ func TestApplicationConfig_Validate(t *testing.T) {
 			deployType: DeployTypeRuntime,
 			config: ApplicationConfig{
 				BuildConfig: &BuildConfigRuntimeCmd{
-					RuntimeConfig: RuntimeConfig{
-						Entrypoint: "",
-					},
-					BaseImage: "php:7-apache",
-					BuildCmd:  "",
+					Entrypoint: "",
+					BaseImage:  "php:7-apache",
+					BuildCmd:   "",
 				},
 			},
 			wantErr: false,
@@ -86,11 +78,9 @@ func TestApplicationConfig_Validate(t *testing.T) {
 			deployType: DeployTypeRuntime,
 			config: ApplicationConfig{
 				BuildConfig: &BuildConfigRuntimeCmd{
-					RuntimeConfig: RuntimeConfig{
-						Entrypoint: "",
-					},
-					BaseImage: "",
-					BuildCmd:  "",
+					Entrypoint: "",
+					BaseImage:  "",
+					BuildCmd:   "",
 				},
 			},
 			wantErr: true,
@@ -100,10 +90,8 @@ func TestApplicationConfig_Validate(t *testing.T) {
 			deployType: DeployTypeStatic,
 			config: ApplicationConfig{
 				BuildConfig: &BuildConfigStaticBuildpack{
-					StaticConfig: StaticConfig{
-						ArtifactPath: "./dist",
-					},
-					Context: "",
+					ArtifactPath: "./dist",
+					Context:      "",
 				},
 			},
 			wantErr: false,
@@ -113,10 +101,8 @@ func TestApplicationConfig_Validate(t *testing.T) {
 			deployType: DeployTypeStatic,
 			config: ApplicationConfig{
 				BuildConfig: &BuildConfigStaticBuildpack{
-					StaticConfig: StaticConfig{
-						ArtifactPath: "",
-					},
-					Context: "",
+					ArtifactPath: "",
+					Context:      "",
 				},
 			},
 			wantErr: true,
@@ -126,9 +112,7 @@ func TestApplicationConfig_Validate(t *testing.T) {
 			deployType: DeployTypeStatic,
 			config: ApplicationConfig{
 				BuildConfig: &BuildConfigStaticDockerfile{
-					StaticConfig: StaticConfig{
-						ArtifactPath: "./dist",
-					},
+					ArtifactPath:   "./dist",
 					DockerfileName: "Dockerfile",
 				},
 			},
@@ -139,9 +123,7 @@ func TestApplicationConfig_Validate(t *testing.T) {
 			deployType: DeployTypeStatic,
 			config: ApplicationConfig{
 				BuildConfig: &BuildConfigStaticDockerfile{
-					StaticConfig: StaticConfig{
-						ArtifactPath: "",
-					},
+					ArtifactPath:   "",
 					DockerfileName: "Dockerfile",
 				},
 			},
@@ -152,11 +134,9 @@ func TestApplicationConfig_Validate(t *testing.T) {
 			deployType: DeployTypeStatic,
 			config: ApplicationConfig{
 				BuildConfig: &BuildConfigStaticCmd{
-					StaticConfig: StaticConfig{
-						ArtifactPath: "./dist",
-					},
-					BaseImage: "node:18",
-					BuildCmd:  "yarn build",
+					ArtifactPath: "./dist",
+					BaseImage:    "node:18",
+					BuildCmd:     "yarn build",
 				},
 			},
 			wantErr: false,
@@ -166,11 +146,9 @@ func TestApplicationConfig_Validate(t *testing.T) {
 			deployType: DeployTypeStatic,
 			config: ApplicationConfig{
 				BuildConfig: &BuildConfigStaticCmd{
-					StaticConfig: StaticConfig{
-						ArtifactPath: "./dist",
-					},
-					BaseImage: "alpine:latest",
-					BuildCmd:  "",
+					ArtifactPath: "./dist",
+					BaseImage:    "alpine:latest",
+					BuildCmd:     "",
 				},
 			},
 			wantErr: false,
@@ -180,11 +158,9 @@ func TestApplicationConfig_Validate(t *testing.T) {
 			deployType: DeployTypeStatic,
 			config: ApplicationConfig{
 				BuildConfig: &BuildConfigStaticCmd{
-					StaticConfig: StaticConfig{
-						ArtifactPath: "./dist",
-					},
-					BaseImage: "",
-					BuildCmd:  "",
+					ArtifactPath: "./dist",
+					BaseImage:    "",
+					BuildCmd:     "",
 				},
 			},
 			wantErr: false,
@@ -194,11 +170,9 @@ func TestApplicationConfig_Validate(t *testing.T) {
 			deployType: DeployTypeStatic,
 			config: ApplicationConfig{
 				BuildConfig: &BuildConfigStaticCmd{
-					StaticConfig: StaticConfig{
-						ArtifactPath: "",
-					},
-					BaseImage: "",
-					BuildCmd:  "",
+					ArtifactPath: "",
+					BaseImage:    "",
+					BuildCmd:     "",
 				},
 			},
 			wantErr: true,
