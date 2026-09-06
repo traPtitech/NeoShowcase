@@ -451,7 +451,7 @@ func TestApplication_WebsiteConflicts(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.target.WebsiteConflicts([]*Application{tt.existing}, tt.actor)
+			got := tt.target.WebsiteConflicts([]*Application{tt.existing})
 			assert.Equal(t, tt.want, got)
 		})
 	}

@@ -215,7 +215,7 @@ func (w *Website) overlapsWith(target *Website) bool {
 	return w.pathContainedBy(target) || target.pathContainedBy(w)
 }
 
-func (a *Application) WebsiteConflicts(existing []*Application, actor *User) bool {
+func (a *Application) WebsiteConflicts(existing []*Application) bool {
 	for _, w := range a.Websites {
 		// check with all other websites
 		for _, other := range append(existing, a) {
@@ -226,7 +226,7 @@ func (a *Application) WebsiteConflicts(existing []*Application, actor *User) boo
 				if w.Equals(w2) {
 					return true
 				}
-				if w.overlapsWith(w2) && !other.IsOwner(actor) {
+				if w.overlapsWith(w2) {
 					return true
 				}
 			}
