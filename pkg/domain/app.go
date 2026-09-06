@@ -93,7 +93,6 @@ func (a *Application) SelfValidate() error {
 }
 
 func (a *Application) Validate(
-	actor *User,
 	existingApps []*Application,
 	domains AvailableDomainSlice,
 	ports AvailablePortSlice,

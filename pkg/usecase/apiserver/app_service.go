@@ -26,7 +26,7 @@ func (s *Service) validateApp(ctx context.Context, app *domain.Application) erro
 	if err != nil {
 		return oops.Wrapf(err, "getting system info")
 	}
-	err = app.Validate(web.GetUser(ctx), existingApps, si.AvailableDomains, si.AvailablePorts)
+	err = app.Validate(existingApps, si.AvailableDomains, si.AvailablePorts)
 	if err != nil {
 		return newError(ErrorTypeBadRequest, "invalid application", err)
 	}
