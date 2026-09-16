@@ -287,7 +287,7 @@ services:
       - apps
 
   mongo:
-    image: mongo:7@sha256:4b5bf3c2bb7516164f6dcb44acce4fdcb428abfe5771a1128304a0f34ab9ff7c
+    image: mongo:7@sha256:9854f7139445d766a9523571d6f047530c45547460ffcf8259eb2bf4264632ca
     restart: always
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
