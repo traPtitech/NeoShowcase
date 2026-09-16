@@ -226,7 +226,7 @@ func (a *Application) WebsiteConflicts(existing []*Application) bool {
 				if w.Equals(w2) {
 					return true
 				}
-				if w.overlapsWith(w2) {
+				if w.overlapsWith(w2) && len(lo.Intersect(a.OwnerIDs, other.OwnerIDs)) == 0 {
 					return true
 				}
 			}
