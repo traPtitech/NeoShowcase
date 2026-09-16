@@ -45,8 +45,8 @@ jobs:
       - run: echo "APP_VERSION=${{ steps.calc-tag.outputs.tag || github.ref_name }}" >> $GITHUB_ENV
       - run: echo "APP_REVISION=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
-      - uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8 # v4.2.0
-      - uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
+      - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
         id: buildx
       - name: Builder instance name
         run: echo ${{ steps.buildx.outputs.name }}
@@ -71,7 +71,7 @@ jobs:
           sep-tags: ","
 
       - name: Build
-        uses: docker/bake-action@d3418bd7d0e9324001bca92fa8ba175ea7e6dc9b # v7.3.0
+        uses: docker/bake-action@018cb6412ab401ebaa809aa5f85966b74628600f # v7.4.0
         env:
           APP_VERSION: ${{ env.APP_VERSION }}
           APP_REVISION: ${{ env.APP_REVISION }}
@@ -92,7 +92,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Release
-        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         with:
           # tag_name will default in the current branch name for workflow_dispatch via workflow_call, so we're passing tag value via inputs manually.
           tag_name: ${{ inputs.ref_name || github.ref_name }}
