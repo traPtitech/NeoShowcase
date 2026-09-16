@@ -1,11 +1,12 @@
 import { createFormStore, Field, Form, reset, type SubmitHandler, valiForm } from '@modular-forms/solid'
 import { Title } from '@solidjs/meta'
-import { type Component, createResource, For, Show, Suspense } from 'solid-js'
+import { createAsync } from '@solidjs/router'
+import { type Component, For, Show, Suspense } from 'solid-js'
 import toast from 'solid-toast'
 import * as v from 'valibot'
 import { styled } from '/@/components/styled-components'
 import { Button } from '/@/components/UI/Button'
-import { client, handleAPIError } from '/@/libs/api'
+import { client, getUserKeys, handleAPIError, revalidateUserKeys } from '/@/libs/api'
 import type { DeleteUserKeyRequest, UserKey } from '../api/neoshowcase/protobuf/gateway_pb'
 import { DataTable } from '../components/layouts/DataTable'
 import { MainViewContainer } from '../components/layouts/MainView'
@@ -96,7 +97,8 @@ const userKeyRequestSchema = v.object({
 type UserKeyRequestInput = v.InferInput<typeof userKeyRequestSchema>
 
 export default () => {
-  const [userKeys, { refetch: refetchKeys }] = createResource(() => client.getUserKeys({}))
+  const userKeys = createAsync(() => getUserKeys())
+  const refetchKeys = () => revalidateUserKeys()
   const { Modal: AddNewKeyModal, open: newKeyOpen, close: newKeyClose } = useModal()
 
   const formStore = createFormStore<UserKeyRequestInput>({
@@ -139,7 +141,7 @@ export default () => {
         </WithNav.Navs>
         <WithNav.Body>
           <MainViewContainer>
-            <SectionBoundary title="SSH Public Keys" onRetry={refetchKeys}>
+            <SectionBoundary title="SSH Public Keys">
               <Suspense fallback={<SectionSkeleton />}>
                 <Show when={userKeys()}>
                   {(keysData) => (
@@ -152,12 +154,12 @@ export default () => {
                           </DataTable.SubTitle>
                           dateHuman(createdAt())
                         </DataTable.Titles>
-                        <Show when={userKeys()?.keys.length !== 0}>
+                        <Show when={userKeys()?.length !== 0}>
                           <AddNewSSHKeyButton />
                         </Show>
                       </div>
                       <Show
-                        when={keysData().keys.length > 0}
+                        when={keysData().length > 0}
                         fallback={
                           <List.Container>
                             <List.PlaceHolder>
@@ -168,7 +170,7 @@ export default () => {
                           </List.Container>
                         }
                       >
-                        <SshKeys keys={keysData().keys} refetchKeys={refetchKeys} />
+                        <SshKeys keys={keysData()} refetchKeys={refetchKeys} />
                       </Show>
                     </DataTable.Container>
                   )}

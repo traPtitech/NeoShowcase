@@ -9,7 +9,7 @@ import { Button } from '/@/components/UI/Button'
 import { useApplicationData } from '/@/routes'
 
 export default (props: RouteSectionProps) => {
-  const { app, refetch } = useApplicationData()
+  const { app } = useApplicationData()
   const loaded = () => !!app()
 
   // Route params, not app(): see the note in pages/repos/[id].tsx.
@@ -28,7 +28,7 @@ export default (props: RouteSectionProps) => {
   return (
     <Suspense>
       <MainViewContainer>
-        <PageBoundary onRetry={refetch}>
+        <PageBoundary>
           <Show when={loaded()}>
             <SideView.Container>
               <SideView.Side>

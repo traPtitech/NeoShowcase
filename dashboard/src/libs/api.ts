@@ -99,3 +99,17 @@ export const hasApplicationPermission = (app: () => Application | undefined): bo
 
 export const getBuild = query((id) => client.getBuild({ buildId: id }), 'build')
 export const revalidateBuild = (id: string) => revalidate(getBuild.keyFor(id))
+
+export const getUserKeys = query(() => client.getUserKeys({}).then((res) => res.keys), 'user-keys')
+export const revalidateUserKeys = () => revalidate(getUserKeys.key)
+
+/**
+ * Refetches every piece of data a boundary may be showing: the router's cached queries and the resources that
+ * live for the lifetime of the module. Retrying goes through this rather than through a list supplied by each
+ * boundary, so that adding a boundary cannot silently leave its Retry doing nothing.
+ *
+ * Resources created inside a boundary are not included; resetting the boundary recreates them.
+ */
+export const retryAll = async () => {
+  await Promise.all([revalidate(), refetchUser(), refetchSystemInfo(), refetchAvailableMetrics()])
+}

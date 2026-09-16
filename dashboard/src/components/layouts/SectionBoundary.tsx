@@ -1,4 +1,5 @@
 import { type Component, ErrorBoundary, type ParentComponent, Show } from 'solid-js'
+import { retryAll } from '/@/libs/api'
 import { Button } from '../UI/Button'
 import { DataTable } from './DataTable'
 
@@ -63,6 +64,8 @@ const CompactErrorView: Component<ErrorViewProps> = (props) => (
  * It catches failures only. The block places its own `Suspense` around the part that reads the data, which
  * keeps the heading out of the pending state and leaves the choice of where the placeholder goes at the call
  * site, where the size of the slot is known. Sections share `SectionSkeleton` as that placeholder.
+ *
+ * Retry goes through `retryAll`, so placing a boundary never involves naming the resources beneath it.
  */
 export const SectionBoundary: ParentComponent<{
   /** Name of the data this boundary reads. The 'section' variant also renders it as the section heading. */
@@ -72,11 +75,6 @@ export const SectionBoundary: ParentComponent<{
    * 'compact' fits a slot the size of a single control, such as the header, and moves the detail into a tooltip.
    */
   variant?: 'section' | 'compact'
-  /**
-   * Refetches the data sources that live outside this boundary, run before resetting it.
-   * Omit it only when everything this boundary reads is created inside it.
-   */
-  onRetry?: () => unknown
 }> = (props) => {
   const isCompact = () => props.variant === 'compact'
 
@@ -85,7 +83,7 @@ export const SectionBoundary: ParentComponent<{
       fallback={(err, reset) => {
         console.error(`[section: ${props.title}]`, err)
         const onRetry = async () => {
-          await props.onRetry?.()
+          await retryAll()
           reset()
         }
         return isCompact() ? (

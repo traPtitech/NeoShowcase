@@ -8,7 +8,7 @@ import { TabRound } from '/@/components/UI/TabRound'
 import { useRepositoryData } from '/@/routes'
 
 export default (props: RouteSectionProps) => {
-  const { repo, refetchRepo } = useRepositoryData()
+  const { repo } = useRepositoryData()
 
   // Route params, not the resource: these memos are owned by the component, outside the boundary it
   // renders, so reading a failed resource here would escape to the boundary above instead of this page's.
@@ -20,7 +20,7 @@ export default (props: RouteSectionProps) => {
   const navigate = (path: string) => startTransition(() => navigator(path))
 
   return (
-    <PageBoundary onRetry={refetchRepo}>
+    <PageBoundary>
       <Show when={repo()}>
         <WithNav.Container>
           <Title>{`${repo()!.name} - Repository - NeoShowcase`}</Title>

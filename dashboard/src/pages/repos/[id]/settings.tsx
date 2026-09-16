@@ -9,7 +9,7 @@ import { Button } from '/@/components/UI/Button'
 import { useRepositoryData } from '/@/routes'
 
 export default (props: RouteSectionProps) => {
-  const { repo, refetchRepo } = useRepositoryData()
+  const { repo } = useRepositoryData()
   const loaded = () => !!repo()
   // Route params, not repo(): see the note in pages/repos/[id].tsx.
   const params = useParams()
@@ -23,7 +23,7 @@ export default (props: RouteSectionProps) => {
 
   return (
     <MainViewContainer>
-      <PageBoundary onRetry={refetchRepo}>
+      <PageBoundary>
         <Show when={loaded()}>
           <SideView.Container>
             <SideView.Side>

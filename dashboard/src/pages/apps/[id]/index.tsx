@@ -13,7 +13,7 @@ import { AppMetrics } from '/@/components/templates/app/AppMetrics'
 import { ContainerLog } from '/@/components/templates/app/ContainerLog'
 import SectionSkeleton from '/@/components/templates/SectionSkeleton'
 import { Button } from '/@/components/UI/Button'
-import { availableMetrics, client, handleAPIError, refetchAvailableMetrics, refetchSystemInfo } from '/@/libs/api'
+import { availableMetrics, client, handleAPIError } from '/@/libs/api'
 import { useApplicationData } from '/@/routes'
 
 const MainViewContainer = styled('div', 'w-full bg-ui-primary px-8 pt-10 pb-18 max-md:px-4')
@@ -111,7 +111,7 @@ export default () => {
         <Show when={loaded()}>
           <MainViewContainer class="bg-ui-background">
             <MainView>
-              <SectionBoundary title="Deployment" onRetry={() => Promise.all([refetchSystemInfo(), refetch()])}>
+              <SectionBoundary title="Deployment">
                 <DataTable.Container>
                   <DataTable.Title>Deployment</DataTable.Title>
                   <Suspense fallback={<SectionSkeleton />}>
@@ -131,7 +131,7 @@ export default () => {
           </MainViewContainer>
           <MainViewContainer>
             <MainView>
-              <SectionBoundary title="Branch Resolution" onRetry={refetch}>
+              <SectionBoundary title="Branch Resolution">
                 <DataTable.Container>
                   <DataTable.Title>Branch Resolution</DataTable.Title>
                   <Suspense fallback={<SectionSkeleton />}>
@@ -145,7 +145,7 @@ export default () => {
                   </Suspense>
                 </DataTable.Container>
               </SectionBoundary>
-              <SectionBoundary title="Latest Builds" onRetry={refetch}>
+              <SectionBoundary title="Latest Builds">
                 <DataTable.Container>
                   <DataTable.Title>Latest Builds</DataTable.Title>
                   <Suspense fallback={<SectionSkeleton />}>
@@ -163,7 +163,7 @@ export default () => {
                 </DataTable.Container>
               </SectionBoundary>
               <Show when={app()?.deployType === DeployType.RUNTIME && hasPermission()}>
-                <SectionBoundary title="Usage" onRetry={refetchAvailableMetrics}>
+                <SectionBoundary title="Usage">
                   <DataTable.Container>
                     <DataTable.Title>Usage</DataTable.Title>
                     <Suspense fallback={<SectionSkeleton />}>

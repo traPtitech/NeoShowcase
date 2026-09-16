@@ -1,5 +1,5 @@
 import { MetaProvider, Title } from '@solidjs/meta'
-import { type RouteSectionProps, revalidate } from '@solidjs/router'
+import type { RouteSectionProps } from '@solidjs/router'
 import { type Component, ErrorBoundary } from 'solid-js'
 import { Toaster } from 'solid-toast'
 import { Routes } from '/@/routes'
@@ -24,7 +24,7 @@ const Root: Component<RouteSectionProps> = (props) => {
         }}
       >
         <WithHeader>
-          <PageBoundary onRetry={() => revalidate()}>{props.children}</PageBoundary>
+          <PageBoundary>{props.children}</PageBoundary>
         </WithHeader>
       </ErrorBoundary>
     </MetaProvider>

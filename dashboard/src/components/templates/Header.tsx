@@ -3,7 +3,7 @@ import { type Component, Show, Suspense } from 'solid-js'
 import LogoImage from '/@/assets/logo.svg?url'
 import SmallLogoImage from '/@/assets/logo_small.svg?url'
 import { SectionBoundary } from '/@/components/layouts/SectionBoundary'
-import { refetchSystemInfo, refetchUser, user } from '/@/libs/api'
+import { user } from '/@/libs/api'
 import { Button } from '../UI/Button'
 import Skeleton from '../UI/Skeleton'
 import { UserMenuButton } from '../UI/UserMenuButton'
@@ -35,11 +35,7 @@ export const Header: Component = () => {
         </A>
       </div>
       <div class="ml-auto">
-        <SectionBoundary
-          title="User Info"
-          variant="compact"
-          onRetry={() => Promise.all([refetchUser(), refetchSystemInfo()])}
-        >
+        <SectionBoundary title="User Info" variant="compact">
           {/* The header slot is sized by its content, so the placeholder cannot take a percentage width. */}
           <Suspense fallback={<Skeleton width={120} height={32} />}>
             <Show when={user()}>{(user) => <UserMenuButton user={user()} />}</Show>

@@ -8,7 +8,7 @@ import { TabRound } from '/@/components/UI/TabRound'
 import { useApplicationData } from '/@/routes'
 
 export default (props: RouteSectionProps) => {
-  const { app, repo, refetch } = useApplicationData()
+  const { app, repo } = useApplicationData()
   const loaded = () => !!(app() && repo())
 
   // Route params, not app(): see the note in pages/repos/[id].tsx.
@@ -21,7 +21,7 @@ export default (props: RouteSectionProps) => {
   const navigate = (path: string) => startTransition(() => navigator(path))
 
   return (
-    <PageBoundary onRetry={refetch}>
+    <PageBoundary>
       <WithNav.Container>
         <Show when={loaded()}>
           <Title>{`${app()?.name} - Application - NeoShowcase`}</Title>
