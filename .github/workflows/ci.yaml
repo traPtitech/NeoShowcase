@@ -93,7 +93,7 @@ jobs:
           go-version-file: ./go.mod
       - uses: jdx/mise-action@7e36c90d9ab29c415a2384db3006f3ec8a8cc654 # v4.2.4
         with:
-          install_args: go:github.com/sqldef/sqldef/v3/cmd/mysqldef
+          install_args: go go:github.com/sqldef/sqldef/v3/cmd/mysqldef
       - name: Run migration
         run: |
           DB_PORT=5004 ./migrations/entrypoint.sh ./migrations/schema.sql
@@ -167,7 +167,7 @@ jobs:
           go-version-file: ./go.mod
       - uses: jdx/mise-action@7e36c90d9ab29c415a2384db3006f3ec8a8cc654 # v4.2.4
         with:
-          install_args: go:github.com/sqldef/sqldef/v3/cmd/mysqldef
+          install_args: go go:github.com/sqldef/sqldef/v3/cmd/mysqldef
       - name: Run migration
         run: |
           DB_PORT=5004 ./migrations/entrypoint.sh ./migrations/schema.sql
