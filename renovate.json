@@ -23,6 +23,20 @@
       "groupName": "GitHub Actions dependencies"
     }
   ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "The traefik sablier plugin is pinned in a CLI argument, which no built-in manager detects.",
+      "managerFilePatterns": [
+        "compose.yaml",
+        ".local-manifest/traefik/traefik-stateful-set.yaml"
+      ],
+      "matchStrings": [
+        "--experimental\\.plugins\\.sablier\\.modulename=(?<depName>\\S+)[\\s\\S]*?--experimental\\.plugins\\.sablier\\.version=(?<currentValue>v\\S+)"
+      ],
+      "datasourceTemplate": "go"
+    }
+  ],
   "prHourlyLimit": 0,
   "postUpdateOptions": [
     "gomodTidy"
