@@ -301,7 +301,7 @@ services:
       - apps
 
   adminer:
-    image: adminer:5.4.2@sha256:cc64d253db4f016cbcff2ff2f01e60ed07e74f38b4398f84d3c4fae4b5ce0e07
+    image: adminer:5.4.2@sha256:983261ecc40a4aaf11e25aeda8ef821f5a43a9f024b3967c81cbcc0e6ce43ba3
     restart: always
     environment:
       ADMINER_DEFAULT_SERVER: mysql
