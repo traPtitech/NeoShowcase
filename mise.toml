@@ -6,7 +6,7 @@ pnpm = "11.21.0"
 k3d = "5.9.0"
 kubectl = "1.37.0"
 kustomize = "5.8.1"
-helm = "4.2.3"
+helm = "4.3.0"
 
 golangci-lint = "2.13.2"
 tbls = "1.95.0"
