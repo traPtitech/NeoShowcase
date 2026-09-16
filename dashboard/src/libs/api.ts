@@ -109,7 +109,10 @@ export const revalidateUserKeys = () => revalidate(getUserKeys.key)
  * boundary, so that adding a boundary cannot silently leave its Retry doing nothing.
  *
  * Resources created inside a boundary are not included; resetting the boundary recreates them.
+ *
+ * It settles rather than rejects, so that one source still being down cannot stop a caller from resetting a
+ * boundary whose own data has recovered. Whatever is still failing throws again when the boundary reads it.
  */
 export const retryAll = async () => {
-  await Promise.all([revalidate(), refetchUser(), refetchSystemInfo(), refetchAvailableMetrics()])
+  await Promise.allSettled([revalidate(), refetchUser(), refetchSystemInfo(), refetchAvailableMetrics()])
 }
