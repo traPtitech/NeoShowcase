@@ -23,6 +23,7 @@
       "groupName": "GitHub Actions dependencies"
     }
   ],
+  "prHourlyLimit": 0,
   "postUpdateOptions": [
     "gomodTidy"
   ],
