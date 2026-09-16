@@ -1,17 +1,20 @@
 import { createFormStore, Field, Form, reset, type SubmitHandler, valiForm } from '@modular-forms/solid'
 import { Title } from '@solidjs/meta'
-import { type Component, createResource, For, Show } from 'solid-js'
+import { createAsync } from '@solidjs/router'
+import { type Component, For, Show, Suspense } from 'solid-js'
 import toast from 'solid-toast'
 import * as v from 'valibot'
 import { styled } from '/@/components/styled-components'
 import { Button } from '/@/components/UI/Button'
-import { client, handleAPIError } from '/@/libs/api'
+import { client, getUserKeys, handleAPIError, revalidateUserKeys } from '/@/libs/api'
 import type { DeleteUserKeyRequest, UserKey } from '../api/neoshowcase/protobuf/gateway_pb'
 import { DataTable } from '../components/layouts/DataTable'
 import { MainViewContainer } from '../components/layouts/MainView'
+import { SectionBoundary } from '../components/layouts/SectionBoundary'
 import { WithNav } from '../components/layouts/WithNav'
 import { List } from '../components/templates/List'
 import { Nav } from '../components/templates/Nav'
+import SectionSkeleton from '../components/templates/SectionSkeleton'
 import ModalDeleteConfirm from '../components/UI/ModalDeleteConfirm'
 import { TextField } from '../components/UI/TextField'
 import { dateHuman } from '../libs/format'
@@ -94,7 +97,8 @@ const userKeyRequestSchema = v.object({
 type UserKeyRequestInput = v.InferInput<typeof userKeyRequestSchema>
 
 export default () => {
-  const [userKeys, { refetch: refetchKeys }] = createResource(() => client.getUserKeys({}))
+  const userKeys = createAsync(() => getUserKeys())
+  const refetchKeys = () => revalidateUserKeys()
   const { Modal: AddNewKeyModal, open: newKeyOpen, close: newKeyClose } = useModal()
 
   const formStore = createFormStore<UserKeyRequestInput>({
@@ -136,40 +140,44 @@ export default () => {
           <Nav title="Settings" />
         </WithNav.Navs>
         <WithNav.Body>
-          <Show when={userKeys()}>
-            {(keysData) => (
-              <MainViewContainer>
-                <DataTable.Container>
-                  <div class="flex w-full items-end justify-between">
-                    <DataTable.Titles>
-                      <DataTable.Title>SSH Public Keys</DataTable.Title>
-                      <DataTable.SubTitle>
-                        SSH鍵はruntimeアプリケーションのコンテナにssh接続するときに使います
-                      </DataTable.SubTitle>
-                      dateHuman(createdAt())
-                    </DataTable.Titles>
-                    <Show when={userKeys()?.keys.length !== 0}>
-                      <AddNewSSHKeyButton />
-                    </Show>
-                  </div>
-                  <Show
-                    when={keysData().keys.length > 0}
-                    fallback={
-                      <List.Container>
-                        <List.PlaceHolder>
-                          <div class="i-material-symbols:key-off-outline shrink-0 text-20/20" />
-                          No Keys Registered
+          <MainViewContainer>
+            <SectionBoundary title="SSH Public Keys">
+              <Suspense fallback={<SectionSkeleton />}>
+                <Show when={userKeys()}>
+                  {(keysData) => (
+                    <DataTable.Container>
+                      <div class="flex w-full items-end justify-between">
+                        <DataTable.Titles>
+                          <DataTable.Title>SSH Public Keys</DataTable.Title>
+                          <DataTable.SubTitle>
+                            SSH鍵はruntimeアプリケーションのコンテナにssh接続するときに使います
+                          </DataTable.SubTitle>
+                          dateHuman(createdAt())
+                        </DataTable.Titles>
+                        <Show when={userKeys()?.length !== 0}>
                           <AddNewSSHKeyButton />
-                        </List.PlaceHolder>
-                      </List.Container>
-                    }
-                  >
-                    <SshKeys keys={keysData().keys} refetchKeys={refetchKeys} />
-                  </Show>
-                </DataTable.Container>
-              </MainViewContainer>
-            )}
-          </Show>
+                        </Show>
+                      </div>
+                      <Show
+                        when={keysData().length > 0}
+                        fallback={
+                          <List.Container>
+                            <List.PlaceHolder>
+                              <div class="i-material-symbols:key-off-outline shrink-0 text-20/20" />
+                              No Keys Registered
+                              <AddNewSSHKeyButton />
+                            </List.PlaceHolder>
+                          </List.Container>
+                        }
+                      >
+                        <SshKeys keys={keysData()} refetchKeys={refetchKeys} />
+                      </Show>
+                    </DataTable.Container>
+                  )}
+                </Show>
+              </Suspense>
+            </SectionBoundary>
+          </MainViewContainer>
         </WithNav.Body>
       </WithNav.Container>
       <AddNewKeyModal.Container>

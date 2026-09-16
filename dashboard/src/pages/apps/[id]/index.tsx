@@ -1,8 +1,9 @@
 import { timestampDate } from '@bufbuild/protobuf/wkt'
-import { type Component, createSignal, For, onCleanup, Show, useTransition } from 'solid-js'
+import { type Component, createSignal, For, onCleanup, Show, Suspense, useTransition } from 'solid-js'
 import toast from 'solid-toast'
 import { type Application, DeployType } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { DataTable } from '/@/components/layouts/DataTable'
+import { SectionBoundary } from '/@/components/layouts/SectionBoundary'
 import SuspenseContainer from '/@/components/layouts/SuspenseContainer'
 import { styled } from '/@/components/styled-components'
 import AppBranchResolution from '/@/components/templates/app/AppBranchResolution'
@@ -10,6 +11,7 @@ import AppDeployInfo from '/@/components/templates/app/AppDeployInfo'
 import AppLatestBuilds from '/@/components/templates/app/AppLatestBuilds'
 import { AppMetrics } from '/@/components/templates/app/AppMetrics'
 import { ContainerLog } from '/@/components/templates/app/ContainerLog'
+import SectionSkeleton from '/@/components/templates/SectionSkeleton'
 import { Button } from '/@/components/UI/Button'
 import { availableMetrics, client, handleAPIError } from '/@/libs/api'
 import { useApplicationData } from '/@/routes'
@@ -109,56 +111,76 @@ export default () => {
         <Show when={loaded()}>
           <MainViewContainer class="bg-ui-background">
             <MainView>
-              <DataTable.Container>
-                <DataTable.Title>Deployment</DataTable.Title>
-                <AppDeployInfo
-                  app={app()!}
-                  refetch={refetch}
-                  repo={repo()!}
-                  startApp={startApp}
-                  deployedBuild={deployedBuild()}
-                  latestBuildId={latestBuild()?.id}
-                  hasPermission={hasPermission()}
-                />
-              </DataTable.Container>
+              <SectionBoundary title="Deployment">
+                <DataTable.Container>
+                  <DataTable.Title>Deployment</DataTable.Title>
+                  <Suspense fallback={<SectionSkeleton />}>
+                    <AppDeployInfo
+                      app={app()!}
+                      refetch={refetch}
+                      repo={repo()!}
+                      startApp={startApp}
+                      deployedBuild={deployedBuild()}
+                      latestBuildId={latestBuild()?.id}
+                      hasPermission={hasPermission()}
+                    />
+                  </Suspense>
+                </DataTable.Container>
+              </SectionBoundary>
             </MainView>
           </MainViewContainer>
           <MainViewContainer>
             <MainView>
-              <DataTable.Container>
-                <DataTable.Title>Branch Resolution</DataTable.Title>
-                <AppBranchResolution
-                  app={app()!}
-                  commits={commits()}
-                  refreshCommit={refreshCommit}
-                  disableRefreshCommit={disableRefreshCommit()}
-                  hasPermission={hasPermission()}
-                />
-              </DataTable.Container>
-              <DataTable.Container>
-                <Show when={builds()}>
-                  <DataTable.Title>Latest Builds</DataTable.Title>
-                  <AppLatestBuilds
-                    app={app()!}
-                    refetch={refetch}
-                    repo={repo()!}
-                    startApp={startApp}
-                    hasPermission={hasPermission()}
-                    sortedBuilds={sortedBuilds()!}
-                  />
-                </Show>
-              </DataTable.Container>
-              <Show when={app()?.deployType === DeployType.RUNTIME && hasPermission()}>
+              <SectionBoundary title="Branch Resolution">
                 <DataTable.Container>
-                  <DataTable.Title>Usage</DataTable.Title>
-                  <Metrics app={app()!} />
+                  <DataTable.Title>Branch Resolution</DataTable.Title>
+                  <Suspense fallback={<SectionSkeleton />}>
+                    <AppBranchResolution
+                      app={app()!}
+                      commits={commits()}
+                      refreshCommit={refreshCommit}
+                      disableRefreshCommit={disableRefreshCommit()}
+                      hasPermission={hasPermission()}
+                    />
+                  </Suspense>
                 </DataTable.Container>
+              </SectionBoundary>
+              <SectionBoundary title="Latest Builds">
+                <DataTable.Container>
+                  <DataTable.Title>Latest Builds</DataTable.Title>
+                  <Suspense fallback={<SectionSkeleton />}>
+                    <Show when={builds()}>
+                      <AppLatestBuilds
+                        app={app()!}
+                        refetch={refetch}
+                        repo={repo()!}
+                        startApp={startApp}
+                        hasPermission={hasPermission()}
+                        sortedBuilds={sortedBuilds()!}
+                      />
+                    </Show>
+                  </Suspense>
+                </DataTable.Container>
+              </SectionBoundary>
+              <Show when={app()?.deployType === DeployType.RUNTIME && hasPermission()}>
+                <SectionBoundary title="Usage">
+                  <DataTable.Container>
+                    <DataTable.Title>Usage</DataTable.Title>
+                    <Suspense fallback={<SectionSkeleton />}>
+                      <Metrics app={app()!} />
+                    </Suspense>
+                  </DataTable.Container>
+                </SectionBoundary>
               </Show>
               <Show when={app()?.deployType === DeployType.RUNTIME && hasPermission()}>
-                <DataTable.Container>
-                  <DataTable.Title>Container Log</DataTable.Title>
-                  <Logs app={app()!} />
-                </DataTable.Container>
+                <SectionBoundary title="Container Log">
+                  <DataTable.Container>
+                    <DataTable.Title>Container Log</DataTable.Title>
+                    <Suspense fallback={<SectionSkeleton />}>
+                      <Logs app={app()!} />
+                    </Suspense>
+                  </DataTable.Container>
+                </SectionBoundary>
               </Show>
             </MainView>
           </MainViewContainer>
