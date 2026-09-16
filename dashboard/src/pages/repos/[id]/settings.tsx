@@ -1,7 +1,7 @@
 import { type RouteSectionProps, useMatch, useNavigate } from '@solidjs/router'
-import { ErrorBoundary, Show, Suspense, useTransition } from 'solid-js'
-import ErrorView from '/@/components/layouts/ErrorView'
+import { Show, Suspense, useTransition } from 'solid-js'
 import { MainViewContainer } from '/@/components/layouts/MainView'
+import { PageBoundary } from '/@/components/layouts/PageBoundary'
 import { SideView } from '/@/components/layouts/SideView'
 import SuspenseContainer from '/@/components/layouts/SuspenseContainer'
 import SettingSkeleton from '/@/components/templates/SettingSkeleton'
@@ -9,7 +9,7 @@ import { Button } from '/@/components/UI/Button'
 import { useRepositoryData } from '/@/routes'
 
 export default (props: RouteSectionProps) => {
-  const { repo } = useRepositoryData()
+  const { repo, refetchRepo } = useRepositoryData()
   const loaded = () => !!repo()
   const matchGeneralPage = useMatch(() => `/repos/${repo()?.id}/settings/`)
   const matchAuthPage = useMatch(() => `/repos/${repo()?.id}/settings/authorization`)
@@ -64,11 +64,11 @@ export default (props: RouteSectionProps) => {
             </div>
           </SideView.Side>
           <SideView.Main>
-            <ErrorBoundary fallback={(props) => <ErrorView {...props} />}>
+            <PageBoundary onRetry={refetchRepo}>
               <Suspense fallback={<SettingSkeleton />}>
                 <SuspenseContainer isPending={isPending()}>{props.children}</SuspenseContainer>
               </Suspense>
-            </ErrorBoundary>
+            </PageBoundary>
           </SideView.Main>
         </SideView.Container>
       </Show>

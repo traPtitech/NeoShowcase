@@ -19,9 +19,11 @@ const transport = createConnectTransport({
 })
 export const client = createClient(APIService, transport)
 
-export const [user] = createResource(() => client.getMe({}))
-export const [systemInfo] = createResource(() => client.getSystemInfo({}))
-export const [availableMetrics] = createResource(() => client.getAvailableMetrics({}))
+export const [user, { refetch: refetchUser }] = createResource(() => client.getMe({}))
+export const [systemInfo, { refetch: refetchSystemInfo }] = createResource(() => client.getSystemInfo({}))
+export const [availableMetrics, { refetch: refetchAvailableMetrics }] = createResource(() =>
+  client.getAvailableMetrics({}),
+)
 
 export const handleAPIError = (e: unknown, message: string) => {
   if (e instanceof Error) {

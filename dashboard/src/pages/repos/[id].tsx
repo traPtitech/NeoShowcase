@@ -1,14 +1,14 @@
 import { Title } from '@solidjs/meta'
 import { type RouteSectionProps, useMatch, useNavigate } from '@solidjs/router'
-import { ErrorBoundary, Show, Suspense, startTransition } from 'solid-js'
-import ErrorView from '/@/components/layouts/ErrorView'
+import { Show, Suspense, startTransition } from 'solid-js'
+import { PageBoundary } from '/@/components/layouts/PageBoundary'
 import { WithNav } from '/@/components/layouts/WithNav'
 import { RepositoryNav } from '/@/components/templates/repo/RepositoryNav'
 import { TabRound } from '/@/components/UI/TabRound'
 import { useRepositoryData } from '/@/routes'
 
 export default (props: RouteSectionProps) => {
-  const { repo } = useRepositoryData()
+  const { repo, refetchRepo } = useRepositoryData()
 
   const matchIndexPage = useMatch(() => `/repos/${repo()?.id}/`)
   const matchSettingsPage = useMatch(() => `/repos/${repo()?.id}/settings/*`)
@@ -37,9 +37,9 @@ export default (props: RouteSectionProps) => {
           </WithNav.Tabs>
         </WithNav.Navs>
         <WithNav.Body>
-          <ErrorBoundary fallback={(props) => <ErrorView {...props} />}>
+          <PageBoundary onRetry={refetchRepo}>
             <Suspense>{props.children}</Suspense>
-          </ErrorBoundary>
+          </PageBoundary>
         </WithNav.Body>
       </WithNav.Container>
     </Show>

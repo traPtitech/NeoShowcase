@@ -1,12 +1,14 @@
 import { Title } from '@solidjs/meta'
-import { createResource, For, Show } from 'solid-js'
+import { createResource, For, Show, Suspense } from 'solid-js'
 import { DataTable } from '/@/components/layouts/DataTable'
 import { MainViewContainer } from '/@/components/layouts/MainView'
+import { SectionBoundary } from '/@/components/layouts/SectionBoundary'
 import { ArtifactRow } from '/@/components/templates/build/ArtifactRow'
 import { BuildLog } from '/@/components/templates/build/BuildLog'
 import BuildStatusTable from '/@/components/templates/build/BuildStatusTable'
 import { RuntimeImageRow } from '/@/components/templates/build/RuntimeImageRow'
 import { List } from '/@/components/templates/List'
+import SectionSkeleton from '/@/components/templates/SectionSkeleton'
 import { client } from '/@/libs/api'
 import { useBuildData } from '/@/routes'
 
@@ -53,12 +55,16 @@ export default () => {
             </DataTable.Container>
           </Show>
           <Show when={hasPermission()}>
-            <DataTable.Container>
-              <DataTable.Title>Build Log</DataTable.Title>
-              <div class="w-full rounded-lg border border-ui-border px-5 py-4">
-                <BuildLog buildID={build()!.id} finished={buildFinished()} refetch={refetch} />
-              </div>
-            </DataTable.Container>
+            <SectionBoundary title="Build Log">
+              <DataTable.Container>
+                <DataTable.Title>Build Log</DataTable.Title>
+                <Suspense fallback={<SectionSkeleton />}>
+                  <div class="w-full rounded-lg border border-ui-border px-5 py-4">
+                    <BuildLog buildID={build()!.id} finished={buildFinished()} refetch={refetch} />
+                  </div>
+                </Suspense>
+              </DataTable.Container>
+            </SectionBoundary>
           </Show>
         </div>
       </Show>
