@@ -99,6 +99,11 @@ description = "Start development environment"
 depends = ["ensure:mounts", "build"]
 run = "docker compose up -d --quiet-pull"
 
+[tasks.dev]
+description = "Start development environment and live-reload the dashboard (Ctrl+C keeps it running)"
+depends = ["up"]
+run = "docker compose watch --no-up"
+
 [tasks.down]
 description = "Tear down development environment"
 run = "docker compose down"

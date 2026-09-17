@@ -30,9 +30,22 @@ services:
       context: ./dashboard
       target: dev
     restart: always
-    volumes:
-      - ./dashboard:/work
-      - /work/node_modules
+    # Source is synced into the container rather than bind-mounted, so node_modules stays
+    # the one built into the image and never meets the host's. A dependency change has to
+    # go through the image, hence the rebuild on pnpm-lock.yaml.
+    develop:
+      watch:
+        - action: sync
+          path: ./dashboard
+          target: /work
+          ignore:
+            - node_modules/
+            - dist/
+            - .pnpm-store/
+        - action: rebuild
+          path: ./dashboard/package.json
+        - action: rebuild
+          path: ./dashboard/pnpm-lock.yaml
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.ns_dashboard.rule=Host(`ns.local.trapti.tech`)"
