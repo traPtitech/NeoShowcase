@@ -405,7 +405,7 @@ services:
       - ./.local-dev/config/sablier.yaml:/etc/sablier/sablier.yaml
 
   traefik:
-    image: traefik:v3.6.4@sha256:c5bd185c41ba3dbb42cf8a1b9fbdc368bdc96f90c8e598134879935f64e7a7f1
+    image: traefik:v3.7.13@sha256:1c32e7c368204fd72812152ebdd2ac0425993df6fd982317deb02e48f2d5423c
     restart: always
     command:
       - --api.insecure=true
