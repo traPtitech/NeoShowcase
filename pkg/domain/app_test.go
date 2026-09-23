@@ -177,6 +177,39 @@ func TestApplicationConfig_Validate(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name:       "valid with auto shutdown (runtime dockerfile)",
+			deployType: DeployTypeRuntime,
+			config: ApplicationConfig{
+				BuildConfig: &BuildConfigRuntimeDockerfile{
+					DockerfileName: "Dockerfile",
+				},
+				AutoShutdown: AutoShutdownConfig{Enabled: true, Startup: StartupBehaviorLoadingPage},
+			},
+			wantErr: false,
+		},
+		{
+			name:       "auto shutdown without startup (runtime dockerfile)",
+			deployType: DeployTypeRuntime,
+			config: ApplicationConfig{
+				BuildConfig: &BuildConfigRuntimeDockerfile{
+					DockerfileName: "Dockerfile",
+				},
+				AutoShutdown: AutoShutdownConfig{Enabled: true},
+			},
+			wantErr: true,
+		},
+		{
+			name:       "auto shutdown enabled (static buildpack)",
+			deployType: DeployTypeStatic,
+			config: ApplicationConfig{
+				BuildConfig: &BuildConfigStaticBuildpack{
+					ArtifactPath: "./dist",
+				},
+				AutoShutdown: AutoShutdownConfig{Enabled: true, Startup: StartupBehaviorLoadingPage},
+			},
+			wantErr: true,
+		},
 	}
 
 	for _, tt := range tests {
