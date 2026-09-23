@@ -358,4 +358,10 @@ func TestHashWithEnv(t *testing.T) {
 		}
 		assert.Equal(t, hash, config.Hash(reversedTestEnv))
 	})
+
+	t.Run("auto shutdown should not affect hash", func(t *testing.T) {
+		withAutoShutdown := config
+		withAutoShutdown.AutoShutdown = AutoShutdownConfig{Enabled: true, Startup: StartupBehaviorBlocking}
+		assert.Equal(t, hash, withAutoShutdown.Hash(testEnv))
+	})
 }

@@ -65,8 +65,11 @@ const (
 	StartupBehaviorBlocking
 )
 
+// Hash returns a digest of the build inputs, which are the build config and env.
+// Settings that do not affect builds, such as AutoShutdown, are not included
+// so that changing them does not trigger a rebuild.
 func (c *ApplicationConfig) Hash(env []*Environment) string {
-	b := lo.Must(json.Marshal(c))
+	b := lo.Must(json.Marshal(c.BuildConfig))
 	sort.SliceStable(env, func(i, j int) bool { return env[i].Key < env[j].Key })
 	e := lo.Must(json.Marshal(env))
 	b = append(b, e...)
