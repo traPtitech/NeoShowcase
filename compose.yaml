@@ -355,7 +355,7 @@ services:
       - default
 
   promtail:
-    image: grafana/promtail:3.1.0
+    image: grafana/promtail:3.6.11
     command: "-config.file /etc/promtail/promtail.yaml"
     restart: always
     volumes:
