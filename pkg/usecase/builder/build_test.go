@@ -119,3 +119,20 @@ func TestBuild_RuntimeBuildpack(t *testing.T) {
 		})
 	}
 }
+
+func TestBuild_RuntimeDockerfile(t *testing.T) {
+	t.Parallel()
+	s := prepareService(t)
+
+	fixtures := []string{
+		"go",
+		"nodejs",
+		"python",
+	}
+	for _, fixture := range fixtures {
+		t.Run(fixture, func(t *testing.T) {
+			t.Parallel()
+			runBuild(t, s, fixture, &domain.BuildConfigRuntimeDockerfile{DockerfileName: "Dockerfile"})
+		})
+	}
+}
