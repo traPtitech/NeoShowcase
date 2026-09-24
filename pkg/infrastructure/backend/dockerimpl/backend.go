@@ -186,7 +186,7 @@ func (b *Backend) containerLabels(app *domain.Application) map[string]string {
 func (b *Backend) useSablier(app *domain.Application) bool {
 	return b.config.Middleware.Sablier.Enable &&
 		app.DeployType == domain.DeployTypeRuntime &&
-		app.Config.BuildConfig.GetRuntimeConfig().AutoShutdown.Enabled
+		app.Config.AutoShutdown.Enabled
 }
 
 func containerName(appID string) string {

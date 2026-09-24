@@ -219,7 +219,7 @@ func sablierMiddlewareName(appID string) string {
 func (b *Backend) useSablier(app *domain.Application) bool {
 	return b.config.Middleware.Sablier.Enable &&
 		app.DeployType == domain.DeployTypeRuntime &&
-		app.Config.BuildConfig.GetRuntimeConfig().AutoShutdown.Enabled
+		app.Config.AutoShutdown.Enabled
 }
 
 func sablierGroupName(appID string) string {
