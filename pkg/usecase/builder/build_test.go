@@ -1,7 +1,12 @@
 package builder
 
 import (
+	"archive/tar"
+	"bytes"
+	"compress/gzip"
 	"context"
+	"errors"
+	"io"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -72,7 +77,7 @@ func prepareService(t *testing.T) *ServiceImpl {
 }
 
 // runBuild builds the given fixture with the given build config and asserts that the build succeeds.
-func runBuild(t *testing.T, s *ServiceImpl, fixture string, bc domain.BuildConfig) {
+func runBuild(t *testing.T, s *ServiceImpl, fixture string, bc domain.BuildConfig, env map[string]string) {
 	t.Helper()
 
 	fixtureDir, err := filepath.Abs(filepath.Join("testdata", fixture))
@@ -84,8 +89,12 @@ func runBuild(t *testing.T, s *ServiceImpl, fixture string, bc domain.BuildConfi
 	}
 	build := &domain.Build{ID: domain.NewID(), ApplicationID: app.ID}
 	repo := &domain.Repository{URL: fixtureDir}
+	var envs []*domain.Environment
+	for k, v := range env {
+		envs = append(envs, &domain.Environment{ApplicationID: app.ID, Key: k, Value: v})
+	}
 
-	st, err := newState(app, nil, build, repo, s.client)
+	st, err := newState(app, envs, build, repo, s.client)
 	require.NoError(t, err)
 	t.Cleanup(st.Done)
 
@@ -102,6 +111,34 @@ func runBuild(t *testing.T, s *ServiceImpl, fixture string, bc domain.BuildConfi
 			_ = s.regclient.DeleteImage(context.Background(), s.imageConfig.ImageName(app.ID), s.imageTag(build))
 		})
 	}
+	if st.deployType() == domain.DeployTypeStatic {
+		require.Contains(t, savedArtifactFiles(t, s, build.ID), "index.html")
+	}
+}
+
+// savedArtifactFiles returns the file names in the artifact saved for the build.
+func savedArtifactFiles(t *testing.T, s *ServiceImpl, buildID string) []string {
+	t.Helper()
+	for _, call := range s.client.(*mocks.ControllerBuilderServiceClientMock).SaveArtifactCalls() {
+		if call.Artifact.BuildID != buildID {
+			continue
+		}
+		gr, err := gzip.NewReader(bytes.NewReader(call.Body))
+		require.NoError(t, err)
+		tr := tar.NewReader(gr)
+		var names []string
+		for {
+			h, err := tr.Next()
+			if errors.Is(err, io.EOF) {
+				break
+			}
+			require.NoError(t, err)
+			names = append(names, filepath.Clean(h.Name))
+		}
+		return names
+	}
+	t.Fatalf("artifact for build %s was not saved", buildID)
+	return nil
 }
 
 // Buildpack builds share the single remote workspace of the buildpack helper, so the tests must not run in parallel.
@@ -116,7 +153,7 @@ func TestBuild_RuntimeBuildpack(t *testing.T) {
 	}
 	for _, fixture := range fixtures {
 		t.Run(fixture, func(t *testing.T) {
-			runBuild(t, s, fixture, &domain.BuildConfigRuntimeBuildpack{})
+			runBuild(t, s, fixture, &domain.BuildConfigRuntimeBuildpack{}, nil)
 		})
 	}
 }
@@ -133,7 +170,7 @@ func TestBuild_RuntimeDockerfile(t *testing.T) {
 	for _, fixture := range fixtures {
 		t.Run(fixture, func(t *testing.T) {
 			t.Parallel()
-			runBuild(t, s, fixture, &domain.BuildConfigRuntimeDockerfile{DockerfileName: "Dockerfile"})
+			runBuild(t, s, fixture, &domain.BuildConfigRuntimeDockerfile{DockerfileName: "Dockerfile"}, nil)
 		})
 	}
 }
@@ -169,7 +206,35 @@ func TestBuild_RuntimeCmd(t *testing.T) {
 			runBuild(t, s, fixture, &domain.BuildConfigRuntimeCmd{
 				BaseImage: firstBaseImage(t, fixture),
 				BuildCmd:  buildCmd,
-			})
+			}, nil)
 		})
 	}
+}
+
+// The static builds use the nodejs fixture, whose build script outputs dist/index.html.
+
+func TestBuild_StaticBuildpack(t *testing.T) {
+	s := prepareService(t)
+	runBuild(t, s, "nodejs", &domain.BuildConfigStaticBuildpack{
+		StaticConfig: domain.StaticConfig{ArtifactPath: "dist"},
+	}, map[string]string{"BP_NODE_RUN_SCRIPTS": "build"})
+}
+
+func TestBuild_StaticDockerfile(t *testing.T) {
+	t.Parallel()
+	s := prepareService(t)
+	runBuild(t, s, "nodejs", &domain.BuildConfigStaticDockerfile{
+		StaticConfig:   domain.StaticConfig{ArtifactPath: "/app/dist"},
+		DockerfileName: "Dockerfile",
+	}, nil)
+}
+
+func TestBuild_StaticCmd(t *testing.T) {
+	t.Parallel()
+	s := prepareService(t)
+	runBuild(t, s, "nodejs", &domain.BuildConfigStaticCmd{
+		StaticConfig: domain.StaticConfig{ArtifactPath: "dist"},
+		BaseImage:    firstBaseImage(t, "nodejs"),
+		BuildCmd:     "npm ci && npm run build",
+	}, nil)
 }
