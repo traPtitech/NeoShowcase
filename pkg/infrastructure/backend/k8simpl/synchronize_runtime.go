@@ -60,11 +60,17 @@ func (b *Backend) runtimeSpec(app *domain.RuntimeDesiredState) (*appsv1.Stateful
 		Stdin:           true,
 		TTY:             true,
 	}
-	if args, _ := domain.ParseArgs(app.App.Config.BuildConfig.GetRuntimeConfig().Entrypoint); len(args) > 0 {
-		cont.Command = args
-	}
-	if args, _ := domain.ParseArgs(app.App.Config.BuildConfig.GetRuntimeConfig().Command); len(args) > 0 {
-		cont.Args = args
+
+	if len(app.App.Websites) > 0 {
+		cont.ReadinessProbe = &v1.Probe{
+			ProbeHandler: v1.ProbeHandler{
+				TCPSocket: &v1.TCPSocketAction{
+					Port: intstr.FromInt(app.App.Websites[0].HTTPPort),
+				},
+			},
+			InitialDelaySeconds: 0,
+			PeriodSeconds:       1,
+		}
 	}
 
 	for _, website := range app.App.Websites {
