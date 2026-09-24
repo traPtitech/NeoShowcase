@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -133,6 +134,42 @@ func TestBuild_RuntimeDockerfile(t *testing.T) {
 		t.Run(fixture, func(t *testing.T) {
 			t.Parallel()
 			runBuild(t, s, fixture, &domain.BuildConfigRuntimeDockerfile{DockerfileName: "Dockerfile"})
+		})
+	}
+}
+
+// firstBaseImage returns the image of the first FROM instruction in the fixture's Dockerfile,
+// so that the command build uses the same (Renovate-managed) image as the Dockerfile build.
+func firstBaseImage(t *testing.T, fixture string) string {
+	t.Helper()
+	b, err := os.ReadFile(filepath.Join("testdata", fixture, "Dockerfile"))
+	require.NoError(t, err)
+	for line := range strings.Lines(string(b)) {
+		fields := strings.Fields(line)
+		if len(fields) >= 2 && strings.EqualFold(fields[0], "FROM") {
+			return fields[1]
+		}
+	}
+	t.Fatalf("no FROM instruction found in %s/Dockerfile", fixture)
+	return ""
+}
+
+func TestBuild_RuntimeCmd(t *testing.T) {
+	t.Parallel()
+	s := prepareService(t)
+
+	buildCmds := map[string]string{
+		"go":     "go build -o app .",
+		"nodejs": "npm ci",
+		"python": "uv sync --locked",
+	}
+	for fixture, buildCmd := range buildCmds {
+		t.Run(fixture, func(t *testing.T) {
+			t.Parallel()
+			runBuild(t, s, fixture, &domain.BuildConfigRuntimeCmd{
+				BaseImage: firstBaseImage(t, fixture),
+				BuildCmd:  buildCmd,
+			})
 		})
 	}
 }
