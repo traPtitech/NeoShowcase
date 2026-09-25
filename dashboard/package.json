@@ -57,5 +57,5 @@
     "valibot": "1.5.0",
     "virtua": "0.51.2"
   },
-  "packageManager": "pnpm@11.26.0"
+  "packageManager": "pnpm@12.5.1"
 }
