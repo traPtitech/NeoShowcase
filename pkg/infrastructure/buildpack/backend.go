@@ -141,15 +141,17 @@ func (b *backend) Pack(
 	}
 	defer cleanupEnvDir()
 
-	// TODO: support pushing to insecure registry for local development
-	// https://github.com/buildpacks/lifecycle/issues/524
+	lifecycleEnv := map[string]string{"CNB_PLATFORM_API": b.config.PlatformAPI}
+	// Allow pushing to insecure (http) registry for local development
 	// https://github.com/buildpacks/rfcs/blob/main/text/0111-support-insecure-registries.md
-	// Workaround: use registry host "*.local" to allow google/go-containerregistry to detect as http protocol
-	// see: https://github.com/traPtitech/NeoShowcase/issues/493
+	// see also: https://github.com/traPtitech/NeoShowcase/issues/493
+	if imageConfig.Registry.Scheme == "http" {
+		lifecycleEnv["CNB_INSECURE_REGISTRIES"] = imageConfig.Registry.Addr
+	}
 	err = b.exec(ctx,
 		remoteRepoPath,
 		[]string{"/cnb/lifecycle/creator", "-skip-restore", "-platform=" + remoteEnvPath, "-app=.", imageDest},
-		map[string]string{"CNB_PLATFORM_API": b.config.PlatformAPI},
+		lifecycleEnv,
 		logWriter)
 	if err != nil {
 		return "", err

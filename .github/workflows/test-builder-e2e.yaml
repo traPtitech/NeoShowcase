@@ -1,0 +1,61 @@
+name: Builder E2E Test
+
+on:
+  push:
+    branches:
+      - 'main'
+    paths: &paths
+      - 'pkg/usecase/builder/**'
+      - 'pkg/infrastructure/buildpack/**'
+      - 'pkg/infrastructure/registry/**'
+      - 'pkg/infrastructure/grpc/buildpack_helper_*'
+      - 'pkg/util/tarfs/**'
+      - 'cmd/buildpack-helper/**'
+      - 'go.mod'
+      - 'go.sum'
+      - 'compose.yaml'
+      - 'Dockerfile'
+      - '.local-dev/buildkitd/**'
+      - '.github/workflows/test-builder-e2e.yaml'
+  pull_request:
+    paths: *paths
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Buildpack
+            run: TestBuild_(Runtime|Static)Buildpack
+            services: buildkitd registry buildpack
+          - name: Dockerfile
+            run: TestBuild_(Runtime|Static)Dockerfile
+            services: buildkitd registry
+          - name: Command
+            run: TestBuild_(Runtime|Static)Cmd
+            services: buildkitd registry
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - parallel:
+          - name: Start services
+            run: docker compose up -d --wait ${{ matrix.services }}
+          - name: Build test image and compile tests
+            run: |
+              docker compose build builder-test
+              docker compose run --rm --no-deps --entrypoint go builder-test test -c -o /dev/null ./pkg/usecase/builder/
+      - name: Run tests
+        run: docker compose run --rm --no-deps builder-test -run '${{ matrix.run }}'
+      - name: Show service logs
+        if: failure()
+        run: docker compose logs ${{ matrix.services }}

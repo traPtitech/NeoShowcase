@@ -180,6 +180,11 @@ services:
         condition: service_completed_successfully
     networks:
       - default
+    healthcheck:
+      test: curl -s -o /dev/null http://localhost:1235/
+      interval: 1s
+      timeout: 10s
+      retries: 60
 
   buildkitd:
     image: moby/buildkit:latest
@@ -195,6 +200,44 @@ services:
       resources:
         limits:
           cpus: "1"
+    healthcheck:
+      test: buildctl --addr unix:///run/buildkit/buildkitd.sock debug workers
+      interval: 1s
+      timeout: 10s
+      retries: 60
+
+  # Runs the build tests against buildkitd, buildpack and registry above.
+  # Run with: docker compose run --rm builder-test
+  builder-test:
+    profiles:
+      - test
+    build:
+      context: .
+      target: builder
+    working_dir: /work
+    entrypoint:
+      - go
+      - test
+      - -v
+      - -count=1
+      - -timeout=1h
+      - ./pkg/usecase/builder/
+    environment:
+      ENABLE_BUILD_TESTS: "true"
+    volumes:
+      - .:/work
+      - ./.local-dev/buildkitd-sock:/run/buildkit
+      - go-mod-cache:/go/pkg/mod
+      - go-build-cache:/root/.cache/go-build
+    depends_on:
+      buildkitd:
+        condition: service_healthy
+      buildpack:
+        condition: service_healthy
+      registry:
+        condition: service_healthy
+    networks:
+      - default
 
   static-server:
     image: caddy:2-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648
@@ -262,6 +305,11 @@ services:
       default:
         aliases:
           - "registry.local"
+    healthcheck:
+      test: wget -q --spider http://localhost/v2/
+      interval: 1s
+      timeout: 10s
+      retries: 60
 
   registry-frontend:
     image: joxit/docker-registry-ui:2
@@ -454,3 +502,5 @@ networks:
 
 volumes:
   binary:
+  go-mod-cache:
+  go-build-cache:
