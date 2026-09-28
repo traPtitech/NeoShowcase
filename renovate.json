@@ -21,6 +21,22 @@
     {
       "matchManagers": ["github-actions"],
       "groupName": "GitHub Actions dependencies"
+    },
+    {
+      "description": "Update each builder test fixture as a group. Placed last to take precedence over the manager-wide groups above.",
+      "matchFileNames": ["pkg/usecase/builder/testdata/go/**"],
+      "groupName": "builder test fixture (go)",
+      "groupSlug": "builder-test-fixture-go"
+    },
+    {
+      "matchFileNames": ["pkg/usecase/builder/testdata/nodejs/**"],
+      "groupName": "builder test fixture (nodejs)",
+      "groupSlug": "builder-test-fixture-nodejs"
+    },
+    {
+      "matchFileNames": ["pkg/usecase/builder/testdata/python/**"],
+      "groupName": "builder test fixture (python)",
+      "groupSlug": "builder-test-fixture-python"
     }
   ],
   "customManagers": [
