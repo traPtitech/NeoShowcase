@@ -220,7 +220,7 @@ services:
       - test
       - -v
       - -count=1
-      - -timeout=1h
+      - -timeout=25m
       - ./pkg/usecase/builder/
     environment:
       ENABLE_BUILD_TESTS: "true"
