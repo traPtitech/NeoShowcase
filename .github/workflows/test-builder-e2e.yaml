@@ -4,21 +4,16 @@ on:
   push:
     branches:
       - 'main'
-    paths: &paths
-      - 'pkg/usecase/builder/**'
-      - 'pkg/infrastructure/buildpack/**'
-      - 'pkg/infrastructure/registry/**'
-      - 'pkg/infrastructure/grpc/buildpack_helper_*'
-      - 'pkg/util/tarfs/**'
-      - 'cmd/buildpack-helper/**'
-      - 'go.mod'
-      - 'go.sum'
-      - 'compose.yaml'
-      - 'Dockerfile'
-      - '.local-dev/buildkitd/**'
-      - '.github/workflows/test-builder-e2e.yaml'
+    paths-ignore: &paths-ignore
+      - 'dashboard/**'
+      - 'docs/**'
+      - 'sablier/**'
+      - 'codecov.yml'
+      - 'README.md'
+      - '.github/**'
+      - '!.github/workflows/test-builder-e2e.yaml'
   pull_request:
-    paths: *paths
+    paths-ignore: *paths-ignore
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
