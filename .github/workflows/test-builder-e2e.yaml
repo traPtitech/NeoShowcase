@@ -4,16 +4,17 @@ on:
   push:
     branches:
       - 'main'
-    paths-ignore: &paths-ignore
-      - 'dashboard/**'
-      - 'docs/**'
-      - 'sablier/**'
-      - 'codecov.yml'
-      - 'README.md'
-      - '.github/**'
-      - '!.github/workflows/test-builder-e2e.yaml'
+    paths: &paths
+      - '**'
+      - '!dashboard/**'
+      - '!docs/**'
+      - '!sablier/**'
+      - '!codecov.yml'
+      - '!README.md'
+      - '!.github/**'
+      - '.github/workflows/test-builder-e2e.yaml'
   pull_request:
-    paths-ignore: *paths-ignore
+    paths: *paths
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
