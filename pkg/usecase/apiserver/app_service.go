@@ -28,7 +28,7 @@ func (s *Service) validateApp(ctx context.Context, app *domain.Application) erro
 	}
 	err = app.Validate(web.GetUser(ctx), existingApps, si.AvailableDomains, si.AvailablePorts)
 	if err != nil {
-		return newError(ErrorTypeBadRequest, "invalid application", err)
+		return domain.NewError(domain.ErrorTypeBadRequest, "invalid application", err)
 	}
 
 	// Validate ref by making request
@@ -38,10 +38,10 @@ func (s *Service) validateApp(ctx context.Context, app *domain.Application) erro
 	}
 	refMap, err := s.gitsvc.ResolveRefs(ctx, repo)
 	if err != nil {
-		return newError(ErrorTypeBadRequest, "cannot fetch repository, check auth setting", err)
+		return domain.NewError(domain.ErrorTypeBadRequest, "cannot fetch repository, check auth setting", err)
 	}
 	if _, ok := refMap[app.RefName]; !ok {
-		return newError(ErrorTypeBadRequest, fmt.Sprintf("ref %v not found", app.RefName), nil)
+		return domain.NewError(domain.ErrorTypeBadRequest, fmt.Sprintf("ref %v not found", app.RefName), nil)
 	}
 	return nil
 }
@@ -58,7 +58,7 @@ func (s *Service) CreateApplication(ctx context.Context, app *domain.Application
 
 	// Validate
 	if !repo.CanCreateApp(web.GetUser(ctx)) {
-		return nil, newError(ErrorTypeForbidden, "you cannot create application from this repository", nil)
+		return nil, domain.NewError(domain.ErrorTypeForbidden, "you cannot create application from this repository", nil)
 	}
 	err = s.validateApp(ctx, app)
 	if err != nil {
@@ -83,7 +83,7 @@ func (s *Service) CreateApplication(ctx context.Context, app *domain.Application
 		return nil, oops.Wrapf(err, "requesting repository fetch")
 	}
 
-	return handleRepoError(s.appRepo.GetApplication(ctx, app.ID))
+	return s.appRepo.GetApplication(ctx, app.ID)
 }
 
 func (s *Service) createApplicationDatabase(ctx context.Context, app *domain.Application) error {
@@ -174,7 +174,7 @@ func (s *Service) GetApplications(ctx context.Context, scope GetAppScope) ([]*To
 		// No scope
 	case GetAppScopeRepository:
 		if !scope.RepositoryID.Valid {
-			return nil, newError(ErrorTypeBadRequest, "repository id is required", nil)
+			return nil, domain.NewError(domain.ErrorTypeBadRequest, "repository id is required", nil)
 		}
 		cond.RepositoryID = scope.RepositoryID
 	default:
@@ -251,10 +251,10 @@ func (s *Service) UpdateApplication(ctx context.Context, id string, args *domain
 			return err
 		}
 		if appBefore.Config.BuildConfig.MariaDB() != app.Config.BuildConfig.MariaDB() {
-			return newError(ErrorTypeBadRequest, "use_mariadb is immutable", nil)
+			return domain.NewError(domain.ErrorTypeBadRequest, "use_mariadb is immutable", nil)
 		}
 		if appBefore.Config.BuildConfig.MongoDB() != app.Config.BuildConfig.MongoDB() {
-			return newError(ErrorTypeBadRequest, "use_mongodb is immutable", nil)
+			return domain.NewError(domain.ErrorTypeBadRequest, "use_mongodb is immutable", nil)
 		}
 	}
 
@@ -335,7 +335,7 @@ func (s *Service) DeleteApplication(ctx context.Context, id string) error {
 		return err
 	}
 	if app.Running {
-		return newError(ErrorTypeBadRequest, "stop the application first before deleting", nil)
+		return domain.NewError(domain.ErrorTypeBadRequest, "stop the application first before deleting", nil)
 	}
 
 	// Delete app database
