@@ -11,7 +11,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
 	"github.com/traPtitech/neoshowcase/pkg/test/mocks"
 	"github.com/traPtitech/neoshowcase/pkg/test/testhelper"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/apiserver"
@@ -394,7 +393,8 @@ func TestDeleteApplication(t *testing.T) {
 
 			// Assert
 			_, err = svc.GetApplication(ctx, app.ID)
-			assert.ErrorIs(t, err, repository.ErrNotFound, "application should be deleted")
+			_, typ, _ := domain.DecomposeError(err)
+			assert.Equal(t, domain.ErrorTypeNotFound, typ, "application should be deleted")
 
 			assert.Len(t, dbManagerMock.DeleteCalls(), tt.expectedDBDeletes, "mariaDB delete calls should match expected")
 			assert.Len(t, registryMock.DeleteImageCalls(), tt.expectedImageDeletes, "image delete calls should match expected")
