@@ -27,10 +27,16 @@ func NewLogInterceptor() *LogInterceptor {
 // oops.OopsError implements slog.LogValuer, so logging it expands into structured
 // fields (the wrap chain, the code, With() attributes and the stack trace). The
 // *connect.Error the boundary returns implements neither, so logging it directly
-// would flatten everything to its message — hence the unwrap.
+// would flatten everything to its message — hence the unwrap. For the same reason
+// an error without oops in its chain is logged by its cause: the message of
+// publicError is the client-facing one and carries none of the detail.
 func logError(err error) any {
 	if oopsErr, ok := oops.AsOops(err); ok {
 		return oopsErr
+	}
+	var pubErr publicError
+	if errors.As(err, &pubErr) {
+		return pubErr.cause.Error()
 	}
 	return err
 }
