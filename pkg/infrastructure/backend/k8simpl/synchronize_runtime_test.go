@@ -93,3 +93,28 @@ func TestBackend_runtimeResources_portPublications(t *testing.T) {
 		assert.Equal(t, portServiceName("app4"), svcs[1].Name)
 	})
 }
+
+// Sablier の blocking で起動を待ったリクエストが、起動したアプリに届くための設定。
+func TestBackend_runtimeResources_routingToScaledFromZero(t *testing.T) {
+	b := newSpecTestBackend(t)
+	app := &domain.Application{
+		ID:       "app1",
+		Config:   domain.ApplicationConfig{BuildConfig: &domain.BuildConfigRuntimeBuildpack{}},
+		Websites: []*domain.Website{{ID: "web1", FQDN: "app1.example.com", PathPrefix: "/", HTTPPort: 8080}},
+	}
+	var rsc resources
+	b.runtimeResources(&rsc, []*domain.RuntimeDesiredState{{App: app}})
+
+	t.Run("IngressRouteはPodのIPではなくServiceのClusterIPに転送する", func(t *testing.T) {
+		require.Len(t, rsc.ingressRoutes, 1)
+		services := rsc.ingressRoutes[0].Spec.Routes[0].Services
+		require.Len(t, services, 1)
+		assert.Equal(t, new(true), services[0].NativeLB)
+	})
+
+	t.Run("ServiceはReadyになる前のPodも転送先に含める", func(t *testing.T) {
+		require.Len(t, rsc.services, 1)
+		assert.Equal(t, v1.ServiceTypeClusterIP, rsc.services[0].Spec.Type)
+		assert.True(t, rsc.services[0].Spec.PublishNotReadyAddresses)
+	})
+}

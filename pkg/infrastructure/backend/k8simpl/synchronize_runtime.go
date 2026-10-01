@@ -158,6 +158,10 @@ func (b *Backend) runtimeSpec(app *domain.RuntimeDesiredState) (*appsv1.Stateful
 				IPFamilies:     b.config.serviceIPFamilies(),
 				IPFamilyPolicy: b.config.serviceIPFamilyPolicy(),
 				Selector:       appSelector(app.App.ID),
+				// Sablier forwards requests as soon as the Pod becomes Ready, but kube-proxy needs
+				// up to a sync period to route the ClusterIP to a newly added endpoint.
+				// Publishing the Pod before it is Ready lets kube-proxy route it while the app starts.
+				PublishNotReadyAddresses: true,
 				Ports: ds.Map(cont.Ports, func(port v1.ContainerPort) v1.ServicePort {
 					return v1.ServicePort{
 						Name:       fmt.Sprintf("%v-%v", strings.ToLower(string(port.Protocol)), port.ContainerPort),
@@ -180,6 +184,10 @@ func (b *Backend) runtimeServiceRef(app *domain.Application, website *domain.Web
 		Namespace: b.config.Namespace,
 		Port:      intstr.FromInt(website.HTTPPort),
 		Scheme:    lo.Ternary(website.H2C, "h2c", "http"),
+		// Traefik picks the backend servers when a request enters the router, so the Pod IPs
+		// it holds while the app is scaled to zero stay empty even after Sablier starts the app.
+		// The ClusterIP does not change across scaling, so blocking requests reach the started Pod.
+		NativeLB: new(true),
 	}}
 }
 
