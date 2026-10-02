@@ -328,7 +328,7 @@ services:
       - default
 
   mysql:
-    image: mariadb:11.8@sha256:8b5f33ebd85d1775657e974ed10434128bb493c80e826ceaa54074fd1a92a112
+    image: mariadb:11.8@sha256:6422478cb8e159f080fb1d8ccf65101e26fe51385787fde7d16c3b165a331f15
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: password
