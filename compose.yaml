@@ -473,7 +473,7 @@ services:
       - --metrics.prometheus=true
       - --metrics.prometheus.entrypoint=metrics
       - --experimental.plugins.sablier.modulename=github.com/sablierapp/sablier-traefik-plugin
-      - --experimental.plugins.sablier.version=v1.3.0
+      - --experimental.plugins.sablier.version=v1.3.1
     ports:
       - "80:80"
       - "443:443"
