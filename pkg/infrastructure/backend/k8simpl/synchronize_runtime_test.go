@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/core/v1"
@@ -91,5 +92,49 @@ func TestBackend_runtimeResources_portPublications(t *testing.T) {
 		require.Len(t, svcs, 2)
 		assert.Equal(t, portServiceName("app3"), svcs[0].Name)
 		assert.Equal(t, portServiceName("app4"), svcs[1].Name)
+	})
+}
+
+// Sablier の blocking で起動を待ったリクエストが、起動したアプリに届くための設定。
+func TestBackend_runtimeResources_routingToScaledFromZero(t *testing.T) {
+	b := newSpecTestBackend(t)
+	b.config.Middleware.Sablier.Enable = true
+
+	newApp := func(id string, autoShutdown bool) *domain.Application {
+		return &domain.Application{
+			ID:         id,
+			DeployType: domain.DeployTypeRuntime,
+			Config: domain.ApplicationConfig{BuildConfig: &domain.BuildConfigRuntimeBuildpack{
+				RuntimeConfig: domain.RuntimeConfig{AutoShutdown: domain.AutoShutdownConfig{
+					Enabled: autoShutdown,
+					Startup: lo.Ternary(autoShutdown, domain.StartupBehaviorBlocking, domain.StartupBehaviorUndefined),
+				}},
+			}},
+			Websites: []*domain.Website{{ID: id + "-web", FQDN: id + ".example.com", PathPrefix: "/", HTTPPort: 8080}},
+		}
+	}
+
+	t.Run("Sablierを使うアプリはReady前のPodも含めたServiceのClusterIPに転送する", func(t *testing.T) {
+		var rsc resources
+		b.runtimeResources(&rsc, []*domain.RuntimeDesiredState{{App: newApp("app1", true)}})
+
+		require.Len(t, rsc.ingressRoutes, 1)
+		services := rsc.ingressRoutes[0].Spec.Routes[0].Services
+		require.Len(t, services, 1)
+		assert.Equal(t, new(true), services[0].NativeLB)
+		require.Len(t, rsc.services, 1)
+		assert.True(t, rsc.services[0].Spec.PublishNotReadyAddresses)
+	})
+
+	t.Run("Sablierを使わないアプリはPodのIPに転送し、Ready前のPodを含めない", func(t *testing.T) {
+		var rsc resources
+		b.runtimeResources(&rsc, []*domain.RuntimeDesiredState{{App: newApp("app2", false)}})
+
+		require.Len(t, rsc.ingressRoutes, 1)
+		services := rsc.ingressRoutes[0].Spec.Routes[0].Services
+		require.Len(t, services, 1)
+		assert.Nil(t, services[0].NativeLB)
+		require.Len(t, rsc.services, 1)
+		assert.False(t, rsc.services[0].Spec.PublishNotReadyAddresses)
 	})
 }
