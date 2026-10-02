@@ -319,7 +319,6 @@ func TestApplication_WebsiteConflicts(t *testing.T) {
 	u1 := &User{ID: "user1"}
 	u2 := &User{ID: "user2"}
 	u3 := &User{ID: "user3"}
-	admin := &User{ID: "user4", Admin: true}
 	existing := &Application{
 		ID: NewID(),
 		Websites: []*Website{{
@@ -333,7 +332,6 @@ func TestApplication_WebsiteConflicts(t *testing.T) {
 		name     string
 		target   *Application
 		existing *Application
-		actor    *User
 		want     bool
 	}{
 		{
@@ -348,7 +346,6 @@ func TestApplication_WebsiteConflicts(t *testing.T) {
 				OwnerIDs: []string{u1.ID, u3.ID},
 			},
 			existing: existing,
-			actor:    u1,
 			want:     false,
 		},
 		{
@@ -363,7 +360,6 @@ func TestApplication_WebsiteConflicts(t *testing.T) {
 				OwnerIDs: []string{u1.ID, u3.ID},
 			},
 			existing: existing,
-			actor:    u1,
 			want:     true,
 		},
 		{
@@ -378,7 +374,6 @@ func TestApplication_WebsiteConflicts(t *testing.T) {
 				OwnerIDs: []string{u1.ID, u3.ID},
 			},
 			existing: existing,
-			actor:    u3,
 			want:     true,
 		},
 		{
@@ -393,7 +388,6 @@ func TestApplication_WebsiteConflicts(t *testing.T) {
 				OwnerIDs: []string{u1.ID, u3.ID},
 			},
 			existing: existing,
-			actor:    admin,
 			want:     true,
 		},
 		{
@@ -408,7 +402,6 @@ func TestApplication_WebsiteConflicts(t *testing.T) {
 				OwnerIDs: []string{u1.ID, u3.ID},
 			},
 			existing: existing,
-			actor:    u3,
 			want:     false,
 		},
 		{
@@ -423,7 +416,6 @@ func TestApplication_WebsiteConflicts(t *testing.T) {
 				OwnerIDs: []string{u1.ID, u3.ID},
 			},
 			existing: existing,
-			actor:    admin,
 			want:     false,
 		},
 		{
@@ -445,13 +437,12 @@ func TestApplication_WebsiteConflicts(t *testing.T) {
 				OwnerIDs: []string{u1.ID, u3.ID},
 			},
 			existing: existing,
-			actor:    u1,
 			want:     true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.target.WebsiteConflicts([]*Application{tt.existing}, tt.actor)
+			got := tt.target.WebsiteConflicts([]*Application{tt.existing})
 			assert.Equal(t, tt.want, got)
 		})
 	}
