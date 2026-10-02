@@ -4,7 +4,7 @@ node = "24"
 pnpm = "11.27.0"
 
 k3d = "5.9.0"
-kubectl = "1.37.0"
+kubectl = "1.37.1"
 kustomize = "5.8.1"
 helm = "4.3.0"
 
