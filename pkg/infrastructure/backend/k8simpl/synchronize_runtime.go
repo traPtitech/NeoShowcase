@@ -30,11 +30,9 @@ func (b *Backend) runtimeSpec(app *domain.RuntimeDesiredState) (*appsv1.Stateful
 		secret = &v1.Secret{
 			Kind:       "Secret",
 			APIVersion: "v1",
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      deploymentName(app.App.ID),
-				Namespace: b.config.Namespace,
-				Labels:    b.appLabel(app.App.ID),
-			},
+			Name:       deploymentName(app.App.ID),
+			Namespace:  b.config.Namespace,
+			Labels:     b.appLabel(app.App.ID),
 			StringData: app.Envs,
 		}
 		// NOTE: marshaling map[string]string is stable (json.Marshal sorts by key)
@@ -69,10 +67,8 @@ func (b *Backend) runtimeSpec(app *domain.RuntimeDesiredState) (*appsv1.Stateful
 
 	if len(app.App.Websites) > 0 {
 		cont.ReadinessProbe = &v1.Probe{
-			ProbeHandler: v1.ProbeHandler{
-				TCPSocket: &v1.TCPSocketAction{
-					Port: intstr.FromInt(app.App.Websites[0].HTTPPort),
-				},
+			TCPSocket: &v1.TCPSocketAction{
+				Port: intstr.FromInt(app.App.Websites[0].HTTPPort),
 			},
 			InitialDelaySeconds: 0,
 			PeriodSeconds:       1,
@@ -106,11 +102,9 @@ func (b *Backend) runtimeSpec(app *domain.RuntimeDesiredState) (*appsv1.Stateful
 	ss := &appsv1.StatefulSet{
 		Kind:       "StatefulSet",
 		APIVersion: "apps/v1",
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      deploymentName(app.App.ID),
-			Namespace: b.config.Namespace,
-			Labels:    ssLabels,
-		},
+		Name:       deploymentName(app.App.ID),
+		Namespace:  b.config.Namespace,
+		Labels:     ssLabels,
 		Spec: appsv1.StatefulSetSpec{
 			Replicas: &replicas,
 			Selector: &metav1.LabelSelector{
@@ -148,11 +142,9 @@ func (b *Backend) runtimeSpec(app *domain.RuntimeDesiredState) (*appsv1.Stateful
 		svc = &v1.Service{
 			Kind:       "Service",
 			APIVersion: "v1",
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      deploymentName(app.App.ID),
-				Namespace: b.config.Namespace,
-				Labels:    b.appLabel(app.App.ID),
-			},
+			Name:       deploymentName(app.App.ID),
+			Namespace:  b.config.Namespace,
+			Labels:     b.appLabel(app.App.ID),
 			Spec: v1.ServiceSpec{
 				Type:           "ClusterIP",
 				IPFamilies:     b.config.serviceIPFamilies(),
@@ -204,11 +196,9 @@ func (b *Backend) runtimePortService(app *domain.Application) *v1.Service {
 	return &v1.Service{
 		Kind:       "Service",
 		APIVersion: "v1",
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      portServiceName(app.ID),
-			Namespace: b.config.Namespace,
-			Labels:    b.appLabel(app.ID),
-		},
+		Name:       portServiceName(app.ID),
+		Namespace:  b.config.Namespace,
+		Labels:     b.appLabel(app.ID),
 		Spec: v1.ServiceSpec{
 			Type:           "LoadBalancer",
 			IPFamilies:     b.config.serviceIPFamilies(),
