@@ -104,12 +104,13 @@ func TestBackend_runtimeResources_routingToScaledFromZero(t *testing.T) {
 		return &domain.Application{
 			ID:         id,
 			DeployType: domain.DeployTypeRuntime,
-			Config: domain.ApplicationConfig{BuildConfig: &domain.BuildConfigRuntimeBuildpack{
-				RuntimeConfig: domain.RuntimeConfig{AutoShutdown: domain.AutoShutdownConfig{
+			Config: domain.ApplicationConfig{
+				AutoShutdown: domain.AutoShutdownConfig{
 					Enabled: autoShutdown,
 					Startup: lo.Ternary(autoShutdown, domain.StartupBehaviorBlocking, domain.StartupBehaviorUndefined),
-				}},
-			}},
+				},
+				BuildConfig: &domain.BuildConfigRuntimeBuildpack{},
+			},
 			Websites: []*domain.Website{{ID: id + "-web", FQDN: id + ".example.com", PathPrefix: "/", HTTPPort: 8080}},
 		}
 	}
