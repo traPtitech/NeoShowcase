@@ -37,7 +37,7 @@ func (s *Service) convertRepositoryAuth(a CreateRepositoryAuth) (domain.Reposito
 		}
 		key, ok := s.tmpKeys.GetIfExists(a.KeyID)
 		if !ok {
-			return domain.RepositoryAuth{}, newError(ErrorTypeBadRequest, fmt.Sprintf("key %v does not exist", a.KeyID), nil)
+			return domain.RepositoryAuth{}, domain.NewError(domain.ErrorTypeBadRequest, fmt.Sprintf("key %v does not exist", a.KeyID), nil)
 		}
 		pem, err := domain.EncodePrivateKeyPem(key)
 		if err != nil {
@@ -48,7 +48,7 @@ func (s *Service) convertRepositoryAuth(a CreateRepositoryAuth) (domain.Reposito
 			SSHKey: pem,
 		}, nil
 	default:
-		return domain.RepositoryAuth{}, newError(ErrorTypeBadRequest, fmt.Sprintf("unknown auth method: %v", a.Method), nil)
+		return domain.RepositoryAuth{}, domain.NewError(domain.ErrorTypeBadRequest, fmt.Sprintf("unknown auth method: %v", a.Method), nil)
 	}
 }
 
@@ -61,10 +61,10 @@ func (s *Service) CreateRepository(ctx context.Context, name, url string, auth o
 	repo := domain.NewRepository(name, url, dAuth, []string{user.ID})
 
 	if err = repo.Validate(); err != nil {
-		return nil, newError(ErrorTypeBadRequest, "invalid repository", err)
+		return nil, domain.NewError(domain.ErrorTypeBadRequest, "invalid repository", err)
 	}
 	if _, err = s.gitsvc.ResolveRefs(ctx, repo); err != nil {
-		return nil, newError(ErrorTypeBadRequest, "cannot fetch repository, check auth setting", err)
+		return nil, domain.NewError(domain.ErrorTypeBadRequest, "cannot fetch repository, check auth setting", err)
 	}
 
 	return repo, s.gitRepo.CreateRepository(ctx, repo)
@@ -106,7 +106,7 @@ func (s *Service) GetRepositoryCommits(ctx context.Context, hashes []string) ([]
 }
 
 func (s *Service) GetRepository(ctx context.Context, id string) (*domain.Repository, error) {
-	return handleRepoError(s.gitRepo.GetRepository(ctx, id))
+	return s.gitRepo.GetRepository(ctx, id)
 }
 
 func (s *Service) GetRepositoryRefs(ctx context.Context, id string) (map[string]string, error) {
@@ -147,7 +147,7 @@ func (s *Service) UpdateRepository(ctx context.Context, id string, args *UpdateR
 
 	dArgs, err := s.convertUpdateRepositoryArgs(args)
 	if err != nil {
-		return newError(ErrorTypeBadRequest, "invalid args", err)
+		return domain.NewError(domain.ErrorTypeBadRequest, "invalid args", err)
 	}
 
 	repo, err := s.gitRepo.GetRepository(ctx, id)
@@ -156,10 +156,10 @@ func (s *Service) UpdateRepository(ctx context.Context, id string, args *UpdateR
 	}
 	repo.Apply(dArgs)
 	if err = repo.Validate(); err != nil {
-		return newError(ErrorTypeBadRequest, "invalid repository", err)
+		return domain.NewError(domain.ErrorTypeBadRequest, "invalid repository", err)
 	}
 	if _, err = s.gitsvc.ResolveRefs(ctx, repo); err != nil {
-		return newError(ErrorTypeBadRequest, "cannot fetch repository, check auth setting", err)
+		return domain.NewError(domain.ErrorTypeBadRequest, "cannot fetch repository, check auth setting", err)
 	}
 
 	return s.gitRepo.UpdateRepository(ctx, id, dArgs)
@@ -184,7 +184,7 @@ func (s *Service) DeleteRepository(ctx context.Context, id string) error {
 		return oops.Wrapf(err, "getting related applications")
 	}
 	if len(apps) > 0 {
-		return newError(ErrorTypeBadRequest, "all related applications must be deleted first", nil)
+		return domain.NewError(domain.ErrorTypeBadRequest, "all related applications must be deleted first", nil)
 	}
 
 	return s.gitRepo.DeleteRepository(ctx, id)

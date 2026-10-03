@@ -51,9 +51,7 @@ func prepareManager(t *testing.T) (*Backend, *kubernetes.Clientset, *traefikv1al
 	require.NoError(t, err)
 
 	if _, err := client.CoreV1().Namespaces().Create(context.Background(), &v1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: appsNamespace,
-		},
+		Name: appsNamespace,
 	}, metav1.CreateOptions{}); err != nil && !errors.IsAlreadyExists(err) {
 		t.Fatal(err)
 	}

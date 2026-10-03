@@ -95,7 +95,7 @@ func (r *gitRepositoryRepository) GetRepository(ctx context.Context, id string) 
 	repo, err := r.getRepository(ctx, r.db, id)
 	if err != nil {
 		if isNoRowsErr(err) {
-			return nil, ErrNotFound
+			return nil, notFound("repository")
 		}
 		return nil, oops.Wrapf(err, "getting repository")
 	}
@@ -202,7 +202,7 @@ func (r *gitRepositoryRepository) setOwners(ctx context.Context, ex boil.Context
 		return oops.Wrapf(err, "getting users")
 	}
 	if len(users) < len(ownerIDs) {
-		return ErrNotFound
+		return notFound("user")
 	}
 	err = repo.SetUsers(ctx, ex, false, users...)
 	if err != nil {

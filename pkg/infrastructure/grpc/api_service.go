@@ -19,16 +19,16 @@ type publicError struct {
 func (e publicError) Error() string { return e.public }
 func (e publicError) Unwrap() error { return e.cause }
 
-var connectCodes = map[apiserver.ErrorType]connect.Code{
-	apiserver.ErrorTypeBadRequest:         connect.CodeInvalidArgument,
-	apiserver.ErrorTypeNotFound:           connect.CodeNotFound,
-	apiserver.ErrorTypeAlreadyExists:      connect.CodeAlreadyExists,
-	apiserver.ErrorTypeForbidden:          connect.CodePermissionDenied,
-	apiserver.ErrorTypeFailedPrecondition: connect.CodeFailedPrecondition,
+var connectCodes = map[domain.ErrorType]connect.Code{
+	domain.ErrorTypeBadRequest:         connect.CodeInvalidArgument,
+	domain.ErrorTypeNotFound:           connect.CodeNotFound,
+	domain.ErrorTypeAlreadyExists:      connect.CodeAlreadyExists,
+	domain.ErrorTypeForbidden:          connect.CodePermissionDenied,
+	domain.ErrorTypeFailedPrecondition: connect.CodeFailedPrecondition,
 }
 
 func handleUseCaseError(err error) error {
-	publicMessage, typ, ok := apiserver.DecomposeError(err)
+	publicMessage, typ, ok := domain.DecomposeError(err)
 	if ok {
 		if code, known := connectCodes[typ]; known {
 			return connect.NewError(code, publicError{public: publicMessage, cause: err})

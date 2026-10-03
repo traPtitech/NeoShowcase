@@ -81,7 +81,7 @@ func (r *applicationRepository) getApplication(ctx context.Context, id string, f
 	app, err := models.Applications(mods...).One(ctx, ex)
 	if err != nil {
 		if isNoRowsErr(err) {
-			return nil, ErrNotFound
+			return nil, notFound("application")
 		}
 		return nil, oops.Wrapf(err, "getting application")
 	}
@@ -317,7 +317,7 @@ func (r *applicationRepository) setOwners(ctx context.Context, ex boil.ContextEx
 		return oops.Wrapf(err, "getting owners")
 	}
 	if len(users) < len(ownerIDs) {
-		return ErrNotFound
+		return notFound("user")
 	}
 	err = app.SetUsers(ctx, ex, false, users...)
 	if err != nil {

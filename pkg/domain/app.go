@@ -135,7 +135,6 @@ func (a *Application) SelfValidate() error {
 }
 
 func (a *Application) Validate(
-	actor *User,
 	existingApps []*Application,
 	domains AvailableDomainSlice,
 	ports AvailablePortSlice,
@@ -162,7 +161,7 @@ func (a *Application) Validate(
 	// resource conflict check
 	// exclude self if contained
 	existingApps = lo.Filter(existingApps, func(app *Application, _ int) bool { return app.ID != a.ID })
-	if a.WebsiteConflicts(existingApps, actor) {
+	if a.WebsiteConflicts(existingApps) {
 		return oops.New("website conflict")
 	}
 	for _, p := range a.PortPublications {

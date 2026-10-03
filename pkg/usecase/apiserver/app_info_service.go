@@ -32,7 +32,7 @@ func (s *Service) GetOutput(ctx context.Context, id string, before time.Time, li
 		return nil, err
 	}
 	if limit > s.containerLogger.LogLimit() {
-		return nil, newError(ErrorTypeBadRequest, "limit too large", nil)
+		return nil, domain.NewError(domain.ErrorTypeBadRequest, "limit too large", nil)
 	}
 
 	// Get logs

@@ -108,7 +108,7 @@ func (r *buildRepository) GetBuild(ctx context.Context, buildID string) (*domain
 	).One(ctx, r.db)
 	if err != nil {
 		if isNoRowsErr(err) {
-			return nil, ErrNotFound
+			return nil, notFound("build")
 		}
 		return nil, oops.Wrapf(err, "finding build")
 	}

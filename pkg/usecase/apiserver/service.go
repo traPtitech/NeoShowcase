@@ -2,7 +2,6 @@ package apiserver
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"github.com/motoki317/sc"
@@ -12,18 +11,8 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
 	"github.com/traPtitech/neoshowcase/pkg/util/scutil"
 )
-
-func handleRepoError[T any](entity T, err error) (T, error) {
-	switch {
-	case errors.Is(err, repository.ErrNotFound):
-		return entity, newError(ErrorTypeNotFound, "not found", err)
-	default:
-		return entity, err
-	}
-}
 
 type Service struct {
 	artifactRepo     domain.ArtifactRepository
@@ -98,7 +87,7 @@ func (s *Service) isRepositoryOwner(ctx context.Context, repoID string) error {
 		return oops.Wrapf(err, "getting repository")
 	}
 	if !repo.IsOwner(user) {
-		return newError(ErrorTypeForbidden, "you do not have permission for this repository", nil)
+		return domain.NewError(domain.ErrorTypeForbidden, "you do not have permission for this repository", nil)
 	}
 	return nil
 }
@@ -110,7 +99,7 @@ func (s *Service) isApplicationOwner(ctx context.Context, appID string) error {
 		return oops.Wrapf(err, "getting application")
 	}
 	if !app.IsOwner(user) {
-		return newError(ErrorTypeForbidden, "you do not have permission for this application", nil)
+		return domain.NewError(domain.ErrorTypeForbidden, "you do not have permission for this application", nil)
 	}
 	return nil
 }
@@ -126,7 +115,7 @@ func (s *Service) isBuildOwner(ctx context.Context, buildID string) error {
 		return oops.Wrapf(err, "getting application")
 	}
 	if !app.IsOwner(user) {
-		return newError(ErrorTypeForbidden, "you do not have permission for this application", nil)
+		return domain.NewError(domain.ErrorTypeForbidden, "you do not have permission for this application", nil)
 	}
 	return nil
 }
@@ -134,7 +123,7 @@ func (s *Service) isBuildOwner(ctx context.Context, buildID string) error {
 func (s *Service) isAdmin(ctx context.Context) error {
 	user := web.GetUser(ctx)
 	if !user.Admin {
-		return newError(ErrorTypeForbidden, "you do not have permission for this action", nil)
+		return domain.NewError(domain.ErrorTypeForbidden, "you do not have permission for this action", nil)
 	}
 	return nil
 }

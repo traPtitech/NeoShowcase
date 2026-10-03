@@ -34,7 +34,7 @@ spec:
             - --entrypoints.traefik.address=:8080/tcp
             - --entrypoints.metrics.address=:9100/tcp
             - --experimental.plugins.sablier.modulename=github.com/sablierapp/sablier-traefik-plugin
-            - --experimental.plugins.sablier.version=v1.3.0
+            - --experimental.plugins.sablier.version=v1.3.1
             - --api.dashboard=true
             - --ping=true
             - --metrics.prometheus=true
