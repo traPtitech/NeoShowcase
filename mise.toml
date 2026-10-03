@@ -13,7 +13,7 @@ tbls = "1.96.1"
 buf = "1.73.0"
 "go:github.com/aarondl/sqlboiler/v4" = "4.19.7"
 "go:github.com/aarondl/sqlboiler/v4/drivers/sqlboiler-mysql" = "4.19.7"
-"go:github.com/sqldef/sqldef/v3/cmd/mysqldef" = "3.11.22"
+"go:github.com/sqldef/sqldef/v3/cmd/mysqldef" = "3.11.26"
 
 [env]
 _.file = ".env"
