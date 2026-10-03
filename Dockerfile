@@ -6,6 +6,7 @@ ENV CGO_ENABLED=0
 RUN apk add --update --no-cache git
 
 COPY ./go.* ./
+COPY ./third_party ./third_party
 RUN --mount=type=cache,target=/go/pkg/mod \
     go mod download
 
