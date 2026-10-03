@@ -24,8 +24,7 @@ func (s *Service) GetBuilds(ctx context.Context, applicationID string) ([]*domai
 }
 
 func (s *Service) GetBuild(ctx context.Context, buildID string) (*domain.Build, error) {
-	build, err := s.buildRepo.GetBuild(ctx, buildID)
-	return handleRepoError(build, err)
+	return s.buildRepo.GetBuild(ctx, buildID)
 }
 
 func (s *Service) RetryCommitBuild(ctx context.Context, applicationID string, commit string) error {
@@ -70,7 +69,7 @@ func (s *Service) GetBuildLog(ctx context.Context, buildID string) ([]byte, erro
 		return nil, err
 	}
 	if !build.Status.IsFinished() {
-		return nil, newError(ErrorTypeBadRequest, "build not finished", nil)
+		return nil, domain.NewError(domain.ErrorTypeBadRequest, "build not finished", nil)
 	}
 	return domain.GetBuildLog(s.storage, buildID)
 }
@@ -86,7 +85,7 @@ func (s *Service) GetBuildLogStream(ctx context.Context, buildID string) (<-chan
 		return nil, err
 	}
 	if build.Status.IsFinished() {
-		return nil, newError(ErrorTypeFailedPrecondition, "build already finished", nil)
+		return nil, domain.NewError(domain.ErrorTypeFailedPrecondition, "build already finished", nil)
 	}
 
 	addr, err := s.controller.DiscoverBuildLogInstance(ctx, buildID)
@@ -95,11 +94,11 @@ func (s *Service) GetBuildLogStream(ctx context.Context, buildID string) (<-chan
 	}
 	if addr.Address == nil {
 		if build.Status == domain.BuildStatusQueued {
-			return nil, newError(ErrorTypeFailedPrecondition, "build not started yet", nil)
+			return nil, domain.NewError(domain.ErrorTypeFailedPrecondition, "build not started yet", nil)
 		}
 		// Marked as building, yet no instance streams it: the controller holding the
 		// in-memory log restarted, so it is gone for good.
-		return nil, newError(ErrorTypeFailedPrecondition, "build log stream no longer available", nil)
+		return nil, domain.NewError(domain.ErrorTypeFailedPrecondition, "build log stream no longer available", nil)
 	}
 	ch, err := s.controller.StreamBuildLog(ctx, *addr.Address, buildID)
 	if err != nil {

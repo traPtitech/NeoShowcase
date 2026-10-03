@@ -16,6 +16,7 @@ buf = "1.73.0"
 "go:github.com/sqldef/sqldef/v3/cmd/mysqldef" = "3.11.22"
 
 [env]
+_.file = ".env"
 APP_VERSION = "dev"
 APP_REVISION = "{{ exec(command='git describe --tags --dirty 2>/dev/null || git rev-parse --short HEAD 2>/dev/null || echo local') }}"
 

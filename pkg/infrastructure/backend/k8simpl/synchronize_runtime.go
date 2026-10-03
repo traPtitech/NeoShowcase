@@ -67,6 +67,18 @@ func (b *Backend) runtimeSpec(app *domain.RuntimeDesiredState) (*appsv1.Stateful
 		cont.Args = args
 	}
 
+	if len(app.App.Websites) > 0 {
+		cont.ReadinessProbe = &v1.Probe{
+			ProbeHandler: v1.ProbeHandler{
+				TCPSocket: &v1.TCPSocketAction{
+					Port: intstr.FromInt(app.App.Websites[0].HTTPPort),
+				},
+			},
+			InitialDelaySeconds: 0,
+			PeriodSeconds:       1,
+		}
+	}
+
 	for _, website := range app.App.Websites {
 		cont.Ports = append(cont.Ports, v1.ContainerPort{
 			ContainerPort: int32(website.HTTPPort),
@@ -146,6 +158,10 @@ func (b *Backend) runtimeSpec(app *domain.RuntimeDesiredState) (*appsv1.Stateful
 				IPFamilies:     b.config.serviceIPFamilies(),
 				IPFamilyPolicy: b.config.serviceIPFamilyPolicy(),
 				Selector:       appSelector(app.App.ID),
+				// Sablier forwards requests as soon as the Pod becomes Ready, but kube-proxy needs
+				// up to a sync period to route the ClusterIP to a newly added endpoint.
+				// Publishing the Pod before it is Ready lets kube-proxy route it while the app starts.
+				PublishNotReadyAddresses: b.useSablier(app.App),
 				Ports: ds.Map(cont.Ports, func(port v1.ContainerPort) v1.ServicePort {
 					return v1.ServicePort{
 						Name:       fmt.Sprintf("%v-%v", strings.ToLower(string(port.Protocol)), port.ContainerPort),
@@ -162,12 +178,20 @@ func (b *Backend) runtimeSpec(app *domain.RuntimeDesiredState) (*appsv1.Stateful
 }
 
 func (b *Backend) runtimeServiceRef(app *domain.Application, website *domain.Website) []traefikv1alpha1.Service {
+	var nativeLB *bool
+	if b.useSablier(app) {
+		// Traefik picks the backend servers when a request enters the router, so the Pod IPs
+		// it holds while the app is scaled to zero stay empty even after Sablier starts the app.
+		// The ClusterIP does not change across scaling, so blocking requests reach the started Pod.
+		nativeLB = new(true)
+	}
 	return []traefikv1alpha1.Service{{
 		Name:      deploymentName(app.ID),
 		Kind:      "Service",
 		Namespace: b.config.Namespace,
 		Port:      intstr.FromInt(website.HTTPPort),
 		Scheme:    lo.Ternary(website.H2C, "h2c", "http"),
+		NativeLB:  nativeLB,
 	}}
 }
 
@@ -176,12 +200,12 @@ var protocolMapper = mapper.MustNewValueMapper(map[domain.PortPublicationProtoco
 	domain.PortPublicationProtocolUDP: v1.ProtocolUDP,
 })
 
-func (b *Backend) runtimePortService(app *domain.Application, port *domain.PortPublication) *v1.Service {
+func (b *Backend) runtimePortService(app *domain.Application) *v1.Service {
 	return &v1.Service{
 		Kind:       "Service",
 		APIVersion: "v1",
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      portServiceName(port),
+			Name:      portServiceName(app.ID),
 			Namespace: b.config.Namespace,
 			Labels:    b.appLabel(app.ID),
 		},
@@ -190,11 +214,15 @@ func (b *Backend) runtimePortService(app *domain.Application, port *domain.PortP
 			IPFamilies:     b.config.serviceIPFamilies(),
 			IPFamilyPolicy: b.config.serviceIPFamilyPolicy(),
 			Selector:       appSelector(app.ID),
-			Ports: []v1.ServicePort{{
-				Protocol:   protocolMapper.IntoMust(port.Protocol),
-				Port:       int32(port.InternetPort),
-				TargetPort: intstr.FromInt(port.ApplicationPort),
-			}},
+			Ports: ds.Map(app.PortPublications, func(port *domain.PortPublication) v1.ServicePort {
+				protocol := protocolMapper.IntoMust(port.Protocol)
+				return v1.ServicePort{
+					Name:       fmt.Sprintf("%v-%v", strings.ToLower(string(protocol)), port.InternetPort),
+					Protocol:   protocol,
+					Port:       int32(port.InternetPort),
+					TargetPort: intstr.FromInt(port.ApplicationPort),
+				}
+			}),
 		},
 	}
 }
@@ -219,8 +247,8 @@ func (b *Backend) runtimeResources(next *resources, apps []*domain.RuntimeDesire
 			next.middlewares = append(next.middlewares, mw...)
 			next.ingressRoutes = append(next.ingressRoutes, ingressRoute)
 		}
-		for _, p := range app.App.PortPublications {
-			next.services = append(next.services, b.runtimePortService(app.App, p))
+		if len(app.App.PortPublications) > 0 {
+			next.services = append(next.services, b.runtimePortService(app.App))
 		}
 	}
 }

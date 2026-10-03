@@ -22,7 +22,7 @@ func (s *Service) CreateUserKey(ctx context.Context, publicKey string, name stri
 	user := web.GetUser(ctx)
 	key, err := domain.NewUserKey(user.ID, publicKey, name)
 	if err != nil {
-		return nil, newError(ErrorTypeBadRequest, "invalid public key", err)
+		return nil, domain.NewError(domain.ErrorTypeBadRequest, "invalid public key", err)
 	}
 	err = s.userRepo.CreateUserKey(ctx, key)
 	if err != nil {

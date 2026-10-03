@@ -1,5 +1,6 @@
 import { timestampDate } from '@bufbuild/protobuf/wkt'
-import { type Component, createSignal, For, onCleanup, Show, Suspense, useTransition } from 'solid-js'
+import { useIsRouting } from '@solidjs/router'
+import { type Component, createSignal, For, onCleanup, Show, Suspense } from 'solid-js'
 import toast from 'solid-toast'
 import { type Application, DeployType } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { DataTable } from '/@/components/layouts/DataTable'
@@ -103,10 +104,10 @@ export default () => {
   const refetchTimer = setInterval(refetch, 10000)
   onCleanup(() => clearInterval(refetchTimer))
 
-  const [isPending] = useTransition()
+  const isRouting = useIsRouting()
 
   return (
-    <SuspenseContainer isPending={isPending()}>
+    <SuspenseContainer isPending={isRouting()}>
       <div class="h-full w-full overflow-y-auto">
         <Show when={loaded()}>
           <MainViewContainer class="bg-ui-background">
