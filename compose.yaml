@@ -240,7 +240,7 @@ services:
       - default
 
   static-server:
-    image: caddy:2-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648
+    image: caddy:2-alpine@sha256:881bbc60f9986d5ab8e7cfd6cf7e4ef3c9c0439fef2429d035d065577882f028
     restart: always
     environment:
       # Do not bind to all addresses in production!
