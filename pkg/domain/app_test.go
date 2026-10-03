@@ -189,7 +189,7 @@ func TestApplicationConfig_Validate(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:       "auto shutdown without startup (runtime dockerfile)",
+			name:       "auto shutdown without startup behavior (runtime dockerfile)",
 			deployType: DeployTypeRuntime,
 			config: ApplicationConfig{
 				BuildConfig: &BuildConfigRuntimeDockerfile{
