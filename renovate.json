@@ -23,6 +23,10 @@
       "groupName": "GitHub Actions dependencies"
     },
     {
+      "matchManagers": ["mise"],
+      "groupName": "mise tools"
+    },
+    {
       "description": "Update each builder test fixture as a group. Placed last to take precedence over the manager-wide groups above.",
       "matchFileNames": ["pkg/usecase/builder/testdata/go/**"],
       "groupName": "builder test fixture (go)",
