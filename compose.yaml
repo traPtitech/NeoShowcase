@@ -30,9 +30,22 @@ services:
       context: ./dashboard
       target: dev
     restart: always
-    volumes:
-      - ./dashboard:/work
-      - /work/node_modules
+    # Source is synced into the container rather than bind-mounted, so node_modules stays
+    # the one built into the image and never meets the host's. A dependency change has to
+    # go through the image, hence the rebuild on pnpm-lock.yaml.
+    develop:
+      watch:
+        - action: sync
+          path: ./dashboard
+          target: /work
+          ignore:
+            - node_modules/
+            - dist/
+            - .pnpm-store/
+        - action: rebuild
+          path: ./dashboard/package.json
+        - action: rebuild
+          path: ./dashboard/pnpm-lock.yaml
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.ns_dashboard.rule=Host(`ns.local.trapti.tech`)"
@@ -167,6 +180,11 @@ services:
         condition: service_completed_successfully
     networks:
       - default
+    healthcheck:
+      test: curl -s -o /dev/null http://localhost:1235/
+      interval: 1s
+      timeout: 10s
+      retries: 60
 
   buildkitd:
     image: moby/buildkit:latest
@@ -182,9 +200,47 @@ services:
       resources:
         limits:
           cpus: "1"
+    healthcheck:
+      test: buildctl --addr unix:///run/buildkit/buildkitd.sock debug workers
+      interval: 1s
+      timeout: 10s
+      retries: 60
+
+  # Runs the build tests against buildkitd, buildpack and registry above.
+  # Run with: docker compose run --rm builder-test
+  builder-test:
+    profiles:
+      - test
+    build:
+      context: .
+      target: builder
+    working_dir: /work
+    entrypoint:
+      - go
+      - test
+      - -v
+      - -count=1
+      - -timeout=25m
+      - ./pkg/usecase/builder/
+    environment:
+      ENABLE_BUILD_TESTS: "true"
+    volumes:
+      - .:/work
+      - ./.local-dev/buildkitd-sock:/run/buildkit
+      - go-mod-cache:/go/pkg/mod
+      - go-build-cache:/root/.cache/go-build
+    depends_on:
+      buildkitd:
+        condition: service_healthy
+      buildpack:
+        condition: service_healthy
+      registry:
+        condition: service_healthy
+    networks:
+      - default
 
   static-server:
-    image: caddy:2-alpine@sha256:86deaf5e3d3408a6ccec08fbb79989783dd26e206ae10bcf78a801dc8c9ab794
+    image: caddy:2-alpine@sha256:881bbc60f9986d5ab8e7cfd6cf7e4ef3c9c0439fef2429d035d065577882f028
     restart: always
     environment:
       # Do not bind to all addresses in production!
@@ -230,7 +286,7 @@ services:
       - default
 
   registry:
-    image: registry:2@sha256:a3d8aaa63ed8681a604f1dea0aa03f100d5895b6a58ace528858a7b332415373
+    image: registry:3@sha256:ddf754342cfc8acc51a56d5d0ab6af06826461864460636d8bd5c546dab2a7b8
     restart: always
     environment:
       REGISTRY_STORAGE_DELETE_ENABLED: "true"
@@ -249,6 +305,11 @@ services:
       default:
         aliases:
           - "registry.local"
+    healthcheck:
+      test: wget -q --spider http://localhost/v2/
+      interval: 1s
+      timeout: 10s
+      retries: 60
 
   registry-frontend:
     image: joxit/docker-registry-ui:2
@@ -267,7 +328,7 @@ services:
       - default
 
   mysql:
-    image: mariadb:11.8@sha256:be1ef4fe5f14589325c08a41c76334097ce66c86264b75e1d28342c742782a61
+    image: mariadb:11.8@sha256:6422478cb8e159f080fb1d8ccf65101e26fe51385787fde7d16c3b165a331f15
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: password
@@ -287,7 +348,7 @@ services:
       - apps
 
   mongo:
-    image: mongo:7@sha256:4b5bf3c2bb7516164f6dcb44acce4fdcb428abfe5771a1128304a0f34ab9ff7c
+    image: mongo:7@sha256:1f995ad6fdb93244a1addab1b58f934a0bc2f5643c38e02f5e9d7f0c7d227a7b
     restart: always
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
@@ -301,7 +362,7 @@ services:
       - apps
 
   adminer:
-    image: adminer:5.4.2@sha256:cc64d253db4f016cbcff2ff2f01e60ed07e74f38b4398f84d3c4fae4b5ce0e07
+    image: adminer:6.1.1@sha256:74f29c416e148b98305e84446a18db7cd2c1038264dec464359d36774ef080ce
     restart: always
     environment:
       ADMINER_DEFAULT_SERVER: mysql
@@ -314,7 +375,7 @@ services:
       - default
 
   grafana:
-    image: grafana/grafana:13.1.3
+    image: grafana/grafana:13.2.3
     restart: always
     labels:
       - "traefik.enable=true"
@@ -327,7 +388,7 @@ services:
       - default
 
   loki:
-    image: grafana/loki:3.7.6
+    image: grafana/loki:3.7.8
     command: "-config.file /etc/loki/loki.yaml"
     restart: always
     labels:
@@ -342,7 +403,7 @@ services:
       - default
 
   promtail:
-    image: grafana/promtail:3.1.0
+    image: grafana/promtail:3.6.11
     command: "-config.file /etc/promtail/promtail.yaml"
     restart: always
     volumes:
@@ -353,7 +414,7 @@ services:
       - default
 
   victoria-metrics:
-    image: victoriametrics/victoria-metrics:v1.144.0
+    image: victoriametrics/victoria-metrics:v1.153.0
     command:
       - --promscrape.config=/etc/config/prometheus.yml
       - --promscrape.maxScrapeSize=256MB
@@ -392,7 +453,7 @@ services:
       - ./.local-dev/config/sablier.yaml:/etc/sablier/sablier.yaml
 
   traefik:
-    image: traefik:v3.6.4@sha256:c5bd185c41ba3dbb42cf8a1b9fbdc368bdc96f90c8e598134879935f64e7a7f1
+    image: traefik:v3.7.13@sha256:24841fe2de7304c149343d877d2923b4c8800a38ba015dea9174c23b20e344a0
     restart: always
     command:
       - --api.insecure=true
@@ -411,8 +472,8 @@ services:
       - --ping=true
       - --metrics.prometheus=true
       - --metrics.prometheus.entrypoint=metrics
-      - --experimental.plugins.sablier.modulename=github.com/sablierapp/sablier
-      - --experimental.plugins.sablier.version=v1.8.1
+      - --experimental.plugins.sablier.modulename=github.com/sablierapp/sablier-traefik-plugin
+      - --experimental.plugins.sablier.version=v1.3.1
     ports:
       - "80:80"
       - "443:443"
@@ -441,3 +502,5 @@ networks:
 
 volumes:
   binary:
+  go-mod-cache:
+  go-build-cache:

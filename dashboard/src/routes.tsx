@@ -7,7 +7,7 @@ import {
   type RouteSectionProps,
   useParams,
 } from '@solidjs/router'
-import { type Component, createMemo, lazy } from 'solid-js'
+import { type Component, lazy } from 'solid-js'
 import ErrorView from './components/layouts/ErrorView'
 import {
   getApplication,
@@ -52,7 +52,7 @@ export const useApplicationData = () => {
   const refetch = async () => {
     await Promise.all([revalidateApplication(applicationId), revalidateBuilds(applicationId)])
   }
-  const hasPermission = createMemo(() => hasApplicationPermission(app))
+  const hasPermission = () => hasApplicationPermission(app)
   return {
     app,
     repo,
@@ -83,7 +83,7 @@ export const useRepositoryData = () => {
     return getRepositoryCommits(a.map((a) => a.commit))
   })
   const refetchRepo = () => revalidateRepository(repositoryId)
-  const hasPermission = createMemo(() => hasRepositoryPermission(repo))
+  const hasPermission = () => hasRepositoryPermission(repo)
   return {
     repo,
     apps,

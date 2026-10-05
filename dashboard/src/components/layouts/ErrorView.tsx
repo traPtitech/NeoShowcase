@@ -4,6 +4,8 @@ import { Button } from '../UI/Button'
 
 const ErrorView: Component<{
   error: unknown
+  /** Retries what failed. When omitted, only the navigation and reload buttons are shown. */
+  onRetry?: () => void
 }> = (props) => {
   const handleReload = () => {
     window.location.reload()
@@ -17,6 +19,16 @@ const ErrorView: Component<{
         <p class="caption-medium text-text-grey">{(props.error as Error).message}</p>
       </Show>
       <div class="flex flex-col gap-2">
+        <Show when={props.onRetry}>
+          <Button
+            onClick={() => props.onRetry?.()}
+            size="medium"
+            variants="border"
+            leftIcon={<div class="i-material-symbols:refresh shrink-0 text-2xl/6" />}
+          >
+            Retry
+          </Button>
+        </Show>
         <A href="/">
           <Button
             size="medium"

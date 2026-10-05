@@ -19,9 +19,11 @@ const transport = createConnectTransport({
 })
 export const client = createClient(APIService, transport)
 
-export const [user] = createResource(() => client.getMe({}))
-export const [systemInfo] = createResource(() => client.getSystemInfo({}))
-export const [availableMetrics] = createResource(() => client.getAvailableMetrics({}))
+export const [user, { refetch: refetchUser }] = createResource(() => client.getMe({}))
+export const [systemInfo, { refetch: refetchSystemInfo }] = createResource(() => client.getSystemInfo({}))
+export const [availableMetrics, { refetch: refetchAvailableMetrics }] = createResource(() =>
+  client.getAvailableMetrics({}),
+)
 
 export const handleAPIError = (e: unknown, message: string) => {
   if (e instanceof Error) {
@@ -97,3 +99,20 @@ export const hasApplicationPermission = (app: () => Application | undefined): bo
 
 export const getBuild = query((id) => client.getBuild({ buildId: id }), 'build')
 export const revalidateBuild = (id: string) => revalidate(getBuild.keyFor(id))
+
+export const getUserKeys = query(() => client.getUserKeys({}).then((res) => res.keys), 'user-keys')
+export const revalidateUserKeys = () => revalidate(getUserKeys.key)
+
+/**
+ * Refetches every piece of data a boundary may be showing: the router's cached queries and the resources that
+ * live for the lifetime of the module. Retrying goes through this rather than through a list supplied by each
+ * boundary, so that adding a boundary cannot silently leave its Retry doing nothing.
+ *
+ * Resources created inside a boundary are not included; resetting the boundary recreates them.
+ *
+ * It settles rather than rejects, so that one source still being down cannot stop a caller from resetting a
+ * boundary whose own data has recovered. Whatever is still failing throws again when the boundary reads it.
+ */
+export const retryAll = async () => {
+  await Promise.allSettled([revalidate(), refetchUser(), refetchSystemInfo(), refetchAvailableMetrics()])
+}

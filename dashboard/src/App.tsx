@@ -4,6 +4,7 @@ import { type Component, ErrorBoundary } from 'solid-js'
 import { Toaster } from 'solid-toast'
 import { Routes } from '/@/routes'
 import ErrorView from './components/layouts/ErrorView'
+import { PageBoundary } from './components/layouts/PageBoundary'
 import { WithHeader } from './components/layouts/WithHeader'
 
 const Root: Component<RouteSectionProps> = (props) => {
@@ -16,9 +17,16 @@ const Root: Component<RouteSectionProps> = (props) => {
           position: 'bottom-left',
         }}
       />
-      <WithHeader>
-        <ErrorBoundary fallback={(props) => <ErrorView {...props} />}>{props.children}</ErrorBoundary>
-      </WithHeader>
+      <ErrorBoundary
+        fallback={(err) => {
+          console.error('[root]', err)
+          return <ErrorView error={err} />
+        }}
+      >
+        <WithHeader>
+          <PageBoundary>{props.children}</PageBoundary>
+        </WithHeader>
+      </ErrorBoundary>
     </MetaProvider>
   )
 }

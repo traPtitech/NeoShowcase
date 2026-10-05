@@ -1,9 +1,11 @@
 import { A } from '@solidjs/router'
-import { type Component, Show } from 'solid-js'
+import { type Component, Show, Suspense } from 'solid-js'
 import LogoImage from '/@/assets/logo.svg?url'
 import SmallLogoImage from '/@/assets/logo_small.svg?url'
+import { SectionBoundary } from '/@/components/layouts/SectionBoundary'
 import { user } from '/@/libs/api'
 import { Button } from '../UI/Button'
+import Skeleton from '../UI/Skeleton'
 import { UserMenuButton } from '../UI/UserMenuButton'
 import MobileNavigation from './MobileNavigation'
 
@@ -32,13 +34,14 @@ export const Header: Component = () => {
           </Button>
         </A>
       </div>
-      <Show when={user()}>
-        {(user) => (
-          <div class="ml-auto">
-            <UserMenuButton user={user()} />
-          </div>
-        )}
-      </Show>
+      <div class="ml-auto">
+        <SectionBoundary title="User Info" variant="compact">
+          {/* The header slot is sized by its content, so the placeholder cannot take a percentage width. */}
+          <Suspense fallback={<Skeleton width={120} height={32} />}>
+            <Show when={user()}>{(user) => <UserMenuButton user={user()} />}</Show>
+          </Suspense>
+        </SectionBoundary>
+      </div>
     </div>
   )
 }

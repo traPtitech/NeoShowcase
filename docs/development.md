@@ -42,12 +42,24 @@ k3d environment is mainly for testing k8s features.
 You will need `/compose.yaml` and `/mise.toml` at the project root.
 
 1. `mise run up`: Spin up development environment
-2. `mise run down`: Tear down development environment
+2. `mise run dev`: Spin up development environment, then live-reload the dashboard
+3. `mise run down`: Tear down development environment
 
 Everything should automatically start after running `mise run up`.
 
 - Dashboard: http://ns.local.trapti.tech/
 - For more, run `mise tasks` to display all available commands
+
+#### Working on the dashboard
+
+The dashboard container serves the source baked into its image, so `mise run up` alone
+does not pick up edits under `/dashboard`. Use `mise run dev` instead: it brings up the
+same environment and then syncs your edits into the container, where Vite hot-reloads
+them. It keeps running in the foreground; Ctrl+C stops syncing and leaves the
+environment up, so `mise run down` still works afterwards.
+
+Editing `package.json` or `pnpm-lock.yaml` rebuilds the dashboard image rather than
+syncing, so dependency changes always go through a fresh `pnpm install`.
 
 If you use Docker Desktop for Windows and WSL2...
 
