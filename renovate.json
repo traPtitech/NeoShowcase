@@ -20,6 +20,7 @@
     },
     {
       "matchManagers": ["github-actions"],
+      "matchDepTypes": ["action"],
       "groupName": "GitHub Actions dependencies"
     }
   ],
