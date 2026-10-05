@@ -357,7 +357,7 @@ func TestApplication_WebsiteConflicts(t *testing.T) {
 					FQDN:       "bar.trap.games",
 					PathPrefix: "/api",
 				}},
-				OwnerIDs: []string{u1.ID, u3.ID},
+				OwnerIDs: []string{},
 			},
 			existing: existing,
 			want:     true,
