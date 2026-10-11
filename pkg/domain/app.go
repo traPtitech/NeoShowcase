@@ -13,7 +13,8 @@ import (
 )
 
 type ApplicationConfig struct {
-	BuildConfig BuildConfig
+	BuildConfig  BuildConfig
+	AutoShutdown AutoShutdownConfig
 }
 
 func (c *ApplicationConfig) Validate(deployType DeployType) error {
@@ -23,11 +24,52 @@ func (c *ApplicationConfig) Validate(deployType DeployType) error {
 	if err := c.BuildConfig.Validate(); err != nil {
 		return oops.Wrapf(err, "invalid build_config")
 	}
+	if err := c.AutoShutdown.Validate(deployType); err != nil {
+		return oops.Wrapf(err, "invalid auto_shutdown")
+	}
 	return nil
 }
 
+// AutoShutdownConfig is the setting to stop a runtime application while it receives no requests.
+// Enabling it is only allowed for runtime applications.
+type AutoShutdownConfig struct {
+	Enabled bool
+	// Startup must be set if Enabled is true.
+	Startup StartupBehavior
+}
+
+func (c *AutoShutdownConfig) Validate(deployType DeployType) error {
+	if !c.Enabled {
+		return nil
+	}
+	if deployType != DeployTypeRuntime {
+		return oops.New("auto shutdown is only available for runtime applications")
+	}
+	if c.Startup == StartupBehaviorUndefined {
+		return oops.New("startup is required if auto shutdown is enabled")
+	}
+	return nil
+}
+
+// StartupBehavior represents the behavior of the application when it starts up.
+// This is used to determine how to handle the request until the application is ready.
+type StartupBehavior int
+
+const (
+	StartupBehaviorUndefined StartupBehavior = iota
+	// StartupBehaviorLoadingPage is a strategy that shows a loading page until the application is ready.
+	// This is suitable for web applications that are accessed from frontend.
+	StartupBehaviorLoadingPage
+	// StartupBehaviorBlocking is a strategy that blocks the request until the application is ready.
+	// This is suitable for API servers.
+	StartupBehaviorBlocking
+)
+
+// Hash returns a digest of the build inputs, which are the build config and env.
+// Settings that do not affect builds, such as AutoShutdown, are not included
+// so that changing them does not trigger a rebuild.
 func (c *ApplicationConfig) Hash(env []*Environment) string {
-	b := lo.Must(json.Marshal(c))
+	b := lo.Must(json.Marshal(c.BuildConfig))
 	sort.SliceStable(env, func(i, j int) bool { return env[i].Key < env[j].Key })
 	e := lo.Must(json.Marshal(env))
 	b = append(b, e...)

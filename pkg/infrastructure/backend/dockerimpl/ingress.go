@@ -168,7 +168,7 @@ func (b *Backend) sablierMiddleware(app *domain.Application) m {
 		"sessionDuration": b.config.Middleware.Sablier.SessionDuration,
 	}
 
-	switch app.Config.BuildConfig.GetRuntimeConfig().AutoShutdown.Startup {
+	switch app.Config.AutoShutdown.Startup {
 	case domain.StartupBehaviorLoadingPage:
 		config["dynamic"] = m{
 			"displayName": app.Name,
