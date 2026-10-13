@@ -50,7 +50,12 @@ func (s *Service) CancelBuild(ctx context.Context, buildID string) error {
 	if err != nil {
 		return err
 	}
-	build, err := s.buildRepo.GetBuild(ctx, buildID)
+
+	var build *domain.Build
+	build, err = s.buildRepo.GetBuild(ctx, buildID)
+	if err != nil {
+		return err
+	}
 
 	switch build.Status {
 	case domain.BuildStatusBuilding:
@@ -59,7 +64,7 @@ func (s *Service) CancelBuild(ctx context.Context, buildID string) error {
 			return oops.Wrapf(err, "requesting cancel build")
 		}
 	case domain.BuildStatusQueued:
-		_, err := s.buildRepo.UpdateBuild(ctx, domain.GetBuildCondition{
+		count, err := s.buildRepo.UpdateBuild(ctx, domain.GetBuildCondition{
 			ID:     optional.From(build.ID),
 			Status: optional.From(domain.BuildStatusQueued),
 		}, domain.UpdateBuildArgs{
@@ -67,6 +72,12 @@ func (s *Service) CancelBuild(ctx context.Context, buildID string) error {
 		})
 		if err != nil {
 			return oops.Wrapf(err, "requesting build cancellation")
+		}
+		if count == 0 {
+			err = s.controller.CancelBuild(ctx, buildID)
+			if err != nil {
+				return oops.Wrapf(err, "requesting cancel build")
+			}
 		}
 		return nil
 	default:
