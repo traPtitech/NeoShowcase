@@ -172,6 +172,8 @@ func init() {
 	viper.SetDefault("components.controller.token", "")
 	viper.SetDefault("components.controller.mode", "docker")
 
+	viper.SetDefault("components.controller.builderPort", 10001)
+
 	viper.SetDefault("components.controller.gitea.enable", false)
 	viper.SetDefault("components.controller.gitea.url", "http://ns-gitea-integration:10001")
 
