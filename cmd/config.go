@@ -62,6 +62,7 @@ type BuilderConfig struct {
 
 type ControllerConfig struct {
 	Port             grpc.ControllerPort               `mapstructure:"port" yaml:"port"`
+	BuilderPort      grpc.ControllerPort               `mapstructure:"builderPort" yaml:"builderPort"`
 	TokenHeader      string                            `mapstructure:"tokenHeader" yaml:"tokenHeader"`
 	Token            string                            `mapstructure:"token" yaml:"token"`
 	Mode             string                            `mapstructure:"mode" yaml:"mode"`

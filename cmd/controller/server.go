@@ -19,7 +19,34 @@ import (
 )
 
 type APIServer struct {
-	*web.H2CServer
+	Api *web.H2CServer
+	BuilderAPI *web.H2CServer
+}
+
+func (s *APIServer) Start(ctx context.Context) error {
+	eg, ctx := errgroup.WithContext(ctx)
+
+	eg.Go(func() error {
+		return s.Api.Start(ctx)
+	})
+	eg.Go(func() error {
+		return s.BuilderAPI.Start(ctx)
+	})
+
+	return eg.Wait()
+}
+
+func (s *APIServer) Shutdown(ctx context.Context) error {
+	eg, ctx := errgroup.WithContext(ctx)
+
+	eg.Go(func() error {
+		return s.Api.Shutdown(ctx)
+	})
+	eg.Go(func() error {
+		return s.BuilderAPI.Shutdown(ctx)
+	})
+
+	return eg.Wait()
 }
 
 type Server struct {
