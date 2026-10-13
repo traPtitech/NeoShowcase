@@ -84,7 +84,7 @@ func (b *Backend) jsonSablierConfig(app *domain.Application) []byte {
 		SessionDuration: b.config.Middleware.Sablier.SessionDuration,
 	}
 
-	switch app.Config.BuildConfig.GetRuntimeConfig().AutoShutdown.Startup {
+	switch app.Config.AutoShutdown.Startup {
 	case domain.StartupBehaviorLoadingPage:
 		config.Dynamic = &DynamicConfig{
 			DisplayName: app.Name,

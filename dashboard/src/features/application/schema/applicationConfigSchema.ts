@@ -1,6 +1,11 @@
 import { match, P } from 'ts-pattern'
 import * as v from 'valibot'
-import { type ApplicationConfig, AutoShutdownConfig_StartupBehavior } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import {
+  type ApplicationConfig,
+  type AutoShutdownConfig,
+  AutoShutdownConfig_StartupBehavior,
+  type RuntimeConfig,
+} from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { stringBooleanSchema } from '/@/libs/schemaUtil'
 
 const unwrapStartupBehaviorMap: Record<`${AutoShutdownConfig_StartupBehavior}`, AutoShutdownConfig_StartupBehavior> = {
@@ -33,6 +38,25 @@ const runtimeConfigSchema = v.object({
   command: v.string(),
   autoShutdown: autoShutdownSchema,
 })
+
+const toRuntimeConfigMessage = ({
+  autoShutdown: _,
+  ...runtime
+}: v.InferOutput<typeof runtimeConfigSchema>): RuntimeConfig => ({
+  $typeName: 'neoshowcase.protobuf.RuntimeConfig',
+  ...runtime,
+})
+
+const toAutoShutdownMessage = (
+  autoShutdown: v.InferOutput<typeof autoShutdownSchema>,
+): AutoShutdownConfig | undefined =>
+  autoShutdown
+    ? {
+        $typeName: 'neoshowcase.protobuf.AutoShutdownConfig',
+        enabled: autoShutdown.enabled,
+        startup: autoShutdown.startup,
+      }
+    : undefined
 
 const staticConfigSchema = v.object({
   artifactPath: v.pipe(v.string(), v.nonEmpty('Enter Artifact Path')),
@@ -123,19 +147,10 @@ export const applicationConfigSchema = v.pipe(
             value: {
               $typeName: 'neoshowcase.protobuf.BuildConfigRuntimeBuildpack',
               ...buildConfig.value.buildpack,
-              runtimeConfig: {
-                $typeName: 'neoshowcase.protobuf.RuntimeConfig',
-                ...deployConfig.value.runtime,
-                autoShutdown: deployConfig.value.runtime.autoShutdown
-                  ? {
-                      $typeName: 'neoshowcase.protobuf.AutoShutdownConfig',
-                      enabled: deployConfig.value.runtime.autoShutdown.enabled,
-                      startup: deployConfig.value.runtime.autoShutdown.startup,
-                    }
-                  : undefined,
-              },
+              runtimeConfig: toRuntimeConfigMessage(deployConfig.value.runtime),
             },
           },
+          autoShutdown: toAutoShutdownMessage(deployConfig.value.runtime.autoShutdown),
         }
       })
       .with([{ type: 'runtime' }, { type: 'cmd' }], ([deployConfig, buildConfig]) => {
@@ -146,19 +161,10 @@ export const applicationConfigSchema = v.pipe(
             value: {
               $typeName: 'neoshowcase.protobuf.BuildConfigRuntimeCmd',
               ...buildConfig.value.cmd,
-              runtimeConfig: {
-                $typeName: 'neoshowcase.protobuf.RuntimeConfig',
-                ...deployConfig.value.runtime,
-                autoShutdown: deployConfig.value.runtime.autoShutdown
-                  ? {
-                      $typeName: 'neoshowcase.protobuf.AutoShutdownConfig',
-                      enabled: deployConfig.value.runtime.autoShutdown.enabled,
-                      startup: deployConfig.value.runtime.autoShutdown.startup,
-                    }
-                  : undefined,
-              },
+              runtimeConfig: toRuntimeConfigMessage(deployConfig.value.runtime),
             },
           },
+          autoShutdown: toAutoShutdownMessage(deployConfig.value.runtime.autoShutdown),
         }
       })
       .with([{ type: 'runtime' }, { type: 'dockerfile' }], ([deployConfig, buildConfig]) => {
@@ -169,19 +175,10 @@ export const applicationConfigSchema = v.pipe(
             value: {
               $typeName: 'neoshowcase.protobuf.BuildConfigRuntimeDockerfile',
               ...buildConfig.value.dockerfile,
-              runtimeConfig: {
-                $typeName: 'neoshowcase.protobuf.RuntimeConfig',
-                ...deployConfig.value.runtime,
-                autoShutdown: deployConfig.value.runtime.autoShutdown
-                  ? {
-                      $typeName: 'neoshowcase.protobuf.AutoShutdownConfig',
-                      enabled: deployConfig.value.runtime.autoShutdown.enabled,
-                      startup: deployConfig.value.runtime.autoShutdown.startup,
-                    }
-                  : undefined,
-              },
+              runtimeConfig: toRuntimeConfigMessage(deployConfig.value.runtime),
             },
           },
+          autoShutdown: toAutoShutdownMessage(deployConfig.value.runtime.autoShutdown),
         }
       })
       .with([{ type: 'static' }, { type: 'buildpack' }], ([deployConfig, buildConfig]) => {
@@ -260,10 +257,8 @@ export const configMessageToSchema = (config: ApplicationConfig): ApplicationCon
             entrypoint: buildConfig.value.runtimeConfig?.entrypoint ?? '',
             command: buildConfig.value.runtimeConfig?.command ?? '',
             autoShutdown: {
-              enabled: buildConfig.value.runtimeConfig?.autoShutdown?.enabled ?? false,
-              startup: buildConfig.value.runtimeConfig?.autoShutdown?.startup
-                ? `${buildConfig.value.runtimeConfig.autoShutdown.startup}`
-                : undefined,
+              enabled: config.autoShutdown?.enabled ?? false,
+              startup: config.autoShutdown?.startup ? `${config.autoShutdown.startup}` : undefined,
             },
           },
         },

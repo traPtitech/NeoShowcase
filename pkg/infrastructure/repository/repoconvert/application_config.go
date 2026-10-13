@@ -12,12 +12,14 @@ func FromDomainApplicationConfig(appID string, c *domain.ApplicationConfig) *mod
 		BuildType:     BuildTypeMapper.FromMust(c.BuildConfig.BuildType()),
 	}
 	assignBuildConfig(mc, c.BuildConfig)
+	assignAutoShutdownConfig(mc, &c.AutoShutdown)
 	return mc
 }
 
 func ToDomainApplicationConfig(c *models.ApplicationConfig) domain.ApplicationConfig {
 	return domain.ApplicationConfig{
-		BuildConfig: ToDomainBuildConfig(c),
+		BuildConfig:  ToDomainBuildConfig(c),
+		AutoShutdown: ToDomainAutoShutdownConfig(c),
 	}
 }
 
@@ -35,32 +37,38 @@ var StartupBehaviorMapper = mapper.MustNewValueMapper(map[string]domain.StartupB
 	models.ApplicationConfigStartupBehaviorBlocking:    domain.StartupBehaviorBlocking,
 })
 
+func assignAutoShutdownConfig(mc *models.ApplicationConfig, c *domain.AutoShutdownConfig) {
+	mc.AutoShutdown = c.Enabled
+	if c.Enabled {
+		mc.StartupBehavior = StartupBehaviorMapper.FromMust(c.Startup)
+	}
+}
+
+func ToDomainAutoShutdownConfig(c *models.ApplicationConfig) domain.AutoShutdownConfig {
+	conf := domain.AutoShutdownConfig{
+		Enabled: c.AutoShutdown,
+	}
+	if conf.Enabled {
+		conf.Startup = StartupBehaviorMapper.IntoMust(c.StartupBehavior)
+	} else {
+		conf.Startup = domain.StartupBehaviorUndefined
+	}
+	return conf
+}
+
 func assignRuntimeConfig(mc *models.ApplicationConfig, c *domain.RuntimeConfig) {
 	mc.UseMariadb = c.UseMariaDB
 	mc.UseMongodb = c.UseMongoDB
-	mc.AutoShutdown = c.AutoShutdown.Enabled
-	if c.AutoShutdown.Enabled {
-		mc.StartupBehavior = StartupBehaviorMapper.FromMust(c.AutoShutdown.Startup)
-	}
 	mc.Entrypoint = c.Entrypoint
 	mc.Command = c.Command
 }
 
 func ToDomainRuntimeConfig(c *models.ApplicationConfig) domain.RuntimeConfig {
-	autoShutdownConf := domain.AutoShutdownConfig{
-		Enabled: c.AutoShutdown,
-	}
-	if autoShutdownConf.Enabled {
-		autoShutdownConf.Startup = StartupBehaviorMapper.IntoMust(c.StartupBehavior)
-	} else {
-		autoShutdownConf.Startup = domain.StartupBehaviorUndefined
-	}
 	return domain.RuntimeConfig{
-		UseMariaDB:   c.UseMariadb,
-		UseMongoDB:   c.UseMongodb,
-		AutoShutdown: autoShutdownConf,
-		Entrypoint:   c.Entrypoint,
-		Command:      c.Command,
+		UseMariaDB: c.UseMariadb,
+		UseMongoDB: c.UseMongodb,
+		Entrypoint: c.Entrypoint,
+		Command:    c.Command,
 	}
 }
 

@@ -32,15 +32,7 @@ export enum ApplicationState {
   Error = 'Error',
 }
 
-const autoShutdownEnabled = (app: Application): boolean => {
-  switch (app.config?.buildConfig?.case) {
-    case 'runtimeBuildpack':
-    case 'runtimeCmd':
-    case 'runtimeDockerfile':
-      return app.config.buildConfig.value.runtimeConfig?.autoShutdown?.enabled ?? false
-  }
-  return false
-}
+const autoShutdownEnabled = (app: Application): boolean => app.config?.autoShutdown?.enabled ?? false
 
 export const deploymentState = (app: Application): ApplicationState => {
   // App is not running

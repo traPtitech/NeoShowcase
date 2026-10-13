@@ -112,7 +112,8 @@ message RuntimeConfig {
   bool use_mongodb = 2;
   string entrypoint = 3;
   string command = 4;
-  AutoShutdownConfig auto_shutdown = 5;
+  reserved 5;
+  reserved "auto_shutdown";
 }
 
 message BuildConfigRuntimeBuildpack {
@@ -163,6 +164,7 @@ message ApplicationConfig {
     BuildConfigStaticCmd static_cmd = 5;
     BuildConfigStaticDockerfile static_dockerfile = 6;
   }
+  AutoShutdownConfig auto_shutdown = 7;
 }
 
 enum AuthenticationType {

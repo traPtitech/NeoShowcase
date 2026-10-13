@@ -1169,7 +1169,6 @@ type RuntimeConfig struct {
 	UseMongodb    bool                   `protobuf:"varint,2,opt,name=use_mongodb,json=useMongodb,proto3" json:"use_mongodb,omitempty"`
 	Entrypoint    string                 `protobuf:"bytes,3,opt,name=entrypoint,proto3" json:"entrypoint,omitempty"`
 	Command       string                 `protobuf:"bytes,4,opt,name=command,proto3" json:"command,omitempty"`
-	AutoShutdown  *AutoShutdownConfig    `protobuf:"bytes,5,opt,name=auto_shutdown,json=autoShutdown,proto3" json:"auto_shutdown,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1230,13 +1229,6 @@ func (x *RuntimeConfig) GetCommand() string {
 		return x.Command
 	}
 	return ""
-}
-
-func (x *RuntimeConfig) GetAutoShutdown() *AutoShutdownConfig {
-	if x != nil {
-		return x.AutoShutdown
-	}
-	return nil
 }
 
 type BuildConfigRuntimeBuildpack struct {
@@ -1646,6 +1638,7 @@ type ApplicationConfig struct {
 	//	*ApplicationConfig_StaticCmd
 	//	*ApplicationConfig_StaticDockerfile
 	BuildConfig   isApplicationConfig_BuildConfig `protobuf_oneof:"build_config"`
+	AutoShutdown  *AutoShutdownConfig             `protobuf:"bytes,7,opt,name=auto_shutdown,json=autoShutdown,proto3" json:"auto_shutdown,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1737,6 +1730,13 @@ func (x *ApplicationConfig) GetStaticDockerfile() *BuildConfigStaticDockerfile {
 		if x, ok := x.BuildConfig.(*ApplicationConfig_StaticDockerfile); ok {
 			return x.StaticDockerfile
 		}
+	}
+	return nil
+}
+
+func (x *ApplicationConfig) GetAutoShutdown() *AutoShutdownConfig {
+	if x != nil {
+		return x.AutoShutdown
 	}
 	return nil
 }
@@ -4952,7 +4952,7 @@ const file_neoshowcase_protobuf_gateway_proto_rawDesc = "" +
 	"\x0fStartupBehavior\x12\r\n" +
 	"\tUNDEFINED\x10\x00\x12\x10\n" +
 	"\fLOADING_PAGE\x10\x01\x12\f\n" +
-	"\bBLOCKING\x10\x02\"\xda\x01\n" +
+	"\bBLOCKING\x10\x02\"\xa0\x01\n" +
 	"\rRuntimeConfig\x12\x1f\n" +
 	"\vuse_mariadb\x18\x01 \x01(\bR\n" +
 	"useMariadb\x12\x1f\n" +
@@ -4961,8 +4961,7 @@ const file_neoshowcase_protobuf_gateway_proto_rawDesc = "" +
 	"\n" +
 	"entrypoint\x18\x03 \x01(\tR\n" +
 	"entrypoint\x12\x18\n" +
-	"\acommand\x18\x04 \x01(\tR\acommand\x12M\n" +
-	"\rauto_shutdown\x18\x05 \x01(\v2(.neoshowcase.protobuf.AutoShutdownConfigR\fautoShutdown\"\x83\x01\n" +
+	"\acommand\x18\x04 \x01(\tR\acommandJ\x04\b\x05\x10\x06R\rauto_shutdown\"\x83\x01\n" +
 	"\x1bBuildConfigRuntimeBuildpack\x12J\n" +
 	"\x0eruntime_config\x18\x01 \x01(\v2#.neoshowcase.protobuf.RuntimeConfigR\rruntimeConfig\x12\x18\n" +
 	"\acontext\x18\x02 \x01(\tR\acontext\"\x9f\x01\n" +
@@ -4989,7 +4988,7 @@ const file_neoshowcase_protobuf_gateway_proto_rawDesc = "" +
 	"\x1bBuildConfigStaticDockerfile\x12G\n" +
 	"\rstatic_config\x18\x01 \x01(\v2\".neoshowcase.protobuf.StaticConfigR\fstaticConfig\x12'\n" +
 	"\x0fdockerfile_name\x18\x02 \x01(\tR\x0edockerfileName\x12\x18\n" +
-	"\acontext\x18\x03 \x01(\tR\acontext\"\xc8\x04\n" +
+	"\acontext\x18\x03 \x01(\tR\acontext\"\x97\x05\n" +
 	"\x11ApplicationConfig\x12`\n" +
 	"\x11runtime_buildpack\x18\x01 \x01(\v21.neoshowcase.protobuf.BuildConfigRuntimeBuildpackH\x00R\x10runtimeBuildpack\x12N\n" +
 	"\vruntime_cmd\x18\x02 \x01(\v2+.neoshowcase.protobuf.BuildConfigRuntimeCmdH\x00R\n" +
@@ -4998,7 +4997,8 @@ const file_neoshowcase_protobuf_gateway_proto_rawDesc = "" +
 	"\x10static_buildpack\x18\x04 \x01(\v20.neoshowcase.protobuf.BuildConfigStaticBuildpackH\x00R\x0fstaticBuildpack\x12K\n" +
 	"\n" +
 	"static_cmd\x18\x05 \x01(\v2*.neoshowcase.protobuf.BuildConfigStaticCmdH\x00R\tstaticCmd\x12`\n" +
-	"\x11static_dockerfile\x18\x06 \x01(\v21.neoshowcase.protobuf.BuildConfigStaticDockerfileH\x00R\x10staticDockerfileB\x0e\n" +
+	"\x11static_dockerfile\x18\x06 \x01(\v21.neoshowcase.protobuf.BuildConfigStaticDockerfileH\x00R\x10staticDockerfile\x12M\n" +
+	"\rauto_shutdown\x18\a \x01(\v2(.neoshowcase.protobuf.AutoShutdownConfigR\fautoShutdownB\x0e\n" +
 	"\fbuild_config\"\x88\x02\n" +
 	"\aWebsite\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
@@ -5423,19 +5423,19 @@ var file_neoshowcase_protobuf_gateway_proto_depIdxs = []int32{
 	4,   // 6: neoshowcase.protobuf.Repository.auth_method:type_name -> neoshowcase.protobuf.Repository.AuthMethod
 	81,  // 7: neoshowcase.protobuf.SimpleCommit.commit_date:type_name -> google.protobuf.Timestamp
 	5,   // 8: neoshowcase.protobuf.AutoShutdownConfig.startup:type_name -> neoshowcase.protobuf.AutoShutdownConfig.StartupBehavior
-	18,  // 9: neoshowcase.protobuf.RuntimeConfig.auto_shutdown:type_name -> neoshowcase.protobuf.AutoShutdownConfig
-	19,  // 10: neoshowcase.protobuf.BuildConfigRuntimeBuildpack.runtime_config:type_name -> neoshowcase.protobuf.RuntimeConfig
-	19,  // 11: neoshowcase.protobuf.BuildConfigRuntimeCmd.runtime_config:type_name -> neoshowcase.protobuf.RuntimeConfig
-	19,  // 12: neoshowcase.protobuf.BuildConfigRuntimeDockerfile.runtime_config:type_name -> neoshowcase.protobuf.RuntimeConfig
-	23,  // 13: neoshowcase.protobuf.BuildConfigStaticBuildpack.static_config:type_name -> neoshowcase.protobuf.StaticConfig
-	23,  // 14: neoshowcase.protobuf.BuildConfigStaticCmd.static_config:type_name -> neoshowcase.protobuf.StaticConfig
-	23,  // 15: neoshowcase.protobuf.BuildConfigStaticDockerfile.static_config:type_name -> neoshowcase.protobuf.StaticConfig
-	20,  // 16: neoshowcase.protobuf.ApplicationConfig.runtime_buildpack:type_name -> neoshowcase.protobuf.BuildConfigRuntimeBuildpack
-	21,  // 17: neoshowcase.protobuf.ApplicationConfig.runtime_cmd:type_name -> neoshowcase.protobuf.BuildConfigRuntimeCmd
-	22,  // 18: neoshowcase.protobuf.ApplicationConfig.runtime_dockerfile:type_name -> neoshowcase.protobuf.BuildConfigRuntimeDockerfile
-	24,  // 19: neoshowcase.protobuf.ApplicationConfig.static_buildpack:type_name -> neoshowcase.protobuf.BuildConfigStaticBuildpack
-	25,  // 20: neoshowcase.protobuf.ApplicationConfig.static_cmd:type_name -> neoshowcase.protobuf.BuildConfigStaticCmd
-	26,  // 21: neoshowcase.protobuf.ApplicationConfig.static_dockerfile:type_name -> neoshowcase.protobuf.BuildConfigStaticDockerfile
+	19,  // 9: neoshowcase.protobuf.BuildConfigRuntimeBuildpack.runtime_config:type_name -> neoshowcase.protobuf.RuntimeConfig
+	19,  // 10: neoshowcase.protobuf.BuildConfigRuntimeCmd.runtime_config:type_name -> neoshowcase.protobuf.RuntimeConfig
+	19,  // 11: neoshowcase.protobuf.BuildConfigRuntimeDockerfile.runtime_config:type_name -> neoshowcase.protobuf.RuntimeConfig
+	23,  // 12: neoshowcase.protobuf.BuildConfigStaticBuildpack.static_config:type_name -> neoshowcase.protobuf.StaticConfig
+	23,  // 13: neoshowcase.protobuf.BuildConfigStaticCmd.static_config:type_name -> neoshowcase.protobuf.StaticConfig
+	23,  // 14: neoshowcase.protobuf.BuildConfigStaticDockerfile.static_config:type_name -> neoshowcase.protobuf.StaticConfig
+	20,  // 15: neoshowcase.protobuf.ApplicationConfig.runtime_buildpack:type_name -> neoshowcase.protobuf.BuildConfigRuntimeBuildpack
+	21,  // 16: neoshowcase.protobuf.ApplicationConfig.runtime_cmd:type_name -> neoshowcase.protobuf.BuildConfigRuntimeCmd
+	22,  // 17: neoshowcase.protobuf.ApplicationConfig.runtime_dockerfile:type_name -> neoshowcase.protobuf.BuildConfigRuntimeDockerfile
+	24,  // 18: neoshowcase.protobuf.ApplicationConfig.static_buildpack:type_name -> neoshowcase.protobuf.BuildConfigStaticBuildpack
+	25,  // 19: neoshowcase.protobuf.ApplicationConfig.static_cmd:type_name -> neoshowcase.protobuf.BuildConfigStaticCmd
+	26,  // 20: neoshowcase.protobuf.ApplicationConfig.static_dockerfile:type_name -> neoshowcase.protobuf.BuildConfigStaticDockerfile
+	18,  // 21: neoshowcase.protobuf.ApplicationConfig.auto_shutdown:type_name -> neoshowcase.protobuf.AutoShutdownConfig
 	1,   // 22: neoshowcase.protobuf.Website.authentication:type_name -> neoshowcase.protobuf.AuthenticationType
 	2,   // 23: neoshowcase.protobuf.PortPublication.protocol:type_name -> neoshowcase.protobuf.PortPublicationProtocol
 	0,   // 24: neoshowcase.protobuf.Application.deploy_type:type_name -> neoshowcase.protobuf.DeployType

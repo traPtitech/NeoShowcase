@@ -7,21 +7,19 @@ import (
 
 func FromPBRuntimeConfig(c *pb.RuntimeConfig) domain.RuntimeConfig {
 	return domain.RuntimeConfig{
-		UseMariaDB:   c.UseMariadb,
-		UseMongoDB:   c.UseMongodb,
-		Entrypoint:   c.Entrypoint,
-		Command:      c.Command,
-		AutoShutdown: FromPBAutoShutdown(c.AutoShutdown),
+		UseMariaDB: c.UseMariadb,
+		UseMongoDB: c.UseMongodb,
+		Entrypoint: c.Entrypoint,
+		Command:    c.Command,
 	}
 }
 
 func ToPBRuntimeConfig(c *domain.RuntimeConfig) *pb.RuntimeConfig {
 	return &pb.RuntimeConfig{
-		UseMariadb:   c.UseMariaDB,
-		UseMongodb:   c.UseMongoDB,
-		Entrypoint:   c.Entrypoint,
-		Command:      c.Command,
-		AutoShutdown: ToPBAutoShutdown(c.AutoShutdown),
+		UseMariadb: c.UseMariaDB,
+		UseMongodb: c.UseMongoDB,
+		Entrypoint: c.Entrypoint,
+		Command:    c.Command,
 	}
 }
 
@@ -82,12 +80,19 @@ func FromPBBuildConfig(c *pb.ApplicationConfig) domain.BuildConfig {
 
 func FromPBApplicationConfig(c *pb.ApplicationConfig) domain.ApplicationConfig {
 	return domain.ApplicationConfig{
-		BuildConfig: FromPBBuildConfig(c),
+		BuildConfig:  FromPBBuildConfig(c),
+		AutoShutdown: FromPBAutoShutdown(c.AutoShutdown),
 	}
 }
 
 func ToPBApplicationConfig(c domain.ApplicationConfig) *pb.ApplicationConfig {
-	switch bc := c.BuildConfig.(type) {
+	pc := toPBBuildConfig(c.BuildConfig)
+	pc.AutoShutdown = ToPBAutoShutdown(c.AutoShutdown)
+	return pc
+}
+
+func toPBBuildConfig(c domain.BuildConfig) *pb.ApplicationConfig {
+	switch bc := c.(type) {
 	case *domain.BuildConfigRuntimeBuildpack:
 		return &pb.ApplicationConfig{
 			BuildConfig: &pb.ApplicationConfig_RuntimeBuildpack{RuntimeBuildpack: &pb.BuildConfigRuntimeBuildpack{
@@ -141,8 +146,8 @@ func ToPBApplicationConfig(c domain.ApplicationConfig) *pb.ApplicationConfig {
 
 func FromPBAutoShutdown(as *pb.AutoShutdownConfig) domain.AutoShutdownConfig {
 	return domain.AutoShutdownConfig{
-		Enabled: as.Enabled,
-		Startup: fromPBStartupBehavior(as.Startup),
+		Enabled: as.GetEnabled(),
+		Startup: fromPBStartupBehavior(as.GetStartup()),
 	}
 }
 
