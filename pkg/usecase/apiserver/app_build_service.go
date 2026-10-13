@@ -50,10 +50,18 @@ func (s *Service) CancelBuild(ctx context.Context, buildID string) error {
 	if err != nil {
 		return err
 	}
+	build, err := s.buildRepo.GetBuild(ctx, buildID)
 
-	err = s.controller.CancelBuild(ctx, buildID)
-	if err != nil {
-		return oops.Wrapf(err, "requesting cancel build")
+	switch build.Status {
+	case domain.BuildStatusQueued:
+		err = s.controller.CancelBuild(ctx, buildID)
+		if err != nil {
+			return oops.Wrapf(err, "requesting cancel build")
+		}
+	case domain.BuildStatusBuilding:
+		return nil
+	default:
+		return domain.NewError(domain.ErrorTypeBadRequest, "build already finished", nil)
 	}
 	return nil
 }
