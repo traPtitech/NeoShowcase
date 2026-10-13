@@ -19,7 +19,7 @@ import (
 )
 
 type APIServer struct {
-	Api *web.H2CServer
+	Api        *web.H2CServer
 	BuilderAPI *web.H2CServer
 }
 
