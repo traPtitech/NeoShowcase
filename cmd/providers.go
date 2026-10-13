@@ -151,12 +151,17 @@ func provideControllerServer(
 		SetupRoute: func(mux *http.ServeMux) {
 			mux.Handle(pbconnect.NewControllerServiceHandler(controllerHandler,
 				connect.WithInterceptors(otelInterceptor, logInterceptor)))
-			mux.Handle(pbconnect.NewControllerBuilderServiceHandler(builderHandler,
-				connect.WithInterceptors(tokenAuth)))
 			mux.Handle(pbconnect.NewControllerSSGenServiceHandler(ssgenHandler))
 		},
 	}
-	return &controller.APIServer{H2CServer: web.NewH2CServer(wc)}, nil
+	builderWC := web.H2CConfig{
+		Port: int(c.Components.Controller.BuilderPort),
+		SetupRoute: func(mux *http.ServeMux) {
+			mux.Handle(pbconnect.NewControllerBuilderServiceHandler(builderHandler,
+				connect.WithInterceptors(tokenAuth)))
+		},
+	}
+	return &controller.APIServer{Api: web.NewH2CServer(wc), BuilderAPI: web.NewH2CServer(builderWC)}, nil
 }
 
 func provideContainerLogger(c Config) (domain.ContainerLogger, error) {
