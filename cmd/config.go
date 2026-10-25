@@ -62,6 +62,7 @@ type BuilderConfig struct {
 
 type ControllerConfig struct {
 	Port             grpc.ControllerPort               `mapstructure:"port" yaml:"port"`
+	BuilderPort      grpc.ControllerPort               `mapstructure:"builderPort" yaml:"builderPort"`
 	TokenHeader      string                            `mapstructure:"tokenHeader" yaml:"tokenHeader"`
 	Token            string                            `mapstructure:"token" yaml:"token"`
 	Mode             string                            `mapstructure:"mode" yaml:"mode"`
@@ -170,6 +171,8 @@ func init() {
 	viper.SetDefault("components.controller.tokenHeader", "X-NS-Controller-Token")
 	viper.SetDefault("components.controller.token", "")
 	viper.SetDefault("components.controller.mode", "docker")
+
+	viper.SetDefault("components.controller.builderPort", 10001)
 
 	viper.SetDefault("components.controller.gitea.enable", false)
 	viper.SetDefault("components.controller.gitea.url", "http://ns-gitea-integration:10001")
