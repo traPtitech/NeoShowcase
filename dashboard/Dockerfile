@@ -19,6 +19,6 @@ FROM --platform=$BUILDPLATFORM base AS builder
 COPY . .
 RUN pnpm build
 
-FROM caddy:2@sha256:0c994536bddb66445885237f1a5dcc1916bccea922661c76b4e9fc24061f9b52 AS prod
+FROM caddy:2@sha256:36c24ad91a7ff7bc4c87fe22bfa8df3c4b18da0773d73fc12ee2c52b98c0bb7e AS prod
 COPY Caddyfile /etc/caddy/Caddyfile
 COPY --from=builder /work/dist/ /usr/share/caddy/
