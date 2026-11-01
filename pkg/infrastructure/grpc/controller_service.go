@@ -66,8 +66,8 @@ func (s *ControllerService) GetSystemInfo(_ context.Context, _ *emptypb.Empty) (
 	return pbconvert.ToPBSystemInfo(info), nil
 }
 
-func (s *ControllerService) FetchRepository(_ context.Context, c *pb.RepositoryIdRequest) (*emptypb.Empty, error) {
-	s.fetcher.Fetch(c.RepositoryId)
+func (s *ControllerService) FetchRepository(_ context.Context, req *pb.RepositoryIdRequest) (*emptypb.Empty, error) {
+	s.fetcher.Fetch(req.RepositoryId)
 	return &emptypb.Empty{}, nil
 }
 
@@ -190,8 +190,8 @@ func (s *ControllerService) CancelBuild(ctx context.Context, req *pb.BuildIdRequ
 	return &emptypb.Empty{}, nil
 }
 
-func (s *ControllerService) DiscoverBuildLogLocal(_ context.Context, c *pb.BuildIdRequest) (*pb.AddressInfo, error) {
-	ok := s.logStream.HasBuildLog(c.BuildId)
+func (s *ControllerService) DiscoverBuildLogLocal(_ context.Context, req *pb.BuildIdRequest) (*pb.AddressInfo, error) {
+	ok := s.logStream.HasBuildLog(req.BuildId)
 	if !ok {
 		return &pb.AddressInfo{}, nil
 	}
@@ -212,8 +212,8 @@ func (s *ControllerService) SyncDeploymentsLocal(_ context.Context, _ *emptypb.E
 	return &emptypb.Empty{}, nil
 }
 
-func (s *ControllerService) CancelBuildLocal(_ context.Context, c *pb.BuildIdRequest) (*emptypb.Empty, error) {
-	buildID := c.BuildId
+func (s *ControllerService) CancelBuildLocal(_ context.Context, req *pb.BuildIdRequest) (*emptypb.Empty, error) {
+	buildID := req.BuildId
 	s.builder.CancelBuild(buildID)
 	return &emptypb.Empty{}, nil
 }
