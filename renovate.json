@@ -34,6 +34,12 @@
       "groupName": "mise tools"
     },
     {
+      "description": "pnpm's major version is written in package.json, mise.toml and dashboard/Dockerfile. Placed after the mise group to take precedence.",
+      "matchPackageNames": ["pnpm", "ghcr.io/pnpm/pnpm"],
+      "matchUpdateTypes": ["major"],
+      "groupName": "pnpm major"
+    },
+    {
       "description": "Update each builder test fixture as a group. Placed last to take precedence over the manager-wide groups above.",
       "matchFileNames": ["pkg/usecase/builder/testdata/go/**"],
       "groupName": "builder test fixture (go)",
