@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"connectrpc.com/connect"
 	"github.com/motoki317/sc"
 	"github.com/samber/lo"
 	"github.com/samber/oops"
@@ -59,29 +58,29 @@ func NewControllerService(
 	}
 }
 
-func (s *ControllerService) GetSystemInfo(_ context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.SystemInfo], error) {
+func (s *ControllerService) GetSystemInfo(_ context.Context, _ *emptypb.Empty) (*pb.SystemInfo, error) {
 	info, err := s.infoSvc.GetSystemInfo()
 	if err != nil {
 		return nil, err
 	}
 	pbInfo := pbconvert.ToPBSystemInfo(info)
-	res := connect.NewResponse(pbInfo)
+	res := pbInfo
 	return res, nil
 }
 
-func (s *ControllerService) FetchRepository(_ context.Context, c *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[emptypb.Empty], error) {
-	s.fetcher.Fetch(c.Msg.RepositoryId)
-	res := connect.NewResponse(&emptypb.Empty{})
+func (s *ControllerService) FetchRepository(_ context.Context, c *pb.RepositoryIdRequest) (*emptypb.Empty, error) {
+	s.fetcher.Fetch(c.RepositoryId)
+	res := &emptypb.Empty{}
 	return res, nil
 }
 
-func (s *ControllerService) RegisterBuild(_ context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[emptypb.Empty], error) {
-	s.cd.RegisterBuild(req.Msg.Id)
-	res := connect.NewResponse(&emptypb.Empty{})
+func (s *ControllerService) RegisterBuild(_ context.Context, req *pb.ApplicationIdRequest) (*emptypb.Empty, error) {
+	s.cd.RegisterBuild(req.Id)
+	res := &emptypb.Empty{}
 	return res, nil
 }
 
-func (s *ControllerService) SyncDeployments(ctx context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error) {
+func (s *ControllerService) SyncDeployments(ctx context.Context, _ *emptypb.Empty) (*emptypb.Empty, error) {
 	s.cd.SyncDeploymentsLocal()
 
 	// Broadcast to cluster
@@ -97,16 +96,16 @@ func (s *ControllerService) SyncDeployments(ctx context.Context, _ *connect.Requ
 		return nil, err
 	}
 
-	res := connect.NewResponse(&emptypb.Empty{})
+	res := &emptypb.Empty{}
 	return res, nil
 }
 
-func (s *ControllerService) DiscoverBuildLogInstance(ctx context.Context, c *connect.Request[pb.BuildIdRequest]) (*connect.Response[pb.AddressInfo], error) {
+func (s *ControllerService) DiscoverBuildLogInstance(ctx context.Context, c *pb.BuildIdRequest) (*pb.AddressInfo, error) {
 	res, err := s.DiscoverBuildLogLocal(ctx, c)
 	if err != nil {
 		return nil, err
 	}
-	if res.Msg.Address != nil {
+	if res.Address != nil {
 		return res, nil
 	}
 
@@ -115,7 +114,7 @@ func (s *ControllerService) DiscoverBuildLogInstance(ctx context.Context, c *con
 	for _, address := range s.cluster.AllNeighborAddresses(s.Port) {
 		p.Go(func() (*pb.AddressInfo, error) {
 			client, _ := s.clientCache.Get(ctx, address)
-			return client.DiscoverBuildLogLocal(ctx, c.Msg.BuildId)
+			return client.DiscoverBuildLogLocal(ctx, c.BuildId)
 		})
 	}
 	neighborResults, err := p.Wait()
@@ -127,14 +126,14 @@ func (s *ControllerService) DiscoverBuildLogInstance(ctx context.Context, c *con
 	})
 	if !ok {
 		// No instance holds the log: not an error, the caller decides what that means.
-		return connect.NewResponse(&pb.AddressInfo{}), nil
+		return &pb.AddressInfo{}, nil
 	}
-	return connect.NewResponse(neighborResult), nil
+	return neighborResult, nil
 }
 
-func (s *ControllerService) StreamBuildLog(ctx context.Context, c *connect.Request[pb.BuildIdRequest], c2 *connect.ServerStream[pb.BuildLog]) error {
+func (s *ControllerService) StreamBuildLog(ctx context.Context, c *pb.BuildIdRequest, c2 pbconnect.ControllerServiceStreamBuildLogServerStream) error {
 	sub := make(chan []byte, 100)
-	ok, unsubscribe := s.logStream.SubscribeBuildLog(c.Msg.BuildId, sub)
+	ok, unsubscribe := s.logStream.SubscribeBuildLog(c.BuildId, sub)
 	if !ok {
 		return oops.New("build log stream unavailable")
 	}
@@ -158,7 +157,7 @@ loop:
 	return nil
 }
 
-func (s *ControllerService) StartBuild(ctx context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error) {
+func (s *ControllerService) StartBuild(ctx context.Context, _ *emptypb.Empty) (*emptypb.Empty, error) {
 	s.cd.StartBuildLocal()
 
 	// Broadcast to cluster
@@ -173,12 +172,12 @@ func (s *ControllerService) StartBuild(ctx context.Context, _ *connect.Request[e
 	if err != nil {
 		return nil, err
 	}
-	res := connect.NewResponse(&emptypb.Empty{})
+	res := &emptypb.Empty{}
 	return res, nil
 }
 
-func (s *ControllerService) CancelBuild(ctx context.Context, c *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error) {
-	buildID := c.Msg.BuildId
+func (s *ControllerService) CancelBuild(ctx context.Context, c *pb.BuildIdRequest) (*emptypb.Empty, error) {
+	buildID := c.BuildId
 	s.builder.CancelBuild(buildID)
 
 	// Broadcast to cluster
@@ -194,37 +193,37 @@ func (s *ControllerService) CancelBuild(ctx context.Context, c *connect.Request[
 		return nil, err
 	}
 
-	res := connect.NewResponse(&emptypb.Empty{})
+	res := &emptypb.Empty{}
 	return res, nil
 }
 
-func (s *ControllerService) DiscoverBuildLogLocal(_ context.Context, c *connect.Request[pb.BuildIdRequest]) (*connect.Response[pb.AddressInfo], error) {
-	ok := s.logStream.HasBuildLog(c.Msg.BuildId)
+func (s *ControllerService) DiscoverBuildLogLocal(_ context.Context, c *pb.BuildIdRequest) (*pb.AddressInfo, error) {
+	ok := s.logStream.HasBuildLog(c.BuildId)
 	if !ok {
-		return connect.NewResponse(&pb.AddressInfo{}), nil
+		return &pb.AddressInfo{}, nil
 	}
 	addr, ok := s.cluster.MyAddress(s.Port)
 	if !ok {
 		return nil, oops.New("self address not available")
 	}
-	return connect.NewResponse(&pb.AddressInfo{Address: &addr}), nil
+	return &pb.AddressInfo{Address: &addr}, nil
 }
 
-func (s *ControllerService) StartBuildLocal(_ context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error) {
+func (s *ControllerService) StartBuildLocal(_ context.Context, _ *emptypb.Empty) (*emptypb.Empty, error) {
 	s.cd.StartBuildLocal()
-	res := connect.NewResponse(&emptypb.Empty{})
+	res := &emptypb.Empty{}
 	return res, nil
 }
 
-func (s *ControllerService) SyncDeploymentsLocal(_ context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error) {
+func (s *ControllerService) SyncDeploymentsLocal(_ context.Context, _ *emptypb.Empty) (*emptypb.Empty, error) {
 	s.cd.SyncDeploymentsLocal()
-	res := connect.NewResponse(&emptypb.Empty{})
+	res := &emptypb.Empty{}
 	return res, nil
 }
 
-func (s *ControllerService) CancelBuildLocal(_ context.Context, c *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error) {
-	buildID := c.Msg.BuildId
+func (s *ControllerService) CancelBuildLocal(_ context.Context, c *pb.BuildIdRequest) (*emptypb.Empty, error) {
+	buildID := c.BuildId
 	s.builder.CancelBuild(buildID)
-	res := connect.NewResponse(&emptypb.Empty{})
+	res := &emptypb.Empty{}
 	return res, nil
 }

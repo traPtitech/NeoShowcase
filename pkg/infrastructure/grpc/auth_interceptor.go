@@ -2,10 +2,9 @@ package grpc
 
 import (
 	"context"
-	"net/http"
 	"time"
 
-	"connectrpc.com/connect"
+	"connectrpc.com/connect/v2"
 	"github.com/motoki317/sc"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -19,8 +18,6 @@ type AuthInterceptor struct {
 
 type AuthHeader string
 
-var _ connect.Interceptor = &AuthInterceptor{}
-
 func NewAuthInterceptor(
 	userRepo domain.UserRepository,
 	header AuthHeader,
@@ -33,39 +30,29 @@ func NewAuthInterceptor(
 	}
 }
 
-func (a *AuthInterceptor) authenticate(ctx *context.Context, headers http.Header) error {
-	name := headers.Get(a.header)
+func (a *AuthInterceptor) authenticate(ctx *context.Context) error {
+	info, _ := connect.CallInfoForServerContext(*ctx)
+	name := info.RequestHeader().Get(a.header)
 	if name == "" {
-		return connect.NewError(connect.CodeUnauthenticated, nil)
+		return connect.NewError(connect.CodeUnauthenticated, "")
 	}
 	user, err := a.userCache.Get(*ctx, name)
 	if err != nil {
-		return connect.NewError(connect.CodeInternal, err)
+		return connect.NewError(connect.CodeInternal, err.Error()).WithCause(err)
 	}
 	web.SetUser(ctx, user)
 	return nil
 }
 
-func (a *AuthInterceptor) WrapUnary(unaryFunc connect.UnaryFunc) connect.UnaryFunc {
-	return func(ctx context.Context, request connect.AnyRequest) (connect.AnyResponse, error) {
-		err := a.authenticate(&ctx, request.Header())
-		if err != nil {
-			return nil, err
+// Server returns the interceptor that resolves the user from the auth header.
+func (a *AuthInterceptor) Server() connect.ServerInterceptor {
+	return func(next connect.ServerFunc) connect.ServerFunc {
+		return func(ctx context.Context, spec connect.Spec, stream connect.ServerStream) error {
+			err := a.authenticate(&ctx)
+			if err != nil {
+				return err
+			}
+			return next(ctx, spec, stream)
 		}
-		return unaryFunc(ctx, request)
-	}
-}
-
-func (a *AuthInterceptor) WrapStreamingClient(next connect.StreamingClientFunc) connect.StreamingClientFunc {
-	return next
-}
-
-func (a *AuthInterceptor) WrapStreamingHandler(next connect.StreamingHandlerFunc) connect.StreamingHandlerFunc {
-	return func(ctx context.Context, conn connect.StreamingHandlerConn) error {
-		err := a.authenticate(&ctx, conn.RequestHeader())
-		if err != nil {
-			return err
-		}
-		return next(ctx, conn)
 	}
 }

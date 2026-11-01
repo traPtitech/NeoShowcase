@@ -6,7 +6,8 @@ import (
 	"io"
 	"log/slog"
 
-	"connectrpc.com/connect"
+	"connectrpc.com/connect/v2"
+	"connectrpc.com/connect/v2/connecthttp"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -27,31 +28,34 @@ func NewControllerBuilderServiceClient(
 	auth *TokenAuthInterceptor,
 ) domain.ControllerBuilderServiceClient {
 	return &ControllerBuilderServiceClient{
-		client: pbconnect.NewControllerBuilderServiceClient(
+		client: pbconnect.NewControllerBuilderServiceClient(connect.NewClient(connecthttp.NewTransport(
 			web.NewH2CClient(),
 			c.URL,
-			connect.WithInterceptors(auth),
-		),
+			connecthttp.WithReadMaxBytes(0),
+		), auth.Client())),
 		priority: priority,
 	}
 }
 
 func (c *ControllerBuilderServiceClient) GetBuilderSystemInfo(ctx context.Context) (*domain.BuilderSystemInfo, error) {
-	si, err := c.client.GetBuilderSystemInfo(ctx, connect.NewRequest(&emptypb.Empty{}))
+	si, err := c.client.GetBuilderSystemInfo(ctx, &emptypb.Empty{})
 	if err != nil {
 		return nil, err
 	}
-	return pbconvert.FromPBBuilderSystemInfo(si.Msg), nil
+	return pbconvert.FromPBBuilderSystemInfo(si), nil
 }
 
 func (c *ControllerBuilderServiceClient) PingBuild(ctx context.Context, buildID string) error {
-	req := connect.NewRequest(&pb.BuildIdRequest{BuildId: buildID})
+	req := &pb.BuildIdRequest{BuildId: buildID}
 	_, err := c.client.PingBuild(ctx, req)
 	return err
 }
 
 func (c *ControllerBuilderServiceClient) StreamBuildLog(ctx context.Context, buildID string, send <-chan []byte) error {
-	st := c.client.StreamBuildLog(ctx)
+	st, err := c.client.StreamBuildLog(ctx)
+	if err != nil {
+		return err
+	}
 	for logBytes := range send {
 		req := &pb.BuildLogPortion{
 			BuildId: buildID,
@@ -62,33 +66,33 @@ func (c *ControllerBuilderServiceClient) StreamBuildLog(ctx context.Context, bui
 			return err
 		}
 	}
-	_, err := st.CloseAndReceive()
+	_, err = st.CloseAndReceive()
 	return err
 }
 
 func (c *ControllerBuilderServiceClient) SaveArtifact(ctx context.Context, artifact *domain.Artifact, body []byte) error {
-	req := connect.NewRequest(&pb.SaveArtifactRequest{
+	req := &pb.SaveArtifactRequest{
 		Artifact: pbconvert.ToPBArtifact(artifact),
 		Body:     body,
-	})
+	}
 	_, err := c.client.SaveArtifact(ctx, req)
 	return err
 }
 
 func (c *ControllerBuilderServiceClient) SaveBuildLog(ctx context.Context, buildID string, body []byte) error {
-	req := connect.NewRequest(&pb.SaveBuildLogRequest{
+	req := &pb.SaveBuildLogRequest{
 		BuildId: buildID,
 		Log:     body,
-	})
+	}
 	_, err := c.client.SaveBuildLog(ctx, req)
 	return err
 }
 
 func (c *ControllerBuilderServiceClient) SaveRuntimeImage(ctx context.Context, buildID string, size int64) error {
-	req := connect.NewRequest(&pb.SaveRuntimeImageRequest{
+	req := &pb.SaveRuntimeImageRequest{
 		BuildId: buildID,
 		Size:    size,
-	})
+	}
 	_, err := c.client.SaveRuntimeImage(ctx, req)
 	return err
 }
@@ -97,12 +101,15 @@ func (c *ControllerBuilderServiceClient) ConnectBuilder(ctx context.Context, onR
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	st := c.client.ConnectBuilder(ctx)
-	defer st.CloseResponse()
+	st, err := c.client.ConnectBuilder(ctx)
+	if err != nil {
+		return err
+	}
+	defer st.Close()
 
 	go func() {
 		defer cancel()
-		defer st.CloseRequest()
+		defer st.CloseSend()
 
 		// Need to send one arbitrary event to actually start the connection
 		// not sure if this is a bug with connect protocol or something

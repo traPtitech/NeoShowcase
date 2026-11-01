@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"connectrpc.com/connect"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/samber/lo"
@@ -17,8 +16,8 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
-func (s *APIService) CreateApplication(ctx context.Context, req *connect.Request[pb.CreateApplicationRequest]) (*connect.Response[pb.Application], error) {
-	msg := req.Msg
+func (s *APIService) CreateApplication(ctx context.Context, req *pb.CreateApplicationRequest) (*pb.Application, error) {
+	msg := req
 	user := web.GetUser(ctx)
 	now := time.Now()
 	config := pbconvert.FromPBApplicationConfig(msg.Config)
@@ -50,38 +49,38 @@ func (s *APIService) CreateApplication(ctx context.Context, req *connect.Request
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := connect.NewResponse(pbconvert.ToPBApplication(app, nil))
+	res := pbconvert.ToPBApplication(app, nil)
 	return res, nil
 }
 
-func (s *APIService) GetApplications(ctx context.Context, req *connect.Request[pb.GetApplicationsRequest]) (*connect.Response[pb.GetApplicationsResponse], error) {
+func (s *APIService) GetApplications(ctx context.Context, req *pb.GetApplicationsRequest) (*pb.GetApplicationsResponse, error) {
 	scope := apiserver.GetAppScope{
-		Scope:        pbconvert.AppScopeMapper.IntoMust(req.Msg.Scope),
-		RepositoryID: optional.FromPtr(req.Msg.RepositoryId),
+		Scope:        pbconvert.AppScopeMapper.IntoMust(req.Scope),
+		RepositoryID: optional.FromPtr(req.RepositoryId),
 	}
 	apps, err := s.svc.GetApplications(ctx, scope)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := connect.NewResponse(&pb.GetApplicationsResponse{
+	res := &pb.GetApplicationsResponse{
 		Applications: ds.Map(apps, func(app *apiserver.TopAppInfo) *pb.Application {
 			return pbconvert.ToPBApplication(app.App, app.LatestBuild)
 		}),
-	})
+	}
 	return res, nil
 }
 
-func (s *APIService) GetApplication(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.Application], error) {
-	app, err := s.svc.GetApplication(ctx, req.Msg.Id)
+func (s *APIService) GetApplication(ctx context.Context, req *pb.ApplicationIdRequest) (*pb.Application, error) {
+	app, err := s.svc.GetApplication(ctx, req.Id)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := connect.NewResponse(pbconvert.ToPBApplication(app.App, app.LatestBuild))
+	res := pbconvert.ToPBApplication(app.App, app.LatestBuild)
 	return res, nil
 }
 
-func (s *APIService) UpdateApplication(ctx context.Context, req *connect.Request[pb.UpdateApplicationRequest]) (*connect.Response[emptypb.Empty], error) {
-	msg := req.Msg
+func (s *APIService) UpdateApplication(ctx context.Context, req *pb.UpdateApplicationRequest) (*emptypb.Empty, error) {
+	msg := req
 	err := s.svc.UpdateApplication(ctx, msg.Id, &domain.UpdateApplicationArgs{
 		Name:             optional.FromPtr(msg.Name),
 		RefName:          optional.FromPtr(msg.RefName),
@@ -94,15 +93,15 @@ func (s *APIService) UpdateApplication(ctx context.Context, req *connect.Request
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := connect.NewResponse(&emptypb.Empty{})
+	res := &emptypb.Empty{}
 	return res, nil
 }
 
-func (s *APIService) DeleteApplication(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[emptypb.Empty], error) {
-	err := s.svc.DeleteApplication(ctx, req.Msg.Id)
+func (s *APIService) DeleteApplication(ctx context.Context, req *pb.ApplicationIdRequest) (*emptypb.Empty, error) {
+	err := s.svc.DeleteApplication(ctx, req.Id)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := connect.NewResponse(&emptypb.Empty{})
+	res := &emptypb.Empty{}
 	return res, nil
 }

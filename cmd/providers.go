@@ -7,7 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"connectrpc.com/connect"
+	"connectrpc.com/connect/v2"
+	"connectrpc.com/connect/v2/connecthttp"
 	"connectrpc.com/otelconnect"
 	buildkit "github.com/moby/buildkit/client"
 	"github.com/samber/oops"
@@ -87,7 +88,9 @@ func provideBuildpackHelperServer(
 	wc := web.H2CConfig{
 		Port: c.Components.Builder.Buildpack.Helper.ListenPort,
 		SetupRoute: func(mux *http.ServeMux) {
-			mux.Handle(pbconnect.NewBuildpackHelperServiceHandler(helperServiceHandler))
+			server := connect.NewServer()
+			pbconnect.RegisterBuildpackHelperServiceHandler(server, helperServiceHandler)
+			connecthttp.Mount(mux, server, connecthttp.WithReadMaxBytes(0))
 		},
 	}
 	return &buildpackhelper.APIServer{H2CServer: web.NewH2CServer(wc)}
@@ -142,18 +145,26 @@ func provideControllerServer(
 	logInterceptor *grpc.LogInterceptor,
 	tokenAuth *grpc.TokenAuthInterceptor,
 ) (*controller.APIServer, error) {
-	otelInterceptor, err := otelconnect.NewInterceptor(otelconnect.WithTrustRemote())
+	otelInterceptor, err := otelconnect.NewServerInterceptor(otelconnect.WithTrustRemote())
 	if err != nil {
 		return nil, err
 	}
 	wc := web.H2CConfig{
 		Port: int(c.Components.Controller.Port),
 		SetupRoute: func(mux *http.ServeMux) {
-			mux.Handle(pbconnect.NewControllerServiceHandler(controllerHandler,
-				connect.WithInterceptors(otelInterceptor, logInterceptor)))
-			mux.Handle(pbconnect.NewControllerBuilderServiceHandler(builderHandler,
-				connect.WithInterceptors(tokenAuth)))
-			mux.Handle(pbconnect.NewControllerSSGenServiceHandler(ssgenHandler))
+			// v2 interceptors apply to every service on a server, so services with
+			// different interceptors get their own servers.
+			controllerServer := connect.NewServer(otelInterceptor, logInterceptor.Server())
+			pbconnect.RegisterControllerServiceHandler(controllerServer, controllerHandler)
+			connecthttp.Mount(mux, controllerServer, connecthttp.WithReadMaxBytes(0))
+
+			builderServer := connect.NewServer(tokenAuth.Server())
+			pbconnect.RegisterControllerBuilderServiceHandler(builderServer, builderHandler)
+			connecthttp.Mount(mux, builderServer, connecthttp.WithReadMaxBytes(0))
+
+			ssgenServer := connect.NewServer()
+			pbconnect.RegisterControllerSSGenServiceHandler(ssgenServer, ssgenHandler)
+			connecthttp.Mount(mux, ssgenServer, connecthttp.WithReadMaxBytes(0))
 		},
 	}
 	return &controller.APIServer{H2CServer: web.NewH2CServer(wc)}, nil
@@ -188,22 +199,21 @@ func provideGatewayServer(
 	logInterceptor *grpc.LogInterceptor,
 	cacheInterceptor *grpc.CacheInterceptor,
 ) (*gateway.APIServer, error) {
-	otelInterceptor, err := otelconnect.NewInterceptor()
+	otelInterceptor, err := otelconnect.NewServerInterceptor()
 	if err != nil {
 		return nil, err
 	}
 	wc := web.H2CConfig{
 		Port: c.Components.Gateway.Port,
 		SetupRoute: func(mux *http.ServeMux) {
-			mux.Handle(pbconnect.NewAPIServiceHandler(
-				appService,
-				connect.WithInterceptors(
-					authInterceptor, // Make sure auth is the outermost interceptor
-					otelInterceptor,
-					logInterceptor,
-					cacheInterceptor,
-				),
-			))
+			server := connect.NewServer(
+				authInterceptor.Server(), // Make sure auth is the outermost interceptor
+				otelInterceptor,
+				logInterceptor.Server(),
+				cacheInterceptor.Server(),
+			)
+			pbconnect.RegisterAPIServiceHandler(server, appService)
+			connecthttp.Mount(mux, server, connecthttp.WithReadMaxBytes(0))
 		},
 	}
 	return &gateway.APIServer{H2CServer: web.NewH2CServer(wc)}, nil
@@ -233,7 +243,9 @@ func provideGiteaIntegrationAPIServer(
 	wc := web.H2CConfig{
 		Port: c.Components.GiteaIntegration.Port,
 		SetupRoute: func(mux *http.ServeMux) {
-			mux.Handle(pbconnect.NewGiteaIntegrationServiceHandler(giteaIntegrationHandler))
+			server := connect.NewServer()
+			pbconnect.RegisterGiteaIntegrationServiceHandler(server, giteaIntegrationHandler)
+			connecthttp.Mount(mux, server, connecthttp.WithReadMaxBytes(0))
 		},
 	}
 	return &cmdgiteaintegration.APIServer{H2CServer: web.NewH2CServer(wc)}

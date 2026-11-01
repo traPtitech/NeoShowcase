@@ -3,7 +3,8 @@ package grpc
 import (
 	"context"
 
-	"connectrpc.com/connect"
+	"connectrpc.com/connect/v2"
+	"connectrpc.com/connect/v2/connecthttp"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -21,12 +22,12 @@ func NewGiteaIntegrationServiceClient(
 	url GiteaIntegrationServiceURL,
 ) domain.GiteaIntegrationServiceClient {
 	return &GiteaIntegrationServiceClient{
-		client: pbconnect.NewGiteaIntegrationServiceClient(web.NewH2CClient(), string(url)),
+		client: pbconnect.NewGiteaIntegrationServiceClient(connect.NewClient(connecthttp.NewTransport(web.NewH2CClient(), string(url), connecthttp.WithReadMaxBytes(0)))),
 	}
 }
 
 func (c *GiteaIntegrationServiceClient) Sync(ctx context.Context) error {
-	_, err := c.client.Sync(ctx, connect.NewRequest(&emptypb.Empty{}))
+	_, err := c.client.Sync(ctx, &emptypb.Empty{})
 	return err
 }
 

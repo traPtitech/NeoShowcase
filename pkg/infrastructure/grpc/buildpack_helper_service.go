@@ -8,7 +8,7 @@ import (
 	"os"
 	"os/exec"
 
-	"connectrpc.com/connect"
+	"connectrpc.com/connect/v2"
 	"github.com/samber/oops"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb/pbconnect"
@@ -24,17 +24,17 @@ func NewBuildpackHelperService() pbconnect.BuildpackHelperServiceHandler {
 	return &BuildpackHelperService{}
 }
 
-func (b *BuildpackHelperService) CopyFileTree(_ context.Context, req *connect.Request[pb.CopyFileTreeRequest]) (*connect.Response[emptypb.Empty], error) {
-	err := tarfs.Extract(bytes.NewReader(req.Msg.TarContent), req.Msg.Destination)
+func (b *BuildpackHelperService) CopyFileTree(_ context.Context, req *pb.CopyFileTreeRequest) (*emptypb.Empty, error) {
+	err := tarfs.Extract(bytes.NewReader(req.TarContent), req.Destination)
 	if err != nil {
 		return nil, err
 	}
-	res := connect.NewResponse(&emptypb.Empty{})
+	res := &emptypb.Empty{}
 	return res, nil
 }
 
 type buildpackHelperExec struct {
-	st *connect.ServerStream[pb.HelperExecResponse]
+	st pbconnect.BuildpackHelperServiceExecServerStream
 }
 
 var _ io.Writer = (*buildpackHelperExec)(nil)
@@ -50,16 +50,16 @@ func (b *buildpackHelperExec) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
-func (b *BuildpackHelperService) Exec(ctx context.Context, req *connect.Request[pb.HelperExecRequest], st *connect.ServerStream[pb.HelperExecResponse]) error {
-	if len(req.Msg.Cmd) == 0 {
-		return connect.NewError(connect.CodeInvalidArgument, oops.New("cmd cannot have length of 0"))
+func (b *BuildpackHelperService) Exec(ctx context.Context, req *pb.HelperExecRequest, st pbconnect.BuildpackHelperServiceExecServerStream) error {
+	if len(req.Cmd) == 0 {
+		return connect.NewError(connect.CodeInvalidArgument, oops.New("cmd cannot have length of 0").Error())
 	}
 
 	// Prepare command
-	cmd := exec.CommandContext(ctx, req.Msg.Cmd[0], req.Msg.Cmd[1:]...)
-	cmd.Dir = req.Msg.WorkDir
+	cmd := exec.CommandContext(ctx, req.Cmd[0], req.Cmd[1:]...)
+	cmd.Dir = req.WorkDir
 	cmd.Env = os.Environ()
-	additionalEnvs := ds.Map(req.Msg.Envs, func(env *pb.HelperExecEnv) string { return env.Key + "=" + env.Value })
+	additionalEnvs := ds.Map(req.Envs, func(env *pb.HelperExecEnv) string { return env.Key + "=" + env.Value })
 	cmd.Env = append(cmd.Env, additionalEnvs...) // Inherit important envs such as CNB_STACK_ID
 
 	pr, pw := io.Pipe()

@@ -5,12 +5,12 @@ import (
 	"log/slog"
 	"sync"
 
-	"connectrpc.com/connect"
 	"github.com/samber/lo"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb/pbconnect"
 )
 
 type ssGenConnection struct {
@@ -26,7 +26,7 @@ func NewControllerSSGenService() domain.ControllerSSGenService {
 	return &ControllerSSGenService{}
 }
 
-func (s *ControllerSSGenService) ConnectSSGen(ctx context.Context, _ *connect.Request[emptypb.Empty], st *connect.ServerStream[pb.SSGenRequest]) error {
+func (s *ControllerSSGenService) ConnectSSGen(ctx context.Context, _ *emptypb.Empty, st pbconnect.ControllerSSGenServiceConnectSSGenServerStream) error {
 	id := domain.NewID()
 	slog.InfoContext(ctx, "new ssgen connection", "id", id)
 	defer slog.InfoContext(ctx, "ssgen connection closed", "id", id)

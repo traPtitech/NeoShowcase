@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"connectrpc.com/connect"
+	"connectrpc.com/connect/v2"
 	"github.com/samber/lo"
 	"github.com/samber/oops"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -18,6 +18,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb/pbconnect"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pbconvert"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/observability"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/logstream"
@@ -101,75 +102,78 @@ func NewControllerBuilderService(
 	}
 }
 
-func (s *ControllerBuilderService) GetBuilderSystemInfo(_ context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.BuilderSystemInfo], error) {
+func (s *ControllerBuilderService) GetBuilderSystemInfo(_ context.Context, _ *emptypb.Empty) (*pb.BuilderSystemInfo, error) {
 	si := pbconvert.ToPBBuilderSystemInfo(s.systemInfo)
-	res := connect.NewResponse(si)
+	res := si
 	return res, nil
 }
 
-func (s *ControllerBuilderService) PingBuild(ctx context.Context, req *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error) {
+func (s *ControllerBuilderService) PingBuild(ctx context.Context, req *pb.BuildIdRequest) (*emptypb.Empty, error) {
 	now := time.Now()
-	updateCond := domain.GetBuildCondition{ID: optional.From(req.Msg.BuildId)}
+	updateCond := domain.GetBuildCondition{ID: optional.From(req.BuildId)}
 	updateArgs := domain.UpdateBuildArgs{UpdatedAt: optional.From(now)}
 	_, err := s.buildRepo.UpdateBuild(ctx, updateCond, updateArgs)
 	if err != nil {
 		return nil, err
 	}
 
-	res := connect.NewResponse(&emptypb.Empty{})
+	res := &emptypb.Empty{}
 	return res, nil
 }
 
-func (s *ControllerBuilderService) StreamBuildLog(ctx context.Context, st *connect.ClientStream[pb.BuildLogPortion]) (*connect.Response[emptypb.Empty], error) {
-	for st.Receive() {
-		msg := st.Msg()
+func (s *ControllerBuilderService) StreamBuildLog(ctx context.Context, st pbconnect.ControllerBuilderServiceStreamBuildLogServerStream) (*emptypb.Empty, error) {
+	for {
+		msg, err := st.Receive()
+		if errors.Is(err, io.EOF) {
+			break
+		}
+		if err != nil {
+			// This service has no log interceptor, so this is the terminal log for the error.
+			slog.WarnContext(ctx, "receiving build log", "error", err)
+			return nil, oops.Wrapf(err, "receiving build log")
+		}
 		s.logStream.AppendBuildLog(msg.BuildId, msg.Log)
 	}
-	if err := st.Err(); err != nil {
-		// This service has no log interceptor, so this is the terminal log for the error.
-		slog.WarnContext(ctx, "receiving build log", "error", err)
-		return nil, oops.Wrapf(err, "receiving build log")
-	}
-	res := connect.NewResponse(&emptypb.Empty{})
+	res := &emptypb.Empty{}
 	return res, nil
 }
 
-func (s *ControllerBuilderService) SaveArtifact(ctx context.Context, req *connect.Request[pb.SaveArtifactRequest]) (*connect.Response[emptypb.Empty], error) {
-	artifact := pbconvert.FromPBArtifact(req.Msg.Artifact)
+func (s *ControllerBuilderService) SaveArtifact(ctx context.Context, req *pb.SaveArtifactRequest) (*emptypb.Empty, error) {
+	artifact := pbconvert.FromPBArtifact(req.Artifact)
 
 	err := s.artifactRepo.CreateArtifact(ctx, artifact)
 	if err != nil {
 		return nil, err
 	}
-	err = domain.SaveArtifact(s.storage, artifact.ID, bytes.NewReader(req.Msg.Body))
+	err = domain.SaveArtifact(s.storage, artifact.ID, bytes.NewReader(req.Body))
 	if err != nil {
 		return nil, err
 	}
 
-	res := connect.NewResponse(&emptypb.Empty{})
+	res := &emptypb.Empty{}
 	return res, nil
 }
 
-func (s *ControllerBuilderService) SaveBuildLog(_ context.Context, req *connect.Request[pb.SaveBuildLogRequest]) (*connect.Response[emptypb.Empty], error) {
-	err := domain.SaveBuildLog(s.storage, req.Msg.BuildId, bytes.NewReader(req.Msg.Log))
+func (s *ControllerBuilderService) SaveBuildLog(_ context.Context, req *pb.SaveBuildLogRequest) (*emptypb.Empty, error) {
+	err := domain.SaveBuildLog(s.storage, req.BuildId, bytes.NewReader(req.Log))
 	if err != nil {
 		return nil, err
 	}
-	res := connect.NewResponse(&emptypb.Empty{})
+	res := &emptypb.Empty{}
 	return res, nil
 }
 
-func (s *ControllerBuilderService) SaveRuntimeImage(ctx context.Context, req *connect.Request[pb.SaveRuntimeImageRequest]) (*connect.Response[emptypb.Empty], error) {
-	image := domain.NewRuntimeImage(req.Msg.BuildId, req.Msg.Size)
+func (s *ControllerBuilderService) SaveRuntimeImage(ctx context.Context, req *pb.SaveRuntimeImageRequest) (*emptypb.Empty, error) {
+	image := domain.NewRuntimeImage(req.BuildId, req.Size)
 	err := s.runtimeImageRepo.CreateRuntimeImage(ctx, image)
 	if err != nil {
 		return nil, err
 	}
-	res := connect.NewResponse(&emptypb.Empty{})
+	res := &emptypb.Empty{}
 	return res, nil
 }
 
-func (s *ControllerBuilderService) ConnectBuilder(ctx context.Context, st *connect.BidiStream[pb.BuilderResponse, pb.BuilderRequest]) error {
+func (s *ControllerBuilderService) ConnectBuilder(ctx context.Context, st pbconnect.ControllerBuilderServiceConnectBuilderServerStream) error {
 	id := domain.NewID()
 	slog.InfoContext(ctx, "new builder connection", "id", id)
 	defer slog.InfoContext(ctx, "builder connection closed", "id", id)

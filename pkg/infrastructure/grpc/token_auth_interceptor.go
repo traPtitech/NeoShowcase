@@ -2,9 +2,8 @@ package grpc
 
 import (
 	"context"
-	"net/http"
 
-	"connectrpc.com/connect"
+	"connectrpc.com/connect/v2"
 	"github.com/samber/oops"
 )
 
@@ -12,8 +11,6 @@ type TokenAuthInterceptor struct {
 	header string
 	token  string
 }
-
-var _ connect.Interceptor = &TokenAuthInterceptor{}
 
 func NewTokenAuthInterceptor(
 	header string,
@@ -31,46 +28,27 @@ func NewTokenAuthInterceptor(
 	}, nil
 }
 
-func (a *TokenAuthInterceptor) addHeader(header http.Header) {
-	header.Add(a.header, a.token)
-}
-
-func (a *TokenAuthInterceptor) authenticate(headers http.Header) error {
-	token := headers.Get(a.header)
-	if token == "" || token != a.token {
-		return connect.NewError(connect.CodeUnauthenticated, nil)
+// Client returns the interceptor that attaches the token to outgoing requests.
+func (a *TokenAuthInterceptor) Client() connect.ClientInterceptor {
+	return func(next connect.ClientFunc) connect.ClientFunc {
+		return func(ctx context.Context, spec connect.Spec) (connect.ClientStream, error) {
+			info, _ := connect.CallInfoForClientContext(ctx)
+			info.RequestHeader().Add(a.header, a.token)
+			return next(ctx, spec)
+		}
 	}
-	return nil
 }
 
-func (a *TokenAuthInterceptor) WrapUnary(unaryFunc connect.UnaryFunc) connect.UnaryFunc {
-	return func(ctx context.Context, request connect.AnyRequest) (connect.AnyResponse, error) {
-		if request.Spec().IsClient {
-			a.addHeader(request.Header())
-		} else {
-			err := a.authenticate(request.Header())
-			if err != nil {
-				return nil, err
+// Server returns the interceptor that rejects requests without the token.
+func (a *TokenAuthInterceptor) Server() connect.ServerInterceptor {
+	return func(next connect.ServerFunc) connect.ServerFunc {
+		return func(ctx context.Context, spec connect.Spec, stream connect.ServerStream) error {
+			info, _ := connect.CallInfoForServerContext(ctx)
+			token := info.RequestHeader().Get(a.header)
+			if token == "" || token != a.token {
+				return connect.NewError(connect.CodeUnauthenticated, "")
 			}
+			return next(ctx, spec, stream)
 		}
-		return unaryFunc(ctx, request)
-	}
-}
-
-func (a *TokenAuthInterceptor) WrapStreamingClient(next connect.StreamingClientFunc) connect.StreamingClientFunc {
-	return func(ctx context.Context, spec connect.Spec) connect.StreamingClientConn {
-		conn := next(ctx, spec)
-		a.addHeader(conn.RequestHeader())
-		return conn
-	}
-}
-
-func (a *TokenAuthInterceptor) WrapStreamingHandler(next connect.StreamingHandlerFunc) connect.StreamingHandlerFunc {
-	return func(ctx context.Context, conn connect.StreamingHandlerConn) error {
-		err := a.authenticate(conn.RequestHeader())
-		if err != nil {
-			return err
-		}
-		return next(ctx, conn)
 	}
 }
