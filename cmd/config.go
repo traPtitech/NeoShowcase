@@ -174,6 +174,7 @@ func init() {
 	viper.SetDefault("components.controller.gitea.enable", false)
 	viper.SetDefault("components.controller.gitea.url", "http://ns-gitea-integration:10001")
 
+	viper.SetDefault("components.controller.docker.serviceName", "ns-controller")
 	viper.SetDefault("components.controller.docker.confDir", "/opt/traefik/conf")
 	viper.SetDefault("components.controller.docker.domains", nil)
 	viper.SetDefault("components.controller.docker.ports", nil)

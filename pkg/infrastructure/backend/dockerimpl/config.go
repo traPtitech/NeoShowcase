@@ -60,6 +60,10 @@ type labelConf = struct {
 }
 
 type Config struct {
+	// ServiceName is the hostname other components use to reach this controller.
+	// Used for controller cluster discovery.
+	ServiceName string `mapstructure:"serviceName" yaml:"serviceName"`
+
 	// ConfDir is the directory to put all traefik configurations in.
 	ConfDir string `mapstructure:"confDir" yaml:"confDir"`
 	// Domains define available domains to be used by user apps.
