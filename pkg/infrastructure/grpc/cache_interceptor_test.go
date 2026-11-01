@@ -17,17 +17,17 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb/pbconnect"
 )
 
-type systemInfoHandler struct {
+type fakeAPIServiceHandler struct {
 	pbconnect.UnimplementedAPIServiceHandler
 }
 
-func (systemInfoHandler) GetSystemInfo(context.Context, *emptypb.Empty) (*pb.SystemInfo, error) {
+func (fakeAPIServiceHandler) GetSystemInfo(context.Context, *emptypb.Empty) (*pb.SystemInfo, error) {
 	return &pb.SystemInfo{PublicKey: "key"}, nil
 }
 
 func TestCacheInterceptor(t *testing.T) {
 	server := connect.NewServer(NewCacheInterceptor().Server())
-	pbconnect.RegisterAPIServiceHandler(server, systemInfoHandler{})
+	pbconnect.RegisterAPIServiceHandler(server, fakeAPIServiceHandler{})
 	mux := http.NewServeMux()
 	connecthttp.Mount(mux, server)
 	ts := httptest.NewServer(mux)
