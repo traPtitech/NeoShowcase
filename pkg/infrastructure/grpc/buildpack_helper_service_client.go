@@ -2,9 +2,11 @@ package grpc
 
 import (
 	"context"
+	"errors"
 	"io"
 
-	"connectrpc.com/connect"
+	"connectrpc.com/connect/v2"
+	"connectrpc.com/connect/v2/connecthttp"
 	"github.com/samber/lo"
 	"github.com/samber/oops"
 
@@ -22,7 +24,7 @@ func NewBuildpackHelperServiceClient(
 	address string,
 ) domain.BuildpackHelperServiceClient {
 	return &BuildpackHelperServiceClient{
-		client: pbconnect.NewBuildpackHelperServiceClient(web.NewH2CClient(), address),
+		client: pbconnect.NewBuildpackHelperServiceClient(connect.NewClient(connecthttp.NewTransport(web.NewH2CClient(), address, connecthttp.WithReadMaxBytes(0)))),
 	}
 }
 
@@ -31,10 +33,10 @@ func (b *BuildpackHelperServiceClient) CopyFileTree(ctx context.Context, destina
 	if err != nil {
 		return err
 	}
-	req := connect.NewRequest(&pb.CopyFileTreeRequest{
+	req := &pb.CopyFileTreeRequest{
 		Destination: destination,
 		TarContent:  content,
-	})
+	}
 	_, err = b.client.CopyFileTree(ctx, req)
 	return err
 }
@@ -46,18 +48,24 @@ func (b *BuildpackHelperServiceClient) Exec(ctx context.Context, workDir string,
 			Value: value,
 		}
 	})
-	req := connect.NewRequest(&pb.HelperExecRequest{
+	req := &pb.HelperExecRequest{
 		WorkDir: workDir,
 		Cmd:     cmd,
 		Envs:    arrayEnvs,
-	})
+	}
 	st, err := b.client.Exec(ctx, req)
 	if err != nil {
 		return 0, oops.Wrapf(err, "requesting exec")
 	}
 	var exitCode *int
-	for st.Receive() {
-		msg := st.Msg()
+	for {
+		msg, err := st.Receive()
+		if errors.Is(err, io.EOF) {
+			break
+		}
+		if err != nil {
+			return 0, oops.Wrapf(err, "receiving logs")
+		}
 		switch msg.Type {
 		case pb.HelperExecResponse_LOG:
 			payload := msg.Body.(*pb.HelperExecResponse_Log).Log
@@ -70,9 +78,7 @@ func (b *BuildpackHelperServiceClient) Exec(ctx context.Context, workDir string,
 			exitCode = &payload
 		}
 	}
-	if err := st.Err(); err != nil {
-		return 0, oops.Wrapf(err, "receiving logs")
-	}
+
 	if exitCode == nil {
 		return 0, oops.New("exit code not received")
 	}

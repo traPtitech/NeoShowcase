@@ -3,7 +3,6 @@ package grpc
 import (
 	"context"
 
-	"connectrpc.com/connect"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -20,8 +19,8 @@ func NewGiteaIntegrationService(integration *giteaintegration.Integration) domai
 	}
 }
 
-func (s *GiteaIntegrationService) Sync(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error) {
+func (s *GiteaIntegrationService) Sync(ctx context.Context, req *emptypb.Empty) (*emptypb.Empty, error) {
 	err := s.integration.Sync(ctx)
 
-	return connect.NewResponse(&emptypb.Empty{}), err
+	return &emptypb.Empty{}, err
 }

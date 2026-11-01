@@ -5,21 +5,12 @@
 package pbconnect
 
 import (
-	connect "connectrpc.com/connect"
+	connect "connectrpc.com/connect/v2"
 	context "context"
-	errors "errors"
 	pb "github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
-	http "net/http"
-	strings "strings"
+	sync "sync"
 )
-
-// This is a compile-time assertion to ensure that this generated file and the connect package are
-// compatible. If you get a compiler error that this constant is not defined, this code was
-// generated with a version of connect newer than the one compiled into your binary. You can fix the
-// problem by either regenerating this code with an older version of connect or updating the connect
-// version compiled into your binary.
-const _ = connect.IsAtLeastVersion1_13_0
 
 const (
 	// ControllerServiceName is the fully-qualified name of the ControllerService service.
@@ -34,912 +25,1244 @@ const (
 	GiteaIntegrationServiceName = "neoshowcase.protobuf.GiteaIntegrationService"
 )
 
-// These constants are the fully-qualified names of the RPCs defined in this package. They're
-// exposed at runtime as Spec.Procedure and as the final two segments of the HTTP route.
+// These constants are the procedure names of the RPCs defined in this package. They're exposed at
+// runtime as Spec.Procedure and as the final two segments of the HTTP route.
 //
 // Note that these are different from the fully-qualified method names used by
 // google.golang.org/protobuf/reflect/protoreflect. To convert from these constants to
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
-	// ControllerServiceGetSystemInfoProcedure is the fully-qualified name of the ControllerService's
+	// ControllerServiceGetSystemInfoProcedure is the procedure name of the ControllerService's
 	// GetSystemInfo RPC.
 	ControllerServiceGetSystemInfoProcedure = "/neoshowcase.protobuf.ControllerService/GetSystemInfo"
-	// ControllerServiceFetchRepositoryProcedure is the fully-qualified name of the ControllerService's
+	// ControllerServiceFetchRepositoryProcedure is the procedure name of the ControllerService's
 	// FetchRepository RPC.
 	ControllerServiceFetchRepositoryProcedure = "/neoshowcase.protobuf.ControllerService/FetchRepository"
-	// ControllerServiceRegisterBuildProcedure is the fully-qualified name of the ControllerService's
+	// ControllerServiceRegisterBuildProcedure is the procedure name of the ControllerService's
 	// RegisterBuild RPC.
 	ControllerServiceRegisterBuildProcedure = "/neoshowcase.protobuf.ControllerService/RegisterBuild"
-	// ControllerServiceSyncDeploymentsProcedure is the fully-qualified name of the ControllerService's
+	// ControllerServiceSyncDeploymentsProcedure is the procedure name of the ControllerService's
 	// SyncDeployments RPC.
 	ControllerServiceSyncDeploymentsProcedure = "/neoshowcase.protobuf.ControllerService/SyncDeployments"
-	// ControllerServiceDiscoverBuildLogInstanceProcedure is the fully-qualified name of the
+	// ControllerServiceDiscoverBuildLogInstanceProcedure is the procedure name of the
 	// ControllerService's DiscoverBuildLogInstance RPC.
 	ControllerServiceDiscoverBuildLogInstanceProcedure = "/neoshowcase.protobuf.ControllerService/DiscoverBuildLogInstance"
-	// ControllerServiceStreamBuildLogProcedure is the fully-qualified name of the ControllerService's
+	// ControllerServiceStreamBuildLogProcedure is the procedure name of the ControllerService's
 	// StreamBuildLog RPC.
 	ControllerServiceStreamBuildLogProcedure = "/neoshowcase.protobuf.ControllerService/StreamBuildLog"
-	// ControllerServiceStartBuildProcedure is the fully-qualified name of the ControllerService's
-	// StartBuild RPC.
+	// ControllerServiceStartBuildProcedure is the procedure name of the ControllerService's StartBuild
+	// RPC.
 	ControllerServiceStartBuildProcedure = "/neoshowcase.protobuf.ControllerService/StartBuild"
-	// ControllerServiceCancelBuildProcedure is the fully-qualified name of the ControllerService's
+	// ControllerServiceCancelBuildProcedure is the procedure name of the ControllerService's
 	// CancelBuild RPC.
 	ControllerServiceCancelBuildProcedure = "/neoshowcase.protobuf.ControllerService/CancelBuild"
-	// ControllerServiceDiscoverBuildLogLocalProcedure is the fully-qualified name of the
-	// ControllerService's DiscoverBuildLogLocal RPC.
+	// ControllerServiceDiscoverBuildLogLocalProcedure is the procedure name of the ControllerService's
+	// DiscoverBuildLogLocal RPC.
 	ControllerServiceDiscoverBuildLogLocalProcedure = "/neoshowcase.protobuf.ControllerService/DiscoverBuildLogLocal"
-	// ControllerServiceStartBuildLocalProcedure is the fully-qualified name of the ControllerService's
+	// ControllerServiceStartBuildLocalProcedure is the procedure name of the ControllerService's
 	// StartBuildLocal RPC.
 	ControllerServiceStartBuildLocalProcedure = "/neoshowcase.protobuf.ControllerService/StartBuildLocal"
-	// ControllerServiceSyncDeploymentsLocalProcedure is the fully-qualified name of the
-	// ControllerService's SyncDeploymentsLocal RPC.
+	// ControllerServiceSyncDeploymentsLocalProcedure is the procedure name of the ControllerService's
+	// SyncDeploymentsLocal RPC.
 	ControllerServiceSyncDeploymentsLocalProcedure = "/neoshowcase.protobuf.ControllerService/SyncDeploymentsLocal"
-	// ControllerServiceCancelBuildLocalProcedure is the fully-qualified name of the ControllerService's
+	// ControllerServiceCancelBuildLocalProcedure is the procedure name of the ControllerService's
 	// CancelBuildLocal RPC.
 	ControllerServiceCancelBuildLocalProcedure = "/neoshowcase.protobuf.ControllerService/CancelBuildLocal"
-	// ControllerBuilderServiceGetBuilderSystemInfoProcedure is the fully-qualified name of the
+	// ControllerBuilderServiceGetBuilderSystemInfoProcedure is the procedure name of the
 	// ControllerBuilderService's GetBuilderSystemInfo RPC.
 	ControllerBuilderServiceGetBuilderSystemInfoProcedure = "/neoshowcase.protobuf.ControllerBuilderService/GetBuilderSystemInfo"
-	// ControllerBuilderServicePingBuildProcedure is the fully-qualified name of the
+	// ControllerBuilderServicePingBuildProcedure is the procedure name of the
 	// ControllerBuilderService's PingBuild RPC.
 	ControllerBuilderServicePingBuildProcedure = "/neoshowcase.protobuf.ControllerBuilderService/PingBuild"
-	// ControllerBuilderServiceStreamBuildLogProcedure is the fully-qualified name of the
+	// ControllerBuilderServiceStreamBuildLogProcedure is the procedure name of the
 	// ControllerBuilderService's StreamBuildLog RPC.
 	ControllerBuilderServiceStreamBuildLogProcedure = "/neoshowcase.protobuf.ControllerBuilderService/StreamBuildLog"
-	// ControllerBuilderServiceSaveArtifactProcedure is the fully-qualified name of the
+	// ControllerBuilderServiceSaveArtifactProcedure is the procedure name of the
 	// ControllerBuilderService's SaveArtifact RPC.
 	ControllerBuilderServiceSaveArtifactProcedure = "/neoshowcase.protobuf.ControllerBuilderService/SaveArtifact"
-	// ControllerBuilderServiceSaveBuildLogProcedure is the fully-qualified name of the
+	// ControllerBuilderServiceSaveBuildLogProcedure is the procedure name of the
 	// ControllerBuilderService's SaveBuildLog RPC.
 	ControllerBuilderServiceSaveBuildLogProcedure = "/neoshowcase.protobuf.ControllerBuilderService/SaveBuildLog"
-	// ControllerBuilderServiceSaveRuntimeImageProcedure is the fully-qualified name of the
+	// ControllerBuilderServiceSaveRuntimeImageProcedure is the procedure name of the
 	// ControllerBuilderService's SaveRuntimeImage RPC.
 	ControllerBuilderServiceSaveRuntimeImageProcedure = "/neoshowcase.protobuf.ControllerBuilderService/SaveRuntimeImage"
-	// ControllerBuilderServiceConnectBuilderProcedure is the fully-qualified name of the
+	// ControllerBuilderServiceConnectBuilderProcedure is the procedure name of the
 	// ControllerBuilderService's ConnectBuilder RPC.
 	ControllerBuilderServiceConnectBuilderProcedure = "/neoshowcase.protobuf.ControllerBuilderService/ConnectBuilder"
-	// BuildpackHelperServiceCopyFileTreeProcedure is the fully-qualified name of the
-	// BuildpackHelperService's CopyFileTree RPC.
+	// BuildpackHelperServiceCopyFileTreeProcedure is the procedure name of the BuildpackHelperService's
+	// CopyFileTree RPC.
 	BuildpackHelperServiceCopyFileTreeProcedure = "/neoshowcase.protobuf.BuildpackHelperService/CopyFileTree"
-	// BuildpackHelperServiceExecProcedure is the fully-qualified name of the BuildpackHelperService's
-	// Exec RPC.
+	// BuildpackHelperServiceExecProcedure is the procedure name of the BuildpackHelperService's Exec
+	// RPC.
 	BuildpackHelperServiceExecProcedure = "/neoshowcase.protobuf.BuildpackHelperService/Exec"
-	// ControllerSSGenServiceConnectSSGenProcedure is the fully-qualified name of the
-	// ControllerSSGenService's ConnectSSGen RPC.
+	// ControllerSSGenServiceConnectSSGenProcedure is the procedure name of the ControllerSSGenService's
+	// ConnectSSGen RPC.
 	ControllerSSGenServiceConnectSSGenProcedure = "/neoshowcase.protobuf.ControllerSSGenService/ConnectSSGen"
-	// GiteaIntegrationServiceSyncProcedure is the fully-qualified name of the GiteaIntegrationService's
-	// Sync RPC.
+	// GiteaIntegrationServiceSyncProcedure is the procedure name of the GiteaIntegrationService's Sync
+	// RPC.
 	GiteaIntegrationServiceSyncProcedure = "/neoshowcase.protobuf.GiteaIntegrationService/Sync"
+)
+
+var (
+	controllerServiceGetSystemInfoSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerService").Methods().ByName("GetSystemInfo"),
+			Procedure:  ControllerServiceGetSystemInfoProcedure,
+		}
+	})
+	controllerServiceFetchRepositorySpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerService").Methods().ByName("FetchRepository"),
+			Procedure:  ControllerServiceFetchRepositoryProcedure,
+		}
+	})
+	controllerServiceRegisterBuildSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerService").Methods().ByName("RegisterBuild"),
+			Procedure:  ControllerServiceRegisterBuildProcedure,
+		}
+	})
+	controllerServiceSyncDeploymentsSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerService").Methods().ByName("SyncDeployments"),
+			Procedure:  ControllerServiceSyncDeploymentsProcedure,
+		}
+	})
+	controllerServiceDiscoverBuildLogInstanceSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerService").Methods().ByName("DiscoverBuildLogInstance"),
+			Procedure:  ControllerServiceDiscoverBuildLogInstanceProcedure,
+		}
+	})
+	controllerServiceStreamBuildLogSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeServer,
+			Schema:     pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerService").Methods().ByName("StreamBuildLog"),
+			Procedure:  ControllerServiceStreamBuildLogProcedure,
+		}
+	})
+	controllerServiceStartBuildSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerService").Methods().ByName("StartBuild"),
+			Procedure:  ControllerServiceStartBuildProcedure,
+		}
+	})
+	controllerServiceCancelBuildSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerService").Methods().ByName("CancelBuild"),
+			Procedure:  ControllerServiceCancelBuildProcedure,
+		}
+	})
+	controllerServiceDiscoverBuildLogLocalSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerService").Methods().ByName("DiscoverBuildLogLocal"),
+			Procedure:  ControllerServiceDiscoverBuildLogLocalProcedure,
+		}
+	})
+	controllerServiceStartBuildLocalSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerService").Methods().ByName("StartBuildLocal"),
+			Procedure:  ControllerServiceStartBuildLocalProcedure,
+		}
+	})
+	controllerServiceSyncDeploymentsLocalSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerService").Methods().ByName("SyncDeploymentsLocal"),
+			Procedure:  ControllerServiceSyncDeploymentsLocalProcedure,
+		}
+	})
+	controllerServiceCancelBuildLocalSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerService").Methods().ByName("CancelBuildLocal"),
+			Procedure:  ControllerServiceCancelBuildLocalProcedure,
+		}
+	})
 )
 
 // ControllerServiceClient is a client for the neoshowcase.protobuf.ControllerService service.
 type ControllerServiceClient interface {
-	GetSystemInfo(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[pb.SystemInfo], error)
-	FetchRepository(context.Context, *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[emptypb.Empty], error)
-	RegisterBuild(context.Context, *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[emptypb.Empty], error)
-	SyncDeployments(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error)
-	DiscoverBuildLogInstance(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[pb.AddressInfo], error)
-	StreamBuildLog(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.ServerStreamForClient[pb.BuildLog], error)
-	StartBuild(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error)
-	CancelBuild(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error)
-	DiscoverBuildLogLocal(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[pb.AddressInfo], error)
-	StartBuildLocal(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error)
-	SyncDeploymentsLocal(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error)
-	CancelBuildLocal(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error)
+	GetSystemInfo(context.Context, *emptypb.Empty) (*pb.SystemInfo, error)
+	FetchRepository(context.Context, *pb.RepositoryIdRequest) (*emptypb.Empty, error)
+	RegisterBuild(context.Context, *pb.ApplicationIdRequest) (*emptypb.Empty, error)
+	SyncDeployments(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
+	DiscoverBuildLogInstance(context.Context, *pb.BuildIdRequest) (*pb.AddressInfo, error)
+	StreamBuildLog(context.Context, *pb.BuildIdRequest) (ControllerServiceStreamBuildLogClientStream, error)
+	StartBuild(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
+	CancelBuild(context.Context, *pb.BuildIdRequest) (*emptypb.Empty, error)
+	DiscoverBuildLogLocal(context.Context, *pb.BuildIdRequest) (*pb.AddressInfo, error)
+	StartBuildLocal(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
+	SyncDeploymentsLocal(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
+	CancelBuildLocal(context.Context, *pb.BuildIdRequest) (*emptypb.Empty, error)
 }
 
 // NewControllerServiceClient constructs a client for the neoshowcase.protobuf.ControllerService
-// service. By default, it uses the Connect protocol with the binary Protobuf Codec, asks for
-// gzipped responses, and sends uncompressed requests. To use the gRPC or gRPC-Web protocols, supply
-// the connect.WithGRPC() or connect.WithGRPCWeb() options.
-//
-// The URL supplied here should be the base URL for the Connect or gRPC server (for example,
-// http://api.acme.com or https://acme.com/grpc).
-func NewControllerServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) ControllerServiceClient {
-	baseURL = strings.TrimRight(baseURL, "/")
-	controllerServiceMethods := pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerService").Methods()
-	return &controllerServiceClient{
-		getSystemInfo: connect.NewClient[emptypb.Empty, pb.SystemInfo](
-			httpClient,
-			baseURL+ControllerServiceGetSystemInfoProcedure,
-			connect.WithSchema(controllerServiceMethods.ByName("GetSystemInfo")),
-			connect.WithClientOptions(opts...),
-		),
-		fetchRepository: connect.NewClient[pb.RepositoryIdRequest, emptypb.Empty](
-			httpClient,
-			baseURL+ControllerServiceFetchRepositoryProcedure,
-			connect.WithSchema(controllerServiceMethods.ByName("FetchRepository")),
-			connect.WithClientOptions(opts...),
-		),
-		registerBuild: connect.NewClient[pb.ApplicationIdRequest, emptypb.Empty](
-			httpClient,
-			baseURL+ControllerServiceRegisterBuildProcedure,
-			connect.WithSchema(controllerServiceMethods.ByName("RegisterBuild")),
-			connect.WithClientOptions(opts...),
-		),
-		syncDeployments: connect.NewClient[emptypb.Empty, emptypb.Empty](
-			httpClient,
-			baseURL+ControllerServiceSyncDeploymentsProcedure,
-			connect.WithSchema(controllerServiceMethods.ByName("SyncDeployments")),
-			connect.WithClientOptions(opts...),
-		),
-		discoverBuildLogInstance: connect.NewClient[pb.BuildIdRequest, pb.AddressInfo](
-			httpClient,
-			baseURL+ControllerServiceDiscoverBuildLogInstanceProcedure,
-			connect.WithSchema(controllerServiceMethods.ByName("DiscoverBuildLogInstance")),
-			connect.WithClientOptions(opts...),
-		),
-		streamBuildLog: connect.NewClient[pb.BuildIdRequest, pb.BuildLog](
-			httpClient,
-			baseURL+ControllerServiceStreamBuildLogProcedure,
-			connect.WithSchema(controllerServiceMethods.ByName("StreamBuildLog")),
-			connect.WithClientOptions(opts...),
-		),
-		startBuild: connect.NewClient[emptypb.Empty, emptypb.Empty](
-			httpClient,
-			baseURL+ControllerServiceStartBuildProcedure,
-			connect.WithSchema(controllerServiceMethods.ByName("StartBuild")),
-			connect.WithClientOptions(opts...),
-		),
-		cancelBuild: connect.NewClient[pb.BuildIdRequest, emptypb.Empty](
-			httpClient,
-			baseURL+ControllerServiceCancelBuildProcedure,
-			connect.WithSchema(controllerServiceMethods.ByName("CancelBuild")),
-			connect.WithClientOptions(opts...),
-		),
-		discoverBuildLogLocal: connect.NewClient[pb.BuildIdRequest, pb.AddressInfo](
-			httpClient,
-			baseURL+ControllerServiceDiscoverBuildLogLocalProcedure,
-			connect.WithSchema(controllerServiceMethods.ByName("DiscoverBuildLogLocal")),
-			connect.WithClientOptions(opts...),
-		),
-		startBuildLocal: connect.NewClient[emptypb.Empty, emptypb.Empty](
-			httpClient,
-			baseURL+ControllerServiceStartBuildLocalProcedure,
-			connect.WithSchema(controllerServiceMethods.ByName("StartBuildLocal")),
-			connect.WithClientOptions(opts...),
-		),
-		syncDeploymentsLocal: connect.NewClient[emptypb.Empty, emptypb.Empty](
-			httpClient,
-			baseURL+ControllerServiceSyncDeploymentsLocalProcedure,
-			connect.WithSchema(controllerServiceMethods.ByName("SyncDeploymentsLocal")),
-			connect.WithClientOptions(opts...),
-		),
-		cancelBuildLocal: connect.NewClient[pb.BuildIdRequest, emptypb.Empty](
-			httpClient,
-			baseURL+ControllerServiceCancelBuildLocalProcedure,
-			connect.WithSchema(controllerServiceMethods.ByName("CancelBuildLocal")),
-			connect.WithClientOptions(opts...),
-		),
+// service. Multiple service clients may share a single connect.Client.
+func NewControllerServiceClient(client *connect.Client) ControllerServiceClient {
+	return &controllerServiceClient{client: client}
+}
+
+// ControllerServiceStreamBuildLogClientStream is the client stream for the ControllerService's
+// StreamBuildLog RPC.
+type ControllerServiceStreamBuildLogClientStream struct {
+	stream connect.ClientStream
+}
+
+// Receive returns the next response message from the server.
+func (s ControllerServiceStreamBuildLogClientStream) Receive() (*pb.BuildLog, error) {
+	var res pb.BuildLog
+	if err := s.stream.Receive(&res); err != nil {
+		return nil, err
 	}
+	return &res, nil
 }
 
-// controllerServiceClient implements ControllerServiceClient.
-type controllerServiceClient struct {
-	getSystemInfo            *connect.Client[emptypb.Empty, pb.SystemInfo]
-	fetchRepository          *connect.Client[pb.RepositoryIdRequest, emptypb.Empty]
-	registerBuild            *connect.Client[pb.ApplicationIdRequest, emptypb.Empty]
-	syncDeployments          *connect.Client[emptypb.Empty, emptypb.Empty]
-	discoverBuildLogInstance *connect.Client[pb.BuildIdRequest, pb.AddressInfo]
-	streamBuildLog           *connect.Client[pb.BuildIdRequest, pb.BuildLog]
-	startBuild               *connect.Client[emptypb.Empty, emptypb.Empty]
-	cancelBuild              *connect.Client[pb.BuildIdRequest, emptypb.Empty]
-	discoverBuildLogLocal    *connect.Client[pb.BuildIdRequest, pb.AddressInfo]
-	startBuildLocal          *connect.Client[emptypb.Empty, emptypb.Empty]
-	syncDeploymentsLocal     *connect.Client[emptypb.Empty, emptypb.Empty]
-	cancelBuildLocal         *connect.Client[pb.BuildIdRequest, emptypb.Empty]
-}
-
-// GetSystemInfo calls neoshowcase.protobuf.ControllerService.GetSystemInfo.
-func (c *controllerServiceClient) GetSystemInfo(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.Response[pb.SystemInfo], error) {
-	return c.getSystemInfo.CallUnary(ctx, req)
-}
-
-// FetchRepository calls neoshowcase.protobuf.ControllerService.FetchRepository.
-func (c *controllerServiceClient) FetchRepository(ctx context.Context, req *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[emptypb.Empty], error) {
-	return c.fetchRepository.CallUnary(ctx, req)
-}
-
-// RegisterBuild calls neoshowcase.protobuf.ControllerService.RegisterBuild.
-func (c *controllerServiceClient) RegisterBuild(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[emptypb.Empty], error) {
-	return c.registerBuild.CallUnary(ctx, req)
-}
-
-// SyncDeployments calls neoshowcase.protobuf.ControllerService.SyncDeployments.
-func (c *controllerServiceClient) SyncDeployments(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error) {
-	return c.syncDeployments.CallUnary(ctx, req)
-}
-
-// DiscoverBuildLogInstance calls neoshowcase.protobuf.ControllerService.DiscoverBuildLogInstance.
-func (c *controllerServiceClient) DiscoverBuildLogInstance(ctx context.Context, req *connect.Request[pb.BuildIdRequest]) (*connect.Response[pb.AddressInfo], error) {
-	return c.discoverBuildLogInstance.CallUnary(ctx, req)
-}
-
-// StreamBuildLog calls neoshowcase.protobuf.ControllerService.StreamBuildLog.
-func (c *controllerServiceClient) StreamBuildLog(ctx context.Context, req *connect.Request[pb.BuildIdRequest]) (*connect.ServerStreamForClient[pb.BuildLog], error) {
-	return c.streamBuildLog.CallServerStream(ctx, req)
-}
-
-// StartBuild calls neoshowcase.protobuf.ControllerService.StartBuild.
-func (c *controllerServiceClient) StartBuild(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error) {
-	return c.startBuild.CallUnary(ctx, req)
-}
-
-// CancelBuild calls neoshowcase.protobuf.ControllerService.CancelBuild.
-func (c *controllerServiceClient) CancelBuild(ctx context.Context, req *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error) {
-	return c.cancelBuild.CallUnary(ctx, req)
-}
-
-// DiscoverBuildLogLocal calls neoshowcase.protobuf.ControllerService.DiscoverBuildLogLocal.
-func (c *controllerServiceClient) DiscoverBuildLogLocal(ctx context.Context, req *connect.Request[pb.BuildIdRequest]) (*connect.Response[pb.AddressInfo], error) {
-	return c.discoverBuildLogLocal.CallUnary(ctx, req)
-}
-
-// StartBuildLocal calls neoshowcase.protobuf.ControllerService.StartBuildLocal.
-func (c *controllerServiceClient) StartBuildLocal(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error) {
-	return c.startBuildLocal.CallUnary(ctx, req)
-}
-
-// SyncDeploymentsLocal calls neoshowcase.protobuf.ControllerService.SyncDeploymentsLocal.
-func (c *controllerServiceClient) SyncDeploymentsLocal(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error) {
-	return c.syncDeploymentsLocal.CallUnary(ctx, req)
-}
-
-// CancelBuildLocal calls neoshowcase.protobuf.ControllerService.CancelBuildLocal.
-func (c *controllerServiceClient) CancelBuildLocal(ctx context.Context, req *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error) {
-	return c.cancelBuildLocal.CallUnary(ctx, req)
+// Close releases the stream's resources. It is idempotent and is typically deferred to clean up a
+// stream abandoned before io.EOF.
+func (s ControllerServiceStreamBuildLogClientStream) Close() error {
+	return s.stream.Close()
 }
 
 // ControllerServiceHandler is an implementation of the neoshowcase.protobuf.ControllerService
 // service.
 type ControllerServiceHandler interface {
-	GetSystemInfo(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[pb.SystemInfo], error)
-	FetchRepository(context.Context, *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[emptypb.Empty], error)
-	RegisterBuild(context.Context, *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[emptypb.Empty], error)
-	SyncDeployments(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error)
-	DiscoverBuildLogInstance(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[pb.AddressInfo], error)
-	StreamBuildLog(context.Context, *connect.Request[pb.BuildIdRequest], *connect.ServerStream[pb.BuildLog]) error
-	StartBuild(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error)
-	CancelBuild(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error)
-	DiscoverBuildLogLocal(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[pb.AddressInfo], error)
-	StartBuildLocal(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error)
-	SyncDeploymentsLocal(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error)
-	CancelBuildLocal(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error)
+	GetSystemInfo(context.Context, *emptypb.Empty) (*pb.SystemInfo, error)
+	FetchRepository(context.Context, *pb.RepositoryIdRequest) (*emptypb.Empty, error)
+	RegisterBuild(context.Context, *pb.ApplicationIdRequest) (*emptypb.Empty, error)
+	SyncDeployments(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
+	DiscoverBuildLogInstance(context.Context, *pb.BuildIdRequest) (*pb.AddressInfo, error)
+	StreamBuildLog(context.Context, *pb.BuildIdRequest, ControllerServiceStreamBuildLogServerStream) error
+	StartBuild(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
+	CancelBuild(context.Context, *pb.BuildIdRequest) (*emptypb.Empty, error)
+	DiscoverBuildLogLocal(context.Context, *pb.BuildIdRequest) (*pb.AddressInfo, error)
+	StartBuildLocal(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
+	SyncDeploymentsLocal(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
+	CancelBuildLocal(context.Context, *pb.BuildIdRequest) (*emptypb.Empty, error)
 }
 
-// NewControllerServiceHandler builds an HTTP handler from the service implementation. It returns
-// the path on which to mount the handler and the handler itself.
-//
-// By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
-// and JSON codecs. They also support gzip compression.
-func NewControllerServiceHandler(svc ControllerServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
-	controllerServiceMethods := pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerService").Methods()
-	controllerServiceGetSystemInfoHandler := connect.NewUnaryHandler(
-		ControllerServiceGetSystemInfoProcedure,
-		svc.GetSystemInfo,
-		connect.WithSchema(controllerServiceMethods.ByName("GetSystemInfo")),
-		connect.WithHandlerOptions(opts...),
+// RegisterControllerServiceHandler registers svc as the neoshowcase.protobuf.ControllerService
+// implementation on server.
+func RegisterControllerServiceHandler(server *connect.Server, svc ControllerServiceHandler) {
+	adapter := controllerServiceHandler{svc: svc}
+	server.Register(
+		connect.Method{Spec: controllerServiceGetSystemInfoSpec(), Handler: adapter.getSystemInfo},
+		connect.Method{Spec: controllerServiceFetchRepositorySpec(), Handler: adapter.fetchRepository},
+		connect.Method{Spec: controllerServiceRegisterBuildSpec(), Handler: adapter.registerBuild},
+		connect.Method{Spec: controllerServiceSyncDeploymentsSpec(), Handler: adapter.syncDeployments},
+		connect.Method{Spec: controllerServiceDiscoverBuildLogInstanceSpec(), Handler: adapter.discoverBuildLogInstance},
+		connect.Method{Spec: controllerServiceStreamBuildLogSpec(), Handler: adapter.streamBuildLog},
+		connect.Method{Spec: controllerServiceStartBuildSpec(), Handler: adapter.startBuild},
+		connect.Method{Spec: controllerServiceCancelBuildSpec(), Handler: adapter.cancelBuild},
+		connect.Method{Spec: controllerServiceDiscoverBuildLogLocalSpec(), Handler: adapter.discoverBuildLogLocal},
+		connect.Method{Spec: controllerServiceStartBuildLocalSpec(), Handler: adapter.startBuildLocal},
+		connect.Method{Spec: controllerServiceSyncDeploymentsLocalSpec(), Handler: adapter.syncDeploymentsLocal},
+		connect.Method{Spec: controllerServiceCancelBuildLocalSpec(), Handler: adapter.cancelBuildLocal},
 	)
-	controllerServiceFetchRepositoryHandler := connect.NewUnaryHandler(
-		ControllerServiceFetchRepositoryProcedure,
-		svc.FetchRepository,
-		connect.WithSchema(controllerServiceMethods.ByName("FetchRepository")),
-		connect.WithHandlerOptions(opts...),
-	)
-	controllerServiceRegisterBuildHandler := connect.NewUnaryHandler(
-		ControllerServiceRegisterBuildProcedure,
-		svc.RegisterBuild,
-		connect.WithSchema(controllerServiceMethods.ByName("RegisterBuild")),
-		connect.WithHandlerOptions(opts...),
-	)
-	controllerServiceSyncDeploymentsHandler := connect.NewUnaryHandler(
-		ControllerServiceSyncDeploymentsProcedure,
-		svc.SyncDeployments,
-		connect.WithSchema(controllerServiceMethods.ByName("SyncDeployments")),
-		connect.WithHandlerOptions(opts...),
-	)
-	controllerServiceDiscoverBuildLogInstanceHandler := connect.NewUnaryHandler(
-		ControllerServiceDiscoverBuildLogInstanceProcedure,
-		svc.DiscoverBuildLogInstance,
-		connect.WithSchema(controllerServiceMethods.ByName("DiscoverBuildLogInstance")),
-		connect.WithHandlerOptions(opts...),
-	)
-	controllerServiceStreamBuildLogHandler := connect.NewServerStreamHandler(
-		ControllerServiceStreamBuildLogProcedure,
-		svc.StreamBuildLog,
-		connect.WithSchema(controllerServiceMethods.ByName("StreamBuildLog")),
-		connect.WithHandlerOptions(opts...),
-	)
-	controllerServiceStartBuildHandler := connect.NewUnaryHandler(
-		ControllerServiceStartBuildProcedure,
-		svc.StartBuild,
-		connect.WithSchema(controllerServiceMethods.ByName("StartBuild")),
-		connect.WithHandlerOptions(opts...),
-	)
-	controllerServiceCancelBuildHandler := connect.NewUnaryHandler(
-		ControllerServiceCancelBuildProcedure,
-		svc.CancelBuild,
-		connect.WithSchema(controllerServiceMethods.ByName("CancelBuild")),
-		connect.WithHandlerOptions(opts...),
-	)
-	controllerServiceDiscoverBuildLogLocalHandler := connect.NewUnaryHandler(
-		ControllerServiceDiscoverBuildLogLocalProcedure,
-		svc.DiscoverBuildLogLocal,
-		connect.WithSchema(controllerServiceMethods.ByName("DiscoverBuildLogLocal")),
-		connect.WithHandlerOptions(opts...),
-	)
-	controllerServiceStartBuildLocalHandler := connect.NewUnaryHandler(
-		ControllerServiceStartBuildLocalProcedure,
-		svc.StartBuildLocal,
-		connect.WithSchema(controllerServiceMethods.ByName("StartBuildLocal")),
-		connect.WithHandlerOptions(opts...),
-	)
-	controllerServiceSyncDeploymentsLocalHandler := connect.NewUnaryHandler(
-		ControllerServiceSyncDeploymentsLocalProcedure,
-		svc.SyncDeploymentsLocal,
-		connect.WithSchema(controllerServiceMethods.ByName("SyncDeploymentsLocal")),
-		connect.WithHandlerOptions(opts...),
-	)
-	controllerServiceCancelBuildLocalHandler := connect.NewUnaryHandler(
-		ControllerServiceCancelBuildLocalProcedure,
-		svc.CancelBuildLocal,
-		connect.WithSchema(controllerServiceMethods.ByName("CancelBuildLocal")),
-		connect.WithHandlerOptions(opts...),
-	)
-	return "/neoshowcase.protobuf.ControllerService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.URL.Path {
-		case ControllerServiceGetSystemInfoProcedure:
-			controllerServiceGetSystemInfoHandler.ServeHTTP(w, r)
-		case ControllerServiceFetchRepositoryProcedure:
-			controllerServiceFetchRepositoryHandler.ServeHTTP(w, r)
-		case ControllerServiceRegisterBuildProcedure:
-			controllerServiceRegisterBuildHandler.ServeHTTP(w, r)
-		case ControllerServiceSyncDeploymentsProcedure:
-			controllerServiceSyncDeploymentsHandler.ServeHTTP(w, r)
-		case ControllerServiceDiscoverBuildLogInstanceProcedure:
-			controllerServiceDiscoverBuildLogInstanceHandler.ServeHTTP(w, r)
-		case ControllerServiceStreamBuildLogProcedure:
-			controllerServiceStreamBuildLogHandler.ServeHTTP(w, r)
-		case ControllerServiceStartBuildProcedure:
-			controllerServiceStartBuildHandler.ServeHTTP(w, r)
-		case ControllerServiceCancelBuildProcedure:
-			controllerServiceCancelBuildHandler.ServeHTTP(w, r)
-		case ControllerServiceDiscoverBuildLogLocalProcedure:
-			controllerServiceDiscoverBuildLogLocalHandler.ServeHTTP(w, r)
-		case ControllerServiceStartBuildLocalProcedure:
-			controllerServiceStartBuildLocalHandler.ServeHTTP(w, r)
-		case ControllerServiceSyncDeploymentsLocalProcedure:
-			controllerServiceSyncDeploymentsLocalHandler.ServeHTTP(w, r)
-		case ControllerServiceCancelBuildLocalProcedure:
-			controllerServiceCancelBuildLocalHandler.ServeHTTP(w, r)
-		default:
-			http.NotFound(w, r)
-		}
-	})
+}
+
+// ControllerServiceStreamBuildLogServerStream is the server stream for the ControllerService's
+// StreamBuildLog RPC.
+type ControllerServiceStreamBuildLogServerStream struct {
+	stream connect.ServerStream
+}
+
+// SendHeaders flushes the response headers without a message. The first Send does this implicitly.
+func (s ControllerServiceStreamBuildLogServerStream) SendHeaders() error {
+	return s.stream.SendHeaders()
+}
+
+// Send sends a response message to the client.
+func (s ControllerServiceStreamBuildLogServerStream) Send(res *pb.BuildLog) error {
+	return s.stream.Send(res)
 }
 
 // UnimplementedControllerServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedControllerServiceHandler struct{}
 
-func (UnimplementedControllerServiceHandler) GetSystemInfo(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[pb.SystemInfo], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.GetSystemInfo is not implemented"))
+func (UnimplementedControllerServiceHandler) GetSystemInfo(context.Context, *emptypb.Empty) (*pb.SystemInfo, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neoshowcase.protobuf.ControllerService.GetSystemInfo is not implemented")
 }
 
-func (UnimplementedControllerServiceHandler) FetchRepository(context.Context, *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[emptypb.Empty], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.FetchRepository is not implemented"))
+func (UnimplementedControllerServiceHandler) FetchRepository(context.Context, *pb.RepositoryIdRequest) (*emptypb.Empty, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neoshowcase.protobuf.ControllerService.FetchRepository is not implemented")
 }
 
-func (UnimplementedControllerServiceHandler) RegisterBuild(context.Context, *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[emptypb.Empty], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.RegisterBuild is not implemented"))
+func (UnimplementedControllerServiceHandler) RegisterBuild(context.Context, *pb.ApplicationIdRequest) (*emptypb.Empty, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neoshowcase.protobuf.ControllerService.RegisterBuild is not implemented")
 }
 
-func (UnimplementedControllerServiceHandler) SyncDeployments(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.SyncDeployments is not implemented"))
+func (UnimplementedControllerServiceHandler) SyncDeployments(context.Context, *emptypb.Empty) (*emptypb.Empty, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neoshowcase.protobuf.ControllerService.SyncDeployments is not implemented")
 }
 
-func (UnimplementedControllerServiceHandler) DiscoverBuildLogInstance(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[pb.AddressInfo], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.DiscoverBuildLogInstance is not implemented"))
+func (UnimplementedControllerServiceHandler) DiscoverBuildLogInstance(context.Context, *pb.BuildIdRequest) (*pb.AddressInfo, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neoshowcase.protobuf.ControllerService.DiscoverBuildLogInstance is not implemented")
 }
 
-func (UnimplementedControllerServiceHandler) StreamBuildLog(context.Context, *connect.Request[pb.BuildIdRequest], *connect.ServerStream[pb.BuildLog]) error {
-	return connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.StreamBuildLog is not implemented"))
+func (UnimplementedControllerServiceHandler) StreamBuildLog(context.Context, *pb.BuildIdRequest, ControllerServiceStreamBuildLogServerStream) error {
+	return connect.NewError(connect.CodeUnimplemented, "neoshowcase.protobuf.ControllerService.StreamBuildLog is not implemented")
 }
 
-func (UnimplementedControllerServiceHandler) StartBuild(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.StartBuild is not implemented"))
+func (UnimplementedControllerServiceHandler) StartBuild(context.Context, *emptypb.Empty) (*emptypb.Empty, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neoshowcase.protobuf.ControllerService.StartBuild is not implemented")
 }
 
-func (UnimplementedControllerServiceHandler) CancelBuild(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.CancelBuild is not implemented"))
+func (UnimplementedControllerServiceHandler) CancelBuild(context.Context, *pb.BuildIdRequest) (*emptypb.Empty, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neoshowcase.protobuf.ControllerService.CancelBuild is not implemented")
 }
 
-func (UnimplementedControllerServiceHandler) DiscoverBuildLogLocal(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[pb.AddressInfo], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.DiscoverBuildLogLocal is not implemented"))
+func (UnimplementedControllerServiceHandler) DiscoverBuildLogLocal(context.Context, *pb.BuildIdRequest) (*pb.AddressInfo, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neoshowcase.protobuf.ControllerService.DiscoverBuildLogLocal is not implemented")
 }
 
-func (UnimplementedControllerServiceHandler) StartBuildLocal(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.StartBuildLocal is not implemented"))
+func (UnimplementedControllerServiceHandler) StartBuildLocal(context.Context, *emptypb.Empty) (*emptypb.Empty, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neoshowcase.protobuf.ControllerService.StartBuildLocal is not implemented")
 }
 
-func (UnimplementedControllerServiceHandler) SyncDeploymentsLocal(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.SyncDeploymentsLocal is not implemented"))
+func (UnimplementedControllerServiceHandler) SyncDeploymentsLocal(context.Context, *emptypb.Empty) (*emptypb.Empty, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neoshowcase.protobuf.ControllerService.SyncDeploymentsLocal is not implemented")
 }
 
-func (UnimplementedControllerServiceHandler) CancelBuildLocal(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.CancelBuildLocal is not implemented"))
+func (UnimplementedControllerServiceHandler) CancelBuildLocal(context.Context, *pb.BuildIdRequest) (*emptypb.Empty, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neoshowcase.protobuf.ControllerService.CancelBuildLocal is not implemented")
 }
+
+type controllerServiceClient struct {
+	client *connect.Client
+}
+
+func (c *controllerServiceClient) GetSystemInfo(ctx context.Context, req *emptypb.Empty) (*pb.SystemInfo, error) {
+	var res pb.SystemInfo
+	if err := c.client.CallUnary(ctx, controllerServiceGetSystemInfoSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *controllerServiceClient) FetchRepository(ctx context.Context, req *pb.RepositoryIdRequest) (*emptypb.Empty, error) {
+	var res emptypb.Empty
+	if err := c.client.CallUnary(ctx, controllerServiceFetchRepositorySpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *controllerServiceClient) RegisterBuild(ctx context.Context, req *pb.ApplicationIdRequest) (*emptypb.Empty, error) {
+	var res emptypb.Empty
+	if err := c.client.CallUnary(ctx, controllerServiceRegisterBuildSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *controllerServiceClient) SyncDeployments(ctx context.Context, req *emptypb.Empty) (*emptypb.Empty, error) {
+	var res emptypb.Empty
+	if err := c.client.CallUnary(ctx, controllerServiceSyncDeploymentsSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *controllerServiceClient) DiscoverBuildLogInstance(ctx context.Context, req *pb.BuildIdRequest) (*pb.AddressInfo, error) {
+	var res pb.AddressInfo
+	if err := c.client.CallUnary(ctx, controllerServiceDiscoverBuildLogInstanceSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *controllerServiceClient) StreamBuildLog(ctx context.Context, req *pb.BuildIdRequest) (ControllerServiceStreamBuildLogClientStream, error) {
+	stream, err := c.client.CallServerStream(ctx, controllerServiceStreamBuildLogSpec(), req)
+	if err != nil {
+		return ControllerServiceStreamBuildLogClientStream{}, err
+	}
+	return ControllerServiceStreamBuildLogClientStream{stream: stream}, nil
+}
+
+func (c *controllerServiceClient) StartBuild(ctx context.Context, req *emptypb.Empty) (*emptypb.Empty, error) {
+	var res emptypb.Empty
+	if err := c.client.CallUnary(ctx, controllerServiceStartBuildSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *controllerServiceClient) CancelBuild(ctx context.Context, req *pb.BuildIdRequest) (*emptypb.Empty, error) {
+	var res emptypb.Empty
+	if err := c.client.CallUnary(ctx, controllerServiceCancelBuildSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *controllerServiceClient) DiscoverBuildLogLocal(ctx context.Context, req *pb.BuildIdRequest) (*pb.AddressInfo, error) {
+	var res pb.AddressInfo
+	if err := c.client.CallUnary(ctx, controllerServiceDiscoverBuildLogLocalSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *controllerServiceClient) StartBuildLocal(ctx context.Context, req *emptypb.Empty) (*emptypb.Empty, error) {
+	var res emptypb.Empty
+	if err := c.client.CallUnary(ctx, controllerServiceStartBuildLocalSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *controllerServiceClient) SyncDeploymentsLocal(ctx context.Context, req *emptypb.Empty) (*emptypb.Empty, error) {
+	var res emptypb.Empty
+	if err := c.client.CallUnary(ctx, controllerServiceSyncDeploymentsLocalSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *controllerServiceClient) CancelBuildLocal(ctx context.Context, req *pb.BuildIdRequest) (*emptypb.Empty, error) {
+	var res emptypb.Empty
+	if err := c.client.CallUnary(ctx, controllerServiceCancelBuildLocalSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+type controllerServiceHandler struct{ svc ControllerServiceHandler }
+
+func (h controllerServiceHandler) getSystemInfo(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req emptypb.Empty
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.GetSystemInfo(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h controllerServiceHandler) fetchRepository(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req pb.RepositoryIdRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.FetchRepository(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h controllerServiceHandler) registerBuild(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req pb.ApplicationIdRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.RegisterBuild(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h controllerServiceHandler) syncDeployments(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req emptypb.Empty
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.SyncDeployments(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h controllerServiceHandler) discoverBuildLogInstance(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req pb.BuildIdRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.DiscoverBuildLogInstance(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h controllerServiceHandler) streamBuildLog(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req pb.BuildIdRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	return h.svc.StreamBuildLog(ctx, &req, ControllerServiceStreamBuildLogServerStream{stream: stream})
+}
+
+func (h controllerServiceHandler) startBuild(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req emptypb.Empty
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.StartBuild(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h controllerServiceHandler) cancelBuild(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req pb.BuildIdRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.CancelBuild(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h controllerServiceHandler) discoverBuildLogLocal(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req pb.BuildIdRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.DiscoverBuildLogLocal(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h controllerServiceHandler) startBuildLocal(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req emptypb.Empty
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.StartBuildLocal(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h controllerServiceHandler) syncDeploymentsLocal(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req emptypb.Empty
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.SyncDeploymentsLocal(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h controllerServiceHandler) cancelBuildLocal(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req pb.BuildIdRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.CancelBuildLocal(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+var (
+	controllerBuilderServiceGetBuilderSystemInfoSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerBuilderService").Methods().ByName("GetBuilderSystemInfo"),
+			Procedure:  ControllerBuilderServiceGetBuilderSystemInfoProcedure,
+		}
+	})
+	controllerBuilderServicePingBuildSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerBuilderService").Methods().ByName("PingBuild"),
+			Procedure:  ControllerBuilderServicePingBuildProcedure,
+		}
+	})
+	controllerBuilderServiceStreamBuildLogSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeClient,
+			Schema:     pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerBuilderService").Methods().ByName("StreamBuildLog"),
+			Procedure:  ControllerBuilderServiceStreamBuildLogProcedure,
+		}
+	})
+	controllerBuilderServiceSaveArtifactSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerBuilderService").Methods().ByName("SaveArtifact"),
+			Procedure:  ControllerBuilderServiceSaveArtifactProcedure,
+		}
+	})
+	controllerBuilderServiceSaveBuildLogSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerBuilderService").Methods().ByName("SaveBuildLog"),
+			Procedure:  ControllerBuilderServiceSaveBuildLogProcedure,
+		}
+	})
+	controllerBuilderServiceSaveRuntimeImageSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerBuilderService").Methods().ByName("SaveRuntimeImage"),
+			Procedure:  ControllerBuilderServiceSaveRuntimeImageProcedure,
+		}
+	})
+	controllerBuilderServiceConnectBuilderSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeBidi,
+			Schema:     pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerBuilderService").Methods().ByName("ConnectBuilder"),
+			Procedure:  ControllerBuilderServiceConnectBuilderProcedure,
+		}
+	})
+)
 
 // ControllerBuilderServiceClient is a client for the neoshowcase.protobuf.ControllerBuilderService
 // service.
 type ControllerBuilderServiceClient interface {
-	GetBuilderSystemInfo(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[pb.BuilderSystemInfo], error)
-	PingBuild(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error)
-	StreamBuildLog(context.Context) *connect.ClientStreamForClient[pb.BuildLogPortion, emptypb.Empty]
-	SaveArtifact(context.Context, *connect.Request[pb.SaveArtifactRequest]) (*connect.Response[emptypb.Empty], error)
-	SaveBuildLog(context.Context, *connect.Request[pb.SaveBuildLogRequest]) (*connect.Response[emptypb.Empty], error)
-	SaveRuntimeImage(context.Context, *connect.Request[pb.SaveRuntimeImageRequest]) (*connect.Response[emptypb.Empty], error)
-	ConnectBuilder(context.Context) *connect.BidiStreamForClient[pb.BuilderResponse, pb.BuilderRequest]
+	GetBuilderSystemInfo(context.Context, *emptypb.Empty) (*pb.BuilderSystemInfo, error)
+	PingBuild(context.Context, *pb.BuildIdRequest) (*emptypb.Empty, error)
+	StreamBuildLog(context.Context) (ControllerBuilderServiceStreamBuildLogClientStream, error)
+	SaveArtifact(context.Context, *pb.SaveArtifactRequest) (*emptypb.Empty, error)
+	SaveBuildLog(context.Context, *pb.SaveBuildLogRequest) (*emptypb.Empty, error)
+	SaveRuntimeImage(context.Context, *pb.SaveRuntimeImageRequest) (*emptypb.Empty, error)
+	ConnectBuilder(context.Context) (ControllerBuilderServiceConnectBuilderClientStream, error)
 }
 
 // NewControllerBuilderServiceClient constructs a client for the
-// neoshowcase.protobuf.ControllerBuilderService service. By default, it uses the Connect protocol
-// with the binary Protobuf Codec, asks for gzipped responses, and sends uncompressed requests. To
-// use the gRPC or gRPC-Web protocols, supply the connect.WithGRPC() or connect.WithGRPCWeb()
-// options.
-//
-// The URL supplied here should be the base URL for the Connect or gRPC server (for example,
-// http://api.acme.com or https://acme.com/grpc).
-func NewControllerBuilderServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) ControllerBuilderServiceClient {
-	baseURL = strings.TrimRight(baseURL, "/")
-	controllerBuilderServiceMethods := pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerBuilderService").Methods()
-	return &controllerBuilderServiceClient{
-		getBuilderSystemInfo: connect.NewClient[emptypb.Empty, pb.BuilderSystemInfo](
-			httpClient,
-			baseURL+ControllerBuilderServiceGetBuilderSystemInfoProcedure,
-			connect.WithSchema(controllerBuilderServiceMethods.ByName("GetBuilderSystemInfo")),
-			connect.WithClientOptions(opts...),
-		),
-		pingBuild: connect.NewClient[pb.BuildIdRequest, emptypb.Empty](
-			httpClient,
-			baseURL+ControllerBuilderServicePingBuildProcedure,
-			connect.WithSchema(controllerBuilderServiceMethods.ByName("PingBuild")),
-			connect.WithClientOptions(opts...),
-		),
-		streamBuildLog: connect.NewClient[pb.BuildLogPortion, emptypb.Empty](
-			httpClient,
-			baseURL+ControllerBuilderServiceStreamBuildLogProcedure,
-			connect.WithSchema(controllerBuilderServiceMethods.ByName("StreamBuildLog")),
-			connect.WithClientOptions(opts...),
-		),
-		saveArtifact: connect.NewClient[pb.SaveArtifactRequest, emptypb.Empty](
-			httpClient,
-			baseURL+ControllerBuilderServiceSaveArtifactProcedure,
-			connect.WithSchema(controllerBuilderServiceMethods.ByName("SaveArtifact")),
-			connect.WithClientOptions(opts...),
-		),
-		saveBuildLog: connect.NewClient[pb.SaveBuildLogRequest, emptypb.Empty](
-			httpClient,
-			baseURL+ControllerBuilderServiceSaveBuildLogProcedure,
-			connect.WithSchema(controllerBuilderServiceMethods.ByName("SaveBuildLog")),
-			connect.WithClientOptions(opts...),
-		),
-		saveRuntimeImage: connect.NewClient[pb.SaveRuntimeImageRequest, emptypb.Empty](
-			httpClient,
-			baseURL+ControllerBuilderServiceSaveRuntimeImageProcedure,
-			connect.WithSchema(controllerBuilderServiceMethods.ByName("SaveRuntimeImage")),
-			connect.WithClientOptions(opts...),
-		),
-		connectBuilder: connect.NewClient[pb.BuilderResponse, pb.BuilderRequest](
-			httpClient,
-			baseURL+ControllerBuilderServiceConnectBuilderProcedure,
-			connect.WithSchema(controllerBuilderServiceMethods.ByName("ConnectBuilder")),
-			connect.WithClientOptions(opts...),
-		),
+// neoshowcase.protobuf.ControllerBuilderService service. Multiple service clients may share a
+// single connect.Client.
+func NewControllerBuilderServiceClient(client *connect.Client) ControllerBuilderServiceClient {
+	return &controllerBuilderServiceClient{client: client}
+}
+
+// ControllerBuilderServiceStreamBuildLogClientStream is the client stream for the
+// ControllerBuilderService's StreamBuildLog RPC.
+type ControllerBuilderServiceStreamBuildLogClientStream struct {
+	stream connect.ClientStream
+}
+
+// SendHeaders opens the stream and flushes the request headers without a message. The first Send or
+// Receive does this implicitly.
+func (s ControllerBuilderServiceStreamBuildLogClientStream) SendHeaders() error {
+	return s.stream.SendHeaders()
+}
+
+// Send sends a request message to the server.
+func (s ControllerBuilderServiceStreamBuildLogClientStream) Send(req *pb.BuildLogPortion) error {
+	return s.stream.Send(req)
+}
+
+// CloseAndReceive closes the request side of the stream and returns the single response message. It
+// reads the stream to completion to release its resources.
+func (s ControllerBuilderServiceStreamBuildLogClientStream) CloseAndReceive() (*emptypb.Empty, error) {
+	if err := s.stream.CloseSend(); err != nil {
+		return nil, err
 	}
+	var res emptypb.Empty
+	if err := s.stream.Receive(&res); err != nil {
+		return nil, err
+	}
+	return &res, nil
 }
 
-// controllerBuilderServiceClient implements ControllerBuilderServiceClient.
-type controllerBuilderServiceClient struct {
-	getBuilderSystemInfo *connect.Client[emptypb.Empty, pb.BuilderSystemInfo]
-	pingBuild            *connect.Client[pb.BuildIdRequest, emptypb.Empty]
-	streamBuildLog       *connect.Client[pb.BuildLogPortion, emptypb.Empty]
-	saveArtifact         *connect.Client[pb.SaveArtifactRequest, emptypb.Empty]
-	saveBuildLog         *connect.Client[pb.SaveBuildLogRequest, emptypb.Empty]
-	saveRuntimeImage     *connect.Client[pb.SaveRuntimeImageRequest, emptypb.Empty]
-	connectBuilder       *connect.Client[pb.BuilderResponse, pb.BuilderRequest]
+// ControllerBuilderServiceConnectBuilderClientStream is the client stream for the
+// ControllerBuilderService's ConnectBuilder RPC.
+type ControllerBuilderServiceConnectBuilderClientStream struct {
+	stream connect.ClientStream
 }
 
-// GetBuilderSystemInfo calls neoshowcase.protobuf.ControllerBuilderService.GetBuilderSystemInfo.
-func (c *controllerBuilderServiceClient) GetBuilderSystemInfo(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.Response[pb.BuilderSystemInfo], error) {
-	return c.getBuilderSystemInfo.CallUnary(ctx, req)
+// SendHeaders opens the stream and flushes the request headers without a message. The first Send or
+// Receive does this implicitly.
+func (s ControllerBuilderServiceConnectBuilderClientStream) SendHeaders() error {
+	return s.stream.SendHeaders()
 }
 
-// PingBuild calls neoshowcase.protobuf.ControllerBuilderService.PingBuild.
-func (c *controllerBuilderServiceClient) PingBuild(ctx context.Context, req *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error) {
-	return c.pingBuild.CallUnary(ctx, req)
+// Send sends a request message to the server.
+func (s ControllerBuilderServiceConnectBuilderClientStream) Send(req *pb.BuilderResponse) error {
+	return s.stream.Send(req)
 }
 
-// StreamBuildLog calls neoshowcase.protobuf.ControllerBuilderService.StreamBuildLog.
-func (c *controllerBuilderServiceClient) StreamBuildLog(ctx context.Context) *connect.ClientStreamForClient[pb.BuildLogPortion, emptypb.Empty] {
-	return c.streamBuildLog.CallClientStream(ctx)
+// CloseSend closes the request side of the stream.
+func (s ControllerBuilderServiceConnectBuilderClientStream) CloseSend() error {
+	return s.stream.CloseSend()
 }
 
-// SaveArtifact calls neoshowcase.protobuf.ControllerBuilderService.SaveArtifact.
-func (c *controllerBuilderServiceClient) SaveArtifact(ctx context.Context, req *connect.Request[pb.SaveArtifactRequest]) (*connect.Response[emptypb.Empty], error) {
-	return c.saveArtifact.CallUnary(ctx, req)
+// Receive returns the next response message from the server.
+func (s ControllerBuilderServiceConnectBuilderClientStream) Receive() (*pb.BuilderRequest, error) {
+	var res pb.BuilderRequest
+	if err := s.stream.Receive(&res); err != nil {
+		return nil, err
+	}
+	return &res, nil
 }
 
-// SaveBuildLog calls neoshowcase.protobuf.ControllerBuilderService.SaveBuildLog.
-func (c *controllerBuilderServiceClient) SaveBuildLog(ctx context.Context, req *connect.Request[pb.SaveBuildLogRequest]) (*connect.Response[emptypb.Empty], error) {
-	return c.saveBuildLog.CallUnary(ctx, req)
-}
-
-// SaveRuntimeImage calls neoshowcase.protobuf.ControllerBuilderService.SaveRuntimeImage.
-func (c *controllerBuilderServiceClient) SaveRuntimeImage(ctx context.Context, req *connect.Request[pb.SaveRuntimeImageRequest]) (*connect.Response[emptypb.Empty], error) {
-	return c.saveRuntimeImage.CallUnary(ctx, req)
-}
-
-// ConnectBuilder calls neoshowcase.protobuf.ControllerBuilderService.ConnectBuilder.
-func (c *controllerBuilderServiceClient) ConnectBuilder(ctx context.Context) *connect.BidiStreamForClient[pb.BuilderResponse, pb.BuilderRequest] {
-	return c.connectBuilder.CallBidiStream(ctx)
+// Close releases the stream's resources. It is idempotent and is typically deferred to clean up a
+// stream abandoned before io.EOF.
+func (s ControllerBuilderServiceConnectBuilderClientStream) Close() error {
+	return s.stream.Close()
 }
 
 // ControllerBuilderServiceHandler is an implementation of the
 // neoshowcase.protobuf.ControllerBuilderService service.
 type ControllerBuilderServiceHandler interface {
-	GetBuilderSystemInfo(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[pb.BuilderSystemInfo], error)
-	PingBuild(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error)
-	StreamBuildLog(context.Context, *connect.ClientStream[pb.BuildLogPortion]) (*connect.Response[emptypb.Empty], error)
-	SaveArtifact(context.Context, *connect.Request[pb.SaveArtifactRequest]) (*connect.Response[emptypb.Empty], error)
-	SaveBuildLog(context.Context, *connect.Request[pb.SaveBuildLogRequest]) (*connect.Response[emptypb.Empty], error)
-	SaveRuntimeImage(context.Context, *connect.Request[pb.SaveRuntimeImageRequest]) (*connect.Response[emptypb.Empty], error)
-	ConnectBuilder(context.Context, *connect.BidiStream[pb.BuilderResponse, pb.BuilderRequest]) error
+	GetBuilderSystemInfo(context.Context, *emptypb.Empty) (*pb.BuilderSystemInfo, error)
+	PingBuild(context.Context, *pb.BuildIdRequest) (*emptypb.Empty, error)
+	StreamBuildLog(context.Context, ControllerBuilderServiceStreamBuildLogServerStream) (*emptypb.Empty, error)
+	SaveArtifact(context.Context, *pb.SaveArtifactRequest) (*emptypb.Empty, error)
+	SaveBuildLog(context.Context, *pb.SaveBuildLogRequest) (*emptypb.Empty, error)
+	SaveRuntimeImage(context.Context, *pb.SaveRuntimeImageRequest) (*emptypb.Empty, error)
+	ConnectBuilder(context.Context, ControllerBuilderServiceConnectBuilderServerStream) error
 }
 
-// NewControllerBuilderServiceHandler builds an HTTP handler from the service implementation. It
-// returns the path on which to mount the handler and the handler itself.
-//
-// By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
-// and JSON codecs. They also support gzip compression.
-func NewControllerBuilderServiceHandler(svc ControllerBuilderServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
-	controllerBuilderServiceMethods := pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerBuilderService").Methods()
-	controllerBuilderServiceGetBuilderSystemInfoHandler := connect.NewUnaryHandler(
-		ControllerBuilderServiceGetBuilderSystemInfoProcedure,
-		svc.GetBuilderSystemInfo,
-		connect.WithSchema(controllerBuilderServiceMethods.ByName("GetBuilderSystemInfo")),
-		connect.WithHandlerOptions(opts...),
+// RegisterControllerBuilderServiceHandler registers svc as the
+// neoshowcase.protobuf.ControllerBuilderService implementation on server.
+func RegisterControllerBuilderServiceHandler(server *connect.Server, svc ControllerBuilderServiceHandler) {
+	adapter := controllerBuilderServiceHandler{svc: svc}
+	server.Register(
+		connect.Method{Spec: controllerBuilderServiceGetBuilderSystemInfoSpec(), Handler: adapter.getBuilderSystemInfo},
+		connect.Method{Spec: controllerBuilderServicePingBuildSpec(), Handler: adapter.pingBuild},
+		connect.Method{Spec: controllerBuilderServiceStreamBuildLogSpec(), Handler: adapter.streamBuildLog},
+		connect.Method{Spec: controllerBuilderServiceSaveArtifactSpec(), Handler: adapter.saveArtifact},
+		connect.Method{Spec: controllerBuilderServiceSaveBuildLogSpec(), Handler: adapter.saveBuildLog},
+		connect.Method{Spec: controllerBuilderServiceSaveRuntimeImageSpec(), Handler: adapter.saveRuntimeImage},
+		connect.Method{Spec: controllerBuilderServiceConnectBuilderSpec(), Handler: adapter.connectBuilder},
 	)
-	controllerBuilderServicePingBuildHandler := connect.NewUnaryHandler(
-		ControllerBuilderServicePingBuildProcedure,
-		svc.PingBuild,
-		connect.WithSchema(controllerBuilderServiceMethods.ByName("PingBuild")),
-		connect.WithHandlerOptions(opts...),
-	)
-	controllerBuilderServiceStreamBuildLogHandler := connect.NewClientStreamHandler(
-		ControllerBuilderServiceStreamBuildLogProcedure,
-		svc.StreamBuildLog,
-		connect.WithSchema(controllerBuilderServiceMethods.ByName("StreamBuildLog")),
-		connect.WithHandlerOptions(opts...),
-	)
-	controllerBuilderServiceSaveArtifactHandler := connect.NewUnaryHandler(
-		ControllerBuilderServiceSaveArtifactProcedure,
-		svc.SaveArtifact,
-		connect.WithSchema(controllerBuilderServiceMethods.ByName("SaveArtifact")),
-		connect.WithHandlerOptions(opts...),
-	)
-	controllerBuilderServiceSaveBuildLogHandler := connect.NewUnaryHandler(
-		ControllerBuilderServiceSaveBuildLogProcedure,
-		svc.SaveBuildLog,
-		connect.WithSchema(controllerBuilderServiceMethods.ByName("SaveBuildLog")),
-		connect.WithHandlerOptions(opts...),
-	)
-	controllerBuilderServiceSaveRuntimeImageHandler := connect.NewUnaryHandler(
-		ControllerBuilderServiceSaveRuntimeImageProcedure,
-		svc.SaveRuntimeImage,
-		connect.WithSchema(controllerBuilderServiceMethods.ByName("SaveRuntimeImage")),
-		connect.WithHandlerOptions(opts...),
-	)
-	controllerBuilderServiceConnectBuilderHandler := connect.NewBidiStreamHandler(
-		ControllerBuilderServiceConnectBuilderProcedure,
-		svc.ConnectBuilder,
-		connect.WithSchema(controllerBuilderServiceMethods.ByName("ConnectBuilder")),
-		connect.WithHandlerOptions(opts...),
-	)
-	return "/neoshowcase.protobuf.ControllerBuilderService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.URL.Path {
-		case ControllerBuilderServiceGetBuilderSystemInfoProcedure:
-			controllerBuilderServiceGetBuilderSystemInfoHandler.ServeHTTP(w, r)
-		case ControllerBuilderServicePingBuildProcedure:
-			controllerBuilderServicePingBuildHandler.ServeHTTP(w, r)
-		case ControllerBuilderServiceStreamBuildLogProcedure:
-			controllerBuilderServiceStreamBuildLogHandler.ServeHTTP(w, r)
-		case ControllerBuilderServiceSaveArtifactProcedure:
-			controllerBuilderServiceSaveArtifactHandler.ServeHTTP(w, r)
-		case ControllerBuilderServiceSaveBuildLogProcedure:
-			controllerBuilderServiceSaveBuildLogHandler.ServeHTTP(w, r)
-		case ControllerBuilderServiceSaveRuntimeImageProcedure:
-			controllerBuilderServiceSaveRuntimeImageHandler.ServeHTTP(w, r)
-		case ControllerBuilderServiceConnectBuilderProcedure:
-			controllerBuilderServiceConnectBuilderHandler.ServeHTTP(w, r)
-		default:
-			http.NotFound(w, r)
-		}
-	})
+}
+
+// ControllerBuilderServiceStreamBuildLogServerStream is the server stream for the
+// ControllerBuilderService's StreamBuildLog RPC.
+type ControllerBuilderServiceStreamBuildLogServerStream struct {
+	stream connect.ServerStream
+}
+
+// Receive returns the next request message from the client.
+func (s ControllerBuilderServiceStreamBuildLogServerStream) Receive() (*pb.BuildLogPortion, error) {
+	var req pb.BuildLogPortion
+	if err := s.stream.Receive(&req); err != nil {
+		return nil, err
+	}
+	return &req, nil
+}
+
+// ControllerBuilderServiceConnectBuilderServerStream is the server stream for the
+// ControllerBuilderService's ConnectBuilder RPC.
+type ControllerBuilderServiceConnectBuilderServerStream struct {
+	stream connect.ServerStream
+}
+
+// Receive returns the next request message from the client.
+func (s ControllerBuilderServiceConnectBuilderServerStream) Receive() (*pb.BuilderResponse, error) {
+	var req pb.BuilderResponse
+	if err := s.stream.Receive(&req); err != nil {
+		return nil, err
+	}
+	return &req, nil
+}
+
+// SendHeaders flushes the response headers without a message. The first Send does this implicitly.
+func (s ControllerBuilderServiceConnectBuilderServerStream) SendHeaders() error {
+	return s.stream.SendHeaders()
+}
+
+// Send sends a response message to the client.
+func (s ControllerBuilderServiceConnectBuilderServerStream) Send(res *pb.BuilderRequest) error {
+	return s.stream.Send(res)
 }
 
 // UnimplementedControllerBuilderServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedControllerBuilderServiceHandler struct{}
 
-func (UnimplementedControllerBuilderServiceHandler) GetBuilderSystemInfo(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[pb.BuilderSystemInfo], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerBuilderService.GetBuilderSystemInfo is not implemented"))
+func (UnimplementedControllerBuilderServiceHandler) GetBuilderSystemInfo(context.Context, *emptypb.Empty) (*pb.BuilderSystemInfo, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neoshowcase.protobuf.ControllerBuilderService.GetBuilderSystemInfo is not implemented")
 }
 
-func (UnimplementedControllerBuilderServiceHandler) PingBuild(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerBuilderService.PingBuild is not implemented"))
+func (UnimplementedControllerBuilderServiceHandler) PingBuild(context.Context, *pb.BuildIdRequest) (*emptypb.Empty, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neoshowcase.protobuf.ControllerBuilderService.PingBuild is not implemented")
 }
 
-func (UnimplementedControllerBuilderServiceHandler) StreamBuildLog(context.Context, *connect.ClientStream[pb.BuildLogPortion]) (*connect.Response[emptypb.Empty], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerBuilderService.StreamBuildLog is not implemented"))
+func (UnimplementedControllerBuilderServiceHandler) StreamBuildLog(context.Context, ControllerBuilderServiceStreamBuildLogServerStream) (*emptypb.Empty, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neoshowcase.protobuf.ControllerBuilderService.StreamBuildLog is not implemented")
 }
 
-func (UnimplementedControllerBuilderServiceHandler) SaveArtifact(context.Context, *connect.Request[pb.SaveArtifactRequest]) (*connect.Response[emptypb.Empty], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerBuilderService.SaveArtifact is not implemented"))
+func (UnimplementedControllerBuilderServiceHandler) SaveArtifact(context.Context, *pb.SaveArtifactRequest) (*emptypb.Empty, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neoshowcase.protobuf.ControllerBuilderService.SaveArtifact is not implemented")
 }
 
-func (UnimplementedControllerBuilderServiceHandler) SaveBuildLog(context.Context, *connect.Request[pb.SaveBuildLogRequest]) (*connect.Response[emptypb.Empty], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerBuilderService.SaveBuildLog is not implemented"))
+func (UnimplementedControllerBuilderServiceHandler) SaveBuildLog(context.Context, *pb.SaveBuildLogRequest) (*emptypb.Empty, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neoshowcase.protobuf.ControllerBuilderService.SaveBuildLog is not implemented")
 }
 
-func (UnimplementedControllerBuilderServiceHandler) SaveRuntimeImage(context.Context, *connect.Request[pb.SaveRuntimeImageRequest]) (*connect.Response[emptypb.Empty], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerBuilderService.SaveRuntimeImage is not implemented"))
+func (UnimplementedControllerBuilderServiceHandler) SaveRuntimeImage(context.Context, *pb.SaveRuntimeImageRequest) (*emptypb.Empty, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neoshowcase.protobuf.ControllerBuilderService.SaveRuntimeImage is not implemented")
 }
 
-func (UnimplementedControllerBuilderServiceHandler) ConnectBuilder(context.Context, *connect.BidiStream[pb.BuilderResponse, pb.BuilderRequest]) error {
-	return connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerBuilderService.ConnectBuilder is not implemented"))
+func (UnimplementedControllerBuilderServiceHandler) ConnectBuilder(context.Context, ControllerBuilderServiceConnectBuilderServerStream) error {
+	return connect.NewError(connect.CodeUnimplemented, "neoshowcase.protobuf.ControllerBuilderService.ConnectBuilder is not implemented")
 }
+
+type controllerBuilderServiceClient struct {
+	client *connect.Client
+}
+
+func (c *controllerBuilderServiceClient) GetBuilderSystemInfo(ctx context.Context, req *emptypb.Empty) (*pb.BuilderSystemInfo, error) {
+	var res pb.BuilderSystemInfo
+	if err := c.client.CallUnary(ctx, controllerBuilderServiceGetBuilderSystemInfoSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *controllerBuilderServiceClient) PingBuild(ctx context.Context, req *pb.BuildIdRequest) (*emptypb.Empty, error) {
+	var res emptypb.Empty
+	if err := c.client.CallUnary(ctx, controllerBuilderServicePingBuildSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *controllerBuilderServiceClient) StreamBuildLog(ctx context.Context) (ControllerBuilderServiceStreamBuildLogClientStream, error) {
+	stream, err := c.client.CallClientStream(ctx, controllerBuilderServiceStreamBuildLogSpec())
+	if err != nil {
+		return ControllerBuilderServiceStreamBuildLogClientStream{}, err
+	}
+	return ControllerBuilderServiceStreamBuildLogClientStream{stream: stream}, nil
+}
+
+func (c *controllerBuilderServiceClient) SaveArtifact(ctx context.Context, req *pb.SaveArtifactRequest) (*emptypb.Empty, error) {
+	var res emptypb.Empty
+	if err := c.client.CallUnary(ctx, controllerBuilderServiceSaveArtifactSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *controllerBuilderServiceClient) SaveBuildLog(ctx context.Context, req *pb.SaveBuildLogRequest) (*emptypb.Empty, error) {
+	var res emptypb.Empty
+	if err := c.client.CallUnary(ctx, controllerBuilderServiceSaveBuildLogSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *controllerBuilderServiceClient) SaveRuntimeImage(ctx context.Context, req *pb.SaveRuntimeImageRequest) (*emptypb.Empty, error) {
+	var res emptypb.Empty
+	if err := c.client.CallUnary(ctx, controllerBuilderServiceSaveRuntimeImageSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *controllerBuilderServiceClient) ConnectBuilder(ctx context.Context) (ControllerBuilderServiceConnectBuilderClientStream, error) {
+	stream, err := c.client.CallClientStream(ctx, controllerBuilderServiceConnectBuilderSpec())
+	if err != nil {
+		return ControllerBuilderServiceConnectBuilderClientStream{}, err
+	}
+	return ControllerBuilderServiceConnectBuilderClientStream{stream: stream}, nil
+}
+
+type controllerBuilderServiceHandler struct {
+	svc ControllerBuilderServiceHandler
+}
+
+func (h controllerBuilderServiceHandler) getBuilderSystemInfo(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req emptypb.Empty
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.GetBuilderSystemInfo(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h controllerBuilderServiceHandler) pingBuild(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req pb.BuildIdRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.PingBuild(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h controllerBuilderServiceHandler) streamBuildLog(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	res, err := h.svc.StreamBuildLog(ctx, ControllerBuilderServiceStreamBuildLogServerStream{stream: stream})
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h controllerBuilderServiceHandler) saveArtifact(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req pb.SaveArtifactRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.SaveArtifact(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h controllerBuilderServiceHandler) saveBuildLog(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req pb.SaveBuildLogRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.SaveBuildLog(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h controllerBuilderServiceHandler) saveRuntimeImage(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req pb.SaveRuntimeImageRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.SaveRuntimeImage(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h controllerBuilderServiceHandler) connectBuilder(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	return h.svc.ConnectBuilder(ctx, ControllerBuilderServiceConnectBuilderServerStream{stream: stream})
+}
+
+var (
+	buildpackHelperServiceCopyFileTreeSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("BuildpackHelperService").Methods().ByName("CopyFileTree"),
+			Procedure:  BuildpackHelperServiceCopyFileTreeProcedure,
+		}
+	})
+	buildpackHelperServiceExecSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeServer,
+			Schema:     pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("BuildpackHelperService").Methods().ByName("Exec"),
+			Procedure:  BuildpackHelperServiceExecProcedure,
+		}
+	})
+)
 
 // BuildpackHelperServiceClient is a client for the neoshowcase.protobuf.BuildpackHelperService
 // service.
 type BuildpackHelperServiceClient interface {
-	CopyFileTree(context.Context, *connect.Request[pb.CopyFileTreeRequest]) (*connect.Response[emptypb.Empty], error)
-	Exec(context.Context, *connect.Request[pb.HelperExecRequest]) (*connect.ServerStreamForClient[pb.HelperExecResponse], error)
+	CopyFileTree(context.Context, *pb.CopyFileTreeRequest) (*emptypb.Empty, error)
+	Exec(context.Context, *pb.HelperExecRequest) (BuildpackHelperServiceExecClientStream, error)
 }
 
 // NewBuildpackHelperServiceClient constructs a client for the
-// neoshowcase.protobuf.BuildpackHelperService service. By default, it uses the Connect protocol
-// with the binary Protobuf Codec, asks for gzipped responses, and sends uncompressed requests. To
-// use the gRPC or gRPC-Web protocols, supply the connect.WithGRPC() or connect.WithGRPCWeb()
-// options.
-//
-// The URL supplied here should be the base URL for the Connect or gRPC server (for example,
-// http://api.acme.com or https://acme.com/grpc).
-func NewBuildpackHelperServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) BuildpackHelperServiceClient {
-	baseURL = strings.TrimRight(baseURL, "/")
-	buildpackHelperServiceMethods := pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("BuildpackHelperService").Methods()
-	return &buildpackHelperServiceClient{
-		copyFileTree: connect.NewClient[pb.CopyFileTreeRequest, emptypb.Empty](
-			httpClient,
-			baseURL+BuildpackHelperServiceCopyFileTreeProcedure,
-			connect.WithSchema(buildpackHelperServiceMethods.ByName("CopyFileTree")),
-			connect.WithClientOptions(opts...),
-		),
-		exec: connect.NewClient[pb.HelperExecRequest, pb.HelperExecResponse](
-			httpClient,
-			baseURL+BuildpackHelperServiceExecProcedure,
-			connect.WithSchema(buildpackHelperServiceMethods.ByName("Exec")),
-			connect.WithClientOptions(opts...),
-		),
+// neoshowcase.protobuf.BuildpackHelperService service. Multiple service clients may share a single
+// connect.Client.
+func NewBuildpackHelperServiceClient(client *connect.Client) BuildpackHelperServiceClient {
+	return &buildpackHelperServiceClient{client: client}
+}
+
+// BuildpackHelperServiceExecClientStream is the client stream for the BuildpackHelperService's Exec
+// RPC.
+type BuildpackHelperServiceExecClientStream struct {
+	stream connect.ClientStream
+}
+
+// Receive returns the next response message from the server.
+func (s BuildpackHelperServiceExecClientStream) Receive() (*pb.HelperExecResponse, error) {
+	var res pb.HelperExecResponse
+	if err := s.stream.Receive(&res); err != nil {
+		return nil, err
 	}
+	return &res, nil
 }
 
-// buildpackHelperServiceClient implements BuildpackHelperServiceClient.
-type buildpackHelperServiceClient struct {
-	copyFileTree *connect.Client[pb.CopyFileTreeRequest, emptypb.Empty]
-	exec         *connect.Client[pb.HelperExecRequest, pb.HelperExecResponse]
-}
-
-// CopyFileTree calls neoshowcase.protobuf.BuildpackHelperService.CopyFileTree.
-func (c *buildpackHelperServiceClient) CopyFileTree(ctx context.Context, req *connect.Request[pb.CopyFileTreeRequest]) (*connect.Response[emptypb.Empty], error) {
-	return c.copyFileTree.CallUnary(ctx, req)
-}
-
-// Exec calls neoshowcase.protobuf.BuildpackHelperService.Exec.
-func (c *buildpackHelperServiceClient) Exec(ctx context.Context, req *connect.Request[pb.HelperExecRequest]) (*connect.ServerStreamForClient[pb.HelperExecResponse], error) {
-	return c.exec.CallServerStream(ctx, req)
+// Close releases the stream's resources. It is idempotent and is typically deferred to clean up a
+// stream abandoned before io.EOF.
+func (s BuildpackHelperServiceExecClientStream) Close() error {
+	return s.stream.Close()
 }
 
 // BuildpackHelperServiceHandler is an implementation of the
 // neoshowcase.protobuf.BuildpackHelperService service.
 type BuildpackHelperServiceHandler interface {
-	CopyFileTree(context.Context, *connect.Request[pb.CopyFileTreeRequest]) (*connect.Response[emptypb.Empty], error)
-	Exec(context.Context, *connect.Request[pb.HelperExecRequest], *connect.ServerStream[pb.HelperExecResponse]) error
+	CopyFileTree(context.Context, *pb.CopyFileTreeRequest) (*emptypb.Empty, error)
+	Exec(context.Context, *pb.HelperExecRequest, BuildpackHelperServiceExecServerStream) error
 }
 
-// NewBuildpackHelperServiceHandler builds an HTTP handler from the service implementation. It
-// returns the path on which to mount the handler and the handler itself.
-//
-// By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
-// and JSON codecs. They also support gzip compression.
-func NewBuildpackHelperServiceHandler(svc BuildpackHelperServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
-	buildpackHelperServiceMethods := pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("BuildpackHelperService").Methods()
-	buildpackHelperServiceCopyFileTreeHandler := connect.NewUnaryHandler(
-		BuildpackHelperServiceCopyFileTreeProcedure,
-		svc.CopyFileTree,
-		connect.WithSchema(buildpackHelperServiceMethods.ByName("CopyFileTree")),
-		connect.WithHandlerOptions(opts...),
+// RegisterBuildpackHelperServiceHandler registers svc as the
+// neoshowcase.protobuf.BuildpackHelperService implementation on server.
+func RegisterBuildpackHelperServiceHandler(server *connect.Server, svc BuildpackHelperServiceHandler) {
+	adapter := buildpackHelperServiceHandler{svc: svc}
+	server.Register(
+		connect.Method{Spec: buildpackHelperServiceCopyFileTreeSpec(), Handler: adapter.copyFileTree},
+		connect.Method{Spec: buildpackHelperServiceExecSpec(), Handler: adapter.exec},
 	)
-	buildpackHelperServiceExecHandler := connect.NewServerStreamHandler(
-		BuildpackHelperServiceExecProcedure,
-		svc.Exec,
-		connect.WithSchema(buildpackHelperServiceMethods.ByName("Exec")),
-		connect.WithHandlerOptions(opts...),
-	)
-	return "/neoshowcase.protobuf.BuildpackHelperService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.URL.Path {
-		case BuildpackHelperServiceCopyFileTreeProcedure:
-			buildpackHelperServiceCopyFileTreeHandler.ServeHTTP(w, r)
-		case BuildpackHelperServiceExecProcedure:
-			buildpackHelperServiceExecHandler.ServeHTTP(w, r)
-		default:
-			http.NotFound(w, r)
-		}
-	})
+}
+
+// BuildpackHelperServiceExecServerStream is the server stream for the BuildpackHelperService's Exec
+// RPC.
+type BuildpackHelperServiceExecServerStream struct {
+	stream connect.ServerStream
+}
+
+// SendHeaders flushes the response headers without a message. The first Send does this implicitly.
+func (s BuildpackHelperServiceExecServerStream) SendHeaders() error {
+	return s.stream.SendHeaders()
+}
+
+// Send sends a response message to the client.
+func (s BuildpackHelperServiceExecServerStream) Send(res *pb.HelperExecResponse) error {
+	return s.stream.Send(res)
 }
 
 // UnimplementedBuildpackHelperServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedBuildpackHelperServiceHandler struct{}
 
-func (UnimplementedBuildpackHelperServiceHandler) CopyFileTree(context.Context, *connect.Request[pb.CopyFileTreeRequest]) (*connect.Response[emptypb.Empty], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.BuildpackHelperService.CopyFileTree is not implemented"))
+func (UnimplementedBuildpackHelperServiceHandler) CopyFileTree(context.Context, *pb.CopyFileTreeRequest) (*emptypb.Empty, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neoshowcase.protobuf.BuildpackHelperService.CopyFileTree is not implemented")
 }
 
-func (UnimplementedBuildpackHelperServiceHandler) Exec(context.Context, *connect.Request[pb.HelperExecRequest], *connect.ServerStream[pb.HelperExecResponse]) error {
-	return connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.BuildpackHelperService.Exec is not implemented"))
+func (UnimplementedBuildpackHelperServiceHandler) Exec(context.Context, *pb.HelperExecRequest, BuildpackHelperServiceExecServerStream) error {
+	return connect.NewError(connect.CodeUnimplemented, "neoshowcase.protobuf.BuildpackHelperService.Exec is not implemented")
 }
+
+type buildpackHelperServiceClient struct {
+	client *connect.Client
+}
+
+func (c *buildpackHelperServiceClient) CopyFileTree(ctx context.Context, req *pb.CopyFileTreeRequest) (*emptypb.Empty, error) {
+	var res emptypb.Empty
+	if err := c.client.CallUnary(ctx, buildpackHelperServiceCopyFileTreeSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *buildpackHelperServiceClient) Exec(ctx context.Context, req *pb.HelperExecRequest) (BuildpackHelperServiceExecClientStream, error) {
+	stream, err := c.client.CallServerStream(ctx, buildpackHelperServiceExecSpec(), req)
+	if err != nil {
+		return BuildpackHelperServiceExecClientStream{}, err
+	}
+	return BuildpackHelperServiceExecClientStream{stream: stream}, nil
+}
+
+type buildpackHelperServiceHandler struct{ svc BuildpackHelperServiceHandler }
+
+func (h buildpackHelperServiceHandler) copyFileTree(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req pb.CopyFileTreeRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.CopyFileTree(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h buildpackHelperServiceHandler) exec(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req pb.HelperExecRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	return h.svc.Exec(ctx, &req, BuildpackHelperServiceExecServerStream{stream: stream})
+}
+
+var (
+	controllerSSGenServiceConnectSSGenSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeServer,
+			Schema:     pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerSSGenService").Methods().ByName("ConnectSSGen"),
+			Procedure:  ControllerSSGenServiceConnectSSGenProcedure,
+		}
+	})
+)
 
 // ControllerSSGenServiceClient is a client for the neoshowcase.protobuf.ControllerSSGenService
 // service.
 type ControllerSSGenServiceClient interface {
-	ConnectSSGen(context.Context, *connect.Request[emptypb.Empty]) (*connect.ServerStreamForClient[pb.SSGenRequest], error)
+	ConnectSSGen(context.Context, *emptypb.Empty) (ControllerSSGenServiceConnectSSGenClientStream, error)
 }
 
 // NewControllerSSGenServiceClient constructs a client for the
-// neoshowcase.protobuf.ControllerSSGenService service. By default, it uses the Connect protocol
-// with the binary Protobuf Codec, asks for gzipped responses, and sends uncompressed requests. To
-// use the gRPC or gRPC-Web protocols, supply the connect.WithGRPC() or connect.WithGRPCWeb()
-// options.
-//
-// The URL supplied here should be the base URL for the Connect or gRPC server (for example,
-// http://api.acme.com or https://acme.com/grpc).
-func NewControllerSSGenServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) ControllerSSGenServiceClient {
-	baseURL = strings.TrimRight(baseURL, "/")
-	controllerSSGenServiceMethods := pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerSSGenService").Methods()
-	return &controllerSSGenServiceClient{
-		connectSSGen: connect.NewClient[emptypb.Empty, pb.SSGenRequest](
-			httpClient,
-			baseURL+ControllerSSGenServiceConnectSSGenProcedure,
-			connect.WithSchema(controllerSSGenServiceMethods.ByName("ConnectSSGen")),
-			connect.WithClientOptions(opts...),
-		),
+// neoshowcase.protobuf.ControllerSSGenService service. Multiple service clients may share a single
+// connect.Client.
+func NewControllerSSGenServiceClient(client *connect.Client) ControllerSSGenServiceClient {
+	return &controllerSSGenServiceClient{client: client}
+}
+
+// ControllerSSGenServiceConnectSSGenClientStream is the client stream for the
+// ControllerSSGenService's ConnectSSGen RPC.
+type ControllerSSGenServiceConnectSSGenClientStream struct {
+	stream connect.ClientStream
+}
+
+// Receive returns the next response message from the server.
+func (s ControllerSSGenServiceConnectSSGenClientStream) Receive() (*pb.SSGenRequest, error) {
+	var res pb.SSGenRequest
+	if err := s.stream.Receive(&res); err != nil {
+		return nil, err
 	}
+	return &res, nil
 }
 
-// controllerSSGenServiceClient implements ControllerSSGenServiceClient.
-type controllerSSGenServiceClient struct {
-	connectSSGen *connect.Client[emptypb.Empty, pb.SSGenRequest]
-}
-
-// ConnectSSGen calls neoshowcase.protobuf.ControllerSSGenService.ConnectSSGen.
-func (c *controllerSSGenServiceClient) ConnectSSGen(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.ServerStreamForClient[pb.SSGenRequest], error) {
-	return c.connectSSGen.CallServerStream(ctx, req)
+// Close releases the stream's resources. It is idempotent and is typically deferred to clean up a
+// stream abandoned before io.EOF.
+func (s ControllerSSGenServiceConnectSSGenClientStream) Close() error {
+	return s.stream.Close()
 }
 
 // ControllerSSGenServiceHandler is an implementation of the
 // neoshowcase.protobuf.ControllerSSGenService service.
 type ControllerSSGenServiceHandler interface {
-	ConnectSSGen(context.Context, *connect.Request[emptypb.Empty], *connect.ServerStream[pb.SSGenRequest]) error
+	ConnectSSGen(context.Context, *emptypb.Empty, ControllerSSGenServiceConnectSSGenServerStream) error
 }
 
-// NewControllerSSGenServiceHandler builds an HTTP handler from the service implementation. It
-// returns the path on which to mount the handler and the handler itself.
-//
-// By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
-// and JSON codecs. They also support gzip compression.
-func NewControllerSSGenServiceHandler(svc ControllerSSGenServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
-	controllerSSGenServiceMethods := pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerSSGenService").Methods()
-	controllerSSGenServiceConnectSSGenHandler := connect.NewServerStreamHandler(
-		ControllerSSGenServiceConnectSSGenProcedure,
-		svc.ConnectSSGen,
-		connect.WithSchema(controllerSSGenServiceMethods.ByName("ConnectSSGen")),
-		connect.WithHandlerOptions(opts...),
+// RegisterControllerSSGenServiceHandler registers svc as the
+// neoshowcase.protobuf.ControllerSSGenService implementation on server.
+func RegisterControllerSSGenServiceHandler(server *connect.Server, svc ControllerSSGenServiceHandler) {
+	adapter := controllerSSGenServiceHandler{svc: svc}
+	server.Register(
+		connect.Method{Spec: controllerSSGenServiceConnectSSGenSpec(), Handler: adapter.connectSSGen},
 	)
-	return "/neoshowcase.protobuf.ControllerSSGenService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.URL.Path {
-		case ControllerSSGenServiceConnectSSGenProcedure:
-			controllerSSGenServiceConnectSSGenHandler.ServeHTTP(w, r)
-		default:
-			http.NotFound(w, r)
-		}
-	})
+}
+
+// ControllerSSGenServiceConnectSSGenServerStream is the server stream for the
+// ControllerSSGenService's ConnectSSGen RPC.
+type ControllerSSGenServiceConnectSSGenServerStream struct {
+	stream connect.ServerStream
+}
+
+// SendHeaders flushes the response headers without a message. The first Send does this implicitly.
+func (s ControllerSSGenServiceConnectSSGenServerStream) SendHeaders() error {
+	return s.stream.SendHeaders()
+}
+
+// Send sends a response message to the client.
+func (s ControllerSSGenServiceConnectSSGenServerStream) Send(res *pb.SSGenRequest) error {
+	return s.stream.Send(res)
 }
 
 // UnimplementedControllerSSGenServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedControllerSSGenServiceHandler struct{}
 
-func (UnimplementedControllerSSGenServiceHandler) ConnectSSGen(context.Context, *connect.Request[emptypb.Empty], *connect.ServerStream[pb.SSGenRequest]) error {
-	return connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerSSGenService.ConnectSSGen is not implemented"))
+func (UnimplementedControllerSSGenServiceHandler) ConnectSSGen(context.Context, *emptypb.Empty, ControllerSSGenServiceConnectSSGenServerStream) error {
+	return connect.NewError(connect.CodeUnimplemented, "neoshowcase.protobuf.ControllerSSGenService.ConnectSSGen is not implemented")
 }
+
+type controllerSSGenServiceClient struct {
+	client *connect.Client
+}
+
+func (c *controllerSSGenServiceClient) ConnectSSGen(ctx context.Context, req *emptypb.Empty) (ControllerSSGenServiceConnectSSGenClientStream, error) {
+	stream, err := c.client.CallServerStream(ctx, controllerSSGenServiceConnectSSGenSpec(), req)
+	if err != nil {
+		return ControllerSSGenServiceConnectSSGenClientStream{}, err
+	}
+	return ControllerSSGenServiceConnectSSGenClientStream{stream: stream}, nil
+}
+
+type controllerSSGenServiceHandler struct{ svc ControllerSSGenServiceHandler }
+
+func (h controllerSSGenServiceHandler) connectSSGen(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req emptypb.Empty
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	return h.svc.ConnectSSGen(ctx, &req, ControllerSSGenServiceConnectSSGenServerStream{stream: stream})
+}
+
+var (
+	giteaIntegrationServiceSyncSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("GiteaIntegrationService").Methods().ByName("Sync"),
+			Procedure:  GiteaIntegrationServiceSyncProcedure,
+		}
+	})
+)
 
 // GiteaIntegrationServiceClient is a client for the neoshowcase.protobuf.GiteaIntegrationService
 // service.
 type GiteaIntegrationServiceClient interface {
-	Sync(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error)
+	Sync(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
 }
 
 // NewGiteaIntegrationServiceClient constructs a client for the
-// neoshowcase.protobuf.GiteaIntegrationService service. By default, it uses the Connect protocol
-// with the binary Protobuf Codec, asks for gzipped responses, and sends uncompressed requests. To
-// use the gRPC or gRPC-Web protocols, supply the connect.WithGRPC() or connect.WithGRPCWeb()
-// options.
-//
-// The URL supplied here should be the base URL for the Connect or gRPC server (for example,
-// http://api.acme.com or https://acme.com/grpc).
-func NewGiteaIntegrationServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) GiteaIntegrationServiceClient {
-	baseURL = strings.TrimRight(baseURL, "/")
-	giteaIntegrationServiceMethods := pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("GiteaIntegrationService").Methods()
-	return &giteaIntegrationServiceClient{
-		sync: connect.NewClient[emptypb.Empty, emptypb.Empty](
-			httpClient,
-			baseURL+GiteaIntegrationServiceSyncProcedure,
-			connect.WithSchema(giteaIntegrationServiceMethods.ByName("Sync")),
-			connect.WithClientOptions(opts...),
-		),
-	}
-}
-
-// giteaIntegrationServiceClient implements GiteaIntegrationServiceClient.
-type giteaIntegrationServiceClient struct {
-	sync *connect.Client[emptypb.Empty, emptypb.Empty]
-}
-
-// Sync calls neoshowcase.protobuf.GiteaIntegrationService.Sync.
-func (c *giteaIntegrationServiceClient) Sync(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error) {
-	return c.sync.CallUnary(ctx, req)
+// neoshowcase.protobuf.GiteaIntegrationService service. Multiple service clients may share a single
+// connect.Client.
+func NewGiteaIntegrationServiceClient(client *connect.Client) GiteaIntegrationServiceClient {
+	return &giteaIntegrationServiceClient{client: client}
 }
 
 // GiteaIntegrationServiceHandler is an implementation of the
 // neoshowcase.protobuf.GiteaIntegrationService service.
 type GiteaIntegrationServiceHandler interface {
-	Sync(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error)
+	Sync(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
 }
 
-// NewGiteaIntegrationServiceHandler builds an HTTP handler from the service implementation. It
-// returns the path on which to mount the handler and the handler itself.
-//
-// By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
-// and JSON codecs. They also support gzip compression.
-func NewGiteaIntegrationServiceHandler(svc GiteaIntegrationServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
-	giteaIntegrationServiceMethods := pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("GiteaIntegrationService").Methods()
-	giteaIntegrationServiceSyncHandler := connect.NewUnaryHandler(
-		GiteaIntegrationServiceSyncProcedure,
-		svc.Sync,
-		connect.WithSchema(giteaIntegrationServiceMethods.ByName("Sync")),
-		connect.WithHandlerOptions(opts...),
+// RegisterGiteaIntegrationServiceHandler registers svc as the
+// neoshowcase.protobuf.GiteaIntegrationService implementation on server.
+func RegisterGiteaIntegrationServiceHandler(server *connect.Server, svc GiteaIntegrationServiceHandler) {
+	adapter := giteaIntegrationServiceHandler{svc: svc}
+	server.Register(
+		connect.Method{Spec: giteaIntegrationServiceSyncSpec(), Handler: adapter.sync},
 	)
-	return "/neoshowcase.protobuf.GiteaIntegrationService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.URL.Path {
-		case GiteaIntegrationServiceSyncProcedure:
-			giteaIntegrationServiceSyncHandler.ServeHTTP(w, r)
-		default:
-			http.NotFound(w, r)
-		}
-	})
 }
 
 // UnimplementedGiteaIntegrationServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedGiteaIntegrationServiceHandler struct{}
 
-func (UnimplementedGiteaIntegrationServiceHandler) Sync(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.GiteaIntegrationService.Sync is not implemented"))
+func (UnimplementedGiteaIntegrationServiceHandler) Sync(context.Context, *emptypb.Empty) (*emptypb.Empty, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neoshowcase.protobuf.GiteaIntegrationService.Sync is not implemented")
+}
+
+type giteaIntegrationServiceClient struct {
+	client *connect.Client
+}
+
+func (c *giteaIntegrationServiceClient) Sync(ctx context.Context, req *emptypb.Empty) (*emptypb.Empty, error) {
+	var res emptypb.Empty
+	if err := c.client.CallUnary(ctx, giteaIntegrationServiceSyncSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+type giteaIntegrationServiceHandler struct {
+	svc GiteaIntegrationServiceHandler
+}
+
+func (h giteaIntegrationServiceHandler) sync(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req emptypb.Empty
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.Sync(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
 }

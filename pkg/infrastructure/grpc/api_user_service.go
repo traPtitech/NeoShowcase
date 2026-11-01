@@ -3,7 +3,6 @@ package grpc
 import (
 	"context"
 
-	"connectrpc.com/connect"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -12,50 +11,45 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
-func (s *APIService) GetMe(ctx context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.User], error) {
+func (s *APIService) GetMe(ctx context.Context, _ *emptypb.Empty) (*pb.User, error) {
 	user := s.svc.GetMe(ctx)
-	res := connect.NewResponse(pbconvert.ToPBUser(user, s.avatarBaseURL))
-	return res, nil
+	return pbconvert.ToPBUser(user, s.avatarBaseURL), nil
 }
 
-func (s *APIService) GetUsers(ctx context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.GetUsersResponse], error) {
+func (s *APIService) GetUsers(ctx context.Context, _ *emptypb.Empty) (*pb.GetUsersResponse, error) {
 	users, err := s.svc.GetUsers(ctx)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := connect.NewResponse(&pb.GetUsersResponse{
+	return &pb.GetUsersResponse{
 		Users: ds.Map(users, func(user *domain.User) *pb.User {
 			return pbconvert.ToPBUser(user, s.avatarBaseURL)
 		}),
-	})
-	return res, nil
+	}, nil
 }
 
-func (s *APIService) CreateUserKey(ctx context.Context, c *connect.Request[pb.CreateUserKeyRequest]) (*connect.Response[pb.UserKey], error) {
-	key, err := s.svc.CreateUserKey(ctx, c.Msg.PublicKey, c.Msg.Name)
+func (s *APIService) CreateUserKey(ctx context.Context, req *pb.CreateUserKeyRequest) (*pb.UserKey, error) {
+	key, err := s.svc.CreateUserKey(ctx, req.PublicKey, req.Name)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := connect.NewResponse(pbconvert.ToPBUserKey(key))
-	return res, nil
+	return pbconvert.ToPBUserKey(key), nil
 }
 
-func (s *APIService) GetUserKeys(ctx context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.GetUserKeysResponse], error) {
+func (s *APIService) GetUserKeys(ctx context.Context, _ *emptypb.Empty) (*pb.GetUserKeysResponse, error) {
 	keys, err := s.svc.GetUserKeys(ctx)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := connect.NewResponse(&pb.GetUserKeysResponse{
+	return &pb.GetUserKeysResponse{
 		Keys: ds.Map(keys, pbconvert.ToPBUserKey),
-	})
-	return res, nil
+	}, nil
 }
 
-func (s *APIService) DeleteUserKey(ctx context.Context, c *connect.Request[pb.DeleteUserKeyRequest]) (*connect.Response[emptypb.Empty], error) {
-	err := s.svc.DeleteUserKey(ctx, c.Msg.KeyId)
+func (s *APIService) DeleteUserKey(ctx context.Context, req *pb.DeleteUserKeyRequest) (*emptypb.Empty, error) {
+	err := s.svc.DeleteUserKey(ctx, req.KeyId)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := connect.NewResponse(&emptypb.Empty{})
-	return res, nil
+	return &emptypb.Empty{}, nil
 }

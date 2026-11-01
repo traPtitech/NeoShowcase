@@ -4,66 +4,61 @@ import (
 	"context"
 	"time"
 
-	"connectrpc.com/connect"
-	"github.com/samber/oops"
+	"connectrpc.com/connect/v2"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb/pbconnect"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pbconvert"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
-func (s *APIService) GetAvailableMetrics(ctx context.Context, c *connect.Request[emptypb.Empty]) (*connect.Response[pb.AvailableMetrics], error) {
+func (s *APIService) GetAvailableMetrics(ctx context.Context, _ *emptypb.Empty) (*pb.AvailableMetrics, error) {
 	names := s.svc.GetAvailableMetrics(ctx)
-	res := connect.NewResponse(&pb.AvailableMetrics{
+	return &pb.AvailableMetrics{
 		MetricsNames: names,
-	})
-	return res, nil
+	}, nil
 }
 
-func (s *APIService) GetApplicationMetrics(ctx context.Context, req *connect.Request[pb.GetApplicationMetricsRequest]) (*connect.Response[pb.ApplicationMetrics], error) {
-	msg := req.Msg
-	if msg.Before == nil {
-		return nil, connect.NewError(connect.CodeInvalidArgument, oops.New("before cannot be null"))
+func (s *APIService) GetApplicationMetrics(ctx context.Context, req *pb.GetApplicationMetricsRequest) (*pb.ApplicationMetrics, error) {
+	if req.Before == nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, "before cannot be null")
 	}
 	metrics, err := s.svc.GetApplicationMetrics(ctx,
-		msg.MetricsName,
-		msg.ApplicationId,
-		msg.Before.AsTime(),
-		time.Duration(msg.LimitSeconds)*time.Second,
+		req.MetricsName,
+		req.ApplicationId,
+		req.Before.AsTime(),
+		time.Duration(req.LimitSeconds)*time.Second,
 	)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := connect.NewResponse(&pb.ApplicationMetrics{
+	return &pb.ApplicationMetrics{
 		Metrics: ds.Map(metrics, pbconvert.ToPBApplicationMetric),
-	})
-	return res, nil
+	}, nil
 }
 
-func (s *APIService) GetOutput(ctx context.Context, req *connect.Request[pb.GetOutputRequest]) (*connect.Response[pb.ApplicationOutputs], error) {
-	msg := req.Msg
-	if msg.Before == nil {
-		return nil, connect.NewError(connect.CodeInvalidArgument, oops.New("before cannot be null"))
+func (s *APIService) GetOutput(ctx context.Context, req *pb.GetOutputRequest) (*pb.ApplicationOutputs, error) {
+	if req.Before == nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, "before cannot be null")
 	}
-	before := msg.Before.AsTime()
-	logs, err := s.svc.GetOutput(ctx, msg.ApplicationId, before, int(msg.Limit))
+	before := req.Before.AsTime()
+	logs, err := s.svc.GetOutput(ctx, req.ApplicationId, before, int(req.Limit))
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := connect.NewResponse(&pb.ApplicationOutputs{
+	return &pb.ApplicationOutputs{
 		Outputs: ds.Map(logs, pbconvert.ToPBApplicationOutput),
-	})
-	return res, nil
+	}, nil
 }
 
-func (s *APIService) GetOutputStream(ctx context.Context, req *connect.Request[pb.GetOutputStreamRequest], st *connect.ServerStream[pb.ApplicationOutput]) error {
-	if req.Msg.Begin == nil {
-		return connect.NewError(connect.CodeInvalidArgument, oops.New("begin cannot be null"))
+func (s *APIService) GetOutputStream(ctx context.Context, req *pb.GetOutputStreamRequest, st pbconnect.APIServiceGetOutputStreamServerStream) error {
+	if req.Begin == nil {
+		return connect.NewError(connect.CodeInvalidArgument, "begin cannot be null")
 	}
-	begin := req.Msg.Begin.AsTime()
-	err := s.svc.GetOutputStream(ctx, req.Msg.ApplicationId, begin, func(l *domain.ContainerLog) error {
+	begin := req.Begin.AsTime()
+	err := s.svc.GetOutputStream(ctx, req.ApplicationId, begin, func(l *domain.ContainerLog) error {
 		return st.Send(pbconvert.ToPBApplicationOutput(l))
 	})
 	if err != nil {
