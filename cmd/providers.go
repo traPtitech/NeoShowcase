@@ -96,7 +96,7 @@ func provideBuildpackHelperServer(
 func provideDiscoverer(c Config) (discovery.Discoverer, error) {
 	switch c.Components.Controller.Mode {
 	case "docker":
-		return discovery.NewSingleDiscoverer("127.0.0.1"), nil
+		return discovery.NewSingleDiscoverer(c.Components.Controller.Docker.ServiceName), nil
 	case "k8s", "kubernetes":
 		return discovery.NewK8sDiscoverer(c.Components.Controller.K8s.ServiceName)
 	}
