@@ -4,7 +4,8 @@ go 1.27.3
 
 require (
 	code.gitea.io/sdk/gitea v0.25.1
-	connectrpc.com/connect v1.21.1
+	connectrpc.com/connect v1.19.1
+	connectrpc.com/connect/v2 v2.0.2
 	connectrpc.com/otelconnect v0.12.0
 	github.com/aarondl/null/v8 v8.1.3
 	github.com/aarondl/sqlboiler/v4 v4.19.7
@@ -64,7 +65,6 @@ require (
 )
 
 require (
-	connectrpc.com/connect/v2 v2.0.0 // indirect
 	dario.cat/mergo v1.0.2 // indirect
 	filippo.io/edwards25519 v1.2.0 // indirect
 	github.com/42wim/httpsig v1.2.4 // indirect
