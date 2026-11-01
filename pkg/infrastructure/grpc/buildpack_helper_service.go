@@ -9,7 +9,6 @@ import (
 	"os/exec"
 
 	"connectrpc.com/connect/v2"
-	"github.com/samber/oops"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb/pbconnect"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
@@ -52,7 +51,7 @@ func (b *buildpackHelperExec) Write(p []byte) (n int, err error) {
 
 func (b *BuildpackHelperService) Exec(ctx context.Context, req *pb.HelperExecRequest, st pbconnect.BuildpackHelperServiceExecServerStream) error {
 	if len(req.Cmd) == 0 {
-		return connect.NewError(connect.CodeInvalidArgument, oops.New("cmd cannot have length of 0").Error())
+		return connect.NewError(connect.CodeInvalidArgument, "cmd cannot have length of 0")
 	}
 
 	// Prepare command
