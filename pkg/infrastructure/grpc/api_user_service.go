@@ -30,8 +30,8 @@ func (s *APIService) GetUsers(ctx context.Context, _ *emptypb.Empty) (*pb.GetUse
 	return res, nil
 }
 
-func (s *APIService) CreateUserKey(ctx context.Context, c *pb.CreateUserKeyRequest) (*pb.UserKey, error) {
-	key, err := s.svc.CreateUserKey(ctx, c.PublicKey, c.Name)
+func (s *APIService) CreateUserKey(ctx context.Context, req *pb.CreateUserKeyRequest) (*pb.UserKey, error) {
+	key, err := s.svc.CreateUserKey(ctx, req.PublicKey, req.Name)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
@@ -50,8 +50,8 @@ func (s *APIService) GetUserKeys(ctx context.Context, _ *emptypb.Empty) (*pb.Get
 	return res, nil
 }
 
-func (s *APIService) DeleteUserKey(ctx context.Context, c *pb.DeleteUserKeyRequest) (*emptypb.Empty, error) {
-	err := s.svc.DeleteUserKey(ctx, c.KeyId)
+func (s *APIService) DeleteUserKey(ctx context.Context, req *pb.DeleteUserKeyRequest) (*emptypb.Empty, error) {
+	err := s.svc.DeleteUserKey(ctx, req.KeyId)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}

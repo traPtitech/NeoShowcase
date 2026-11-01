@@ -100,8 +100,8 @@ func (s *ControllerService) SyncDeployments(ctx context.Context, _ *emptypb.Empt
 	return res, nil
 }
 
-func (s *ControllerService) DiscoverBuildLogInstance(ctx context.Context, c *pb.BuildIdRequest) (*pb.AddressInfo, error) {
-	res, err := s.DiscoverBuildLogLocal(ctx, c)
+func (s *ControllerService) DiscoverBuildLogInstance(ctx context.Context, req *pb.BuildIdRequest) (*pb.AddressInfo, error) {
+	res, err := s.DiscoverBuildLogLocal(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +114,7 @@ func (s *ControllerService) DiscoverBuildLogInstance(ctx context.Context, c *pb.
 	for _, address := range s.cluster.AllNeighborAddresses(s.Port) {
 		p.Go(func() (*pb.AddressInfo, error) {
 			client, _ := s.clientCache.Get(ctx, address)
-			return client.DiscoverBuildLogLocal(ctx, c.BuildId)
+			return client.DiscoverBuildLogLocal(ctx, req.BuildId)
 		})
 	}
 	neighborResults, err := p.Wait()
@@ -131,9 +131,9 @@ func (s *ControllerService) DiscoverBuildLogInstance(ctx context.Context, c *pb.
 	return neighborResult, nil
 }
 
-func (s *ControllerService) StreamBuildLog(ctx context.Context, c *pb.BuildIdRequest, c2 pbconnect.ControllerServiceStreamBuildLogServerStream) error {
+func (s *ControllerService) StreamBuildLog(ctx context.Context, req *pb.BuildIdRequest, st pbconnect.ControllerServiceStreamBuildLogServerStream) error {
 	sub := make(chan []byte, 100)
-	ok, unsubscribe := s.logStream.SubscribeBuildLog(c.BuildId, sub)
+	ok, unsubscribe := s.logStream.SubscribeBuildLog(req.BuildId, sub)
 	if !ok {
 		return oops.New("build log stream unavailable")
 	}
@@ -146,7 +146,7 @@ loop:
 			if !ok {
 				break loop
 			}
-			err := c2.Send(&pb.BuildLog{Log: l})
+			err := st.Send(&pb.BuildLog{Log: l})
 			if err != nil {
 				return oops.Wrapf(err, "sending message")
 			}
@@ -176,8 +176,8 @@ func (s *ControllerService) StartBuild(ctx context.Context, _ *emptypb.Empty) (*
 	return res, nil
 }
 
-func (s *ControllerService) CancelBuild(ctx context.Context, c *pb.BuildIdRequest) (*emptypb.Empty, error) {
-	buildID := c.BuildId
+func (s *ControllerService) CancelBuild(ctx context.Context, req *pb.BuildIdRequest) (*emptypb.Empty, error) {
+	buildID := req.BuildId
 	s.builder.CancelBuild(buildID)
 
 	// Broadcast to cluster

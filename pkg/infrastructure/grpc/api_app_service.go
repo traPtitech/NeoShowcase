@@ -17,12 +17,11 @@ import (
 )
 
 func (s *APIService) CreateApplication(ctx context.Context, req *pb.CreateApplicationRequest) (*pb.Application, error) {
-	msg := req
 	user := web.GetUser(ctx)
 	now := time.Now()
-	config := pbconvert.FromPBApplicationConfig(msg.Config)
+	config := pbconvert.FromPBApplicationConfig(req.Config)
 
-	repo, err := s.svc.GetRepository(ctx, msg.RepositoryId)
+	repo, err := s.svc.GetRepository(ctx, req.RepositoryId)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
@@ -30,19 +29,19 @@ func (s *APIService) CreateApplication(ctx context.Context, req *pb.CreateApplic
 
 	app := &domain.Application{
 		ID:               domain.NewID(),
-		Name:             msg.Name,
-		RepositoryID:     msg.RepositoryId,
-		RefName:          msg.RefName,
+		Name:             req.Name,
+		RepositoryID:     req.RepositoryId,
+		RefName:          req.RefName,
 		Commit:           domain.EmptyCommit,
 		DeployType:       config.BuildConfig.BuildType().DeployType(),
-		Running:          msg.StartOnCreate,
+		Running:          req.StartOnCreate,
 		Container:        domain.ContainerStateMissing,
 		CurrentBuild:     "",
 		CreatedAt:        now,
 		UpdatedAt:        now,
 		Config:           config,
-		Websites:         ds.Map(msg.Websites, pbconvert.FromPBCreateWebsiteRequest),
-		PortPublications: ds.Map(msg.PortPublications, pbconvert.FromPBPortPublication),
+		Websites:         ds.Map(req.Websites, pbconvert.FromPBCreateWebsiteRequest),
+		PortPublications: ds.Map(req.PortPublications, pbconvert.FromPBPortPublication),
 		OwnerIDs:         ownerIDs,
 	}
 	app, err = s.svc.CreateApplication(ctx, app)
@@ -80,15 +79,14 @@ func (s *APIService) GetApplication(ctx context.Context, req *pb.ApplicationIdRe
 }
 
 func (s *APIService) UpdateApplication(ctx context.Context, req *pb.UpdateApplicationRequest) (*emptypb.Empty, error) {
-	msg := req
-	err := s.svc.UpdateApplication(ctx, msg.Id, &domain.UpdateApplicationArgs{
-		Name:             optional.FromPtr(msg.Name),
-		RefName:          optional.FromPtr(msg.RefName),
+	err := s.svc.UpdateApplication(ctx, req.Id, &domain.UpdateApplicationArgs{
+		Name:             optional.FromPtr(req.Name),
+		RefName:          optional.FromPtr(req.RefName),
 		UpdatedAt:        optional.From(time.Now()),
-		Config:           optional.FromNonZero(msg.Config).Map(pbconvert.FromPBApplicationConfig),
-		Websites:         optional.FromNonZero(msg.Websites).Map(pbconvert.FromPBUpdateWebsites),
-		PortPublications: optional.FromNonZero(msg.PortPublications).Map(pbconvert.FromPBUpdatePorts),
-		OwnerIDs:         optional.FromNonZero(msg.OwnerIds).Map(pbconvert.FromPBUpdateOwners),
+		Config:           optional.FromNonZero(req.Config).Map(pbconvert.FromPBApplicationConfig),
+		Websites:         optional.FromNonZero(req.Websites).Map(pbconvert.FromPBUpdateWebsites),
+		PortPublications: optional.FromNonZero(req.PortPublications).Map(pbconvert.FromPBUpdatePorts),
+		OwnerIDs:         optional.FromNonZero(req.OwnerIds).Map(pbconvert.FromPBUpdateOwners),
 	})
 	if err != nil {
 		return nil, handleUseCaseError(err)

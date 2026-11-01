@@ -15,11 +15,10 @@ import (
 )
 
 func (s *APIService) CreateRepository(ctx context.Context, req *pb.CreateRepositoryRequest) (*pb.Repository, error) {
-	msg := req
 	repo, err := s.svc.CreateRepository(ctx,
-		msg.Name,
-		msg.Url,
-		pbconvert.FromPBRepositoryAuth(msg.Auth),
+		req.Name,
+		req.Url,
+		pbconvert.FromPBRepositoryAuth(req.Auth),
 	)
 	if err != nil {
 		return nil, handleUseCaseError(err)
@@ -39,8 +38,8 @@ func (s *APIService) GetRepositories(ctx context.Context, req *pb.GetRepositorie
 	return res, nil
 }
 
-func (s *APIService) GetRepositoryCommits(ctx context.Context, c *pb.GetRepositoryCommitsRequest) (*pb.GetRepositoryCommitsResponse, error) {
-	commits, err := s.svc.GetRepositoryCommits(ctx, c.Hashes)
+func (s *APIService) GetRepositoryCommits(ctx context.Context, req *pb.GetRepositoryCommitsRequest) (*pb.GetRepositoryCommitsResponse, error) {
+	commits, err := s.svc.GetRepositoryCommits(ctx, req.Hashes)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
@@ -76,14 +75,13 @@ func (s *APIService) GetRepositoryRefs(ctx context.Context, req *pb.RepositoryId
 }
 
 func (s *APIService) UpdateRepository(ctx context.Context, req *pb.UpdateRepositoryRequest) (*emptypb.Empty, error) {
-	msg := req
 	args := &apiserver.UpdateRepositoryArgs{
-		Name:     optional.FromPtr(msg.Name),
-		URL:      optional.FromPtr(msg.Url),
-		Auth:     optional.FromNonZero(msg.Auth).Map(pbconvert.FromPBRepositoryAuth),
-		OwnerIDs: optional.FromNonZero(msg.OwnerIds).Map(pbconvert.FromPBUpdateRepositoryOwners),
+		Name:     optional.FromPtr(req.Name),
+		URL:      optional.FromPtr(req.Url),
+		Auth:     optional.FromNonZero(req.Auth).Map(pbconvert.FromPBRepositoryAuth),
+		OwnerIDs: optional.FromNonZero(req.OwnerIds).Map(pbconvert.FromPBUpdateRepositoryOwners),
 	}
-	err := s.svc.UpdateRepository(ctx, msg.Id, args)
+	err := s.svc.UpdateRepository(ctx, req.Id, args)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}

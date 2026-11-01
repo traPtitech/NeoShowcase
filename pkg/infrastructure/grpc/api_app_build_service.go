@@ -13,8 +13,8 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
-func (s *APIService) GetAllBuilds(ctx context.Context, c *pb.GetAllBuildsRequest) (*pb.GetBuildsResponse, error) {
-	builds, err := s.svc.GetAllBuilds(ctx, int(c.Page), int(c.Limit))
+func (s *APIService) GetAllBuilds(ctx context.Context, req *pb.GetAllBuildsRequest) (*pb.GetBuildsResponse, error) {
+	builds, err := s.svc.GetAllBuilds(ctx, int(req.Page), int(req.Limit))
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
@@ -45,8 +45,7 @@ func (s *APIService) GetBuild(ctx context.Context, req *pb.BuildIdRequest) (*pb.
 }
 
 func (s *APIService) RetryCommitBuild(ctx context.Context, req *pb.RetryCommitBuildRequest) (*emptypb.Empty, error) {
-	msg := req
-	err := s.svc.RetryCommitBuild(ctx, msg.ApplicationId, msg.Commit)
+	err := s.svc.RetryCommitBuild(ctx, req.ApplicationId, req.Commit)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}

@@ -22,8 +22,7 @@ func (s *APIService) GetEnvVars(ctx context.Context, req *pb.ApplicationIdReques
 }
 
 func (s *APIService) SetEnvVar(ctx context.Context, req *pb.SetApplicationEnvVarRequest) (*emptypb.Empty, error) {
-	msg := req
-	err := s.svc.SetEnvironmentVariable(ctx, msg.ApplicationId, msg.Key, msg.Value)
+	err := s.svc.SetEnvironmentVariable(ctx, req.ApplicationId, req.Key, req.Value)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
@@ -32,8 +31,7 @@ func (s *APIService) SetEnvVar(ctx context.Context, req *pb.SetApplicationEnvVar
 }
 
 func (s *APIService) DeleteEnvVar(ctx context.Context, req *pb.DeleteApplicationEnvVarRequest) (*emptypb.Empty, error) {
-	msg := req
-	err := s.svc.DeleteEnvironmentVariable(ctx, msg.ApplicationId, msg.Key)
+	err := s.svc.DeleteEnvironmentVariable(ctx, req.ApplicationId, req.Key)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}

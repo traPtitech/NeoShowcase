@@ -15,7 +15,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
-func (s *APIService) GetAvailableMetrics(ctx context.Context, c *emptypb.Empty) (*pb.AvailableMetrics, error) {
+func (s *APIService) GetAvailableMetrics(ctx context.Context, _ *emptypb.Empty) (*pb.AvailableMetrics, error) {
 	names := s.svc.GetAvailableMetrics(ctx)
 	res := &pb.AvailableMetrics{
 		MetricsNames: names,
@@ -24,15 +24,14 @@ func (s *APIService) GetAvailableMetrics(ctx context.Context, c *emptypb.Empty) 
 }
 
 func (s *APIService) GetApplicationMetrics(ctx context.Context, req *pb.GetApplicationMetricsRequest) (*pb.ApplicationMetrics, error) {
-	msg := req
-	if msg.Before == nil {
+	if req.Before == nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, oops.New("before cannot be null").Error())
 	}
 	metrics, err := s.svc.GetApplicationMetrics(ctx,
-		msg.MetricsName,
-		msg.ApplicationId,
-		msg.Before.AsTime(),
-		time.Duration(msg.LimitSeconds)*time.Second,
+		req.MetricsName,
+		req.ApplicationId,
+		req.Before.AsTime(),
+		time.Duration(req.LimitSeconds)*time.Second,
 	)
 	if err != nil {
 		return nil, handleUseCaseError(err)
@@ -44,12 +43,11 @@ func (s *APIService) GetApplicationMetrics(ctx context.Context, req *pb.GetAppli
 }
 
 func (s *APIService) GetOutput(ctx context.Context, req *pb.GetOutputRequest) (*pb.ApplicationOutputs, error) {
-	msg := req
-	if msg.Before == nil {
+	if req.Before == nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, oops.New("before cannot be null").Error())
 	}
-	before := msg.Before.AsTime()
-	logs, err := s.svc.GetOutput(ctx, msg.ApplicationId, before, int(msg.Limit))
+	before := req.Before.AsTime()
+	logs, err := s.svc.GetOutput(ctx, req.ApplicationId, before, int(req.Limit))
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
