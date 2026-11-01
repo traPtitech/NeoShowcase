@@ -2,10 +2,12 @@ package grpc
 
 import (
 	"context"
+	"log/slog"
 	"time"
 
 	"connectrpc.com/connect/v2"
 	"github.com/motoki317/sc"
+	"github.com/samber/oops"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
@@ -38,7 +40,10 @@ func (a *AuthInterceptor) authenticate(ctx *context.Context) error {
 	}
 	user, err := a.userCache.Get(*ctx, name)
 	if err != nil {
-		return connect.NewError(connect.CodeInternal, err.Error()).WithCause(err)
+		err = oops.With("user_name", name).Wrapf(err, "ensuring user")
+		// This interceptor runs outside the log interceptor, so nothing else logs this error.
+		slog.ErrorContext(*ctx, "failed to authenticate request", "error", err)
+		return connect.NewError(connect.CodeInternal, "internal server error").WithCause(err)
 	}
 	web.SetUser(ctx, user)
 	return nil
