@@ -1,7 +1,7 @@
 [tools]
 go = "1.27"
 node = "24"
-pnpm = "11.28.10"
+pnpm = "12" # bootstrap only; the exact version is packageManager in dashboard/package.json
 
 k3d = "5.9.0"
 kubectl = "1.37.2"
