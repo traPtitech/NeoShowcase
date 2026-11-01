@@ -103,9 +103,7 @@ func NewControllerBuilderService(
 }
 
 func (s *ControllerBuilderService) GetBuilderSystemInfo(_ context.Context, _ *emptypb.Empty) (*pb.BuilderSystemInfo, error) {
-	si := pbconvert.ToPBBuilderSystemInfo(s.systemInfo)
-	res := si
-	return res, nil
+	return pbconvert.ToPBBuilderSystemInfo(s.systemInfo), nil
 }
 
 func (s *ControllerBuilderService) PingBuild(ctx context.Context, req *pb.BuildIdRequest) (*emptypb.Empty, error) {
@@ -117,8 +115,7 @@ func (s *ControllerBuilderService) PingBuild(ctx context.Context, req *pb.BuildI
 		return nil, err
 	}
 
-	res := &emptypb.Empty{}
-	return res, nil
+	return &emptypb.Empty{}, nil
 }
 
 func (s *ControllerBuilderService) StreamBuildLog(ctx context.Context, st pbconnect.ControllerBuilderServiceStreamBuildLogServerStream) (*emptypb.Empty, error) {
@@ -134,8 +131,7 @@ func (s *ControllerBuilderService) StreamBuildLog(ctx context.Context, st pbconn
 		}
 		s.logStream.AppendBuildLog(msg.BuildId, msg.Log)
 	}
-	res := &emptypb.Empty{}
-	return res, nil
+	return &emptypb.Empty{}, nil
 }
 
 func (s *ControllerBuilderService) SaveArtifact(ctx context.Context, req *pb.SaveArtifactRequest) (*emptypb.Empty, error) {
@@ -150,8 +146,7 @@ func (s *ControllerBuilderService) SaveArtifact(ctx context.Context, req *pb.Sav
 		return nil, err
 	}
 
-	res := &emptypb.Empty{}
-	return res, nil
+	return &emptypb.Empty{}, nil
 }
 
 func (s *ControllerBuilderService) SaveBuildLog(_ context.Context, req *pb.SaveBuildLogRequest) (*emptypb.Empty, error) {
@@ -159,8 +154,7 @@ func (s *ControllerBuilderService) SaveBuildLog(_ context.Context, req *pb.SaveB
 	if err != nil {
 		return nil, err
 	}
-	res := &emptypb.Empty{}
-	return res, nil
+	return &emptypb.Empty{}, nil
 }
 
 func (s *ControllerBuilderService) SaveRuntimeImage(ctx context.Context, req *pb.SaveRuntimeImageRequest) (*emptypb.Empty, error) {
@@ -169,8 +163,7 @@ func (s *ControllerBuilderService) SaveRuntimeImage(ctx context.Context, req *pb
 	if err != nil {
 		return nil, err
 	}
-	res := &emptypb.Empty{}
-	return res, nil
+	return &emptypb.Empty{}, nil
 }
 
 func (s *ControllerBuilderService) ConnectBuilder(ctx context.Context, st pbconnect.ControllerBuilderServiceConnectBuilderServerStream) error {

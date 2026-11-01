@@ -23,8 +23,7 @@ func (s *APIService) CreateRepository(ctx context.Context, req *pb.CreateReposit
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := pbconvert.ToPBRepository(repo)
-	return res, nil
+	return pbconvert.ToPBRepository(repo), nil
 }
 
 func (s *APIService) GetRepositories(ctx context.Context, req *pb.GetRepositoriesRequest) (*pb.GetRepositoriesResponse, error) {
@@ -32,10 +31,9 @@ func (s *APIService) GetRepositories(ctx context.Context, req *pb.GetRepositorie
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := &pb.GetRepositoriesResponse{
+	return &pb.GetRepositoriesResponse{
 		Repositories: ds.Map(repositories, pbconvert.ToPBRepository),
-	}
-	return res, nil
+	}, nil
 }
 
 func (s *APIService) GetRepositoryCommits(ctx context.Context, req *pb.GetRepositoryCommitsRequest) (*pb.GetRepositoryCommitsResponse, error) {
@@ -43,10 +41,9 @@ func (s *APIService) GetRepositoryCommits(ctx context.Context, req *pb.GetReposi
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := &pb.GetRepositoryCommitsResponse{
+	return &pb.GetRepositoryCommitsResponse{
 		Commits: ds.Map(commits, pbconvert.ToPBSimpleCommit),
-	}
-	return res, nil
+	}, nil
 }
 
 func (s *APIService) GetRepository(ctx context.Context, req *pb.RepositoryIdRequest) (*pb.Repository, error) {
@@ -54,8 +51,7 @@ func (s *APIService) GetRepository(ctx context.Context, req *pb.RepositoryIdRequ
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := pbconvert.ToPBRepository(repository)
-	return res, nil
+	return pbconvert.ToPBRepository(repository), nil
 }
 
 func (s *APIService) GetRepositoryRefs(ctx context.Context, req *pb.RepositoryIdRequest) (*pb.GetRepositoryRefsResponse, error) {
@@ -70,8 +66,7 @@ func (s *APIService) GetRepositoryRefs(ctx context.Context, req *pb.RepositoryId
 		}
 	})
 	slices.SortFunc(pbRefs, ds.LessFunc(func(r *pb.GitRef) string { return r.RefName }))
-	res := &pb.GetRepositoryRefsResponse{Refs: pbRefs}
-	return res, nil
+	return &pb.GetRepositoryRefsResponse{Refs: pbRefs}, nil
 }
 
 func (s *APIService) UpdateRepository(ctx context.Context, req *pb.UpdateRepositoryRequest) (*emptypb.Empty, error) {
@@ -85,8 +80,7 @@ func (s *APIService) UpdateRepository(ctx context.Context, req *pb.UpdateReposit
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := &emptypb.Empty{}
-	return res, nil
+	return &emptypb.Empty{}, nil
 }
 
 func (s *APIService) RefreshRepository(ctx context.Context, req *pb.RepositoryIdRequest) (*emptypb.Empty, error) {
@@ -94,8 +88,7 @@ func (s *APIService) RefreshRepository(ctx context.Context, req *pb.RepositoryId
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := &emptypb.Empty{}
-	return res, nil
+	return &emptypb.Empty{}, nil
 }
 
 func (s *APIService) DeleteRepository(ctx context.Context, req *pb.RepositoryIdRequest) (*emptypb.Empty, error) {
@@ -103,6 +96,5 @@ func (s *APIService) DeleteRepository(ctx context.Context, req *pb.RepositoryIdR
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := &emptypb.Empty{}
-	return res, nil
+	return &emptypb.Empty{}, nil
 }

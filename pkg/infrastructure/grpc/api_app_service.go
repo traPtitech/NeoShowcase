@@ -48,8 +48,7 @@ func (s *APIService) CreateApplication(ctx context.Context, req *pb.CreateApplic
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := pbconvert.ToPBApplication(app, nil)
-	return res, nil
+	return pbconvert.ToPBApplication(app, nil), nil
 }
 
 func (s *APIService) GetApplications(ctx context.Context, req *pb.GetApplicationsRequest) (*pb.GetApplicationsResponse, error) {
@@ -61,12 +60,11 @@ func (s *APIService) GetApplications(ctx context.Context, req *pb.GetApplication
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := &pb.GetApplicationsResponse{
+	return &pb.GetApplicationsResponse{
 		Applications: ds.Map(apps, func(app *apiserver.TopAppInfo) *pb.Application {
 			return pbconvert.ToPBApplication(app.App, app.LatestBuild)
 		}),
-	}
-	return res, nil
+	}, nil
 }
 
 func (s *APIService) GetApplication(ctx context.Context, req *pb.ApplicationIdRequest) (*pb.Application, error) {
@@ -74,8 +72,7 @@ func (s *APIService) GetApplication(ctx context.Context, req *pb.ApplicationIdRe
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := pbconvert.ToPBApplication(app.App, app.LatestBuild)
-	return res, nil
+	return pbconvert.ToPBApplication(app.App, app.LatestBuild), nil
 }
 
 func (s *APIService) UpdateApplication(ctx context.Context, req *pb.UpdateApplicationRequest) (*emptypb.Empty, error) {
@@ -91,8 +88,7 @@ func (s *APIService) UpdateApplication(ctx context.Context, req *pb.UpdateApplic
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := &emptypb.Empty{}
-	return res, nil
+	return &emptypb.Empty{}, nil
 }
 
 func (s *APIService) DeleteApplication(ctx context.Context, req *pb.ApplicationIdRequest) (*emptypb.Empty, error) {
@@ -100,6 +96,5 @@ func (s *APIService) DeleteApplication(ctx context.Context, req *pb.ApplicationI
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := &emptypb.Empty{}
-	return res, nil
+	return &emptypb.Empty{}, nil
 }

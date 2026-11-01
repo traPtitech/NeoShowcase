@@ -14,8 +14,7 @@ func (s *APIService) GetSystemInfo(ctx context.Context, _ *emptypb.Empty) (*pb.S
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := pbconvert.ToPBSystemInfo(i)
-	return res, nil
+	return pbconvert.ToPBSystemInfo(i), nil
 }
 
 func (s *APIService) GenerateKeyPair(ctx context.Context, _ *emptypb.Empty) (*pb.GenerateKeyPairResponse, error) {
@@ -23,9 +22,8 @@ func (s *APIService) GenerateKeyPair(ctx context.Context, _ *emptypb.Empty) (*pb
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := &pb.GenerateKeyPairResponse{
+	return &pb.GenerateKeyPairResponse{
 		KeyId:     keyID,
 		PublicKey: pubKey,
-	}
-	return res, nil
+	}, nil
 }

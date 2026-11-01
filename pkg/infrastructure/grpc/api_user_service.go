@@ -13,8 +13,7 @@ import (
 
 func (s *APIService) GetMe(ctx context.Context, _ *emptypb.Empty) (*pb.User, error) {
 	user := s.svc.GetMe(ctx)
-	res := pbconvert.ToPBUser(user, s.avatarBaseURL)
-	return res, nil
+	return pbconvert.ToPBUser(user, s.avatarBaseURL), nil
 }
 
 func (s *APIService) GetUsers(ctx context.Context, _ *emptypb.Empty) (*pb.GetUsersResponse, error) {
@@ -22,12 +21,11 @@ func (s *APIService) GetUsers(ctx context.Context, _ *emptypb.Empty) (*pb.GetUse
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := &pb.GetUsersResponse{
+	return &pb.GetUsersResponse{
 		Users: ds.Map(users, func(user *domain.User) *pb.User {
 			return pbconvert.ToPBUser(user, s.avatarBaseURL)
 		}),
-	}
-	return res, nil
+	}, nil
 }
 
 func (s *APIService) CreateUserKey(ctx context.Context, req *pb.CreateUserKeyRequest) (*pb.UserKey, error) {
@@ -35,8 +33,7 @@ func (s *APIService) CreateUserKey(ctx context.Context, req *pb.CreateUserKeyReq
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := pbconvert.ToPBUserKey(key)
-	return res, nil
+	return pbconvert.ToPBUserKey(key), nil
 }
 
 func (s *APIService) GetUserKeys(ctx context.Context, _ *emptypb.Empty) (*pb.GetUserKeysResponse, error) {
@@ -44,10 +41,9 @@ func (s *APIService) GetUserKeys(ctx context.Context, _ *emptypb.Empty) (*pb.Get
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := &pb.GetUserKeysResponse{
+	return &pb.GetUserKeysResponse{
 		Keys: ds.Map(keys, pbconvert.ToPBUserKey),
-	}
-	return res, nil
+	}, nil
 }
 
 func (s *APIService) DeleteUserKey(ctx context.Context, req *pb.DeleteUserKeyRequest) (*emptypb.Empty, error) {
@@ -55,6 +51,5 @@ func (s *APIService) DeleteUserKey(ctx context.Context, req *pb.DeleteUserKeyReq
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := &emptypb.Empty{}
-	return res, nil
+	return &emptypb.Empty{}, nil
 }

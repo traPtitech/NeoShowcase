@@ -15,10 +15,9 @@ func (s *APIService) GetEnvVars(ctx context.Context, req *pb.ApplicationIdReques
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := &pb.ApplicationEnvVars{
+	return &pb.ApplicationEnvVars{
 		Variables: ds.Map(environments, pbconvert.ToPBEnvironment),
-	}
-	return res, nil
+	}, nil
 }
 
 func (s *APIService) SetEnvVar(ctx context.Context, req *pb.SetApplicationEnvVarRequest) (*emptypb.Empty, error) {
@@ -26,8 +25,7 @@ func (s *APIService) SetEnvVar(ctx context.Context, req *pb.SetApplicationEnvVar
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := &emptypb.Empty{}
-	return res, nil
+	return &emptypb.Empty{}, nil
 }
 
 func (s *APIService) DeleteEnvVar(ctx context.Context, req *pb.DeleteApplicationEnvVarRequest) (*emptypb.Empty, error) {
@@ -35,8 +33,7 @@ func (s *APIService) DeleteEnvVar(ctx context.Context, req *pb.DeleteApplication
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := &emptypb.Empty{}
-	return res, nil
+	return &emptypb.Empty{}, nil
 }
 
 func (s *APIService) StartApplication(ctx context.Context, req *pb.ApplicationIdRequest) (*emptypb.Empty, error) {
@@ -44,8 +41,7 @@ func (s *APIService) StartApplication(ctx context.Context, req *pb.ApplicationId
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := &emptypb.Empty{}
-	return res, nil
+	return &emptypb.Empty{}, nil
 }
 
 func (s *APIService) StopApplication(ctx context.Context, req *pb.ApplicationIdRequest) (*emptypb.Empty, error) {
@@ -53,6 +49,5 @@ func (s *APIService) StopApplication(ctx context.Context, req *pb.ApplicationIdR
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := &emptypb.Empty{}
-	return res, nil
+	return &emptypb.Empty{}, nil
 }

@@ -16,10 +16,9 @@ import (
 
 func (s *APIService) GetAvailableMetrics(ctx context.Context, _ *emptypb.Empty) (*pb.AvailableMetrics, error) {
 	names := s.svc.GetAvailableMetrics(ctx)
-	res := &pb.AvailableMetrics{
+	return &pb.AvailableMetrics{
 		MetricsNames: names,
-	}
-	return res, nil
+	}, nil
 }
 
 func (s *APIService) GetApplicationMetrics(ctx context.Context, req *pb.GetApplicationMetricsRequest) (*pb.ApplicationMetrics, error) {
@@ -35,10 +34,9 @@ func (s *APIService) GetApplicationMetrics(ctx context.Context, req *pb.GetAppli
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := &pb.ApplicationMetrics{
+	return &pb.ApplicationMetrics{
 		Metrics: ds.Map(metrics, pbconvert.ToPBApplicationMetric),
-	}
-	return res, nil
+	}, nil
 }
 
 func (s *APIService) GetOutput(ctx context.Context, req *pb.GetOutputRequest) (*pb.ApplicationOutputs, error) {
@@ -50,10 +48,9 @@ func (s *APIService) GetOutput(ctx context.Context, req *pb.GetOutputRequest) (*
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := &pb.ApplicationOutputs{
+	return &pb.ApplicationOutputs{
 		Outputs: ds.Map(logs, pbconvert.ToPBApplicationOutput),
-	}
-	return res, nil
+	}, nil
 }
 
 func (s *APIService) GetOutputStream(ctx context.Context, req *pb.GetOutputStreamRequest, st pbconnect.APIServiceGetOutputStreamServerStream) error {

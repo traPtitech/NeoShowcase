@@ -63,21 +63,17 @@ func (s *ControllerService) GetSystemInfo(_ context.Context, _ *emptypb.Empty) (
 	if err != nil {
 		return nil, err
 	}
-	pbInfo := pbconvert.ToPBSystemInfo(info)
-	res := pbInfo
-	return res, nil
+	return pbconvert.ToPBSystemInfo(info), nil
 }
 
 func (s *ControllerService) FetchRepository(_ context.Context, c *pb.RepositoryIdRequest) (*emptypb.Empty, error) {
 	s.fetcher.Fetch(c.RepositoryId)
-	res := &emptypb.Empty{}
-	return res, nil
+	return &emptypb.Empty{}, nil
 }
 
 func (s *ControllerService) RegisterBuild(_ context.Context, req *pb.ApplicationIdRequest) (*emptypb.Empty, error) {
 	s.cd.RegisterBuild(req.Id)
-	res := &emptypb.Empty{}
-	return res, nil
+	return &emptypb.Empty{}, nil
 }
 
 func (s *ControllerService) SyncDeployments(ctx context.Context, _ *emptypb.Empty) (*emptypb.Empty, error) {
@@ -96,8 +92,7 @@ func (s *ControllerService) SyncDeployments(ctx context.Context, _ *emptypb.Empt
 		return nil, err
 	}
 
-	res := &emptypb.Empty{}
-	return res, nil
+	return &emptypb.Empty{}, nil
 }
 
 func (s *ControllerService) DiscoverBuildLogInstance(ctx context.Context, req *pb.BuildIdRequest) (*pb.AddressInfo, error) {
@@ -172,8 +167,7 @@ func (s *ControllerService) StartBuild(ctx context.Context, _ *emptypb.Empty) (*
 	if err != nil {
 		return nil, err
 	}
-	res := &emptypb.Empty{}
-	return res, nil
+	return &emptypb.Empty{}, nil
 }
 
 func (s *ControllerService) CancelBuild(ctx context.Context, req *pb.BuildIdRequest) (*emptypb.Empty, error) {
@@ -193,8 +187,7 @@ func (s *ControllerService) CancelBuild(ctx context.Context, req *pb.BuildIdRequ
 		return nil, err
 	}
 
-	res := &emptypb.Empty{}
-	return res, nil
+	return &emptypb.Empty{}, nil
 }
 
 func (s *ControllerService) DiscoverBuildLogLocal(_ context.Context, c *pb.BuildIdRequest) (*pb.AddressInfo, error) {
@@ -211,19 +204,16 @@ func (s *ControllerService) DiscoverBuildLogLocal(_ context.Context, c *pb.Build
 
 func (s *ControllerService) StartBuildLocal(_ context.Context, _ *emptypb.Empty) (*emptypb.Empty, error) {
 	s.cd.StartBuildLocal()
-	res := &emptypb.Empty{}
-	return res, nil
+	return &emptypb.Empty{}, nil
 }
 
 func (s *ControllerService) SyncDeploymentsLocal(_ context.Context, _ *emptypb.Empty) (*emptypb.Empty, error) {
 	s.cd.SyncDeploymentsLocal()
-	res := &emptypb.Empty{}
-	return res, nil
+	return &emptypb.Empty{}, nil
 }
 
 func (s *ControllerService) CancelBuildLocal(_ context.Context, c *pb.BuildIdRequest) (*emptypb.Empty, error) {
 	buildID := c.BuildId
 	s.builder.CancelBuild(buildID)
-	res := &emptypb.Empty{}
-	return res, nil
+	return &emptypb.Empty{}, nil
 }

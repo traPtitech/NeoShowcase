@@ -28,8 +28,7 @@ func (b *BuildpackHelperService) CopyFileTree(_ context.Context, req *pb.CopyFil
 	if err != nil {
 		return nil, err
 	}
-	res := &emptypb.Empty{}
-	return res, nil
+	return &emptypb.Empty{}, nil
 }
 
 type buildpackHelperExec struct {

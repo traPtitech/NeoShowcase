@@ -18,10 +18,9 @@ func (s *APIService) GetAllBuilds(ctx context.Context, req *pb.GetAllBuildsReque
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := &pb.GetBuildsResponse{
+	return &pb.GetBuildsResponse{
 		Builds: ds.Map(builds, pbconvert.ToPBBuild),
-	}
-	return res, nil
+	}, nil
 }
 
 func (s *APIService) GetBuilds(ctx context.Context, req *pb.ApplicationIdRequest) (*pb.GetBuildsResponse, error) {
@@ -29,10 +28,9 @@ func (s *APIService) GetBuilds(ctx context.Context, req *pb.ApplicationIdRequest
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := &pb.GetBuildsResponse{
+	return &pb.GetBuildsResponse{
 		Builds: ds.Map(builds, pbconvert.ToPBBuild),
-	}
-	return res, nil
+	}, nil
 }
 
 func (s *APIService) GetBuild(ctx context.Context, req *pb.BuildIdRequest) (*pb.Build, error) {
@@ -40,8 +38,7 @@ func (s *APIService) GetBuild(ctx context.Context, req *pb.BuildIdRequest) (*pb.
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := pbconvert.ToPBBuild(build)
-	return res, nil
+	return pbconvert.ToPBBuild(build), nil
 }
 
 func (s *APIService) RetryCommitBuild(ctx context.Context, req *pb.RetryCommitBuildRequest) (*emptypb.Empty, error) {
@@ -49,8 +46,7 @@ func (s *APIService) RetryCommitBuild(ctx context.Context, req *pb.RetryCommitBu
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := &emptypb.Empty{}
-	return res, nil
+	return &emptypb.Empty{}, nil
 }
 
 func (s *APIService) CancelBuild(ctx context.Context, req *pb.BuildIdRequest) (*emptypb.Empty, error) {
@@ -58,8 +54,7 @@ func (s *APIService) CancelBuild(ctx context.Context, req *pb.BuildIdRequest) (*
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := &emptypb.Empty{}
-	return res, nil
+	return &emptypb.Empty{}, nil
 }
 
 func (s *APIService) GetBuildLog(ctx context.Context, req *pb.BuildIdRequest) (*pb.BuildLog, error) {
@@ -67,8 +62,7 @@ func (s *APIService) GetBuildLog(ctx context.Context, req *pb.BuildIdRequest) (*
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := &pb.BuildLog{Log: log}
-	return res, nil
+	return &pb.BuildLog{Log: log}, nil
 }
 
 func (s *APIService) GetBuildLogStream(ctx context.Context, req *pb.BuildIdRequest, st pbconnect.APIServiceGetBuildLogStreamServerStream) error {
@@ -98,9 +92,8 @@ func (s *APIService) GetBuildArtifact(ctx context.Context, req *pb.ArtifactIdReq
 	if err != nil {
 		return nil, err
 	}
-	res := &pb.ArtifactContent{
+	return &pb.ArtifactContent{
 		Filename: filename,
 		Content:  content,
-	}
-	return res, nil
+	}, nil
 }
