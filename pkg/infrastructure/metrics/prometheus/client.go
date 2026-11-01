@@ -112,7 +112,7 @@ func (p *promClient) Get(ctx context.Context, name string, app *domain.Applicati
 	if err != nil {
 		return nil, oops.Wrapf(err, "templating promQL")
 	}
-	v, _, err := p.client.QueryRange(ctx, promQL, promv1.Range{
+	v, _, _, err := p.client.QueryRange(ctx, promQL, promv1.Range{
 		Start: before.Add(-limit),
 		End:   before.Add(1), // to inclusive
 		Step:  defaultStep,
