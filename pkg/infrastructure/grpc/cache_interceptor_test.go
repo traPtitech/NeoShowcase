@@ -30,45 +30,41 @@ func TestCacheInterceptor(t *testing.T) {
 	pbconnect.RegisterAPIServiceHandler(server, fakeAPIServiceHandler{})
 	mux := http.NewServeMux()
 	connecthttp.Mount(mux, server)
-	ts := httptest.NewServer(mux)
-	t.Cleanup(ts.Close)
 
-	url := ts.URL + pbconnect.APIServiceGetSystemInfoProcedure
-	get := func(t *testing.T, ifNoneMatch string) *http.Response {
-		t.Helper()
-		req, err := http.NewRequest(http.MethodGet, url+"?connect=v1&encoding=json&message={}", nil)
-		require.NoError(t, err)
+	getURL := pbconnect.APIServiceGetSystemInfoProcedure + "?connect=v1&encoding=json&message={}"
+	get := func(ifNoneMatch string) *httptest.ResponseRecorder {
+		req := httptest.NewRequest(http.MethodGet, getURL, nil)
 		if ifNoneMatch != "" {
 			req.Header.Set("If-None-Match", ifNoneMatch)
 		}
-		res, err := http.DefaultClient.Do(req)
-		require.NoError(t, err)
-		t.Cleanup(func() { _ = res.Body.Close() })
-		return res
+		rec := httptest.NewRecorder()
+		mux.ServeHTTP(rec, req)
+		return rec
 	}
 
-	first := get(t, "")
-	require.Equal(t, http.StatusOK, first.StatusCode)
-	etag := first.Header.Get("ETag")
+	first := get("")
+	require.Equal(t, http.StatusOK, first.Code)
+	etag := first.Header().Get("ETag")
 	require.NotEmpty(t, etag)
 
 	t.Run("matching If-None-Match returns 304", func(t *testing.T) {
-		res := get(t, etag)
-		assert.Equal(t, http.StatusNotModified, res.StatusCode)
-		assert.Equal(t, etag, res.Header.Get("ETag"))
+		rec := get(etag)
+		assert.Equal(t, http.StatusNotModified, rec.Code)
+		assert.Equal(t, etag, rec.Header().Get("ETag"))
 	})
 
 	t.Run("stale If-None-Match returns the body", func(t *testing.T) {
-		res := get(t, `"stale"`)
-		assert.Equal(t, http.StatusOK, res.StatusCode)
-		assert.Equal(t, etag, res.Header.Get("ETag"))
+		rec := get(`"stale"`)
+		assert.Equal(t, http.StatusOK, rec.Code)
+		assert.Equal(t, etag, rec.Header().Get("ETag"))
 	})
 
 	t.Run("POST gets no ETag", func(t *testing.T) {
-		res, err := http.Post(url, "application/json", strings.NewReader("{}"))
-		require.NoError(t, err)
-		t.Cleanup(func() { _ = res.Body.Close() })
-		assert.Equal(t, http.StatusOK, res.StatusCode)
-		assert.Empty(t, res.Header.Get("ETag"))
+		req := httptest.NewRequest(http.MethodPost, pbconnect.APIServiceGetSystemInfoProcedure, strings.NewReader("{}"))
+		req.Header.Set("Content-Type", "application/json")
+		rec := httptest.NewRecorder()
+		mux.ServeHTTP(rec, req)
+		assert.Equal(t, http.StatusOK, rec.Code)
+		assert.Empty(t, rec.Header().Get("ETag"))
 	})
 }
