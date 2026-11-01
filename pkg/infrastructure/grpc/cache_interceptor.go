@@ -17,13 +17,13 @@ func NewCacheInterceptor() *CacheInterceptor {
 	return &CacheInterceptor{}
 }
 
-func (c *CacheInterceptor) hash(resp any) (string, bool) {
-	respStringer, ok := resp.(fmt.Stringer)
-	if ok {
-		respStr := respStringer.String()
-		return hash.XXH3Hex([]byte(respStr)), true
+// etag reports false when msg is not a fmt.Stringer.
+func etag(msg any) (string, bool) {
+	s, ok := msg.(fmt.Stringer)
+	if !ok {
+		return "", false
 	}
-	return "", false
+	return `"` + hash.XXH3Hex([]byte(s.String())) + `"`, true
 }
 
 // Server returns the interceptor that sets ETag on unary GET responses and
@@ -39,7 +39,7 @@ func (c *CacheInterceptor) Server() connect.ServerInterceptor {
 				return next(ctx, spec, stream)
 			}
 			info, _ := connect.CallInfoForServerContext(ctx)
-			return next(ctx, spec, &cacheServerStream{ServerStream: stream, cache: c, info: info})
+			return next(ctx, spec, &cacheServerStream{ServerStream: stream, info: info})
 		}
 	}
 }
@@ -49,16 +49,14 @@ func (c *CacheInterceptor) Server() connect.ServerInterceptor {
 // error from Send ends the call with 304 instead of sending the body.
 type cacheServerStream struct {
 	connect.ServerStream
-	cache *CacheInterceptor
-	info  *connect.CallInfo
+	info *connect.CallInfo
 }
 
 func (s *cacheServerStream) Send(msg any) error {
-	respHash, ok := s.cache.hash(msg)
+	respETag, ok := etag(msg)
 	if !ok {
 		return s.ServerStream.Send(msg)
 	}
-	respETag := `"` + respHash + `"`
 	s.info.ResponseHeader().Set("ETag", respETag)
 	if s.info.RequestHeader().Get("If-None-Match") == respETag {
 		return connecthttp.NewNotModifiedError()
