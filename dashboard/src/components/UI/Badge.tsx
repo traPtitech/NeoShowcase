@@ -1,22 +1,24 @@
-import { type ComponentProps, type ParentComponent, splitProps } from 'solid-js'
-import { clsx } from '/@/libs/clsx'
+import type { ComponentProps } from '@solidjs/web'
+import { omit, type ParentComponent } from 'solid-js'
 
 type VariantProps = {
   variant: 'text' | 'success' | 'warn'
 }
 
 const Badge: ParentComponent<ComponentProps<'div'> & VariantProps> = (props) => {
-  const [_, rest] = splitProps(props, ['variant', 'class'])
+  const rest = omit(props, 'variant', 'class')
   return (
     <div
-      class={clsx(
-        'caption-regular h-5 whitespace-nowrap rounded-full px-2',
-        props.variant === 'text' && 'bg-black-alpha-200 text-text-black',
-        props.variant === 'success' && 'bg-transparency-success-hover text-accent-success',
-        props.variant === 'warn' && 'bg-transparency-warn-hover text-accent-warn',
-        props.class,
-      )}
       {...rest}
+      class={[
+        'caption-regular h-5 rounded-full px-2 whitespace-nowrap',
+        {
+          'bg-black-alpha-200 text-text-black': props.variant === 'text',
+          'bg-transparency-success-hover text-accent-success': props.variant === 'success',
+          'bg-transparency-warn-hover text-accent-warn': props.variant === 'warn',
+        },
+        props.class,
+      ]}
     />
   )
 }

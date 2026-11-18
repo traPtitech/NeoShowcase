@@ -1,5 +1,4 @@
 import { type Component, createMemo, createSignal, For, Show } from 'solid-js'
-import { VList } from 'virtua/solid'
 import type { User } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { styled } from '/@/components/styled-components'
 import { Button } from '/@/components/UI/Button'
@@ -43,24 +42,26 @@ const AddOwners: Component<{
         when={filteredUsers().length !== 0}
         fallback={
           <UserPlaceholder>
-            <div class="i-material-symbols:search shrink-0 text-20/20" />
+            <div class="i-material-symbols:search text-20/20 shrink-0" />
             No Users Found
           </UserPlaceholder>
         }
       >
-        <VList data={filteredUsers()} class="rounded-lg border border-ui-border">
-          {(user) => (
-            <div class="w-full border-ui-border border-b">
-              <UserRowContainer>
-                <UserAvatar user={user} size={32} />
-                <UserName>{user.name}</UserName>
-                <Button variants="ghost" size="small" onClick={() => props.addOwner(user)}>
-                  Add
-                </Button>
-              </UserRowContainer>
-            </div>
-          )}
-        </VList>
+        <div class="border-ui-border min-h-0 flex-1 overflow-y-auto rounded-lg border">
+          <For each={filteredUsers()}>
+            {(user) => (
+              <div class="border-ui-border w-full [&:not(:last-child)]:border-b">
+                <UserRowContainer>
+                  <UserAvatar user={user} size={32} />
+                  <UserName>{user.name}</UserName>
+                  <Button variants="ghost" size="small" onClick={() => props.addOwner(user)}>
+                    Add
+                  </Button>
+                </UserRowContainer>
+              </div>
+            )}
+          </For>
+        </div>
       </Show>
     </div>
   )
@@ -150,9 +151,7 @@ const OwnerList: Component<{
           onClick={openAddUserModal}
           disabled={!props.hasPermission}
           tooltip={{
-            props: {
-              content: !props.hasPermission ? '設定を変更するにはオーナーになる必要があります' : undefined,
-            },
+            content: !props.hasPermission ? '設定を変更するにはオーナーになる必要があります' : undefined,
           }}
         >
           Add Owners

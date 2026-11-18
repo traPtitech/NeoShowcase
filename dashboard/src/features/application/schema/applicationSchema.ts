@@ -1,3 +1,4 @@
+import type { FormStore } from '@formisch/solid/v2'
 import * as v from 'valibot'
 import type {
   Application,
@@ -86,6 +87,19 @@ export const updateApplicationSchema = v.pipe(
 
 type UpdateApplicationOutput = v.InferOutput<typeof updateApplicationSchema>
 
+export const getInitialValueOfCreateAppForm = (): CreateOrUpdateApplicationInput => ({
+  type: 'create',
+  form: {
+    name: '',
+    repositoryId: '',
+    refName: '',
+    config: {},
+    websites: [],
+    portPublications: [],
+    startOnCreate: true,
+  },
+})
+
 export const getInitialValueOfUpdateAppForm = (input: Application): CreateOrUpdateApplicationInput => ({
   type: 'update',
   form: {
@@ -112,23 +126,16 @@ export const createOrUpdateApplicationSchema = v.variant('type', [
 
 export type CreateOrUpdateApplicationInput = v.InferInput<typeof createOrUpdateApplicationSchema>
 export type CreateOrUpdateApplicationOutput = v.InferOutput<typeof createOrUpdateApplicationSchema>
+export type ApplicationFormStore = FormStore<typeof createOrUpdateApplicationSchema>
 
-export const handleSubmitCreateApplicationForm = (
-  input: CreateOrUpdateApplicationInput,
-  handler: (output: CreateApplicationOutput) => Promise<unknown>,
-) => {
-  const result = v.parse(createOrUpdateApplicationSchema, input)
-  if (result.type !== 'create')
-    throw new Error('The type of input passed to handleSubmitCreateApplicationForm must be "create"')
-  return handler(result.form)
+/** The create form is only ever submitted with `type: 'create'`; narrows the validated output. */
+export const toCreateApplicationRequest = (output: CreateOrUpdateApplicationOutput): CreateApplicationOutput => {
+  if (output.type !== 'create') throw new Error('The submitted application form must be of type "create"')
+  return output.form
 }
 
-export const handleSubmitUpdateApplicationForm = (
-  input: CreateOrUpdateApplicationInput,
-  handler: (output: UpdateApplicationOutput) => Promise<unknown>,
-) => {
-  const result = v.parse(createOrUpdateApplicationSchema, input)
-  if (result.type !== 'update')
-    throw new Error('The type of input passed to handleSubmitCreateApplicationForm must be "update"')
-  return handler(result.form)
+/** The update form is only ever submitted with `type: 'update'`; narrows the validated output. */
+export const toUpdateApplicationRequest = (output: CreateOrUpdateApplicationOutput): UpdateApplicationOutput => {
+  if (output.type !== 'update') throw new Error('The submitted application form must be of type "update"')
+  return output.form
 }

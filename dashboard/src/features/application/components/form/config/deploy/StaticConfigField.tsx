@@ -1,61 +1,58 @@
-import { Field, getValues } from '@modular-forms/solid'
+import { Field, getInput } from '@formisch/solid/v2'
 import type { Component } from 'solid-js'
 import { RadioGroup } from '/@/components/templates/RadioGroups'
 import { TextField } from '/@/components/UI/TextField'
-import { useApplicationForm } from '/@/features/application/provider/applicationFormProvider'
+import type { ApplicationFormStore } from '../../../../schema/applicationSchema'
 
 type Props = {
+  form: ApplicationFormStore
   readonly?: boolean
 }
 
 const StaticConfigField: Component<Props> = (props) => {
-  const { formStore } = useApplicationForm()
-  const buildType = () => getValues(formStore).form?.config?.buildConfig?.type
+  const buildType = () => getInput(props.form, { path: ['form', 'config', 'buildConfig', 'type'] })
 
   return (
     <>
-      <Field of={formStore} name="form.config.deployConfig.value.static.artifactPath">
-        {(field, fieldProps) => (
+      <Field of={props.form} path={['form', 'config', 'deployConfig', 'value', 'static', 'artifactPath']}>
+        {(field) => (
           <TextField
             label="Artifact Path"
             required
             info={{
-              props: {
-                content: (
-                  <>
-                    <div>静的ファイルが生成されるディレクトリ</div>
-                    <div>({buildType() === 'cmd' ? 'リポジトリルート' : 'Context'}からの相対パス)</div>
-                  </>
-                ),
-              },
+              content: (
+                <>
+                  <div>静的ファイルが生成されるディレクトリ</div>
+                  <div>({buildType() === 'cmd' ? 'リポジトリルート' : 'Context'}からの相対パス)</div>
+                </>
+              ),
             }}
-            {...fieldProps}
-            value={field.value ?? ''}
-            error={field.error}
+            {...field.props}
+            value={field.input ?? ''}
+            error={field.errors?.[0]}
             readOnly={props.readonly}
           />
         )}
       </Field>
-      <Field of={formStore} name="form.config.deployConfig.value.static.spa">
-        {(field, fieldProps) => (
+      <Field of={props.form} path={['form', 'config', 'deployConfig', 'value', 'static', 'spa']}>
+        {(field) => (
           <RadioGroup
             label="Is SPA (Single Page Application)"
             info={{
-              props: {
-                content: (
-                  <>
-                    <div>配信するファイルがSPAである</div>
-                    <div>(いい感じのフォールバック設定が付きます)</div>
-                  </>
-                ),
-              },
+              content: (
+                <>
+                  <div>配信するファイルがSPAである</div>
+                  <div>(いい感じのフォールバック設定が付きます)</div>
+                </>
+              ),
             }}
-            {...fieldProps}
+            {...field.props}
             options={[
               { value: 'true', label: 'Yes' },
               { value: 'false', label: 'No' },
             ]}
-            value={field.value ?? 'false'}
+            value={field.input ?? 'false'}
+            setValue={(v) => field.onInput(v)}
             readOnly={props.readonly}
           />
         )}

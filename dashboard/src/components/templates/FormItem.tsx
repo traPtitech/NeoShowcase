@@ -1,4 +1,5 @@
-import { type JSX, type ParentComponent, Show } from 'solid-js'
+import type { JSX } from '@solidjs/web'
+import { type ParentComponent, Show } from 'solid-js'
 import { styled } from '/@/components/styled-components'
 import type { TooltipProps } from '../UI/ToolTip'
 import { TooltipInfoIcon } from '../UI/TooltipInfoIcon'
@@ -18,7 +19,7 @@ export const FormItem: ParentComponent<Props> = (props) => {
   return (
     <div class="flex w-full flex-col gap-2">
       <TitleContainer>
-        <div class="whitespace-nowrap text-bold text-text-black">{props.title}</div>
+        <div class="text-bold text-text-black whitespace-nowrap">{props.title}</div>
         <Show when={props.required}>
           <RequiredMark>*</RequiredMark>
         </Show>

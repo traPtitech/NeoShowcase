@@ -1,3 +1,4 @@
+import type { FormStore } from '@formisch/solid/v2'
 import * as v from 'valibot'
 import type { ApplicationEnvVars } from '/@/api/neoshowcase/protobuf/gateway_pb'
 
@@ -73,26 +74,19 @@ export const envVarSchema = v.object({
 })
 
 export type EnvVarInput = v.InferInput<typeof envVarSchema>
+export type EnvVarFormStore = FormStore<typeof envVarSchema>
 
-export const parseCreateWebsiteInput = (input: unknown) => {
-  const result = v.parse(envVarSchema, input)
-  return result
-}
+/** Form-side representation of the always-present trailing blank row. */
+export const emptyEnvVar = { key: '', value: '', system: false }
 
-export const envVarsMessageToSchema = (envVars: ApplicationEnvVars): EnvVarInput => {
-  return {
-    variables: envVars.variables.map((variable) => ({
+/** protobuf message -> valibot schema input. A blank row is appended so new variables can be typed in right away. */
+export const envVarsMessageToSchema = (envVars?: ApplicationEnvVars): EnvVarInput => ({
+  variables: [
+    ...(envVars?.variables ?? []).map((variable) => ({
       key: variable.key,
       value: variable.value,
       system: variable.system,
     })),
-  }
-}
-
-export const handleSubmitEnvVarForm = (
-  input: EnvVarInput,
-  handler: (output: v.InferOutput<typeof envVarSchema>) => Promise<unknown>,
-) => {
-  const result = v.parse(envVarSchema, input)
-  return handler(result)
-}
+    emptyEnvVar,
+  ],
+})

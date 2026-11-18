@@ -1,8 +1,6 @@
-import { Show } from 'solid-js'
 import { DataTable } from '/@/components/layouts/DataTable'
-import { ApplicationFormProvider } from '/@/features/application/provider/applicationFormProvider'
-import { useApplicationData } from '/@/routes'
-import WebsiteConfigForm from '../../../../features/application/components/form/WebsitesConfigForm'
+import WebsitesConfigForm from '/@/features/application/components/form/WebsitesConfigForm'
+import { useApplicationData } from '/@/features/application/data'
 
 export default () => {
   const { app, refetch, hasPermission } = useApplicationData()
@@ -10,11 +8,7 @@ export default () => {
   return (
     <DataTable.Container>
       <DataTable.Title>URLs</DataTable.Title>
-      <Show when={app()}>
-        <ApplicationFormProvider>
-          <WebsiteConfigForm app={app()!} hasPermission={hasPermission()} refetchApp={refetch} />
-        </ApplicationFormProvider>
-      </Show>
+      <WebsitesConfigForm app={app()} hasPermission={hasPermission()} refetch={refetch} />
     </DataTable.Container>
   )
 }

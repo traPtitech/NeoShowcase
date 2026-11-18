@@ -1,6 +1,5 @@
 import { useNavigate } from '@solidjs/router'
-import { type Component, Show } from 'solid-js'
-import toast from 'solid-toast'
+import type { Component } from 'solid-js'
 import type { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { DataTable } from '/@/components/layouts/DataTable'
 import FormBox from '/@/components/layouts/FormBox'
@@ -8,10 +7,10 @@ import { FormItem } from '/@/components/templates/FormItem'
 import { Button } from '/@/components/UI/Button'
 import ModalDeleteConfirm from '/@/components/UI/ModalDeleteConfirm'
 import GeneralConfigForm from '/@/features/application/components/form/GeneralConfigForm'
-import { ApplicationFormProvider } from '/@/features/application/provider/applicationFormProvider'
+import { useApplicationData } from '/@/features/application/data'
 import { client, handleAPIError } from '/@/libs/api'
+import { toast } from '/@/libs/toast'
 import useModal from '/@/libs/useModal'
-import { useApplicationData } from '/@/routes'
 
 const DeleteApp: Component<{
   app: Application
@@ -48,11 +47,7 @@ const DeleteApp: Component<{
             type="button"
             disabled={!props.hasPermission}
             tooltip={{
-              props: {
-                content: !props.hasPermission
-                  ? 'アプリケーションを削除するにはオーナーになる必要があります'
-                  : undefined,
-              },
+              content: !props.hasPermission ? 'アプリケーションを削除するにはオーナーになる必要があります' : undefined,
             }}
           >
             Delete Application
@@ -82,17 +77,12 @@ const DeleteApp: Component<{
 
 export default () => {
   const { app, refetch, repo, hasPermission } = useApplicationData()
-  const loaded = () => !!(app() && repo())
 
   return (
     <DataTable.Container>
       <DataTable.Title>General</DataTable.Title>
-      <ApplicationFormProvider>
-        <Show when={loaded()}>
-          <GeneralConfigForm app={app()!} repo={repo()!} hasPermission={hasPermission()} refetchApp={refetch} />
-          <DeleteApp app={app()!} repo={repo()!} hasPermission={hasPermission()} />
-        </Show>
-      </ApplicationFormProvider>
+      <GeneralConfigForm app={app()} repo={repo()} hasPermission={hasPermission()} refetch={refetch} />
+      <DeleteApp app={app()} repo={repo()} hasPermission={hasPermission()} />
     </DataTable.Container>
   )
 }

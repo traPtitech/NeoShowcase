@@ -1,6 +1,4 @@
 import { type Component, Show } from 'solid-js'
-import CheckMark from '/@/assets/icons/check.svg'
-import { clsx } from '/@/libs/clsx'
 
 export interface Props {
   checked: boolean
@@ -10,14 +8,14 @@ export interface Props {
 export const CheckBoxIcon: Component<Props> = (props) => {
   return (
     <div
-      class={clsx(
-        'flex aspect-square h-auto w-full items-center justify-center rounded text-ui-primary',
-        props.checked ? 'bg-primary-main' : 'border-2 border-ui-tertiary bg-ui-background',
-        props.disabled && '!bg-text-disabled cursor-not-allowed',
-      )}
+      class={[
+        'text-ui-primary flex aspect-square h-auto w-full items-center justify-center rounded',
+        props.checked ? 'bg-primary-main' : 'border-ui-tertiary bg-ui-background border-2',
+        { '!bg-text-disabled cursor-not-allowed': props.disabled },
+      ]}
     >
       <Show when={props.checked}>
-        <CheckMark />
+        <div class="i-material-symbols:check shrink-0 text-xl/5" />
       </Show>
     </div>
   )

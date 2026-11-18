@@ -1,18 +1,28 @@
-import { TextField as KTextField } from '@kobalte/core'
-import { type Component, type JSX, Show, splitProps } from 'solid-js'
+import { TextField as KTextField } from '@kobalte/core/text-field'
+import type { JSX } from '@solidjs/web'
+import { type Component, omit, Show } from 'solid-js'
 import { styled } from '/@/components/styled-components'
 import { writeToClipboard } from '/@/libs/clipboard'
-import { clsx } from '/@/libs/clsx'
 import { RequiredMark, TitleContainer } from '../templates/FormItem'
 import { ToolTip, type TooltipProps } from './ToolTip'
 import { TooltipInfoIcon } from './TooltipInfoIcon'
 
 const Icon = styled('div', 'flex items-center justify-center text-text-disabled')
 
-export interface Props extends JSX.InputHTMLAttributes<HTMLInputElement | HTMLTextAreaElement> {
+type InputEventHandler<E extends Event> = JSX.EventHandler<HTMLInputElement | HTMLTextAreaElement, E>
+
+export interface Props
+  extends Pick<
+    JSX.InputHTMLAttributes<HTMLInputElement | HTMLTextAreaElement>,
+    'placeholder' | 'type' | 'min' | 'max' | 'step' | 'autofocus' | 'autocomplete' | 'maxlength'
+  > {
+  name?: string
   value?: string
   error?: string
   label?: string
+  required?: boolean
+  disabled?: boolean
+  readOnly?: boolean
   leftIcon?: JSX.Element
   rightIcon?: JSX.Element
   multiline?: boolean
@@ -20,33 +30,49 @@ export interface Props extends JSX.InputHTMLAttributes<HTMLInputElement | HTMLTe
   tooltip?: TooltipProps
   copyable?: boolean
   ref?: (element: HTMLInputElement | HTMLTextAreaElement) => void
-  onInput?: JSX.EventHandler<HTMLInputElement | HTMLTextAreaElement, InputEvent>
-  onChange?: JSX.EventHandler<HTMLInputElement | HTMLTextAreaElement, Event>
-  onBlur?: JSX.EventHandler<HTMLInputElement | HTMLTextAreaElement, FocusEvent>
+  onInput?: InputEventHandler<InputEvent>
+  onChange?: InputEventHandler<Event>
+  onBlur?: InputEventHandler<FocusEvent>
+  onFocus?: InputEventHandler<FocusEvent>
 }
 
 export const TextField: Component<Props> = (props) => {
-  const [rootProps, _addedProps, inputProps] = splitProps(
+  const inputProps = omit(
     props,
-    ['name', 'value', 'required', 'disabled', 'readOnly'],
-    ['label', 'leftIcon', 'rightIcon', 'info', 'tooltip', 'copyable'],
+    'name',
+    'value',
+    'required',
+    'disabled',
+    'readOnly',
+    'label',
+    'leftIcon',
+    'rightIcon',
+    'info',
+    'tooltip',
+    'copyable',
+    'error',
+    'multiline',
   )
 
   const handleCopy = () => {
-    if (rootProps.value) {
-      writeToClipboard(rootProps.value.toString())
+    if (props.value) {
+      writeToClipboard(props.value.toString())
     }
   }
 
   return (
-    <KTextField.Root
+    <KTextField
       class="flex w-full flex-col gap-2"
-      {...rootProps}
+      name={props.name}
+      value={props.value}
+      required={props.required}
+      disabled={props.disabled}
+      readOnly={props.readOnly}
       validationState={props.error ? 'invalid' : 'valid'}
     >
       <Show when={props.label}>
         <TitleContainer>
-          <KTextField.Label class="whitespace-nowrap text-bold text-text-black">{props.label}</KTextField.Label>
+          <KTextField.Label class="text-bold text-text-black whitespace-nowrap">{props.label}</KTextField.Label>
           <Show when={props.required}>
             <RequiredMark>*</RequiredMark>
           </Show>
@@ -59,37 +85,36 @@ export const TextField: Component<Props> = (props) => {
         when={props.multiline}
         fallback={
           <div class="flex w-full flex-col gap-1">
-            <ToolTip {...props.tooltip}>
+            <ToolTip {...props.tooltip} class="w-full">
               <div class="relative flex w-full gap-0.25">
                 <div
-                  class={clsx(
-                    'flex h-12 w-full gap-1 border-none bg-ui-primary px-4 text-regular text-text-black outline outline-1 outline-ui-border',
-                    'focus-within:outline-2 focus-within:outline-primary-main',
-                    'data-[invalid]:has-[.input]:outline-2 data-[invalid]:has-[.input]:outline-accent-error',
-                    props.disabled ? 'cursor-not-allowed bg-ui-tertiary' : '',
+                  class={[
+                    'bg-ui-primary text-regular text-text-black outline-ui-border flex h-12 w-full gap-1 border-none px-4 outline outline-1',
+                    'focus-within:outline-primary-main focus-within:outline-2',
+                    'data-[invalid]:has-[.input]:outline-accent-error data-[invalid]:has-[.input]:outline-2',
+                    { 'bg-ui-tertiary cursor-not-allowed': props.disabled },
                     props.copyable ? 'rounded-l-lg' : 'rounded-lg',
-                  )}
+                  ]}
                 >
                   <Show when={props.leftIcon}>
                     <Icon>{props.leftIcon}</Icon>
                   </Show>
                   <KTextField.Input
-                    class="input h-full w-full border-none bg-transparent p-0 placeholder-text-disabled focus-visible:outline-none"
+                    class="input placeholder-text-disabled h-full w-full border-none bg-transparent p-0 focus-visible:outline-none"
                     {...inputProps}
-                    type={props.type}
                   />
                   <Show when={props.rightIcon}>
                     <Icon>{props.rightIcon}</Icon>
                   </Show>
                 </div>
                 <Show when={props.copyable}>
-                  <div class="w-12 shrink-0 rounded-r-lg focus-within:outline focus-within:outline-2 focus-within:outline-primary-main">
+                  <div class="focus-within:outline-primary-main w-12 shrink-0 rounded-r-lg focus-within:outline focus-within:outline-2">
                     <button
-                      class="inline-grid h-full w-full cursor-pointer place-content-center rounded-r-lg border-none bg-black-alpha-100 text-text-black leading-4 outline outline-1 outline-ui-border hover:bg-black-alpha-200 active:bg-black-alpha-300"
+                      class="bg-black-alpha-100 text-text-black outline-ui-border hover:bg-black-alpha-200 active:bg-black-alpha-300 inline-grid h-full w-full cursor-pointer place-content-center rounded-r-lg border-none leading-4 outline outline-1"
                       onClick={handleCopy}
                       type="button"
                     >
-                      <div class="shrink-0 text-2xl/6 i-material-symbols:content-copy-outline" />
+                      <div class="i-material-symbols:content-copy-outline shrink-0 text-2xl/6" />
                     </button>
                   </div>
                 </Show>
@@ -99,17 +124,17 @@ export const TextField: Component<Props> = (props) => {
         }
       >
         <KTextField.TextArea
-          class={clsx(
-            'h-full w-full resize-none break-all rounded-lg border-none bg-ui-primary px-4 py-2.5 text-regular text-text-black outline outline-1 outline-ui-border',
+          class={[
+            'bg-ui-primary text-regular text-text-black outline-ui-border h-full w-full resize-none rounded-lg border-none px-4 py-2.5 break-all outline outline-1',
             'placeholder-text-disabled',
-            'data-[disabled]:cursor-not-allowed data-[disabled]:bg-ui-tertiary',
-            'data-[invalid]:outline-2 data-[invalid]:outline-accent-error',
-          )}
+            'data-[disabled]:bg-ui-tertiary data-[disabled]:cursor-not-allowed',
+            'data-[invalid]:outline-accent-error data-[invalid]:outline-2',
+          ]}
           {...inputProps}
           autoResize
         />
       </Show>
-      <KTextField.ErrorMessage class="w-full text-accent-error text-regular">{props.error}</KTextField.ErrorMessage>
-    </KTextField.Root>
+      <KTextField.ErrorMessage class="text-accent-error text-regular w-full">{props.error}</KTextField.ErrorMessage>
+    </KTextField>
   )
 }

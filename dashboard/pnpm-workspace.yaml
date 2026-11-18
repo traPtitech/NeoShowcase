@@ -1,6 +1,6 @@
 minimumReleaseAge: 10080
+# Solid 2.0 stable was released on 2026-11-17. Exempt the Solid core packages
+# from the release-age gate until the 2.0 line has aged past it.
 minimumReleaseAgeExclude:
-  # Renovate security update: vitest@4.1.11
-  - vitest@4.1.11
-  # Renovate security update: vite@8.3.3
-  - vite@8.3.3
+  - solid-js
+  - '@solidjs/*'

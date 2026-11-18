@@ -1,9 +1,10 @@
-import type { ComponentProps, ParentComponent } from 'solid-js'
-import { Dynamic } from 'solid-js/web'
-import { clsx } from '/@/libs/clsx'
+import { type ComponentProps, dynamic, type JSX } from '@solidjs/web'
+import type { ParentComponent } from 'solid-js'
 
 type Tag = 'div' | 'p' | 'h2' | 'h3' | 'button'
 
 export const styled = <T extends Tag>(tag: T, className: string): ParentComponent<ComponentProps<T>> => {
-  return (props) => <Dynamic component={tag} {...props} class={clsx(className, props.class)} />
+  // hoisted: one component per styled() call, not per render
+  const Tag = dynamic(() => tag, { static: true }) as (props: Record<string, unknown>) => JSX.Element
+  return (props) => <Tag {...props} class={[className, props.class]} />
 }

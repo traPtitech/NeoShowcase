@@ -1,7 +1,6 @@
 import { timestampDate } from '@bufbuild/protobuf/wkt'
 import { type Component, For, Show } from 'solid-js'
-import toast from 'solid-toast'
-import { type Application, type Build, DeployType, type Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { type Application, type Build, DeployType } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { styled } from '/@/components/styled-components'
 import Badge from '/@/components/UI/Badge'
 import { Button } from '/@/components/UI/Button'
@@ -9,12 +8,13 @@ import Code from '/@/components/UI/Code'
 import JumpButton from '/@/components/UI/JumpButton'
 import { ToolTip } from '/@/components/UI/ToolTip'
 import { URLText } from '/@/components/UI/URLText'
-import { client, handleAPIError, systemInfo } from '/@/libs/api'
+import { useApplicationData } from '/@/features/application/data'
+import { client, handleAPIError } from '/@/libs/api'
 import { ApplicationState, deploymentState, getWebsiteURL } from '/@/libs/application'
 import { titleCase } from '/@/libs/casing'
-import { clsx } from '/@/libs/clsx'
 import { diffHuman, shortSha } from '/@/libs/format'
-import { useApplicationData } from '/@/routes'
+import { systemInfo } from '/@/libs/session'
+import { toast } from '/@/libs/toast'
 import { List } from '../List'
 import { AppStatusIcon } from './AppStatusIcon'
 
@@ -22,8 +22,7 @@ const DeployInfoContainer = styled('div', 'flex w-full items-center gap-2 bg-ui-
 
 const AppDeployInfo: Component<{
   app: Application
-  refetch: () => Promise<void>
-  repo: Repository
+  refetch: () => void
   startApp: () => Promise<void>
   deployedBuild: Build | undefined
   latestBuildId: string | undefined
@@ -34,14 +33,14 @@ const AppDeployInfo: Component<{
   const stopApp = async () => {
     try {
       await client.stopApplication({ id: props.app.id })
-      await props.refetch()
+      props.refetch()
       toast.success('アプリケーションを停止しました')
     } catch (e) {
       handleAPIError(e, 'アプリケーションの停止に失敗しました')
     }
   }
 
-  const deployedCommit = () => commits()?.[props.deployedBuild?.commit || '']
+  const deployedCommit = () => commits()[props.deployedBuild?.commit || '']
   const deployedCommitDisplay = () => {
     const c = deployedCommit()
     if (!c?.commitDate) {
@@ -61,19 +60,19 @@ const AppDeployInfo: Component<{
       </div>
     )
     return (
-      <ToolTip props={{ content: tooltip }}>
+      <ToolTip content={tooltip}>
         <div class="truncate">{firstLine}</div>
       </ToolTip>
     )
   }
 
-  const sshAccessCommand = () => `ssh -p ${systemInfo()?.ssh?.port} ${props.app.id}@${systemInfo()?.ssh?.host}`
+  const sshAccessCommand = () => `ssh -p ${systemInfo().ssh?.port} ${props.app.id}@${systemInfo().ssh?.host}`
 
   return (
-    <div class="grid w-full grid-cols-[1fr_2fr] gap-0.25 overflow-hidden rounded-lg border border-ui-border bg-ui-border max-md:grid-cols-1">
+    <div class="border-ui-border bg-ui-border grid w-full grid-cols-[1fr_2fr] gap-0.25 overflow-hidden rounded-lg border max-md:grid-cols-1">
       <div
-        class={clsx(
-          'h3-medium relative grid w-full cursor-pointer grid-rows-[1fr_2fr_1fr] justify-center text-text-black',
+        class={[
+          'h3-medium text-text-black relative grid w-full cursor-pointer grid-rows-[1fr_2fr_1fr] justify-center',
           deploymentState(props.app) === ApplicationState.Running &&
             'bg-color-overlay-ui-primary-to-transparency-success-selected hover:bg-color-overlay-ui-primary-to-transparency-success-hover',
           deploymentState(props.app) === ApplicationState.Serving &&
@@ -86,7 +85,7 @@ const AppDeployInfo: Component<{
             'bg-color-overlay-ui-primary-to-transparency-warn-selected hover:bg-color-overlay-ui-primary-to-transparency-warn-hover',
           deploymentState(props.app) === ApplicationState.Error &&
             'bg-color-overlay-ui-primary-to-transparency-error-selected hover:bg-color-overlay-ui-primary-to-transparency-error-hover',
-        )}
+        ]}
       >
         <div />
         <div class="flex flex-col items-center justify-center gap-2">
@@ -105,7 +104,7 @@ const AppDeployInfo: Component<{
         </Show>
       </div>
       <div class="grid h-full w-full grid-cols-2 gap-0.25">
-        <DeployInfoContainer class={clsx(props.app.containerMessage === '' && 'col-span-2')}>
+        <DeployInfoContainer class={props.app.containerMessage === '' && 'col-span-2'}>
           <List.RowContent>
             <List.RowTitle>Deploy Type</List.RowTitle>
             <List.RowData>{titleCase(DeployType[props.app.deployType])}</List.RowData>
@@ -126,7 +125,7 @@ const AppDeployInfo: Component<{
             <List.RowData>
               {deployedCommitDisplay()}
               <Show when={props.deployedBuild?.id === props.latestBuildId}>
-                <ToolTip props={{ content: '最新のビルドがデプロイされています' }}>
+                <ToolTip content="最新のビルドがデプロイされています">
                   <Badge variant="success">Latest</Badge>
                 </ToolTip>
               </Show>

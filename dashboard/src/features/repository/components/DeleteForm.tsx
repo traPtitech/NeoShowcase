@@ -1,6 +1,5 @@
 import { useNavigate } from '@solidjs/router'
 import type { Component } from 'solid-js'
-import toast from 'solid-toast'
 import type { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import FormBox from '/@/components/layouts/FormBox'
 import { FormItem } from '/@/components/templates/FormItem'
@@ -8,6 +7,7 @@ import { Button } from '/@/components/UI/Button'
 import ModalDeleteConfirm from '/@/components/UI/ModalDeleteConfirm'
 import { client, handleAPIError } from '/@/libs/api'
 import { originToIcon, repositoryURLToOrigin } from '/@/libs/application'
+import { toast } from '/@/libs/toast'
 import useModal from '/@/libs/useModal'
 
 type Props = {
@@ -51,13 +51,11 @@ const DeleteForm: Component<Props> = (props) => {
             type="button"
             disabled={!canDeleteRepository() || !props.hasPermission}
             tooltip={{
-              props: {
-                content: !props.hasPermission
-                  ? 'リポジトリを削除するにはオーナーになる必要があります'
-                  : !canDeleteRepository()
-                    ? 'リポジトリ内にアプリケーションが存在するため削除できません'
-                    : undefined,
-              },
+              content: !props.hasPermission
+                ? 'リポジトリを削除するにはオーナーになる必要があります'
+                : !canDeleteRepository()
+                  ? 'リポジトリ内にアプリケーションが存在するため削除できません'
+                  : undefined,
             }}
           >
             Delete Repository

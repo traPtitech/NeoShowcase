@@ -1,49 +1,54 @@
-import { createDisclosureState, Dialog } from '@kobalte/core'
-import { A, useIsRouting } from '@solidjs/router'
-import type { Component } from 'solid-js'
-import { createComputed } from 'solid-js'
+import { Dialog } from '@kobalte/core/dialog'
+import { useLocation } from '@solidjs/router'
+import { type Component, createEffect, createSignal } from 'solid-js'
 import LogoImage from '/@/assets/logo.svg?url'
 import { Button } from '../UI/Button'
 
 const MobileNavigation: Component = () => {
-  const { isOpen, setIsOpen, close } = createDisclosureState()
+  const [open, setOpen] = createSignal(false)
+  const location = useLocation()
 
-  const isRouting = useIsRouting()
-  createComputed(() => isRouting() && close())
+  // ページ遷移したらメニューを閉じる
+  createEffect(
+    () => location.pathname,
+    () => {
+      setOpen(false)
+    },
+  )
 
   return (
-    <Dialog.Root open={isOpen()} onOpenChange={setIsOpen}>
+    <Dialog open={open()} onOpenChange={setOpen}>
       <Dialog.Trigger class="grid size-6 cursor-pointer appearance-none place-items-center border-none bg-transparent">
         <div class="i-material-symbols:menu shrink-0 text-2xl/6" />
       </Dialog.Trigger>
       <Dialog.Portal>
-        <Dialog.Overlay class="fixed inset-0 animate-duration-200 animate-name-fade-hide bg-black-alpha-600 data-[expanded]:animate-name-fade-show" />
-        <Dialog.Content class="fixed inset-0 flex max-w-fit animate-duration-200 animate-ease-out animate-name-slide-hide-left flex-col gap-4 bg-primary-white p-4 data-[expanded]:animate-name-slide-show-right">
+        <Dialog.Overlay class="animate-duration-200 animate-name-fade-hide bg-black-alpha-600 data-[expanded]:animate-name-fade-show fixed inset-0" />
+        <Dialog.Content class="animate-duration-200 animate-ease-out animate-name-slide-hide-left bg-primary-white data-[expanded]:animate-name-slide-show-right fixed inset-0 flex max-w-fit flex-col gap-4 p-4">
           <div class="flex w-full items-center justify-between gap-4">
-            <A href="/">
+            <a href="/">
               <picture>
                 <img src={LogoImage} alt="NeoShowcase logo" />
               </picture>
-            </A>
+            </a>
             <Dialog.CloseButton class="grid size-6 cursor-pointer appearance-none place-items-center border-none bg-transparent">
               <div class="i-material-symbols:close shrink-0 text-2xl/6" />
             </Dialog.CloseButton>
           </div>
           <div class="flex flex-col">
-            <A href="/apps">
-              <Button full size="medium" variants="text">
+            <a href="/apps">
+              <Button full size="medium" variants="text" active={location.pathname.startsWith('/apps')}>
                 Apps
               </Button>
-            </A>
-            <A href="/builds">
-              <Button full size="medium" variants="text">
+            </a>
+            <a href="/builds">
+              <Button full size="medium" variants="text" active={location.pathname.startsWith('/builds')}>
                 Queue
               </Button>
-            </A>
+            </a>
           </div>
         </Dialog.Content>
       </Dialog.Portal>
-    </Dialog.Root>
+    </Dialog>
   )
 }
 

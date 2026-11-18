@@ -1,81 +1,62 @@
-import { Field, FieldArray, getValue, getValues, insert, remove } from '@modular-forms/solid'
-import { type Component, createReaction, For, onMount } from 'solid-js'
+import { Field, FieldArray, getInput, insert, remove } from '@formisch/solid/v2'
+import { type Component, createEffect, For } from 'solid-js'
 import { TextField } from '/@/components/UI/TextField'
-import { useEnvVarConfigForm } from '../../../provider/envVarConfigFormProvider'
+import { type EnvVarFormStore, emptyEnvVar } from '../../../schema/envVarSchema'
 
-const EnvVarConfigField: Component = () => {
-  const { formStore } = useEnvVarConfigForm()
+type Props = {
+  form: EnvVarFormStore
+}
 
-  // keyとvalueが空となるenv varを削除し、最後に空のenv varを追加する
-  const stripEnvVars = () => {
-    const envVars = getValues(formStore).variables ?? []
+const isBlank = (envVar: { key?: string; value?: string } | undefined) => !envVar?.key && !envVar?.value
 
-    for (let i = envVars.length - 1; i >= 0; i--) {
-      if (envVars[i]?.key === '' && envVars[i]?.value === '') {
-        remove(formStore, 'variables', { at: i })
+const EnvVarConfigField: Component<Props> = (props) => {
+  // 末尾に空の行をちょうど1つだけ残し、それ以外の空の行は削除する
+  // 書き込みは正規化済みの状態では発生しないため、ループしない
+  createEffect(
+    () => getInput(props.form, { path: ['variables'] }),
+    (variables) => {
+      const rows = variables ?? []
+      for (let i = rows.length - 2; i >= 0; i--) {
+        if (isBlank(rows[i])) remove(props.form, { path: ['variables'], at: i })
       }
-    }
-
-    // add empty env var
-    insert(formStore, 'variables', {
-      value: { key: '', value: '', system: false },
-    })
-
-    // 次にvariablesが変更された時に1度だけ再度stripする
-    track(() => getValues(formStore, 'variables'))
-  }
-
-  const track = createReaction(() => {
-    stripEnvVars()
-  })
-
-  onMount(() => {
-    stripEnvVars()
-  })
+      if (rows.length === 0 || !isBlank(rows.at(-1))) {
+        insert(props.form, { path: ['variables'], initialInput: emptyEnvVar })
+      }
+    },
+    { defer: true },
+  )
 
   return (
-    <div class="grid w-full grid-cols-2 gap-col-6 gap-row-2 text-bold text-text-black">
+    <div class="gap-col-6 gap-row-2 text-bold text-text-black grid w-full grid-cols-2">
       <div>Key</div>
       <div>Value</div>
-      <FieldArray of={formStore} name="variables">
+      <FieldArray of={props.form} path={['variables']}>
         {(fieldArray) => (
           <For each={fieldArray.items}>
             {(_, index) => {
-              const isSystem = () =>
-                getValue(formStore, `variables.${index()}.system`, {
-                  shouldActive: false,
-                })
+              const isSystem = () => !!getInput(props.form, { path: ['variables', index(), 'system'] })
+              const systemTooltip = () => ({ content: 'システム環境変数は変更できません', disabled: !isSystem() })
 
               return (
                 <>
-                  <Field of={formStore} name={`variables.${index()}.key`}>
-                    {(field, fieldProps) => (
+                  <Field of={props.form} path={['variables', index(), 'key']}>
+                    {(field) => (
                       <TextField
-                        tooltip={{
-                          props: {
-                            content: 'システム環境変数は変更できません',
-                          },
-                          disabled: !isSystem(),
-                        }}
-                        {...fieldProps}
-                        value={field.value ?? ''}
-                        error={field.error}
+                        tooltip={systemTooltip()}
+                        {...field.props}
+                        value={field.input ?? ''}
+                        error={field.errors?.[0]}
                         disabled={isSystem()}
                       />
                     )}
                   </Field>
-                  <Field of={formStore} name={`variables.${index()}.value`}>
-                    {(field, fieldProps) => (
+                  <Field of={props.form} path={['variables', index(), 'value']}>
+                    {(field) => (
                       <TextField
-                        tooltip={{
-                          props: {
-                            content: 'システム環境変数は変更できません',
-                          },
-                          disabled: !isSystem(),
-                        }}
-                        {...fieldProps}
-                        value={field.value ?? ''}
-                        error={field.error}
+                        tooltip={systemTooltip()}
+                        {...field.props}
+                        value={field.input ?? ''}
+                        error={field.errors?.[0]}
                         disabled={isSystem()}
                         copyable
                       />

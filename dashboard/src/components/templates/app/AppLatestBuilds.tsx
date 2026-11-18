@@ -1,16 +1,14 @@
 import { type Component, createSignal, For } from 'solid-js'
 
-import type { Application, Build, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import type { Application, Build } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
 
-import { useApplicationData } from '/@/routes'
+import { useApplicationData } from '/@/features/application/data'
 import { BuildRow } from '../build/BuildRow'
 import { List } from '../List'
 
 const AppLatestBuilds: Component<{
   app: Application
-  refetch: () => Promise<void>
-  repo: Repository
   startApp: () => Promise<void>
   sortedBuilds: Build[]
   hasPermission: boolean
@@ -34,7 +32,7 @@ const AppLatestBuilds: Component<{
         each={latestBuilds()}
         fallback={
           <List.PlaceHolder>
-            <div class="i-material-symbols:deployed-code-outline shrink-0 text-20/20" />
+            <div class="i-material-symbols:deployed-code-outline text-20/20 shrink-0" />
             No Builds
             <Button
               variants="primary"

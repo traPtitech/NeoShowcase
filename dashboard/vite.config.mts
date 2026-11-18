@@ -4,14 +4,12 @@ import UnoCSS from "unocss/vite";
 import Unfonts from "unplugin-fonts/vite";
 import { defineConfig, type PluginOption } from "vite";
 import viteCompression from "vite-plugin-compression";
-import solidPlugin from "vite-plugin-solid";
-import solidSvg from "vite-plugin-solid-svg";
+import solid from "@solidjs/vite-plugin";
 
 export default defineConfig(({ mode }) => ({
   plugins: [
     UnoCSS(),
-    solidPlugin(),
-    solidSvg({ defaultAsComponent: true }),
+    solid(),
     Unfonts({
       google: {
         families: ["Lato"],
@@ -34,7 +32,6 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "/@": path.resolve(__dirname, "/src"),
     },
-    conditions: ["module", "browser", "default"],
   },
   build: {
     target: "esnext",
@@ -51,10 +48,6 @@ export default defineConfig(({ mode }) => ({
     },
   },
   test: {
-    server: {
-      deps: {
-        inline: ["@solidjs/router"],
-      },
-    },
+    environment: "jsdom",
   },
 }));

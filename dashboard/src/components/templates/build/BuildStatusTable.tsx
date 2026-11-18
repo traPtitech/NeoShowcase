@@ -1,7 +1,6 @@
 import { type Timestamp, timestampDate } from '@bufbuild/protobuf/wkt'
 import { useNavigate } from '@solidjs/router'
 import { type Component, For, Show } from 'solid-js'
-import toast from 'solid-toast'
 import {
   type Application,
   type Build,
@@ -14,6 +13,7 @@ import { ToolTip } from '/@/components/UI/ToolTip'
 import { client, handleAPIError } from '/@/libs/api'
 import { buildStatusStr } from '/@/libs/application'
 import { diffHuman, durationHuman, shortSha } from '/@/libs/format'
+import { toast } from '/@/libs/toast'
 import { List } from '../List'
 import { BuildStatusIcon } from './BuildStatusIcon'
 
@@ -22,7 +22,7 @@ const BuildStatusTable: Component<{
   repo: Repository
   build: Build
   commit?: SimpleCommit
-  refetch: () => Promise<void>
+  refetch: () => void
   hasPermission: boolean
 }> = (props) => {
   const navigate = useNavigate()
@@ -36,7 +36,7 @@ const BuildStatusTable: Component<{
       toast.success('再ビルドを開始しました')
       // 非同期でビルドが開始されるので1秒程度待ってから遷移
       setTimeout(() => {
-        void props.refetch()
+        props.refetch()
         navigate(`/apps/${props.app.id}`)
       }, 1000)
     } catch (e) {
@@ -48,7 +48,7 @@ const BuildStatusTable: Component<{
       await client.cancelBuild({
         buildId: props.build?.id,
       })
-      await props.refetch()
+      props.refetch()
       toast.success('ビルドをキャンセルしました')
     } catch (e) {
       handleAPIError(e, 'ビルドのキャンセルに失敗しました')
@@ -69,7 +69,7 @@ const BuildStatusTable: Component<{
         <div class="caption-regular text-text-grey">
           {c.authorName}
           <span>, </span>
-          <ToolTip props={{ content: localeString }}>
+          <ToolTip content={localeString}>
             <span>{diff()}</span>
           </ToolTip>
           <span>, </span>
@@ -81,22 +81,13 @@ const BuildStatusTable: Component<{
 
   return (
     <List.Container>
-      <div class="flex w-full items-center gap-2 bg-ui-secondary px-5 py-4">
-        <div class="text flex w-full items-center gap-1 text-black text-medium">
+      <div class="bg-ui-secondary flex w-full items-center gap-2 px-5 py-4">
+        <div class="text text-medium flex w-full items-center gap-1 text-black">
           <BuildStatusIcon state={props.build.status} size={24} />
           {buildStatusStr[props.build.status]}
         </div>
         <Show when={!props.build.retriable && props.hasPermission}>
-          <Button
-            variants="borderError"
-            size="small"
-            onClick={rebuild}
-            tooltip={{
-              props: {
-                content: '同じコミットで再ビルド',
-              },
-            }}
-          >
+          <Button variants="borderError" size="small" onClick={rebuild} tooltip={{ content: '同じコミットで再ビルド' }}>
             Rebuild
           </Button>
         </Show>
@@ -113,15 +104,16 @@ const BuildStatusTable: Component<{
         </List.RowContent>
       </List.Row>
       <List.Columns>
-        <Show when={props.build.queuedAt}>
-          {(nonNullQueuedAt) => {
-            const diff = diffHuman(timestampDate(nonNullQueuedAt()))
-            const localeString = timestampDate(nonNullQueuedAt()).toLocaleString()
+        <Show when={props.build.queuedAt} keyed>
+          {(queuedAt) => {
+            const date = timestampDate(queuedAt)
+            const diff = diffHuman(date)
+            const localeString = date.toLocaleString()
             return (
               <List.Row>
                 <List.RowContent>
                   <List.RowTitle>キュー登録時刻</List.RowTitle>
-                  <ToolTip props={{ content: localeString }}>
+                  <ToolTip content={localeString}>
                     <List.RowData>{diff()}</List.RowData>
                   </ToolTip>
                 </List.RowContent>
@@ -129,16 +121,16 @@ const BuildStatusTable: Component<{
             )
           }}
         </Show>
-        <Show when={props.build.startedAt?.valid && props.build.startedAt} fallback={'-'}>
-          {(nonNullStartedAt) => {
-            const ts = timestampDate(nonNullStartedAt().timestamp as Timestamp)
+        <Show when={props.build.startedAt?.valid && props.build.startedAt} fallback={'-'} keyed>
+          {(startedAt) => {
+            const ts = timestampDate(startedAt.timestamp as Timestamp)
             const diff = diffHuman(ts)
             const localeString = ts.toLocaleString()
             return (
               <List.Row>
                 <List.RowContent>
                   <List.RowTitle>ビルド開始時刻</List.RowTitle>
-                  <ToolTip props={{ content: localeString }}>
+                  <ToolTip content={localeString}>
                     <List.RowData>{diff()}</List.RowData>
                   </ToolTip>
                 </List.RowContent>
@@ -151,13 +143,13 @@ const BuildStatusTable: Component<{
         <List.Row>
           <List.RowContent>
             <List.RowTitle>ビルド終了時刻</List.RowTitle>
-            <Show when={props.build.finishedAt?.valid && props.build.finishedAt} fallback={'-'}>
-              {(nonNullFinishedAt) => {
-                const ts = timestampDate(nonNullFinishedAt().timestamp as Timestamp)
+            <Show when={props.build.finishedAt?.valid && props.build.finishedAt} fallback={'-'} keyed>
+              {(finishedAt) => {
+                const ts = timestampDate(finishedAt.timestamp as Timestamp)
                 const diff = diffHuman(ts)
                 const localeString = ts.toLocaleString()
                 return (
-                  <ToolTip props={{ content: localeString }}>
+                  <ToolTip content={localeString}>
                     <List.RowData>{diff()}</List.RowData>
                   </ToolTip>
                 )

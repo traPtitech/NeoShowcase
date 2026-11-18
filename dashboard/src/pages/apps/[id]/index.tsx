@@ -1,39 +1,35 @@
-import { timestampDate } from '@bufbuild/protobuf/wkt'
-import { useIsRouting } from '@solidjs/router'
-import { type Component, createSignal, For, onCleanup, Show, Suspense } from 'solid-js'
-import toast from 'solid-toast'
+import { createSignal, For, onSettled, Show } from 'solid-js'
 import { type Application, DeployType } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { DataTable } from '/@/components/layouts/DataTable'
 import { SectionBoundary } from '/@/components/layouts/SectionBoundary'
-import SuspenseContainer from '/@/components/layouts/SuspenseContainer'
 import { styled } from '/@/components/styled-components'
 import AppBranchResolution from '/@/components/templates/app/AppBranchResolution'
 import AppDeployInfo from '/@/components/templates/app/AppDeployInfo'
 import AppLatestBuilds from '/@/components/templates/app/AppLatestBuilds'
 import { AppMetrics } from '/@/components/templates/app/AppMetrics'
 import { ContainerLog } from '/@/components/templates/app/ContainerLog'
-import SectionSkeleton from '/@/components/templates/SectionSkeleton'
 import { Button } from '/@/components/UI/Button'
-import { availableMetrics, client, handleAPIError } from '/@/libs/api'
-import { useApplicationData } from '/@/routes'
+import { useApplicationData } from '/@/features/application/data'
+import { client, handleAPIError } from '/@/libs/api'
+import { availableMetrics } from '/@/libs/session'
+import { toast } from '/@/libs/toast'
 
 const MainViewContainer = styled('div', 'w-full bg-ui-primary px-8 pt-10 pb-18 max-md:px-4')
 
 const MainView = styled('div', 'mx-auto flex w-full max-w-250 flex-col gap-8')
 
-const Metrics: Component<{ app: Application }> = (props) => {
-  const metricsNames = () => availableMetrics()?.metricsNames ?? []
-  const [currentView, setCurrentView] = createSignal(metricsNames()[0])
+const Metrics = (props: { app: Application }) => {
+  const [selected, setSelected] = createSignal<string>()
+  const currentView = () => selected() ?? availableMetrics()[0]
 
   return (
-    <div class="flex w-full flex-col gap-4 rounded-lg border border-ui-border px-5 py-4">
+    <div class="border-ui-border flex w-full flex-col gap-4 rounded-lg border px-5 py-4">
       <div class="flex">
-        <For each={metricsNames()}>
+        <For each={availableMetrics()}>
           {(metrics) => (
             <Button
               variants="text"
               size="medium"
-              onClick={() => setCurrentView(metrics)}
+              onClick={() => setSelected(metrics)}
               active={currentView() === metrics}
             >
               {metrics}
@@ -41,23 +37,11 @@ const Metrics: Component<{ app: Application }> = (props) => {
           )}
         </For>
       </div>
-      <div class="aspect-ratio-[960/464] h-auto w-full rounded-lg bg-ui-secondary">
-        <For each={metricsNames()}>
-          {(metrics) => (
-            <Show when={currentView() === metrics}>
-              <AppMetrics appID={props.app.id} metricsName={metrics} />
-            </Show>
-          )}
-        </For>
+      <div class="aspect-ratio-[960/464] bg-ui-secondary h-auto w-full rounded-lg">
+        <Show when={currentView()} keyed>
+          {(metrics) => <AppMetrics appID={props.app.id} metricsName={metrics} />}
+        </Show>
       </div>
-    </div>
-  )
-}
-
-const Logs: Component<{ app: Application }> = (props) => {
-  return (
-    <div class="w-full rounded-lg border border-ui-border px-5 py-4">
-      <ContainerLog appID={props.app.id} />
     </div>
   )
 }
@@ -65,23 +49,13 @@ const Logs: Component<{ app: Application }> = (props) => {
 export default () => {
   const { app, builds, commits, refetch, repo, hasPermission } = useApplicationData()
 
-  const sortedBuilds = () =>
-    builds()?.sort((b1, b2) => {
-      return (
-        (b2.queuedAt ? timestampDate(b2.queuedAt).getTime() : 0) -
-        (b1.queuedAt ? timestampDate(b1.queuedAt).getTime() : 0)
-      )
-    })
-  const deployedBuild = () => sortedBuilds()?.find((b) => b.id === app()?.currentBuild)
-  const latestBuild = () => sortedBuilds()?.[0]
-
-  const loaded = () => !!(app() && repo())
+  const deployedBuild = () => builds().find((b) => b.id === app().currentBuild)
 
   const startApp = async () => {
-    const wasRunning = app()?.running
+    const wasRunning = app().running
     try {
-      await client.startApplication({ id: app()?.id })
-      await refetch()
+      await client.startApplication({ id: app().id })
+      refetch()
       // 非同期でビルドが開始されるので1秒程度待ってから再度リロード
       setTimeout(refetch, 1000)
       toast.success(`アプリケーションを${wasRunning ? '再' : ''}起動しました`)
@@ -93,100 +67,61 @@ export default () => {
   const [disableRefreshCommit, setDisableRefreshCommit] = createSignal(false)
   const refreshCommit = async () => {
     setDisableRefreshCommit(true)
-    await client.refreshRepository({ repositoryId: repo()?.id })
+    await client.refreshRepository({ repositoryId: repo().id })
+    // バックエンド側で非同期で取得されるので1秒程度待ってからリロード
     setTimeout(() => {
-      // バックエンド側で非同期で取得されるので1秒程度待ってからリロード
       setDisableRefreshCommit(false)
-      void refetch()
+      refetch()
     }, 1000)
   }
 
-  const refetchTimer = setInterval(refetch, 10000)
-  onCleanup(() => clearInterval(refetchTimer))
-
-  const isRouting = useIsRouting()
+  onSettled(() => {
+    const timer = setInterval(refetch, 10000)
+    return () => clearInterval(timer)
+  })
 
   return (
-    <SuspenseContainer isPending={isRouting()}>
-      <div class="h-full w-full overflow-y-auto">
-        <Show when={loaded()}>
-          <MainViewContainer class="bg-ui-background">
-            <MainView>
-              <SectionBoundary title="Deployment">
-                <DataTable.Container>
-                  <DataTable.Title>Deployment</DataTable.Title>
-                  <Suspense fallback={<SectionSkeleton />}>
-                    <AppDeployInfo
-                      app={app()!}
-                      refetch={refetch}
-                      repo={repo()!}
-                      startApp={startApp}
-                      deployedBuild={deployedBuild()}
-                      latestBuildId={latestBuild()?.id}
-                      hasPermission={hasPermission()}
-                    />
-                  </Suspense>
-                </DataTable.Container>
-              </SectionBoundary>
-            </MainView>
-          </MainViewContainer>
-          <MainViewContainer>
-            <MainView>
-              <SectionBoundary title="Branch Resolution">
-                <DataTable.Container>
-                  <DataTable.Title>Branch Resolution</DataTable.Title>
-                  <Suspense fallback={<SectionSkeleton />}>
-                    <AppBranchResolution
-                      app={app()!}
-                      commits={commits()}
-                      refreshCommit={refreshCommit}
-                      disableRefreshCommit={disableRefreshCommit()}
-                      hasPermission={hasPermission()}
-                    />
-                  </Suspense>
-                </DataTable.Container>
-              </SectionBoundary>
-              <SectionBoundary title="Latest Builds">
-                <DataTable.Container>
-                  <DataTable.Title>Latest Builds</DataTable.Title>
-                  <Suspense fallback={<SectionSkeleton />}>
-                    <Show when={builds()}>
-                      <AppLatestBuilds
-                        app={app()!}
-                        refetch={refetch}
-                        repo={repo()!}
-                        startApp={startApp}
-                        hasPermission={hasPermission()}
-                        sortedBuilds={sortedBuilds()!}
-                      />
-                    </Show>
-                  </Suspense>
-                </DataTable.Container>
-              </SectionBoundary>
-              <Show when={app()?.deployType === DeployType.RUNTIME && hasPermission()}>
-                <SectionBoundary title="Usage">
-                  <DataTable.Container>
-                    <DataTable.Title>Usage</DataTable.Title>
-                    <Suspense fallback={<SectionSkeleton />}>
-                      <Metrics app={app()!} />
-                    </Suspense>
-                  </DataTable.Container>
-                </SectionBoundary>
-              </Show>
-              <Show when={app()?.deployType === DeployType.RUNTIME && hasPermission()}>
-                <SectionBoundary title="Container Log">
-                  <DataTable.Container>
-                    <DataTable.Title>Container Log</DataTable.Title>
-                    <Suspense fallback={<SectionSkeleton />}>
-                      <Logs app={app()!} />
-                    </Suspense>
-                  </DataTable.Container>
-                </SectionBoundary>
-              </Show>
-            </MainView>
-          </MainViewContainer>
-        </Show>
-      </div>
-    </SuspenseContainer>
+    <div class="h-full w-full overflow-y-auto">
+      <MainViewContainer class="bg-ui-background">
+        <MainView>
+          <SectionBoundary title="Deployment">
+            <AppDeployInfo
+              app={app()}
+              refetch={refetch}
+              startApp={startApp}
+              deployedBuild={deployedBuild()}
+              latestBuildId={builds()[0]?.id}
+              hasPermission={hasPermission()}
+            />
+          </SectionBoundary>
+        </MainView>
+      </MainViewContainer>
+      <MainViewContainer>
+        <MainView>
+          <SectionBoundary title="Branch Resolution">
+            <AppBranchResolution
+              app={app()}
+              commits={commits()}
+              refreshCommit={refreshCommit}
+              disableRefreshCommit={disableRefreshCommit()}
+              hasPermission={hasPermission()}
+            />
+          </SectionBoundary>
+          <SectionBoundary title="Latest Builds">
+            <AppLatestBuilds app={app()} startApp={startApp} hasPermission={hasPermission()} sortedBuilds={builds()} />
+          </SectionBoundary>
+          <Show when={app().deployType === DeployType.RUNTIME && hasPermission()}>
+            <SectionBoundary title="Usage">
+              <Metrics app={app()} />
+            </SectionBoundary>
+            <SectionBoundary title="Container Log">
+              <div class="border-ui-border w-full rounded-lg border px-5 py-4">
+                <ContainerLog appID={app().id} />
+              </div>
+            </SectionBoundary>
+          </Show>
+        </MainView>
+      </MainViewContainer>
+    </div>
   )
 }

@@ -1,5 +1,4 @@
 import { timestampDate } from '@bufbuild/protobuf/wkt'
-import { AiOutlineBranches } from 'solid-icons/ai'
 import { type Component, For, Show } from 'solid-js'
 import type { Application } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { AppStatusIcon } from '/@/components/templates/app/AppStatusIcon'
@@ -24,7 +23,7 @@ const AppBranchResolution: Component<{
     const isErrorCommit = props.app.commit === errorCommit
     const base = (
       <div class="flex w-full items-center gap-1">
-        <AiOutlineBranches size={20} />
+        <div class="i-mdi:source-branch shrink-0 text-xl/5" />
         <div class="flex w-full items-center gap-1">
           {`${props.app.refName} → `}
           <Show when={isErrorCommit} fallback={shortSha(props.app.commit)}>
@@ -48,7 +47,7 @@ const AppBranchResolution: Component<{
           <div class="caption-regular text-text-grey">
             {c.authorName}
             <span>, </span>
-            <ToolTip props={{ content: localeString }}>
+            <ToolTip content={localeString}>
               <span>{diff()}</span>
             </ToolTip>
             <span>, </span>
@@ -70,15 +69,13 @@ const AppBranchResolution: Component<{
             onClick={props.refreshCommit}
             disabled={props.disableRefreshCommit}
             tooltip={{
-              props: {
-                content: (
-                  <>
-                    <div>リポジトリの最新コミットを取得</div>
-                    <div>Pro Tip: Webhookを設定することで</div>
-                    <div>同期して更新されます</div>
-                  </>
-                ),
-              },
+              content: (
+                <>
+                  <div>リポジトリの最新コミットを取得</div>
+                  <div>Pro Tip: Webhookを設定することで</div>
+                  <div>同期して更新されます</div>
+                </>
+              ),
             }}
           >
             Refresh Commit

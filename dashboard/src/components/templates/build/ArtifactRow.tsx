@@ -20,12 +20,12 @@ const downloadArtifact = async (id: string) => {
 
 export const ArtifactRow: Component<Props> = (props) => {
   return (
-    <div class="flex w-full items-center gap-2 bg-ui-primary p-4 pl-5">
+    <div class="bg-ui-primary flex w-full items-center gap-2 p-4 pl-5">
       <div class="flex w-full flex-col">
         <div class="flex w-full items-center gap-2">
-          <div class="h4-regular w-full truncate text-text-black">{props.artifact.name}</div>
+          <div class="h4-regular text-text-black w-full truncate">{props.artifact.name}</div>
         </div>
-        <div class="caption-regular flex w-full items-center gap-1 text-text-grey">
+        <div class="caption-regular text-text-grey flex w-full items-center gap-1">
           <div class="w-fit truncate">{formatBytes(+props.artifact.size.toString())}</div>
         </div>
       </div>

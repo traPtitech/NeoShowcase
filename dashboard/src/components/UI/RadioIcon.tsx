@@ -1,5 +1,4 @@
 import { type Component, Show } from 'solid-js'
-import { clsx } from '/@/libs/clsx'
 
 export interface Props {
   selected: boolean
@@ -9,12 +8,13 @@ export interface Props {
 export const RadioIcon: Component<Props> = (props) => {
   return (
     <div
-      class={clsx(
-        'size-5 rounded-full text-ui-primary',
-        props.selected && "bg-primary-main before:size-2 before:rounded-full before:bg-ui-primary before:content-['']",
-        !props.selected && 'border-2 border-ui-tertiary bg-ui-background',
-        props.disabled && '!bg-text-disabled cursor-not-allowed',
-      )}
+      class={[
+        'text-ui-primary size-5 rounded-full',
+        props.selected
+          ? "bg-primary-main before:bg-ui-primary before:size-2 before:rounded-full before:content-['']"
+          : 'border-ui-tertiary bg-ui-background border-2',
+        { '!bg-text-disabled cursor-not-allowed': props.disabled },
+      ]}
     >
       <Show when={props.selected}>
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" role="img">

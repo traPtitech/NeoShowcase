@@ -1,11 +1,11 @@
-import { A } from '@solidjs/router'
 import { type Component, Show } from 'solid-js'
 import type { Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { styled } from '/@/components/styled-components'
 import { Button } from '/@/components/UI/Button'
 import Skeleton from '/@/components/UI/Skeleton'
-import { user } from '/@/libs/api'
+import { isOwner } from '/@/libs/api'
 import { originToIcon, repositoryURLToOrigin } from '/@/libs/application'
+import { me } from '/@/libs/session'
 
 const Container = styled('div', 'flex h-19 w-full items-center gap-8 bg-ui-primary p-4 pl-5')
 
@@ -28,33 +28,29 @@ export interface Props {
 }
 
 export const RepositoryRow: Component<Props> = (props) => {
-  const canEdit = () => user()?.admin || (user.latest !== undefined && props.repository?.ownerIds.includes(user()?.id))
+  const canEdit = () => isOwner(me(), props.repository)
 
   return (
     <Show when={props.repository} fallback={<RepositoryRowSkeleton />}>
       <Container>
         <TitleContainer>
           {originToIcon(repositoryURLToOrigin(props.repository!.url), 24)}
-          <A href={`/repos/${props.repository?.id}`} class="overflow-hidden">
-            <div class="h4-bold truncate text-text-black">{props.repository!.name}</div>
-          </A>
-          <div class="caption-regular whitespace-nowrap text-text-grey">{`${props.appCount} apps`}</div>
+          <a href={`/repos/${props.repository?.id}`} class="overflow-hidden">
+            <div class="h4-bold text-text-black truncate">{props.repository!.name}</div>
+          </a>
+          <div class="caption-regular text-text-grey whitespace-nowrap">{`${props.appCount} apps`}</div>
         </TitleContainer>
         <Show when={canEdit()}>
           <div class="shrink-0">
-            <A href={`/apps/new?repositoryID=${props.repository!.id}`}>
+            <a href={`/apps/new?repositoryID=${props.repository!.id}`}>
               <Button
                 variants="border"
                 size="medium"
-                tooltip={{
-                  props: {
-                    content: 'このリポジトリからアプリケーションを作成します',
-                  },
-                }}
+                tooltip={{ content: 'このリポジトリからアプリケーションを作成します' }}
               >
                 Add New App
               </Button>
-            </A>
+            </a>
           </div>
         </Show>
       </Container>

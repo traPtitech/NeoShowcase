@@ -1,4 +1,5 @@
-import { type Component, type JSX, splitProps } from 'solid-js'
+import type { JSX } from '@solidjs/web'
+import { type Component, omit } from 'solid-js'
 import type { User } from '/@/api/neoshowcase/protobuf/gateway_pb'
 
 export interface UserAvatarProps extends JSX.HTMLAttributes<HTMLImageElement> {
@@ -7,19 +8,19 @@ export interface UserAvatarProps extends JSX.HTMLAttributes<HTMLImageElement> {
 }
 
 const UserAvatar: Component<UserAvatarProps> = (props) => {
-  const [addedProps, originalImgProps] = splitProps(props, ['user', 'size'])
+  const imgProps = omit(props, 'user', 'size')
   return (
     <img
       class="aspect-square h-auto rounded-full"
-      src={addedProps.user.avatarUrl}
+      src={props.user.avatarUrl}
       style={{
-        width: addedProps.size ? `${addedProps.size}px` : '100%',
+        width: props.size ? `${props.size}px` : '100%',
       }}
-      width={addedProps.size}
-      height={addedProps.size}
+      width={props.size}
+      height={props.size}
       loading="lazy"
-      {...originalImgProps}
-      alt={addedProps.user.name}
+      {...imgProps}
+      alt={props.user.name}
     />
   )
 }

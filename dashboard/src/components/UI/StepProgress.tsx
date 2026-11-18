@@ -1,6 +1,5 @@
 import type { Component } from 'solid-js'
 import { styled } from '/@/components/styled-components'
-import { clsx } from '/@/libs/clsx'
 
 const Container = styled('div', 'flex w-full gap-4')
 
@@ -12,24 +11,24 @@ const StepProgress: Component<{
   return (
     <div class="flex w-full flex-col gap-2">
       <div
-        class={clsx(
+        class={[
           'h-1 w-full rounded-sm',
           {
             complete: 'bg-primary-main',
             current: 'bg-primary-main',
             incomplete: 'bg-ui-tertiary',
           }[props.state],
-        )}
+        ]}
       />
       <div
-        class={clsx(
+        class={[
           'flex w-full flex-col rounded px-3 pt-1.5 pb-2',
           {
             complete: 'text-primary-main',
             current: 'bg-transparency-primary-hover text-primary-main',
             incomplete: 'text-text-grey',
           }[props.state],
-        )}
+        ]}
       >
         <div class="h3-bold flex items-center gap-1.5">{props.title}</div>
         <div class="caption-regular">{props.description}</div>

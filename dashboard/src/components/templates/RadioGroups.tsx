@@ -1,6 +1,6 @@
-import { RadioGroup as KRadioGroup } from '@kobalte/core'
-import { For, type JSX, Show, splitProps } from 'solid-js'
-import { clsx } from '/@/libs/clsx'
+import { RadioGroup as KRadioGroup } from '@kobalte/core/radio-group'
+import type { JSX } from '@solidjs/web'
+import { For, omit, Show } from 'solid-js'
 import { RadioIcon } from '../UI/RadioIcon'
 import { ToolTip, type TooltipProps } from '../UI/ToolTip'
 import { TooltipInfoIcon } from '../UI/TooltipInfoIcon'
@@ -33,23 +33,38 @@ export interface Props<T extends string> {
 }
 
 export const RadioGroup = <T extends string>(props: Props<T>): JSX.Element => {
-  const [rootProps, _addedProps, inputProps] = splitProps(
+  const inputProps = omit(
     props,
-    ['name', 'value', 'options', 'required', 'disabled', 'readOnly'],
-    ['wrap', 'full', 'info', 'tooltip', 'setValue', 'error', 'label'],
+    'name',
+    'value',
+    'options',
+    'required',
+    'disabled',
+    'readOnly',
+    'wrap',
+    'full',
+    'info',
+    'tooltip',
+    'setValue',
+    'error',
+    'label',
   )
 
   return (
-    <KRadioGroup.Root
+    <KRadioGroup
       class="flex w-full flex-col gap-2"
-      {...rootProps}
+      name={props.name}
+      value={props.value}
+      required={props.required}
+      disabled={props.disabled}
+      readOnly={props.readOnly}
       validationState={props.error ? 'invalid' : 'valid'}
       onChange={(v) => props.setValue?.(v as T)}
       orientation="horizontal"
     >
       <Show when={props.label}>
         <TitleContainer>
-          <KRadioGroup.Label class="whitespace-nowrap text-bold text-text-black">{props.label}</KRadioGroup.Label>
+          <KRadioGroup.Label class="text-bold text-text-black whitespace-nowrap">{props.label}</KRadioGroup.Label>
           <Show when={props.required}>
             <RequiredMark>*</RequiredMark>
           </Show>
@@ -58,32 +73,32 @@ export const RadioGroup = <T extends string>(props: Props<T>): JSX.Element => {
           </Show>
         </TitleContainer>
       </Show>
-      <ToolTip {...props.tooltip}>
-        <div class={clsx('flex w-full gap-4', props.wrap ? 'flex-wrap' : 'flex-nowrap max-md:flex-col')}>
+      <ToolTip {...props.tooltip} class="w-full">
+        <div class={['flex w-full gap-4', props.wrap ? 'flex-wrap' : 'flex-nowrap max-md:flex-col']}>
           <For each={props.options}>
             {(option) => (
               <KRadioGroup.Item
                 value={option.value}
-                class={clsx(
+                class={[
                   'min-w-[min(200px,100%)]',
-                  'rounded-lg focus-within:outline focus-within:outline-3 focus-within:outline-primary-main',
+                  'focus-within:outline-primary-main rounded-lg focus-within:outline focus-within:outline-3',
                   props.full ? 'w-full' : 'w-fit',
-                )}
+                ]}
               >
                 <KRadioGroup.ItemInput {...inputProps} />
                 <KRadioGroup.ItemLabel
-                  class={clsx(
-                    'flex h-full w-full cursor-pointer flex-col gap-2 rounded-lg border border-ui-border bg-ui-primary p-4 text-regular text-text-black',
+                  class={[
+                    'border-ui-border bg-ui-primary text-regular text-text-black flex h-full w-full cursor-pointer flex-col gap-2 rounded-lg border p-4',
                     'hover:[&:not([data-disabled]):not([data-readonly])]:bg-color-overlay-ui-primary-to-transparency-primary-hover',
                     'data-[readonly]:cursor-not-allowed',
-                    'data-[checked]:outline data-[checked]:outline-2 data-[checked]:outline-primary-main',
-                    'data-[disabled]:cursor-not-allowed data-[disabled]:bg-ui-tertiary data-[disabled]:text-text-disabled',
-                    'data-[invalid]:outline data-[invalid]:outline-2 data-[invalid]:outline-accent-error',
+                    'data-[checked]:outline-primary-main data-[checked]:outline data-[checked]:outline-2',
+                    'data-[disabled]:bg-ui-tertiary data-[disabled]:text-text-disabled data-[disabled]:cursor-not-allowed',
+                    'data-[invalid]:outline-accent-error data-[invalid]:outline data-[invalid]:outline-2',
                     'min-w-[min(200px,100%)]',
                     props.full ? 'w-full' : 'w-fit',
-                  )}
+                  ]}
                 >
-                  <div class="grid grid-cols-[1fr_20px] items-center justify-start gap-2 text-regular text-text-black">
+                  <div class="text-regular text-text-black grid grid-cols-[1fr_20px] items-center justify-start gap-2">
                     {option.label}
                     <KRadioGroup.ItemControl>
                       <KRadioGroup.ItemIndicator forceMount>
@@ -100,7 +115,7 @@ export const RadioGroup = <T extends string>(props: Props<T>): JSX.Element => {
           </For>
         </div>
       </ToolTip>
-      <KRadioGroup.ErrorMessage class="w-full text-accent-error text-regular">{props.error}</KRadioGroup.ErrorMessage>
-    </KRadioGroup.Root>
+      <KRadioGroup.ErrorMessage class="text-accent-error text-regular w-full">{props.error}</KRadioGroup.ErrorMessage>
+    </KRadioGroup>
   )
 }

@@ -18,12 +18,10 @@
     "rules": {
       "preset": "recommended",
       "nursery": {
-        "useSortedClasses": {
+        "useTailwindSortedClasses": {
           "fix": "safe",
           "level": "warn",
-          "options": {
-            "functions": ["clsx", "styled"]
-          }
+          "options": {}
         }
       },
       "correctness": {
@@ -40,7 +38,25 @@
         "noUnusedTemplateLiteral": "error",
         "useNumberNamespace": "error",
         "noInferrableTypes": "error",
-        "noUselessElse": "error"
+        "noUselessElse": "error",
+        "noRestrictedImports": {
+          "level": "error",
+          "options": {
+            "paths": {
+              "solid-js/web": "Solid 2: import from '@solidjs/web'.",
+              "solid-js/store": "Solid 2: store APIs are exported from 'solid-js'.",
+              "solid-toast": "Use '/@/libs/toast'.",
+              "solid-tippy": "Use '/@/components/UI/ToolTip'.",
+              "tippy.js": "Use '/@/components/UI/ToolTip'.",
+              "@kobalte/core": "Import Kobalte components from their subpath, e.g. '@kobalte/core/dialog'.",
+              "@kobalte/core/toast": "Use '/@/libs/toast' (only that module may import Kobalte toast).",
+              "@formisch/solid": "Use the Solid 2 entry '@formisch/solid/v2'.",
+              "@modular-forms/solid": "Use '@formisch/solid/v2'.",
+              "solid-chartjs": "Use 'chart.js' directly.",
+              "/@/libs/clsx": "Use Solid 2 class arrays/objects: class={['a', { b: cond() }]}."
+            }
+          }
+        }
       },
       "suspicious": {
         "noExtraNonNullAssertion": "off"
@@ -48,6 +64,24 @@
     }
   },
   "files": {
-    "includes": ["**", "!**/src/api/**/*", "!**/package.json"]
-  }
+    "includes": [
+      "**",
+      "!**/src/api/**/*",
+      "!**/package.json"
+    ]
+  },
+  "overrides": [
+    {
+      "includes": [
+        "src/libs/toast.tsx"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": "off"
+          }
+        }
+      }
+    }
+  ]
 }

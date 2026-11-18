@@ -1,9 +1,7 @@
-import { DropdownMenu } from '@kobalte/core'
-import { A } from '@solidjs/router'
-import { type Component, For } from 'solid-js'
+import { DropdownMenu } from '@kobalte/core/dropdown-menu'
+import { type Component, For, Loading } from 'solid-js'
 import type { User } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { systemInfo } from '/@/libs/api'
-import { clsx } from '/@/libs/clsx'
+import { systemInfo } from '/@/libs/session'
 import { Button } from './Button'
 import UserAvatar from './UserAvater'
 
@@ -29,28 +27,28 @@ export const UserMenuButton: Component<{
   user: User
 }> = (props) => {
   return (
-    <DropdownMenu.Root placement="top-end">
+    <DropdownMenu placement="top-end">
       <DropdownMenu.Trigger
-        class={clsx(
-          'relative flex h-11 w-fit-content cursor-pointer items-center gap-2 rounded-lg border-none bg-inherit px-2',
+        class={[
+          'w-fit-content relative flex h-11 cursor-pointer items-center gap-2 rounded-lg border-none bg-inherit px-2',
           'hover:bg-transparency-primary-hover active:bg-transparency-primary-selected',
-        )}
+        ]}
       >
         <UserAvatar user={props.user} size={32} />
         <span class="text-bold text-text-black max-md:hidden">{props.user.name}</span>
-        <DropdownMenu.Icon class="size-6 transition-transform duration-200 data-[expanded]:rotate-180deg">
+        <DropdownMenu.Icon class="data-[expanded]:rotate-180deg size-6 transition-transform duration-200">
           <div class="i-material-symbols:arrow-drop-down shrink-0 text-2xl/6" />
         </DropdownMenu.Icon>
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>
         <DropdownMenu.Content
-          class={clsx(
-            'transform-origin-[var(--kb-menu-content-transform-origin)] z-1 flex flex-col rounded-md bg-ui-primary p-1.5 shadow-default',
+          class={[
+            'transform-origin-[var(--kb-menu-content-transform-origin)] bg-ui-primary shadow-default z-1 flex flex-col rounded-md p-1.5',
             'animate-duration-200 animate-ease-in-out animate-name-wipe-hide-up data-[expanded]:animate-name-wipe-show-down',
-          )}
+          ]}
         >
           <DropdownMenu.Item>
-            <A href="/settings">
+            <a href="/settings">
               <Button
                 variants="text"
                 size="medium"
@@ -59,34 +57,36 @@ export const UserMenuButton: Component<{
               >
                 Settings
               </Button>
-            </A>
+            </a>
           </DropdownMenu.Item>
-          <For each={systemInfo()?.additionalLinks}>
-            {(link) => (
-              <DropdownMenu.Item>
-                <a href={link.url} target="_blank" rel="noopener noreferrer">
-                  <Button
-                    variants="text"
-                    size="medium"
-                    leftIcon={<div class={clsx(linkNameToMaterialIcon(link.name), 'text-2xl/6')} />}
-                    full
-                  >
-                    {link.name}
-                  </Button>
-                </a>
-              </DropdownMenu.Item>
-            )}
-          </For>
-          <DropdownMenu.Item>
-            <div class="flex flex-col px-4 py-1 text-regular text-text-grey">
-              <span>NeoShowcase</span>
-              <span>
-                {systemInfo()?.version} ({systemInfo()?.revision})
-              </span>
-            </div>
-          </DropdownMenu.Item>
+          <Loading>
+            <For each={systemInfo().additionalLinks}>
+              {(link) => (
+                <DropdownMenu.Item>
+                  <a href={link.url} target="_blank" rel="noopener noreferrer">
+                    <Button
+                      variants="text"
+                      size="medium"
+                      leftIcon={<div class={[linkNameToMaterialIcon(link.name), 'text-2xl/6']} />}
+                      full
+                    >
+                      {link.name}
+                    </Button>
+                  </a>
+                </DropdownMenu.Item>
+              )}
+            </For>
+            <DropdownMenu.Item>
+              <div class="text-regular text-text-grey flex flex-col px-4 py-1">
+                <span>NeoShowcase</span>
+                <span>
+                  {systemInfo().version} ({systemInfo().revision})
+                </span>
+              </div>
+            </DropdownMenu.Item>
+          </Loading>
         </DropdownMenu.Content>
       </DropdownMenu.Portal>
-    </DropdownMenu.Root>
+    </DropdownMenu>
   )
 }

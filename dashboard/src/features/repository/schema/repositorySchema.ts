@@ -1,3 +1,4 @@
+import type { FormStore } from '@formisch/solid/v2'
 import * as v from 'valibot'
 import {
   type CreateRepositoryAuth,
@@ -227,23 +228,16 @@ export const createOrUpdateRepositorySchema = v.variant('type', [
 
 export type CreateOrUpdateRepositoryInput = v.InferInput<typeof createOrUpdateRepositorySchema>
 export type CreateOrUpdateRepositoryOutput = v.InferOutput<typeof createOrUpdateRepositorySchema>
+export type RepositoryFormStore = FormStore<typeof createOrUpdateRepositorySchema>
 
-export const handleSubmitCreateRepositoryForm = (
-  input: CreateOrUpdateRepositoryInput,
-  handler: (output: CreateRepositoryOutput) => Promise<unknown>,
-) => {
-  const result = v.parse(createOrUpdateRepositorySchema, input)
-  if (result.type !== 'create')
-    throw new Error('The type of input passed to handleSubmitCreateRepositoryForm must be "create"')
-  return handler(result.form)
+/** The create form is only ever submitted with `type: 'create'`; narrows the validated output. */
+export const toCreateRepositoryRequest = (output: CreateOrUpdateRepositoryOutput): CreateRepositoryOutput => {
+  if (output.type !== 'create') throw new Error('The submitted repository form must be of type "create"')
+  return output.form
 }
 
-export const handleSubmitUpdateRepositoryForm = (
-  input: CreateOrUpdateRepositoryInput,
-  handler: (output: UpdateRepositoryOutput) => Promise<unknown>,
-) => {
-  const result = v.parse(createOrUpdateRepositorySchema, input)
-  if (result.type !== 'update')
-    throw new Error('The type of input passed to handleSubmitCreateRepositoryForm must be "update"')
-  return handler(result.form)
+/** The update form is only ever submitted with `type: 'update'`; narrows the validated output. */
+export const toUpdateRepositoryRequest = (output: CreateOrUpdateRepositoryOutput): UpdateRepositoryOutput => {
+  if (output.type !== 'update') throw new Error('The submitted repository form must be of type "update"')
+  return output.form
 }

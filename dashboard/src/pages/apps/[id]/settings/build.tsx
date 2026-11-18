@@ -1,21 +1,14 @@
-import { Show } from 'solid-js'
 import { DataTable } from '/@/components/layouts/DataTable'
 import BuildConfigForm from '/@/features/application/components/form/BuildConfigForm'
-import { ApplicationFormProvider } from '/@/features/application/provider/applicationFormProvider'
-import { useApplicationData } from '/@/routes'
+import { useApplicationData } from '/@/features/application/data'
 
 export default () => {
   const { app, refetch, hasPermission } = useApplicationData()
-  const loaded = () => !!app()
 
   return (
     <DataTable.Container>
-      <Show when={loaded()}>
-        <DataTable.Title>Build</DataTable.Title>
-        <ApplicationFormProvider>
-          <BuildConfigForm app={app()!} hasPermission={hasPermission()} refetchApp={refetch} disableEditDB />
-        </ApplicationFormProvider>
-      </Show>
+      <DataTable.Title>Build</DataTable.Title>
+      <BuildConfigForm app={app()} hasPermission={hasPermission()} refetch={refetch} disableEditDB />
     </DataTable.Container>
   )
 }
