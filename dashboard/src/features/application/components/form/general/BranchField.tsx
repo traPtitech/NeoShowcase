@@ -27,14 +27,15 @@ const BranchField: Component<Props> = (props) => {
     ),
   )
 
-  // 設定されていたブランチが見つからなかった場合(ブランチが削除された場合等)にエラーを表示し、
-  // 存在しない refName の代わりに空文字列を入れる
-  // (refName を undefined にすると"更新しないプロパティ"という扱いになるため、空文字列にしてバリデーションエラーを発生させる)
+  // 設定されていたブランチが見つからなかった場合 (ブランチが削除された場合等) は、エラーを表示して入力を空にする。
+  // - 存在チェックには非同期に取得するブランチ一覧が要るので、スキーマ (静的な validator) には書けない
+  // - 空文字列はスキーマの nonEmpty が弾くので、別のブランチを選ぶまで送信できない
+  //   (undefined にすると更新スキーマでは v.optional = "更新しないプロパティ" として通ってしまう)
   createEffect(
     () => ({ refName: getInput(props.form, { path: refNamePath }), branches: branches() }),
     ({ refName, branches }) => {
-      // まだ読み込まれていない、または候補が無い場合は何もしない
-      if (refName === undefined || refName === '' || branches.length === 0) return
+      // 未入力 (スキーマの nonEmpty に任せる)、または候補が無い場合は何もしない
+      if (!refName || branches.length === 0) return
       if (branches.includes(refName)) {
         setErrors(props.form, { path: refNamePath, errors: null })
       } else {

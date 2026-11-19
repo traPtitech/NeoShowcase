@@ -1,6 +1,21 @@
 minimumReleaseAge: 10080
-# Solid 2.0 stable was released on 2026-11-17. Exempt the Solid core packages
-# from the release-age gate until the 2.0 line has aged past it.
+# Drop entries of minimumReleaseAgeExclude once the lockfile no longer resolves that version
+# (e.g. after Renovate bumps it), so these temporary exemptions clean themselves up.
+minimumReleaseAgeExcludePrune: true
+# Solid 2.0 stable was released on 2026-11-17. Exempt exactly the versions in use
+# until they have aged past the release-age gate.
 minimumReleaseAgeExclude:
-  - solid-js
-  - '@solidjs/*'
+  - solid-js@2.0.1
+  - '@solidjs/compiler@2.0.1'
+  - '@solidjs/compiler-darwin-arm64@2.0.1'
+  - '@solidjs/compiler-darwin-x64@2.0.1'
+  - '@solidjs/compiler-linux-arm64-gnu@2.0.1'
+  - '@solidjs/compiler-linux-x64-gnu@2.0.1'
+  - '@solidjs/compiler-wasm32-wasi@2.0.1'
+  - '@solidjs/compiler-win32-x64-msvc@2.0.1'
+  - '@solidjs/diagnostics@2.0.1'
+  - '@solidjs/meta@2.0.0'
+  - '@solidjs/router@2.0.0'
+  - '@solidjs/signals@2.0.1'
+  - '@solidjs/vite-plugin@3.0.1'
+  - '@solidjs/web@2.0.1'

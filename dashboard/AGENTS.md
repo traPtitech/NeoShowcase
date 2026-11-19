@@ -49,6 +49,8 @@ Biome's `noRestrictedImports` enforces this.
 
 - Session-wide data: `/@/libs/session` → `me`, `systemInfo`, `availableMetrics`, `users`, `usersFromIds`.
   These are async memos (call them: `me().admin`).
+- App-lifetime reactive state at module scope: wrap it in `createSingleton(() => ...)` (`/@/libs/singleton`),
+  never a bare `createRoot` (it would be owned by, and disposed with, whatever component first imports the module).
 - Cached API reads: `query` wrappers in `/@/libs/api` (`getApplication`, `getBuilds`, …) plus
   `revalidateXxx(id)`. Consume with `createMemo(() => getApplication(id))`.
 - Route-scoped data: the `/apps/:id` layout provides `useApplicationData()` and `/repos/:id` provides

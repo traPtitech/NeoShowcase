@@ -1,5 +1,6 @@
 import type { Timestamp } from '@bufbuild/protobuf/wkt'
-import { createRoot, createSignal, onSettled, runWithOwner } from 'solid-js'
+import { createSignal, onSettled } from 'solid-js'
+import { createSingleton } from '/@/libs/singleton'
 
 export const shortSha = (sha1: string): string => sha1.substring(0, 7)
 
@@ -53,17 +54,15 @@ export const durationHuman = (millis: number): string => {
   return `${remainMillis} ms`
 }
 
-/** Current time, refreshed every 10s. App-lifetime singleton in a detached root. */
-const now = runWithOwner(null, () =>
-  createRoot(() => {
-    const [now, setNow] = createSignal(new Date())
-    onSettled(() => {
-      const timer = setInterval(() => setNow(new Date()), 10000)
-      return () => clearInterval(timer)
-    })
-    return now
-  }),
-)!
+/** Current time, refreshed every 10s. */
+const now = createSingleton(() => {
+  const [now, setNow] = createSignal(new Date())
+  onSettled(() => {
+    const timer = setInterval(() => setNow(new Date()), 10000)
+    return () => clearInterval(timer)
+  })
+  return now
+})
 
 export const diffHuman = (target: Date): (() => string) => {
   return () => {

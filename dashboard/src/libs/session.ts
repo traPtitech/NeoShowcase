@@ -1,27 +1,25 @@
 import { revalidate } from '@solidjs/router'
-import { createMemo, createRoot, refresh, runWithOwner } from 'solid-js'
+import { createMemo, refresh } from 'solid-js'
 import type { User } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { client } from '/@/libs/api'
+import { createSingleton } from '/@/libs/singleton'
 
 /**
  * Session-wide data that does not depend on the current route.
  *
  * These are async memos: reading them before the first response suspends the
- * nearest `<Loading>` boundary. They live in a detached root because they are
- * app-lifetime singletons (this dashboard is a client-only SPA).
+ * nearest `<Loading>` boundary. They are app-lifetime singletons (this dashboard is a client-only SPA).
  */
-const session = runWithOwner(null, () =>
-  createRoot(() => {
-    const me = createMemo(() => client.getMe({}))
-    const systemInfo = createMemo(() => client.getSystemInfo({}))
-    const availableMetrics = createMemo(() => client.getAvailableMetrics({}).then((r) => r.metricsNames), {
-      lazy: true,
-    })
-    const users = createMemo(() => client.getUsers({}).then((r) => r.users), { lazy: true })
-    const usersById = createMemo(() => new Map(users().map((u) => [u.id, u])), { lazy: true })
-    return { me, systemInfo, availableMetrics, users, usersById }
-  }),
-)!
+const session = createSingleton(() => {
+  const me = createMemo(() => client.getMe({}))
+  const systemInfo = createMemo(() => client.getSystemInfo({}))
+  const availableMetrics = createMemo(() => client.getAvailableMetrics({}).then((r) => r.metricsNames), {
+    lazy: true,
+  })
+  const users = createMemo(() => client.getUsers({}).then((r) => r.users), { lazy: true })
+  const usersById = createMemo(() => new Map(users().map((u) => [u.id, u])), { lazy: true })
+  return { me, systemInfo, availableMetrics, users, usersById }
+})
 
 export const { me, systemInfo, availableMetrics, users } = session
 
