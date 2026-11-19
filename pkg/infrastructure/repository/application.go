@@ -231,19 +231,30 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 
 func (r *applicationRepository) BulkUpdateState(ctx context.Context, states []*domain.Container) error {
 	// NOTE: sqlboiler does not support bulk insert/update by default, could use custom templating
+	// Run all updates in one transaction: with autocommit, every UPDATE pays a commit and the total grows with the number of apps.
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return oops.Wrapf(err, "starting transaction")
+	}
+	defer tx.Rollback()
+
 	for _, state := range states {
 		ma := models.Application{
 			ID:               state.ApplicationID,
 			Container:        repoconvert.ContainerStateMapper.FromMust(state.State),
 			ContainerMessage: state.Message,
 		}
-		_, err := ma.Update(ctx, r.db, boil.Whitelist(
+		_, err := ma.Update(ctx, tx, boil.Whitelist(
 			models.ApplicationColumns.Container,
 			models.ApplicationColumns.ContainerMessage,
 		))
 		if err != nil {
 			return oops.Wrapf(err, "updating container state")
 		}
+	}
+
+	if err = tx.Commit(); err != nil {
+		return oops.Wrapf(err, "committing transaction")
 	}
 	return nil
 }
