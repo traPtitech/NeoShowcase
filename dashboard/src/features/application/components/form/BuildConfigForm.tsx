@@ -1,84 +1,69 @@
-import { Field, Form, reset, type SubmitHandler, setValues } from '@modular-forms/solid'
-import { type Component, createEffect, onMount, untrack } from 'solid-js'
-import toast from 'solid-toast'
+import { createForm, Form, reset } from '@formisch/solid/v2'
+import { type Component, createEffect, untrack } from 'solid-js'
 import type { Application } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import FormBox from '/@/components/layouts/FormBox'
 import { Button } from '/@/components/UI/Button'
 import { client, handleAPIError } from '/@/libs/api'
-import { useApplicationForm } from '../../provider/applicationFormProvider'
+import { toast } from '/@/libs/toast'
 import {
-  type CreateOrUpdateApplicationInput,
+  createOrUpdateApplicationSchema,
   getInitialValueOfUpdateAppForm,
-  handleSubmitUpdateApplicationForm,
+  toUpdateApplicationRequest,
 } from '../../schema/applicationSchema'
 import BuildTypeField from './config/BuildTypeField'
 import ConfigField from './config/ConfigField'
 
 type Props = {
   app: Application
-  refetchApp: () => Promise<void>
   hasPermission: boolean
+  refetch: () => void
   disableEditDB?: boolean
 }
 
 const BuildConfigForm: Component<Props> = (props) => {
-  const { formStore } = useApplicationForm()
-
-  // `reset` doesn't work on first render when the Field not rendered
-  // see: https://github.com/fabian-hiller/modular-forms/issues/157#issuecomment-1848567069
-  onMount(() => {
-    setValues(formStore, getInitialValueOfUpdateAppForm(props.app))
+  const form = createForm({
+    schema: createOrUpdateApplicationSchema,
+    initialInput: untrack(() => getInitialValueOfUpdateAppForm(props.app)),
   })
 
-  // reset forms when props.app changed
-  createEffect(() => {
-    reset(
-      untrack(() => formStore),
-      {
-        initialValues: getInitialValueOfUpdateAppForm(props.app),
-      },
-    )
-  })
-
-  const handleSubmit: SubmitHandler<CreateOrUpdateApplicationInput> = (values) =>
-    handleSubmitUpdateApplicationForm(values, async (output) => {
-      try {
-        await client.updateApplication(output)
-        toast.success('アプリケーション設定を更新しました')
-        props.refetchApp()
-        // 非同期でビルドが開始されるので1秒程度待ってから再度リロード
-        setTimeout(props.refetchApp, 1000)
-      } catch (e) {
-        handleAPIError(e, 'アプリケーション設定の更新に失敗しました')
-      }
-    })
+  // サーバー側のデータが更新されたらフォームを巻き戻す
+  createEffect(
+    () => getInitialValueOfUpdateAppForm(props.app),
+    (initialInput) => reset(form, { initialInput }),
+    { defer: true },
+  )
 
   return (
-    <Form of={formStore} onSubmit={handleSubmit}>
-      <Field of={formStore} name="type">
-        {() => null}
-      </Field>
-      <Field of={formStore} name="form.id">
-        {() => null}
-      </Field>
+    <Form
+      of={form}
+      onSubmit={async (output) => {
+        try {
+          await client.updateApplication(toUpdateApplicationRequest(output))
+          toast.success('アプリケーション設定を更新しました')
+          props.refetch()
+          // 非同期でビルドが開始されるので1秒程度待ってから再度リロード
+          setTimeout(props.refetch, 1000)
+        } catch (e) {
+          handleAPIError(e, 'アプリケーション設定の更新に失敗しました')
+        }
+      }}
+    >
       <FormBox.Container>
         <FormBox.Forms>
-          <BuildTypeField readonly={!props.hasPermission} />
-          <ConfigField readonly={!props.hasPermission} disableEditDB={props.disableEditDB} />
+          <BuildTypeField form={form} readonly={!props.hasPermission} />
+          <ConfigField form={form} readonly={!props.hasPermission} disableEditDB={props.disableEditDB} />
         </FormBox.Forms>
         <FormBox.Actions>
           <Button
             variants="primary"
             size="small"
             type="submit"
-            disabled={formStore.invalid || !formStore.dirty || formStore.submitting || !props.hasPermission}
-            loading={formStore.submitting}
+            disabled={!form.isDirty || form.isSubmitting || !props.hasPermission}
+            loading={form.isSubmitting}
             tooltip={{
-              props: {
-                content: !props.hasPermission
-                  ? '設定を変更するにはアプリケーションのオーナーになる必要があります'
-                  : undefined,
-              },
+              content: !props.hasPermission
+                ? '設定を変更するにはアプリケーションのオーナーになる必要があります'
+                : undefined,
             }}
           >
             Save

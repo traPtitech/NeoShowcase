@@ -1,9 +1,6 @@
 import { createClient } from '@connectrpc/connect'
 import { createConnectTransport } from '@connectrpc/connect-web'
 import { query, revalidate } from '@solidjs/router'
-import AsyncLock from 'async-lock'
-import { createResource } from 'solid-js'
-import toast from 'solid-toast'
 import {
   APIService,
   type Application,
@@ -11,6 +8,7 @@ import {
   type Repository,
   type SimpleCommit,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { toast } from '/@/libs/toast'
 import { unique } from '/@/libs/unique'
 
 const transport = createConnectTransport({
@@ -19,15 +17,9 @@ const transport = createConnectTransport({
 })
 export const client = createClient(APIService, transport)
 
-export const [user, { refetch: refetchUser }] = createResource(() => client.getMe({}))
-export const [systemInfo, { refetch: refetchSystemInfo }] = createResource(() => client.getSystemInfo({}))
-export const [availableMetrics, { refetch: refetchAvailableMetrics }] = createResource(() =>
-  client.getAvailableMetrics({}),
-)
-
 export const handleAPIError = (e: unknown, message: string) => {
   if (e instanceof Error) {
-    //' e instanceof ConnectError' does not work for some reason
+    // `e instanceof ConnectError` does not work for some reason
     toast.error(`${message}\n${e.message}`)
   } else {
     console.trace(e)
@@ -35,84 +27,80 @@ export const handleAPIError = (e: unknown, message: string) => {
   }
 }
 
-export const getRepository = query((id) => client.getRepository({ repositoryId: id }), 'repository')
+// --- Cached queries
+// `query` dedupes concurrent reads, keeps the entry alive while it is observed,
+// and lets `revalidate(key)` re-run every reader. Read them inside `createMemo`.
+
+export const getRepository = query((id: string) => client.getRepository({ repositoryId: id }), 'repository')
 export const revalidateRepository = (id: string) => revalidate(getRepository.keyFor(id))
 
-export const hasRepositoryPermission = (repo: () => Repository | undefined): boolean =>
-  (user()?.admin || (user.latest !== undefined && repo()?.ownerIds.includes(user().id))) ?? false
-
 export const getRepositoryApps = query(
-  (id) =>
+  (id: string) =>
     client
-      .getApplications({
-        scope: GetApplicationsRequest_Scope.REPOSITORY,
-        repositoryId: id,
-      })
+      .getApplications({ scope: GetApplicationsRequest_Scope.REPOSITORY, repositoryId: id })
       .then((r) => r.applications),
   'repository-apps',
 )
+export const revalidateRepositoryApps = (id: string) => revalidate(getRepositoryApps.keyFor(id))
 
-export type CommitsMap = Record<string, SimpleCommit | undefined>
-
-export const getRepositoryCommits = (() => {
-  let commits: CommitsMap = {}
-  const lock = new AsyncLock()
-
-  return async (hashes: string[]): Promise<CommitsMap> => {
-    return lock.acquire('key', async () => {
-      // Check if we have all the commits - if so, just return
-      let missingHashes = hashes.filter((hash) => !Object.hasOwn(commits, hash))
-      if (missingHashes.length === 0) {
-        return commits
-      }
-      // dedupe and sort
-      missingHashes = unique(missingHashes).sort()
-
-      // Fetch values
-      const res = await client.getRepositoryCommits({ hashes: missingHashes })
-      // NOTE: make a new object so Solid's createResource can be notified that the value changed
-      const newCommits: CommitsMap = {}
-      Object.assign(newCommits, commits)
-      for (const hash of missingHashes) {
-        newCommits[hash] = undefined // Negative cache
-      }
-      for (const c of res.commits) {
-        newCommits[c.hash] = c
-      }
-      commits = newCommits
-      return commits
-    })
-  }
-})()
-
-export const getApplication = query((id) => client.getApplication({ id }), 'application')
+export const getApplication = query((id: string) => client.getApplication({ id }), 'application')
 export const revalidateApplication = (id: string) => revalidate(getApplication.keyFor(id))
 
 export const getBuilds = query(
-  (appId) => client.getBuilds({ id: appId }).then((res) => res.builds),
+  (appId: string) => client.getBuilds({ id: appId }).then((res) => res.builds),
   'application-builds',
 )
 export const revalidateBuilds = (appId: string) => revalidate(getBuilds.keyFor(appId))
 
-export const hasApplicationPermission = (app: () => Application | undefined): boolean =>
-  (user()?.admin || (user.latest !== undefined && app()?.ownerIds.includes(user().id))) ?? false
-
-export const getBuild = query((id) => client.getBuild({ buildId: id }), 'build')
+export const getBuild = query((id: string) => client.getBuild({ buildId: id }), 'build')
 export const revalidateBuild = (id: string) => revalidate(getBuild.keyFor(id))
 
-export const getUserKeys = query(() => client.getUserKeys({}).then((res) => res.keys), 'user-keys')
+export const getEnvVars = query((appId: string) => client.getEnvVars({ id: appId }), 'application-env-vars')
+export const revalidateEnvVars = (appId: string) => revalidate(getEnvVars.keyFor(appId))
+
+export const getUserKeys = query(() => client.getUserKeys({}).then((r) => r.keys), 'user-keys')
 export const revalidateUserKeys = () => revalidate(getUserKeys.key)
 
-/**
- * Refetches every piece of data a boundary may be showing: the router's cached queries and the resources that
- * live for the lifetime of the module. Retrying goes through this rather than through a list supplied by each
- * boundary, so that adding a boundary cannot silently leave its Retry doing nothing.
- *
- * Resources created inside a boundary are not included; resetting the boundary recreates them.
- *
- * It settles rather than rejects, so that one source still being down cannot stop a caller from resetting a
- * boundary whose own data has recovered. Whatever is still failing throws again when the boundary reads it.
- */
-export const retryAll = async () => {
-  await Promise.allSettled([revalidate(), refetchUser(), refetchSystemInfo(), refetchAvailableMetrics()])
+export const getRepositoryRefs = query(
+  (repositoryId: string) => client.getRepositoryRefs({ repositoryId }).then((r) => r.refs),
+  'repository-refs',
+)
+
+// --- Commits
+// Commit metadata is immutable, so it is cached forever (including negative results)
+// and fetched in batches of the hashes that are not known yet.
+
+export type CommitsMap = Record<string, SimpleCommit | undefined>
+
+const commitCache = new Map<string, Promise<SimpleCommit | undefined>>()
+
+export const getRepositoryCommits = async (hashes: string[]): Promise<CommitsMap> => {
+  const wanted = unique(hashes)
+  const missing = wanted.filter((hash) => !commitCache.has(hash)).sort()
+  if (missing.length > 0) {
+    const batch = client
+      .getRepositoryCommits({ hashes: missing })
+      .then((res) => new Map(res.commits.map((c) => [c.hash, c])))
+    for (const hash of missing) {
+      commitCache.set(
+        hash,
+        batch.then(
+          (commits) => commits.get(hash),
+          (e) => {
+            commitCache.delete(hash) // allow retry
+            throw e
+          },
+        ),
+      )
+    }
+  }
+  const entries = await Promise.all(wanted.map(async (hash) => [hash, await commitCache.get(hash)] as const))
+  return Object.fromEntries(entries)
 }
+
+// --- Permissions
+
+export const isOwner = (
+  me: { id: string; admin: boolean } | undefined,
+  resource: Pick<Application | Repository, 'ownerIds'> | undefined,
+): boolean => !!me && (me.admin || (resource?.ownerIds.includes(me.id) ?? false))

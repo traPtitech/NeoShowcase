@@ -1,43 +1,45 @@
-import { Combobox as KComboBox, Select as KSelect } from '@kobalte/core'
-import { createEffect, createSignal, type JSX, Show, splitProps } from 'solid-js'
-import { clsx } from '/@/libs/clsx'
+import { Combobox as KComboBox } from '@kobalte/core/combobox'
+import { Select as KSelect } from '@kobalte/core/select'
+import type { JSX } from '@solidjs/web'
+import { createMemo, Show } from 'solid-js'
 import { CheckBoxIcon } from '../UI/CheckBoxIcon'
 import { ToolTip, type TooltipProps } from '../UI/ToolTip'
 import { TooltipInfoIcon } from '../UI/TooltipInfoIcon'
 import { RequiredMark, TitleContainer } from './FormItem'
 
-const itemStyleBase = clsx(
+const itemStyleBase = [
   'cursor-pointer items-center gap-2 whitespace-nowrap rounded-lg border-none bg-inherit text-bold text-text-black',
   'hover:bg-transparency-primary-hover data-[highlighted]:bg-transparency-primary-hover',
-  '!data-[disabled]:bg-text-disabled !data-[disabled]:text-text-black data-[disabled]:cursor-not-allowed',
-)
+  'data-[disabled]:!bg-text-disabled data-[disabled]:!text-text-black data-[disabled]:cursor-not-allowed',
+]
 
-const singleItemStyle = clsx(
+const singleItemStyle = [
   itemStyleBase,
   'px-4 py-2',
   'data-[selected]:bg-transparency-primary-selected data-[selected]:text-primary-main',
-)
+]
 
-const multiItemStyle = clsx(itemStyleBase, 'p-2')
+const multiItemStyle = [itemStyleBase, 'p-2']
 
-const triggerStyle = clsx(
+const triggerStyle = [
   'grid h-12 w-full max-w-72 cursor-pointer grid-cols-[1fr_24px] content-center items-center gap-1 rounded-lg border-none bg-ui-primary px-4 py-2.5 text-text-black outline outline-1 outline-ui-border',
   'focus-visible:outline-2 focus-visible:outline-primary-main',
   'data-[expanded]:outline-2 data-[expanded]:outline-primary-main',
-  '!data-[disabled]:bg-ui-tertiary !data-[disabled]:text-text-disabled data-[disabled]:cursor-not-allowed',
-)
+  'data-[disabled]:!bg-ui-tertiary data-[disabled]:!text-text-disabled data-[disabled]:cursor-not-allowed',
+]
 
-const valueStyle = clsx('w-full truncate text-left text-regular', 'data-[placeholder-shown]:text-text-disabled')
+const valueStyle = ['w-full truncate text-left text-regular', 'data-[placeholder-shown]:text-text-disabled']
 
-const iconStyle = clsx('size-6 shrink-0')
+const iconStyle = 'size-6 shrink-0'
 
-const contentStyleBase = clsx(
-  'animate-duration-200 animate-ease-out animate-name-wipe-hide-up rounded-md bg-ui-primary shadow-default data-[expanded]:animate-name-wipe-show-down',
-)
-const selectContentStyle = clsx(contentStyleBase, 'origin-[--kb-select-content-transform-origin]')
-const comboBoxContentStyle = clsx(contentStyleBase, 'max-w-72 origin-[--kb-combobox-content-transform-origin]')
+const contentStyleBase =
+  'animate-duration-200 animate-ease-out animate-name-wipe-hide-up rounded-md bg-ui-primary shadow-default data-[expanded]:animate-name-wipe-show-down'
+const selectContentStyle = [contentStyleBase, 'origin-[--kb-select-content-transform-origin]']
+const comboBoxContentStyle = [contentStyleBase, 'max-w-72 origin-[--kb-combobox-content-transform-origin]']
 
-const listBoxStyle = clsx('max-h-100 overflow-y-auto p-1.5')
+const listBoxStyle = 'max-h-100 overflow-y-auto p-1.5'
+
+const errorStyle = 'w-full text-accent-error text-regular'
 
 export type SelectOption<T extends string | number> = {
   label: string
@@ -66,60 +68,68 @@ export type SingleSelectProps<T extends string | number> = SelectProps<T> & {
   setValue?: (v: T | undefined) => void
 }
 
+export type MultiSelectProps<T extends string | number> = SelectProps<T> & {
+  value: T[] | undefined
+  setValue?: (v: T[]) => void
+}
+
+export type ComboBoxProps<T extends string | number> = SingleSelectProps<T>
+
+/** Label row (label + required mark + info tooltip) shared by the three controls. */
+const FieldTitle = (props: {
+  label?: string
+  required?: boolean
+  info?: TooltipProps
+  Label: typeof KSelect.Label | typeof KComboBox.Label
+}): JSX.Element => (
+  <Show when={props.label}>
+    <TitleContainer>
+      <props.Label class="text-bold text-text-black whitespace-nowrap">{props.label}</props.Label>
+      <Show when={props.required}>
+        <RequiredMark>*</RequiredMark>
+      </Show>
+      <Show when={props.info}>
+        <TooltipInfoIcon {...props.info} />
+      </Show>
+    </TitleContainer>
+  </Show>
+)
+
+const ExpandIcon = () => <div class="i-material-symbols:expand-more text-text-black shrink-0 text-2xl/6" />
+
 export const SingleSelect = <T extends string | number>(props: SingleSelectProps<T>): JSX.Element => {
-  const [rootProps, selectProps] = splitProps(
-    props,
-    ['name', 'placeholder', 'options', 'required', 'disabled', 'readOnly'],
-    ['placeholder', 'ref', 'onInput', 'onChange', 'onBlur'],
-  )
-
-  // const selectedOption = () => props.options.find((o) => o.value === props.value)
-  const [selectedOption, setSelectedOption] = createSignal<SelectOption<T>>()
-  // KobalteのSelect/Comboboxではundefinedを使用できないため、空文字列を指定している
-  const defaultOption = { label: '', value: '' as T }
-
-  createEffect(() => {
-    const found = props.options.find((o) => o.value === props.value)
-    setSelectedOption(found ?? defaultOption)
-  })
+  // `null` (= no matching option) keeps the Kobalte select controlled and empty.
+  const selectedOption = createMemo(() => props.options.find((o) => o.value === props.value) ?? null)
 
   return (
-    <KSelect.Root<SelectOption<T>>
+    <KSelect<SelectOption<T>>
       class="flex w-full flex-col gap-2"
-      {...rootProps}
+      name={props.name}
+      options={props.options}
+      required={props.required}
+      disabled={props.disabled}
+      readOnly={props.readOnly}
+      placeholder={props.placeholder}
       multiple={false}
       disallowEmptySelection
       value={selectedOption()}
-      onChange={(v) => {
-        props.setValue?.(v?.value)
-        setSelectedOption(v ?? defaultOption)
-      }}
+      onChange={(v) => props.setValue?.(v?.value)}
       optionValue="value"
       optionTextValue="label"
       validationState={props.error ? 'invalid' : 'valid'}
-      itemComponent={(props) => (
-        <KSelect.Item item={props.item} class={singleItemStyle}>
-          <KSelect.ItemLabel>{props.item.textValue}</KSelect.ItemLabel>
+      itemComponent={(itemProps) => (
+        <KSelect.Item item={itemProps.item} class={singleItemStyle}>
+          <KSelect.ItemLabel>{itemProps.item.textValue}</KSelect.ItemLabel>
         </KSelect.Item>
       )}
     >
-      <Show when={props.label}>
-        <TitleContainer>
-          <KSelect.Label class="whitespace-nowrap text-bold text-text-black">{props.label}</KSelect.Label>
-          <Show when={props.required}>
-            <RequiredMark>*</RequiredMark>
-          </Show>
-          <Show when={props.info}>
-            <TooltipInfoIcon {...props.info} />
-          </Show>
-        </TitleContainer>
-      </Show>
-      <KSelect.HiddenSelect {...selectProps} />
-      <ToolTip {...props.tooltip}>
+      <FieldTitle label={props.label} required={props.required} info={props.info} Label={KSelect.Label} />
+      <KSelect.HiddenSelect ref={props.ref} onInput={props.onInput} onChange={props.onChange} onBlur={props.onBlur} />
+      <ToolTip {...props.tooltip} class="w-full">
         <KSelect.Trigger class={triggerStyle}>
-          <KSelect.Value<SelectOption<T>> class={valueStyle}>{(state) => state.selectedOption().label}</KSelect.Value>
+          <KSelect.Value<SelectOption<T>> class={valueStyle}>{(state) => state.selectedOption()?.label}</KSelect.Value>
           <KSelect.Icon class={iconStyle}>
-            <div class="i-material-symbols:expand-more shrink-0 text-2xl/6 text-text-black" />
+            <ExpandIcon />
           </KSelect.Icon>
         </KSelect.Trigger>
       </ToolTip>
@@ -128,30 +138,24 @@ export const SingleSelect = <T extends string | number>(props: SingleSelectProps
           <KSelect.Listbox class={listBoxStyle} />
         </KSelect.Content>
       </KSelect.Portal>
-      <KSelect.ErrorMessage class="w-full text-accent-error text-regular">{props.error}</KSelect.ErrorMessage>
-    </KSelect.Root>
+      <KSelect.ErrorMessage class={errorStyle}>{props.error}</KSelect.ErrorMessage>
+    </KSelect>
   )
-}
-
-export type MultiSelectProps<T extends string | number> = SelectProps<T> & {
-  value: T[] | undefined
-  setValue?: (v: T[]) => void
 }
 
 export const MultiSelect = <T extends string | number>(props: MultiSelectProps<T>): JSX.Element => {
-  const [rootProps, selectProps] = splitProps(
-    props,
-    ['name', 'placeholder', 'options', 'required', 'disabled', 'readOnly'],
-    ['placeholder', 'ref', 'onInput', 'onChange', 'onBlur'],
-  )
-
-  const selectedOptions = () => props.options.filter((o) => props.value?.some((v) => v === o.value))
+  const selectedOptions = createMemo(() => props.options.filter((o) => props.value?.includes(o.value)))
 
   return (
-    <KSelect.Root<SelectOption<T>>
+    <KSelect<SelectOption<T>>
       class="flex w-full flex-col gap-2"
-      {...rootProps}
-      multiple={true}
+      name={props.name}
+      options={props.options}
+      required={props.required}
+      disabled={props.disabled}
+      readOnly={props.readOnly}
+      placeholder={props.placeholder}
+      multiple
       value={selectedOptions()}
       onChange={(newValues) => props.setValue?.(newValues.map((v) => v.value))}
       optionValue="value"
@@ -160,24 +164,14 @@ export const MultiSelect = <T extends string | number>(props: MultiSelectProps<T
       itemComponent={(itemProps) => (
         <KSelect.Item item={itemProps.item} class={multiItemStyle}>
           <KSelect.ItemIndicator forceMount class={iconStyle}>
-            <CheckBoxIcon checked={props.value?.some((v) => v === itemProps.item.textValue) ?? false} />
+            <CheckBoxIcon checked={props.value?.includes(itemProps.item.rawValue.value) ?? false} />
           </KSelect.ItemIndicator>
           <KSelect.ItemLabel>{itemProps.item.textValue}</KSelect.ItemLabel>
         </KSelect.Item>
       )}
     >
-      <Show when={props.label}>
-        <TitleContainer>
-          <KSelect.Label class="whitespace-nowrap text-bold text-text-black">{props.label}</KSelect.Label>
-          <Show when={props.required}>
-            <RequiredMark>*</RequiredMark>
-          </Show>
-          <Show when={props.info}>
-            <TooltipInfoIcon {...props.info} />
-          </Show>
-        </TitleContainer>
-      </Show>
-      <KSelect.HiddenSelect {...selectProps} />
+      <FieldTitle label={props.label} required={props.required} info={props.info} Label={KSelect.Label} />
+      <KSelect.HiddenSelect ref={props.ref} onInput={props.onInput} onChange={props.onChange} onBlur={props.onBlur} />
       <KSelect.Trigger class={triggerStyle}>
         <KSelect.Value<SelectOption<T>> class={valueStyle}>
           {(state) =>
@@ -188,7 +182,7 @@ export const MultiSelect = <T extends string | number>(props: MultiSelectProps<T
           }
         </KSelect.Value>
         <KSelect.Icon class={iconStyle}>
-          <div class="i-material-symbols:expand-more shrink-0 text-2xl/6 text-text-black" />
+          <ExpandIcon />
         </KSelect.Icon>
       </KSelect.Trigger>
       <KSelect.Portal>
@@ -196,81 +190,54 @@ export const MultiSelect = <T extends string | number>(props: MultiSelectProps<T
           <KSelect.Listbox class={listBoxStyle} />
         </KSelect.Content>
       </KSelect.Portal>
-      <KSelect.ErrorMessage class="w-full text-accent-error text-regular">{props.error}</KSelect.ErrorMessage>
-    </KSelect.Root>
+      <KSelect.ErrorMessage class={errorStyle}>{props.error}</KSelect.ErrorMessage>
+    </KSelect>
   )
-}
-
-export type ComboBoxProps<T extends string | number> = SelectProps<T> & {
-  value: T | undefined
-  setValue?: (v: T | undefined) => void
 }
 
 export const ComboBox = <T extends string | number>(props: ComboBoxProps<T>): JSX.Element => {
-  const [rootProps, selectProps] = splitProps(
-    props,
-    ['name', 'placeholder', 'options', 'required', 'disabled', 'readOnly'],
-    ['placeholder', 'ref', 'onInput', 'onChange', 'onBlur'],
-  )
-
-  const [selectedOption, setSelectedOption] = createSignal<SelectOption<T>>()
-  // KobalteのSelect/Comboboxではundefinedを使用できないため、空文字列を指定している
-  const defaultOption = { label: '', value: '' as T }
-
-  createEffect(() => {
-    const found = props.options.find((o) => o.value === props.value)
-    setSelectedOption(found ?? defaultOption)
-  })
+  const selectedOption = createMemo(() => props.options.find((o) => o.value === props.value) ?? null)
 
   return (
-    <KComboBox.Root<SelectOption<T>>
+    <KComboBox<SelectOption<T>>
       class="flex w-full flex-col gap-2"
+      name={props.name}
+      options={props.options}
+      required={props.required}
+      disabled={props.disabled}
+      readOnly={props.readOnly}
       multiple={false}
       allowDuplicateSelectionEvents
       value={selectedOption()}
-      onChange={(v) => {
-        props.setValue?.(v?.value)
-        setSelectedOption(v ?? defaultOption)
-      }}
+      onChange={(v) => props.setValue?.(v?.value)}
       optionValue="value"
       optionTextValue="label"
       optionLabel="label"
       triggerMode="input"
       validationState={props.error ? 'invalid' : 'valid'}
-      itemComponent={(props) => (
-        <KComboBox.Item item={props.item} class={singleItemStyle}>
-          <KComboBox.ItemLabel>{props.item.textValue}</KComboBox.ItemLabel>
+      itemComponent={(itemProps) => (
+        <KComboBox.Item item={itemProps.item} class={singleItemStyle}>
+          <KComboBox.ItemLabel>{itemProps.item.textValue}</KComboBox.ItemLabel>
         </KComboBox.Item>
       )}
-      {...rootProps}
     >
-      <Show when={props.label}>
-        <TitleContainer>
-          <KComboBox.Label class="whitespace-nowrap text-bold text-text-black">{props.label}</KComboBox.Label>
-          <Show when={props.required}>
-            <RequiredMark>*</RequiredMark>
-          </Show>
-          <Show when={props.info}>
-            <TooltipInfoIcon {...props.info} />
-          </Show>
-        </TitleContainer>
-      </Show>
-      <KComboBox.HiddenSelect {...selectProps} />
-      <ToolTip {...props.tooltip}>
+      <FieldTitle label={props.label} required={props.required} info={props.info} Label={KComboBox.Label} />
+      <KComboBox.HiddenSelect ref={props.ref} onInput={props.onInput} onChange={props.onChange} onBlur={props.onBlur} />
+      <ToolTip {...props.tooltip} class="w-full">
         <KComboBox.Control class="relative flex w-full max-w-72 gap-0.25">
           <KComboBox.Input
-            class={clsx(
-              'flex h-12 w-full gap-1 rounded-lg border-none bg-ui-primary px-4 pr-11 text-regular text-text-black outline outline-1 outline-ui-border',
+            class={[
+              'bg-ui-primary text-regular text-text-black outline-ui-border flex h-12 w-full gap-1 rounded-lg border-none px-4 pr-11 outline outline-1',
               'placeholder:text-text-disabled',
-              'focus-visible:outline-2 focus-visible:outline-primary-main',
-              'data-[disabled]:cursor-not-allowed data-[disabled]:bg-ui-tertiary',
-              'data-[invalid]:outline-2 data-[invalid]:outline-accent-error',
-            )}
+              'focus-visible:outline-primary-main focus-visible:outline-2',
+              'data-[disabled]:bg-ui-tertiary data-[disabled]:cursor-not-allowed',
+              'data-[invalid]:outline-accent-error data-[invalid]:outline-2',
+            ]}
             placeholder={props.placeholder}
           />
-          <KComboBox.Trigger class="absolute right-0 flex h-full w-11 cursor-pointer items-center justify-start border-none bg-inherit pl-1 text-text-disabled">
+          <KComboBox.Trigger class="text-text-disabled absolute right-0 flex h-full w-11 cursor-pointer items-center justify-start border-none bg-inherit pl-1">
             <KComboBox.Icon class={iconStyle}>
-              <div class="i-material-symbols:expand-more shrink-0 text-2xl/6 text-text-black" />
+              <ExpandIcon />
             </KComboBox.Icon>
           </KComboBox.Trigger>
         </KComboBox.Control>
@@ -280,7 +247,7 @@ export const ComboBox = <T extends string | number>(props: ComboBoxProps<T>): JS
           <KComboBox.Listbox class={listBoxStyle} />
         </KComboBox.Content>
       </KComboBox.Portal>
-      <KComboBox.ErrorMessage class="w-full text-accent-error text-regular">{props.error}</KComboBox.ErrorMessage>
-    </KComboBox.Root>
+      <KComboBox.ErrorMessage class={errorStyle}>{props.error}</KComboBox.ErrorMessage>
+    </KComboBox>
   )
 }

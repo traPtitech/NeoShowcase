@@ -1,11 +1,11 @@
 import { match } from 'ts-pattern'
 import * as v from 'valibot'
 import { type PortPublication, PortPublicationProtocol } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { systemInfo } from '/@/libs/api'
+import { systemInfo } from '/@/libs/session'
 
 const isValidPort = (port?: number, protocol?: PortPublicationProtocol): boolean => {
   if (port === undefined) return false
-  const available = systemInfo()?.ports.filter((a) => a.protocol === protocol) || []
+  const available = systemInfo().ports.filter((a) => a.protocol === protocol)
   if (available.length === 0) return false
   return available.some((range) => port >= range.startPort && port <= range.endPort)
 }

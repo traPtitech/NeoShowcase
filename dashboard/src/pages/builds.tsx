@@ -1,47 +1,30 @@
 import { timestampDate } from '@bufbuild/protobuf/wkt'
 import { Title } from '@solidjs/meta'
-import { type Component, createMemo, createResource, Show } from 'solid-js'
-import { type Application, GetApplicationsRequest_Scope } from '../api/neoshowcase/protobuf/gateway_pb'
-import { MainViewContainer } from '../components/layouts/MainView'
-import { WithNav } from '../components/layouts/WithNav'
-import { BuildList, List } from '../components/templates/List'
-import { Nav } from '../components/templates/Nav'
-import { client, getRepositoryCommits } from '../libs/api'
+import { createMemo, Loading, Show } from 'solid-js'
+import { type Build, GetApplicationsRequest_Scope } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { MainViewContainer } from '/@/components/layouts/MainView'
+import { WithNav } from '/@/components/layouts/WithNav'
+import { BuildList, List } from '/@/components/templates/List'
+import { Nav } from '/@/components/templates/Nav'
+import { client, getRepositoryCommits } from '/@/libs/api'
 
-const builds: Component = () => {
-  const [apps] = createResource(() => client.getApplications({ scope: GetApplicationsRequest_Scope.ALL }))
+const queuedAtMillis = (b: Build) => (b.queuedAt ? timestampDate(b.queuedAt).getTime() : 0)
 
-  const appMap = (): Record<string, Application> => {
-    const a = apps()
-    if (!a) return {}
-    return Object.fromEntries(a.applications.map((a) => [a.id, a]))
-  }
-
-  const [builds] = createResource(() =>
+export default () => {
+  const apps = createMemo(() =>
+    client.getApplications({ scope: GetApplicationsRequest_Scope.ALL }).then((res) => res.applications),
+  )
+  const builds = createMemo(() =>
     client
-      .getAllBuilds({
-        limit: 100,
-      })
-      .then((res) => res.builds),
+      .getAllBuilds({ limit: 100 })
+      .then((res) => res.builds.toSorted((a, b) => queuedAtMillis(b) - queuedAtMillis(a))),
   )
-  const hashes = () => builds()?.map((b) => b.commit)
-  const [commits] = createResource(
-    () => hashes(),
-    (hashes) => getRepositoryCommits(hashes),
-  )
+  const commits = createMemo(() => getRepositoryCommits(builds().map((b) => b.commit)))
 
-  const sortedBuilds = createMemo(
-    () =>
-      builds()
-        ?.sort((b1, b2) => {
-          return (
-            (b2.queuedAt ? timestampDate(b2.queuedAt).getTime() : 0) -
-            (b1.queuedAt ? timestampDate(b1.queuedAt).getTime() : 0)
-          )
-        })
-        ?.map((b) => ({ build: b, app: appMap()[b.applicationId] })) ?? [],
-  )
-  const showPlaceHolder = () => builds()?.length === 0
+  const rows = createMemo(() => {
+    const appMap = new Map(apps().map((a) => [a.id, a]))
+    return builds().map((build) => ({ build, app: appMap.get(build.applicationId) }))
+  })
 
   return (
     <WithNav.Container>
@@ -51,18 +34,23 @@ const builds: Component = () => {
       </WithNav.Navs>
       <WithNav.Body>
         <MainViewContainer background="grey">
-          <Show when={showPlaceHolder()} fallback={<BuildList builds={sortedBuilds()} commits={commits()} />}>
-            <List.Container>
-              <List.PlaceHolder>
-                <div class="i-material-symbols:deployed-code-outline shrink-0 text-20/20" />
-                No Builds
-              </List.PlaceHolder>
-            </List.Container>
-          </Show>
+          <Loading>
+            <Show
+              when={rows().length > 0}
+              fallback={
+                <List.Container>
+                  <List.PlaceHolder>
+                    <div class="i-material-symbols:deployed-code-outline text-20/20 shrink-0" />
+                    No Builds
+                  </List.PlaceHolder>
+                </List.Container>
+              }
+            >
+              <BuildList builds={rows()} commits={commits()} />
+            </Show>
+          </Loading>
         </MainViewContainer>
       </WithNav.Body>
     </WithNav.Container>
   )
 }
-
-export default builds

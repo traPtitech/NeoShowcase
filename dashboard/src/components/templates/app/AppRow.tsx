@@ -1,6 +1,4 @@
 import { timestampDate } from '@bufbuild/protobuf/wkt'
-import { A } from '@solidjs/router'
-import { AiOutlineBranches } from 'solid-icons/ai'
 import { type Component, For, Show } from 'solid-js'
 import type { Application } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { styled } from '/@/components/styled-components'
@@ -9,7 +7,6 @@ import Skeleton from '/@/components/UI/Skeleton'
 import { ToolTip } from '/@/components/UI/ToolTip'
 import type { CommitsMap } from '/@/libs/api'
 import { applicationState, getWebsiteURL } from '/@/libs/application'
-import { clsx } from '/@/libs/clsx'
 import { diffHuman, shortSha } from '/@/libs/format'
 import { AppStatusIcon } from './AppStatusIcon'
 
@@ -17,7 +14,7 @@ const Container = styled(
   'div',
   'w-full cursor-pointer bg-ui-primary p-4 pl-5 hover:bg-color-overlay-ui-primary-to-black-alpha-50',
 )
-const darkContainerStyle = clsx('bg-ui-secondary hover:bg-color-overlay-ui-secondary-to-black-alpha-50')
+const darkContainerStyle = 'bg-ui-secondary hover:bg-color-overlay-ui-secondary-to-black-alpha-50'
 
 const TitleContainer = styled('div', 'flex w-full items-center gap-2')
 
@@ -31,7 +28,7 @@ const AppRowSkeleton: Component<{
   dark?: boolean
 }> = (props) => {
   return (
-    <Container class={clsx(props.dark && darkContainerStyle, 'pointer-events-none')}>
+    <Container class={[props.dark && darkContainerStyle, 'pointer-events-none']}>
       <TitleContainer>
         <Skeleton height={24} circle />
         <AppName>
@@ -84,17 +81,17 @@ export const AppRow: Component<Props> = (props) => {
 
   return (
     <Show when={props.app} fallback={<AppRowSkeleton dark={props.dark} />}>
-      <A href={`/apps/${props.app!.id}`}>
-        <Container class={clsx(props.dark && darkContainerStyle)}>
+      <a href={`/apps/${props.app!.id}`}>
+        <Container class={props.dark && darkContainerStyle}>
           <TitleContainer>
             <AppStatusIcon state={applicationState(props.app!)} />
             <AppName>{props.app!.name}</AppName>
-            <Show when={props.app!.updatedAt}>
-              {(nonNullUpdatedAt) => {
-                const diff = diffHuman(timestampDate(nonNullUpdatedAt()))
-                const localeString = timestampDate(nonNullUpdatedAt()).toLocaleString()
+            <Show when={props.app!.updatedAt} keyed>
+              {(updatedAt) => {
+                const date = timestampDate(updatedAt)
+                const diff = diffHuman(date)
                 return (
-                  <ToolTip props={{ content: localeString }}>
+                  <ToolTip content={date.toLocaleString()}>
                     <UpdatedAt>{diff()}</UpdatedAt>
                   </ToolTip>
                 )
@@ -102,8 +99,8 @@ export const AppRow: Component<Props> = (props) => {
             </Show>
           </TitleContainer>
           <MetaContainer>
-            <AiOutlineBranches class="flex w-fit items-center truncate" />
-            <ToolTip props={{ content: commitTooltip() }} style="left">
+            <div class="i-mdi:source-branch shrink-0 text-base" />
+            <ToolTip content={commitTooltip()} style="left">
               <div class="w-fit truncate">{commitDisplay()}</div>
             </ToolTip>
             <Show when={props.app!.websites.length > 0}>
@@ -114,7 +111,7 @@ export const AppRow: Component<Props> = (props) => {
             </Show>
           </MetaContainer>
         </Container>
-      </A>
+      </a>
     </Show>
   )
 }

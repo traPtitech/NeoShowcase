@@ -4,12 +4,12 @@ import { type Component, createSignal, Show } from 'solid-js'
 import type { Application, ApplicationOutput } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
 import { TextField } from '/@/components/UI/TextField'
+import { useApplicationData } from '/@/features/application/data'
 import { client, handleAPIError } from '/@/libs/api'
 import { saveToFile } from '/@/libs/download'
 import { sleep } from '/@/libs/sleep'
 import { addTimestamp } from '/@/libs/timestamp'
 import useModal from '/@/libs/useModal'
-import { useApplicationData } from '/@/routes'
 
 const secondsPerDay = 86400
 const loadDuration = 86400n
@@ -153,7 +153,6 @@ export const ContainerLogExport: Component<Props> = (props) => {
     } finally {
       setExporting(false)
     }
-    setExporting(false)
   }
 
   return (
@@ -181,7 +180,7 @@ export const ContainerLogExport: Component<Props> = (props) => {
                   variants="primary"
                   size="small"
                   disabled={exporting()}
-                  onClick={() => doExport(async () => exportLines(app()!, props.currentLogs, 'txt'))}
+                  onClick={() => doExport(async () => exportLines(app(), props.currentLogs, 'txt'))}
                 >
                   Export as .txt
                 </Button>
@@ -189,7 +188,7 @@ export const ContainerLogExport: Component<Props> = (props) => {
                   variants="primary"
                   size="small"
                   disabled={exporting()}
-                  onClick={() => doExport(async () => exportLines(app()!, props.currentLogs, 'json'))}
+                  onClick={() => doExport(async () => exportLines(app(), props.currentLogs, 'json'))}
                 >
                   Export as .json
                 </Button>
@@ -241,7 +240,7 @@ export const ContainerLogExport: Component<Props> = (props) => {
                   size="small"
                   disabled={exporting()}
                   onClick={() =>
-                    doExport(() => exportBefore(app()!, before(), days(), count(), 'txt', setProgressMessage))
+                    doExport(() => exportBefore(app(), before(), days(), count(), 'txt', setProgressMessage))
                   }
                 >
                   Export as .txt
@@ -251,7 +250,7 @@ export const ContainerLogExport: Component<Props> = (props) => {
                   size="small"
                   disabled={exporting()}
                   onClick={() =>
-                    doExport(() => exportBefore(app()!, before(), days(), count(), 'json', setProgressMessage))
+                    doExport(() => exportBefore(app(), before(), days(), count(), 'json', setProgressMessage))
                   }
                 >
                   Export as .json

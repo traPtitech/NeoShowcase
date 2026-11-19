@@ -8,12 +8,7 @@ export interface URLTextProps {
 
 export const URLText: Component<URLTextProps> = (props) => {
   return (
-    <ToolTip
-      props={{
-        content: props.href,
-      }}
-      disabled={props.text === props.href}
-    >
+    <ToolTip content={props.href} disabled={props.text === props.href}>
       <a class="text-regular text-text-link" href={props.href} target="_blank" rel="noreferrer">
         <div class="flex items-center gap-1">
           {props.text}

@@ -1,6 +1,6 @@
 import { type Timestamp, timestampDate, timestampNow } from '@bufbuild/protobuf/wkt'
 import { Code, ConnectError } from '@connectrpc/connect'
-import { type Component, createEffect, createSignal, For, onCleanup, Show } from 'solid-js'
+import { type Component, createEffect, createSignal, For, Show } from 'solid-js'
 import type { ApplicationOutput } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { ContainerLogExport } from '/@/components/templates/app/ContainerLogExport'
 import { Button } from '/@/components/UI/Button'
@@ -43,19 +43,20 @@ export const ContainerLog: Component<ContainerLogProps> = (props) => {
   // TODO: show timestamps toggle button?
   const [showTimestamps] = createSignal(true)
 
-  const componentLoadTime = timestampNow()
-  const [loadedUntil, setLoadedUntil] = createSignal(componentLoadTime)
+  const [loadedUntil, setLoadedUntil] = createSignal(timestampNow())
   const [logs, setLogs] = createSignal<ApplicationOutput[]>([])
+  const [loading, setLoading] = createSignal(false)
 
   const loadDisabled = () =>
     timestampNow().seconds - loadedUntil().seconds >= loadLimitSeconds || logs().length >= logLinesLimit
-  const [loading, setLoading] = createSignal(false)
-  const load = async () => {
+
+  const load = async (appID: string, before: Timestamp) => {
     setLoading(true)
     try {
-      const loadedOlderLogs = await loadLogChunk(props.appID, loadedUntil(), 100)
+      const loadedOlderLogs = await loadLogChunk(appID, before, 100)
+      if (appID !== props.appID) return // switched to another app meanwhile
       if (loadedOlderLogs.length === 0) {
-        setLoadedUntil(addTimestamp(loadedUntil(), -loadDuration))
+        setLoadedUntil(addTimestamp(before, -loadDuration))
       } else {
         setLoadedUntil(oldestTimestamp(loadedOlderLogs))
       }
@@ -66,59 +67,51 @@ export const ContainerLog: Component<ContainerLogProps> = (props) => {
     }
     setLoading(false)
   }
-  // Load logs before component load time
-  void load()
 
-  // Stream logs beginning from component load time
-  const logStreamAbort = new AbortController()
-  const logStream = client.getOutputStream(
-    {
-      applicationId: props.appID,
-      begin: componentLoadTime,
+  // (Re)start for each app: load logs before now, and stream logs from now on.
+  createEffect(
+    () => props.appID,
+    (appID) => {
+      const begin = timestampNow()
+      setLogs([])
+      setLoadedUntil(begin)
+      void load(appID, begin)
+
+      const abort = new AbortController()
+      void (async () => {
+        try {
+          for await (const log of client.getOutputStream({ applicationId: appID, begin }, { signal: abort.signal })) {
+            setLogs((prev) => stripLogLines(prev.concat(log)))
+          }
+        } catch (err) {
+          const isAbortErr = err instanceof ConnectError && err.code === Code.Canceled
+          if (!isAbortErr) console.trace(err)
+        }
+      })()
+      return () => abort.abort()
     },
-    { signal: logStreamAbort.signal },
   )
-  const iterate = async () => {
-    try {
-      for await (const log of logStream) {
-        setLogs((prev) => stripLogLines(prev.concat(log)))
-      }
-    } catch (err) {
-      // ignore abort error
-      const isAbortErr = err instanceof ConnectError && err.code === Code.Canceled
-      if (!isAbortErr) {
-        console.trace(err)
-        return
-      }
-    }
-  }
-  void iterate()
 
-  onCleanup(() => {
-    logStreamAbort.abort()
+  let logRef!: HTMLElement
+  let atBottom = true
+  createEffect(logs, () => {
+    if (atBottom) logRef.scrollTop = logRef.scrollHeight
   })
-
-  let logRef!: HTMLDivElement
-  createEffect(() => {
-    logs() // on change to (streamed) logs
-    const ref = logRef
-    if (!ref) return
-    if (atBottom()) {
-      ref.scrollTop = ref.scrollHeight
-    }
-  })
-
-  const [atBottom, setAtBottom] = createSignal(true)
-  const onScroll = (e: { target: Element }) => setAtBottom(isScrolledToBottom(e.target))
 
   return (
     <div class="flex flex-col gap-2.5">
       <ContainerLogExport currentLogs={logs()} />
-      <LogContainer ref={logRef!} overflowX="scroll" onScroll={onScroll}>
+      <LogContainer
+        ref={logRef}
+        overflowX="scroll"
+        onScroll={(e) => {
+          atBottom = isScrolledToBottom(e.currentTarget)
+        }}
+      >
         <div class="mb-1.5 flex items-center gap-2">
           Loaded until {timestampDate(loadedUntil()).toLocaleString()}
           <Show when={!loadDisabled()} fallback={<span>(reached load limit)</span>}>
-            <Button variants="ghost" size="small" onClick={load} disabled={loading()}>
+            <Button variants="ghost" size="small" onClick={() => load(props.appID, loadedUntil())} disabled={loading()}>
               {loading() ? 'Loading...' : 'Load more'}
             </Button>
           </Show>

@@ -1,53 +1,52 @@
 import { Title } from '@solidjs/meta'
-import { type RouteSectionProps, useMatch, useNavigate, useParams } from '@solidjs/router'
-import { Show, Suspense, startTransition } from 'solid-js'
+import { type RouteSectionProps, useIsRouting, useParams } from '@solidjs/router'
+import { Errored, Loading } from 'solid-js'
 import { PageBoundary } from '/@/components/layouts/PageBoundary'
+import PendingContainer from '/@/components/layouts/PendingContainer'
 import { WithNav } from '/@/components/layouts/WithNav'
 import { RepositoryNav } from '/@/components/templates/repo/RepositoryNav'
-import { TabRound } from '/@/components/UI/TabRound'
-import { useRepositoryData } from '/@/routes'
+import Skeleton from '/@/components/UI/Skeleton'
+import { TabLink } from '/@/components/UI/TabRound'
+import { RepositoryDataProvider, useRepositoryData } from '/@/features/repository/data'
+
+const NavHeader = () => {
+  const { repo } = useRepositoryData()
+  return (
+    <Loading fallback={<Skeleton height={88} />}>
+      <Title>{`${repo().name} - Repository - NeoShowcase`}</Title>
+      <RepositoryNav repository={repo()} />
+    </Loading>
+  )
+}
 
 export default (props: RouteSectionProps) => {
-  const { repo } = useRepositoryData()
-
-  // Route params, not the resource: these memos are owned by the component, outside the boundary it
-  // renders, so reading a failed resource here would escape to the boundary above instead of this page's.
-  const params = useParams()
-  const matchIndexPage = useMatch(() => `/repos/${params.id}/`)
-  const matchSettingsPage = useMatch(() => `/repos/${params.id}/settings/*`)
-
-  const navigator = useNavigate()
-  const navigate = (path: string) => startTransition(() => navigator(path))
+  const params = useParams<{ id: string }>()
+  const isRouting = useIsRouting()
 
   return (
-    <PageBoundary>
-      <Show when={repo()}>
-        <WithNav.Container>
-          <Title>{`${repo()!.name} - Repository - NeoShowcase`}</Title>
-          <WithNav.Navs>
-            <RepositoryNav repository={repo()!} />
-            <WithNav.Tabs>
-              <TabRound
-                onClick={() => navigate(`/repos/${repo()!.id}`)}
-                state={matchIndexPage() ? 'active' : 'default'}
-              >
-                <div class="i-material-symbols:insert-chart-outline shrink-0 text-2xl/6" />
-                Info
-              </TabRound>
-              <TabRound
-                onClick={() => navigate(`/repos/${repo()!.id}/settings`)}
-                state={matchSettingsPage() ? 'active' : 'default'}
-              >
-                <div class="i-material-symbols:settings-outline shrink-0 text-2xl/6" />
-                Settings
-              </TabRound>
-            </WithNav.Tabs>
-          </WithNav.Navs>
-          <WithNav.Body>
-            <Suspense>{props.children}</Suspense>
-          </WithNav.Body>
-        </WithNav.Container>
-      </Show>
-    </PageBoundary>
+    <RepositoryDataProvider id={params.id}>
+      <WithNav.Container>
+        <WithNav.Navs>
+          <Errored fallback={(_error) => null}>
+            <NavHeader />
+          </Errored>
+          <WithNav.Tabs>
+            <TabLink href={`/repos/${params.id}`} end>
+              <div class="i-material-symbols:insert-chart-outline shrink-0 text-2xl/6" />
+              Info
+            </TabLink>
+            <TabLink href={`/repos/${params.id}/settings`}>
+              <div class="i-material-symbols:settings-outline shrink-0 text-2xl/6" />
+              Settings
+            </TabLink>
+          </WithNav.Tabs>
+        </WithNav.Navs>
+        <WithNav.Body>
+          <PageBoundary>
+            <PendingContainer isPending={isRouting()}>{props.children}</PendingContainer>
+          </PageBoundary>
+        </WithNav.Body>
+      </WithNav.Container>
+    </RepositoryDataProvider>
   )
 }

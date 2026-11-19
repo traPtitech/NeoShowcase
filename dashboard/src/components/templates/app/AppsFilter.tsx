@@ -1,194 +1,129 @@
-import { Checkbox, DropdownMenu, RadioGroup } from '@kobalte/core'
-import { type Component, type ComponentProps, For, type Setter, Show } from 'solid-js'
-import { styled } from '/@/components/styled-components'
-import { CheckBoxIcon } from '/@/components/UI/CheckBoxIcon'
+import { RadioGroup } from '@kobalte/core/radio-group'
+import { type Component, For } from 'solid-js'
 import { RadioIcon } from '/@/components/UI/RadioIcon'
 import {
   type ApplicationState,
+  allOrigins,
+  allStatuses,
   applicationState,
   originToIcon,
   type RepositoryOrigin,
   type RepoWithApp,
   repositoryURLToOrigin,
+  sortItems,
 } from '/@/libs/application'
-import { clsx } from '/@/libs/clsx'
-import { allOrigins, allStatuses, sortItems } from '/@/pages/apps'
 import { AppStatusIcon } from './AppStatusIcon'
+import { FilterCheckbox, FilterMenu, filterItemStyle, toggled } from './FilterMenu'
 
-const ItemsContainer = styled('div', 'flex w-full flex-col')
-
-const selectItemStyle = clsx(
-  'flex h-11 w-full cursor-pointer flex-nowrap items-center gap-2 whitespace-nowrap rounded-lg border-none bg-inherit p-2 text-bold text-text-black',
-  'hover:bg-transparency-primary-hover data-[highlighted]:bg-transparency-primary-hover',
-  '!data-[disabled]:bg-text-disabled !data-[disabled]:text-text-black data-[disabled]:cursor-not-allowed',
-)
-
-const FilterItemContainer = styled('div', 'flex flex-col gap-2 text-bold text-text-black')
+const filterGroupStyle = 'flex flex-col gap-2 text-bold text-text-black'
 
 const AppsFilter: Component<{
   allRepoWithApps: RepoWithApp[]
   statuses: ApplicationState[]
-  setStatues: Setter<ApplicationState[]>
+  setStatues: (statuses: ApplicationState[]) => void
   origin: RepositoryOrigin[]
-  setOrigin: Setter<RepositoryOrigin[]>
+  setOrigin: (origin: RepositoryOrigin[]) => void
   sort: keyof typeof sortItems
-  setSort: Setter<keyof typeof sortItems>
+  setSort: (sort: keyof typeof sortItems) => void
   includeNoApp: boolean
-  setIncludeNoApp: Setter<boolean>
+  setIncludeNoApp: (includeNoApp: boolean) => void
 }> = (props) => {
   const filtered = () =>
     props.statuses.length !== allStatuses.length || props.origin.length !== allOrigins.length || props.includeNoApp
 
-  const appCountByStatus = (status: ApplicationState): number => {
-    return props.allRepoWithApps
+  const appCountByStatus = (status: ApplicationState): number =>
+    props.allRepoWithApps
       .filter((repo) => props.origin.includes(repositoryURLToOrigin(repo.repo.url)))
       .flatMap((repo) => repo.apps.filter((app) => applicationState(app) === status)).length
-  }
 
-  const repoCountByOrigin = (origin: RepositoryOrigin): number => {
-    return props.allRepoWithApps
+  const repoCountByOrigin = (origin: RepositoryOrigin): number =>
+    props.allRepoWithApps
       .filter((repo) => repositoryURLToOrigin(repo.repo.url) === origin)
       .filter(
         (repo) =>
           props.includeNoApp || repo.apps.filter((app) => props.statuses.includes(applicationState(app))).length > 0,
       ).length
-  }
 
   return (
-    <DropdownMenu.Root>
-      <DropdownMenu.Trigger
-        class={clsx(
-          'flex cursor-pointer rounded bg-inherit p-2 text-text-black',
-          'hover:bg-transparency-primary-hover',
-          'active:bg-transparency-primary-selected active:text-primary-main',
-        )}
-      >
-        <div class="relative size-6">
-          <div class="i-material-symbols:tune shrink-0 text-2xl/6" />
-          <Show when={filtered()}>
-            <div class="absolute -top-0.5 -right-0.5 size-2 rounded bg-primary-main outline outline-1 outline-ui-background" />
-          </Show>
-        </div>
-        <DropdownMenu.Icon class="size-6 transition-transform duration-200 data-[expanded]:rotate-180">
-          <div class="i-material-symbols:expand-more shrink-0 text-2xl/6" />
-        </DropdownMenu.Icon>
-      </DropdownMenu.Trigger>
-      <DropdownMenu.Portal>
-        <DropdownMenu.Content
-          class={clsx(
-            'z-1 grid max-w-[--kb-popper-content-available-width] origin-[--kb-menu-content-transform-origin] grid-cols-[repeat(3,auto)] grid-rows-[1fr_auto] gap-2 overflow-x-auto rounded-md bg-ui-primary p-4 shadow-default',
-            'animate-duration-200 animate-ease-in-out animate-name-wipe-hide-up data-[expanded]:animate-name-wipe-show-down',
-          )}
-          style={{
-            'grid-template-areas': `
-              "status provider sort"
-              "status noapp noapp"
-            `,
-          }}
-        >
-          <FilterItemContainer class="grid-area-[status]">
-            App Status
-            <ItemsContainer>
-              <For each={allStatuses}>
-                {(s) => (
-                  <Checkbox.Root
-                    checked={props.statuses.includes(s.value)}
-                    onChange={(selected) => {
-                      if (selected) {
-                        props.setStatues([...props.statuses, s.value])
-                      } else {
-                        props.setStatues(props.statuses.filter((v) => v !== s.value))
-                      }
-                    }}
-                  >
-                    <Checkbox.Input />
-                    <Checkbox.Label class={selectItemStyle}>
-                      <Checkbox.Indicator forceMount class="size-6">
-                        <CheckBoxIcon checked={props.statuses.includes(s.value)} />
-                      </Checkbox.Indicator>
-                      <AppStatusIcon state={s.value} hideTooltip />
-                      <span>
-                        {s.label} ({appCountByStatus(s.value)})
-                      </span>
-                    </Checkbox.Label>
-                  </Checkbox.Root>
-                )}
-              </For>
-            </ItemsContainer>
-          </FilterItemContainer>
-          <FilterItemContainer class="grid-area-[provider]">
-            Repo Origin
-            <ItemsContainer>
-              <For each={allOrigins}>
-                {(s) => (
-                  <Checkbox.Root
-                    checked={props.origin.includes(s.value)}
-                    onChange={(selected) => {
-                      if (selected) {
-                        props.setOrigin([...props.origin, s.value])
-                      } else {
-                        props.setOrigin(props.origin.filter((v) => v !== s.value))
-                      }
-                    }}
-                  >
-                    <Checkbox.Input />
-                    <Checkbox.Label class={selectItemStyle}>
-                      <Checkbox.Indicator forceMount class="size-6">
-                        <CheckBoxIcon checked={props.origin.includes(s.value)} />
-                      </Checkbox.Indicator>
-                      {originToIcon(s.value)}
-                      <span>
-                        {s.label} ({repoCountByOrigin(s.value)})
-                      </span>
-                    </Checkbox.Label>
-                  </Checkbox.Root>
-                )}
-              </For>
-            </ItemsContainer>
-          </FilterItemContainer>
-          <RadioGroup.Root
-            onChange={props.setSort}
-            as={(asProps: ComponentProps<typeof FilterItemContainer>) => (
-              <FilterItemContainer class="grid-area-[sort]" {...asProps}>
-                <RadioGroup.Label>Sort</RadioGroup.Label>
-                <ItemsContainer>
-                  <For each={Object.values(sortItems)}>
-                    {(s) => (
-                      <RadioGroup.Item value={s.value}>
-                        <RadioGroup.ItemInput />
-                        <RadioGroup.ItemLabel
-                          class={clsx(
-                            selectItemStyle,
-                            'data-[selected]:bg-transparency-primary-selected data-[selected]:text-primary-main',
-                          )}
-                        >
-                          <RadioGroup.ItemIndicator forceMount>
-                            <RadioIcon selected={props.sort === s.value} />
-                          </RadioGroup.ItemIndicator>
-                          {s.label}
-                        </RadioGroup.ItemLabel>
-                        <RadioGroup.ItemDescription />
-                      </RadioGroup.Item>
-                    )}
-                  </For>
-                </ItemsContainer>
-              </FilterItemContainer>
+    <FilterMenu
+      filtered={filtered()}
+      contentClass="grid max-w-[--kb-popper-content-available-width] grid-cols-[repeat(3,auto)] grid-rows-[1fr_auto] gap-2 overflow-x-auto"
+      contentStyle={{
+        'grid-template-areas': `
+          "status provider sort"
+          "status noapp noapp"
+        `,
+      }}
+    >
+      <div class={[filterGroupStyle, 'grid-area-[status]']}>
+        App Status
+        <div class="flex w-full flex-col">
+          <For each={allStatuses}>
+            {(s) => (
+              <FilterCheckbox
+                checked={props.statuses.includes(s.value)}
+                onChange={(on) => props.setStatues(toggled(props.statuses, s.value, on))}
+              >
+                <AppStatusIcon state={s.value} hideTooltip />
+                <span>
+                  {s.label} ({appCountByStatus(s.value)})
+                </span>
+              </FilterCheckbox>
             )}
-          />
-          <FilterItemContainer class="grid-area-[noapp]">
-            <Checkbox.Root checked={props.includeNoApp} onChange={props.setIncludeNoApp}>
-              <Checkbox.Input />
-              <Checkbox.Label class={selectItemStyle}>
-                <Checkbox.Indicator forceMount class="size-6">
-                  <CheckBoxIcon checked={props.includeNoApp} />
-                </Checkbox.Indicator>
-                アプリを持たないリポジトリを表示
-              </Checkbox.Label>
-            </Checkbox.Root>
-          </FilterItemContainer>
-        </DropdownMenu.Content>
-      </DropdownMenu.Portal>
-    </DropdownMenu.Root>
+          </For>
+        </div>
+      </div>
+      <div class={[filterGroupStyle, 'grid-area-[provider]']}>
+        Repo Origin
+        <div class="flex w-full flex-col">
+          <For each={allOrigins}>
+            {(s) => (
+              <FilterCheckbox
+                checked={props.origin.includes(s.value)}
+                onChange={(on) => props.setOrigin(toggled(props.origin, s.value, on))}
+              >
+                {originToIcon(s.value)}
+                <span>
+                  {s.label} ({repoCountByOrigin(s.value)})
+                </span>
+              </FilterCheckbox>
+            )}
+          </For>
+        </div>
+      </div>
+      <RadioGroup
+        class={[filterGroupStyle, 'grid-area-[sort]']}
+        value={props.sort}
+        onChange={(v) => props.setSort(v as keyof typeof sortItems)}
+      >
+        <RadioGroup.Label>Sort</RadioGroup.Label>
+        <div class="flex w-full flex-col">
+          <For each={Object.values(sortItems)}>
+            {(s) => (
+              <RadioGroup.Item value={s.value}>
+                <RadioGroup.ItemInput />
+                <RadioGroup.ItemLabel
+                  class={[
+                    filterItemStyle,
+                    'data-[checked]:bg-transparency-primary-selected data-[checked]:text-primary-main',
+                  ]}
+                >
+                  <RadioGroup.ItemIndicator forceMount>
+                    <RadioIcon selected={props.sort === s.value} />
+                  </RadioGroup.ItemIndicator>
+                  {s.label}
+                </RadioGroup.ItemLabel>
+              </RadioGroup.Item>
+            )}
+          </For>
+        </div>
+      </RadioGroup>
+      <div class={[filterGroupStyle, 'grid-area-[noapp]']}>
+        <FilterCheckbox checked={props.includeNoApp} onChange={props.setIncludeNoApp}>
+          アプリを持たないリポジトリを表示
+        </FilterCheckbox>
+      </div>
+    </FilterMenu>
   )
 }
 

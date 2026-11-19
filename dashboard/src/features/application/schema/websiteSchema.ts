@@ -6,8 +6,8 @@ import {
   type CreateWebsiteRequest,
   type Website,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { systemInfo } from '/@/libs/api'
 import { stringBooleanSchema } from '/@/libs/schemaUtil'
+import { systemInfo } from '/@/libs/session'
 
 // KobalteのRadioGroupではstringしか扱えないためform内では文字列として持つ
 const authenticationSchema = v.pipe(
@@ -75,11 +75,6 @@ export const createWebsiteSchema = v.pipe(
 
 export type CreateWebsiteInput = v.InferInput<typeof createWebsiteSchema>
 
-export const parseCreateWebsiteInput = (input: unknown) => {
-  const result = v.parse(createWebsiteSchema, input)
-  return result
-}
-
 const extractSubdomain = (
   fqdn: string,
   availableDomains: AvailableDomain[],
@@ -125,7 +120,7 @@ export const getInitialValueOfCreateWebsiteForm = (domain: AvailableDomain): Cre
 })
 
 export const websiteMessageToSchema = (website: Website): CreateWebsiteInput => {
-  const availableDomains = systemInfo()?.domains ?? []
+  const availableDomains = systemInfo().domains
 
   const { domain, subdomain } = extractSubdomain(website.fqdn, availableDomains)
 

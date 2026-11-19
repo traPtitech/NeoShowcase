@@ -1,53 +1,37 @@
-import { timestampDate } from '@bufbuild/protobuf/wkt'
-import { createMemo, onCleanup, Show, useTransition } from 'solid-js'
+import { createMemo, onSettled, Show } from 'solid-js'
 import { DataTable } from '/@/components/layouts/DataTable'
 import { MainViewContainer } from '/@/components/layouts/MainView'
-import SuspenseContainer from '/@/components/layouts/SuspenseContainer'
 import { BuildList, List } from '/@/components/templates/List'
-import { useApplicationData } from '/@/routes'
+import { useApplicationData } from '/@/features/application/data'
 
 export default () => {
   const { app, builds, commits, refetch } = useApplicationData()
-  const loaded = () => !!(app() && builds())
 
-  const refetchTimer = setInterval(refetch, 10000)
-  onCleanup(() => clearInterval(refetchTimer))
+  onSettled(() => {
+    const timer = setInterval(refetch, 10000)
+    return () => clearInterval(timer)
+  })
 
-  const sortedBuilds = createMemo(
-    () =>
-      builds()
-        ?.sort((b1, b2) => {
-          return (
-            (b2.queuedAt ? timestampDate(b2.queuedAt).getTime() : 0) -
-            (b1.queuedAt ? timestampDate(b1.queuedAt).getTime() : 0)
-          )
-        })
-        ?.map((b) => ({ build: b })) ?? [],
-  )
-  const showPlaceHolder = () => builds()?.length === 0
-
-  const [isPending] = useTransition()
+  const rows = createMemo(() => builds().map((build) => ({ build })))
 
   return (
-    <SuspenseContainer isPending={isPending()}>
-      <MainViewContainer>
-        <Show when={loaded()}>
-          <DataTable.Container>
-            <DataTable.Title>Builds</DataTable.Title>
-            <Show
-              when={showPlaceHolder()}
-              fallback={<BuildList builds={sortedBuilds()} commits={commits()} currentBuild={app()?.currentBuild} />}
-            >
-              <List.Container>
-                <List.PlaceHolder>
-                  <div class="i-material-symbols:deployed-code-outline shrink-0 text-20/20" />
-                  No Builds
-                </List.PlaceHolder>
-              </List.Container>
-            </Show>
-          </DataTable.Container>
+    <MainViewContainer>
+      <DataTable.Container>
+        <DataTable.Title>Builds</DataTable.Title>
+        <Show
+          when={rows().length > 0}
+          fallback={
+            <List.Container>
+              <List.PlaceHolder>
+                <div class="i-material-symbols:deployed-code-outline text-20/20 shrink-0" />
+                No Builds
+              </List.PlaceHolder>
+            </List.Container>
+          }
+        >
+          <BuildList builds={rows()} commits={commits()} currentBuild={app().currentBuild} />
         </Show>
-      </MainViewContainer>
-    </SuspenseContainer>
+      </DataTable.Container>
+    </MainViewContainer>
   )
 }

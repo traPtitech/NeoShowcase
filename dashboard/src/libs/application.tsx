@@ -1,8 +1,4 @@
 import { timestampDate } from '@bufbuild/protobuf/wkt'
-import { AiFillGithub } from 'solid-icons/ai'
-import { RiDevelopmentGitRepositoryLine } from 'solid-icons/ri'
-import { SiGitea } from 'solid-icons/si'
-import type { JSXElement } from 'solid-js'
 import {
   type Application,
   Application_ContainerState,
@@ -13,6 +9,7 @@ import {
   type Repository,
   type Website,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import type { SelectOption } from '/@/components/templates/Select'
 
 export const buildStatusStr: Record<BuildStatus, string> = {
   [BuildStatus.QUEUED]: 'Queued',
@@ -103,15 +100,34 @@ export const repositoryURLToOrigin = (url: string): RepositoryOrigin => {
   return 'Others'
 }
 
-export const originToIcon = (origin: RepositoryOrigin, size = 20): JSXElement => {
-  switch (origin) {
-    case 'GitHub':
-      return <AiFillGithub size={size} class="text-text-black" />
-    case 'Gitea':
-      return <SiGitea size={size} class="text-text-black" />
-    case 'Others':
-      return <RiDevelopmentGitRepositoryLine size={size} class="text-text-black" />
-  }
+const originIconClass: Record<RepositoryOrigin, string> = {
+  GitHub: 'i-mdi:github',
+  Gitea: 'i-simple-icons:gitea',
+  Others: 'i-mdi:source-repository',
+}
+
+export const originToIcon = (origin: RepositoryOrigin, size = 20) => (
+  <div class={['text-text-black shrink-0', originIconClass[origin]]} style={{ 'font-size': `${size}px` }} />
+)
+
+export const allStatuses: SelectOption<ApplicationState>[] = [
+  { label: 'Idle', value: ApplicationState.Idle },
+  { label: 'Deploying', value: ApplicationState.Deploying },
+  { label: 'Running', value: ApplicationState.Running },
+  { label: 'Sleeping', value: ApplicationState.Sleeping },
+  { label: 'Serving', value: ApplicationState.Serving },
+  { label: 'Error', value: ApplicationState.Error },
+]
+
+export const allOrigins: SelectOption<RepositoryOrigin>[] = [
+  { label: 'GitHub', value: 'GitHub' },
+  { label: 'Gitea', value: 'Gitea' },
+  { label: 'Others', value: 'Others' },
+]
+
+export const sortItems: { [k in 'desc' | 'asc']: SelectOption<k> } = {
+  desc: { value: 'desc', label: 'Newest' },
+  asc: { value: 'asc', label: 'Oldest' },
 }
 
 export const getWebsiteURL = (website: Website | CreateWebsiteRequest): string => {
@@ -167,7 +183,7 @@ export interface RepoWithApp {
   apps: Application[]
 }
 
-export const useApplicationsFilter = (
+export const filterRepositoriesWithApps = (
   repos: Repository[],
   apps: Application[],
   statuses: ApplicationState[],

@@ -1,22 +1,17 @@
-import { createResource, Show } from 'solid-js'
+import { createMemo, Show } from 'solid-js'
 import { DataTable } from '/@/components/layouts/DataTable'
 import EnvVarConfigForm from '/@/features/application/components/form/EnvVarConfigForm'
-import { EnvVarConfigFormProvider } from '/@/features/application/provider/envVarConfigFormProvider'
-import { client } from '/@/libs/api'
-import { useApplicationData } from '/@/routes'
+import { useApplicationData } from '/@/features/application/data'
+import { getEnvVars, revalidateEnvVars } from '/@/libs/api'
 
 export default () => {
   const { app, hasPermission, refetch: refetchApp } = useApplicationData()
-  const [envVars, { refetch: refetchEnvVars }] = createResource(
-    () => app()?.id,
-    (id) => client.getEnvVars({ id }),
-  )
+  // 閲覧権限のないユーザーには取得しない
+  const envVars = createMemo(() => getEnvVars(app().id), { lazy: true })
   const refetch = () => {
-    void refetchApp()
-    void refetchEnvVars()
+    revalidateEnvVars(app().id)
+    refetchApp()
   }
-
-  const loaded = () => !!envVars()
 
   return (
     <DataTable.Container>
@@ -27,11 +22,7 @@ export default () => {
           <DataTable.SubTitle>環境変数の閲覧・設定はアプリケーションのオーナーのみが行えます</DataTable.SubTitle>
         }
       >
-        <Show when={loaded()}>
-          <EnvVarConfigFormProvider>
-            <EnvVarConfigForm appId={app()!.id} envVars={envVars()!} refetch={refetch} />
-          </EnvVarConfigFormProvider>
-        </Show>
+        <EnvVarConfigForm appId={app().id} envVars={envVars()} refetch={refetch} />
       </Show>
     </DataTable.Container>
   )

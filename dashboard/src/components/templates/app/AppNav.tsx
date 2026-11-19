@@ -1,6 +1,4 @@
 import { timestampDate } from '@bufbuild/protobuf/wkt'
-import { A } from '@solidjs/router'
-import { BiRegularPencil } from 'solid-icons/bi'
 import { type Component, Show } from 'solid-js'
 import type { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { ToolTip } from '/@/components/UI/ToolTip'
@@ -14,13 +12,13 @@ export const AppNav: Component<{
 }> = (props) => {
   const edited = (
     <div class="ml-auto flex w-fit items-center gap-1 truncate text-right">
-      <BiRegularPencil />
-      <Show when={props.app.updatedAt}>
-        {(nonNullUpdatedAt) => {
-          const diff = diffHuman(timestampDate(nonNullUpdatedAt()))
-          const localeString = timestampDate(nonNullUpdatedAt()).toLocaleString()
+      <div class="i-material-symbols:edit-outline shrink-0" />
+      <Show when={props.app.updatedAt} keyed>
+        {(updatedAt) => {
+          const date = timestampDate(updatedAt)
+          const diff = diffHuman(date)
           return (
-            <ToolTip props={{ content: `App Last Edited: ${localeString}` }}>
+            <ToolTip content={`App Last Edited: ${date.toLocaleString()}`}>
               <div>{diff()}</div>
             </ToolTip>
           )
@@ -32,17 +30,17 @@ export const AppNav: Component<{
   return (
     <Nav
       title={props.app.name}
-      icon={<div class="i-material-symbols:deployed-code-outline shrink-0 text-10/10" />}
+      icon={<div class="i-material-symbols:deployed-code-outline text-10/10 shrink-0" />}
       action={edited}
     >
-      <div class="mt-1 flex w-full items-center gap-2 whitespace-nowrap text-regular text-text-black">
+      <div class="text-regular text-text-black mt-1 flex w-full items-center gap-2 whitespace-nowrap">
         created from
-        <A href={`/repos/${props.repository.id}`} class="overflow-hidden">
+        <a href={`/repos/${props.repository.id}`} class="overflow-hidden">
           <div class="flex w-full items-center gap-1 overflow-x-hidden">
             {originToIcon(repositoryURLToOrigin(props.repository.url), 20)}
             <div class="w-full truncate">{props.repository.name}</div>
           </div>
-        </A>
+        </a>
       </div>
     </Nav>
   )

@@ -1,5 +1,5 @@
-import { A } from '@solidjs/router'
-import { type JSX, type ParentComponent, Show } from 'solid-js'
+import type { JSX } from '@solidjs/web'
+import { type ParentComponent, Show } from 'solid-js'
 import { Button } from '/@/components/UI/Button'
 
 export interface Props {
@@ -15,7 +15,7 @@ export const Nav: ParentComponent<Props> = (props) => {
     <div class="flex w-full gap-2 overflow-x-hidden p-8 pr-[max(calc(50%-500px),32px)] max-md:px-4 max-md:py-8">
       <Show when={props.backTo} fallback={<div />}>
         {(nonNullBackTo) => (
-          <A href={nonNullBackTo()}>
+          <a href={nonNullBackTo()}>
             <Button
               variants="text"
               size="medium"
@@ -23,7 +23,7 @@ export const Nav: ParentComponent<Props> = (props) => {
             >
               <div class="max-md:hidden">{props.backToTitle}</div>
             </Button>
-          </A>
+          </a>
         )}
       </Show>
       <div class="w-full overflow-x-clip">

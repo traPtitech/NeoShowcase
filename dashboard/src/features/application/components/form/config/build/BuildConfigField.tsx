@@ -1,28 +1,28 @@
-import { getValues } from '@modular-forms/solid'
+import { getInput } from '@formisch/solid/v2'
 import { type Component, Match, Switch } from 'solid-js'
-import { useApplicationForm } from '/@/features/application/provider/applicationFormProvider'
+import type { ApplicationFormStore } from '../../../../schema/applicationSchema'
 import BuildpackConfigField from './BuildpackConfigField'
 import CmdConfigField from './CmdConfigField'
 import DockerfileConfigField from './DockerfileConfigField'
 
 type Props = {
+  form: ApplicationFormStore
   readonly?: boolean
 }
 
 const BuildConfigField: Component<Props> = (props) => {
-  const { formStore } = useApplicationForm()
-  const buildType = () => getValues(formStore).form?.config?.buildConfig?.type
+  const buildType = () => getInput(props.form, { path: ['form', 'config', 'buildConfig', 'type'] })
 
   return (
     <Switch>
       <Match when={buildType() === 'buildpack'}>
-        <BuildpackConfigField readonly={props.readonly} />
+        <BuildpackConfigField form={props.form} readonly={props.readonly} />
       </Match>
       <Match when={buildType() === 'cmd'}>
-        <CmdConfigField readonly={props.readonly} />
+        <CmdConfigField form={props.form} readonly={props.readonly} />
       </Match>
       <Match when={buildType() === 'dockerfile'}>
-        <DockerfileConfigField readonly={props.readonly} />
+        <DockerfileConfigField form={props.form} readonly={props.readonly} />
       </Match>
     </Switch>
   )

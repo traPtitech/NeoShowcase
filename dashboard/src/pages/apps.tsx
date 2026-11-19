@@ -1,112 +1,51 @@
 import { Title } from '@solidjs/meta'
-import { A } from '@solidjs/router'
-import { type Component, createMemo, createResource, createSignal, For, Show, Suspense, useTransition } from 'solid-js'
-import { Virtualizer } from 'virtua/solid'
+import { createMemo, For, isPending, Loading, Show } from 'solid-js'
 import { GetApplicationsRequest_Scope, GetRepositoriesRequest_Scope } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import PendingContainer from '/@/components/layouts/PendingContainer'
+import { WithNav } from '/@/components/layouts/WithNav'
 import { styled } from '/@/components/styled-components'
+import { AppsNav } from '/@/components/templates/AppsNav'
+import AppsFilter from '/@/components/templates/app/AppsFilter'
+import { RepositoryList } from '/@/components/templates/List'
 import type { SelectOption } from '/@/components/templates/Select'
-import { client, getRepositoryCommits, user } from '/@/libs/api'
-import { ApplicationState, type RepositoryOrigin, type RepoWithApp, useApplicationsFilter } from '/@/libs/application'
-import { createSessionSignal } from '/@/libs/localStore'
-import SuspenseContainer from '../components/layouts/SuspenseContainer'
-import { WithNav } from '../components/layouts/WithNav'
-import { AppsNav } from '../components/templates/AppsNav'
-import AppsFilter from '../components/templates/app/AppsFilter'
-import { RepositoryList } from '../components/templates/List'
-import { Button } from '../components/UI/Button'
-import { TabRound } from '../components/UI/TabRound'
-import { TextField } from '../components/UI/TextField'
+import { Button } from '/@/components/UI/Button'
+import { TabRound } from '/@/components/UI/TabRound'
+import { TextField } from '/@/components/UI/TextField'
+import { client, getRepositoryCommits } from '/@/libs/api'
+import {
+  allOrigins,
+  allStatuses,
+  filterRepositoriesWithApps,
+  type RepositoryOrigin,
+  sortItems,
+} from '/@/libs/application'
+import { me } from '/@/libs/session'
+import { createSessionSignal } from '/@/libs/storage'
 
 const FilterContainer = styled('div', 'z-1 flex w-full items-center justify-center pt-10 pb-8')
 
-export const sortItems: { [k in 'desc' | 'asc']: SelectOption<k> } = {
-  desc: { value: 'desc', label: 'Newest' },
-  asc: { value: 'asc', label: 'Oldest' },
-}
-
-const scopeItems = (admin: boolean | undefined) => {
+const scopeItems = (admin: boolean) => {
   const items: SelectOption<GetRepositoriesRequest_Scope>[] = [
     { value: GetRepositoriesRequest_Scope.MINE, label: 'My Apps' },
     { value: GetRepositoriesRequest_Scope.PUBLIC, label: 'All Apps' },
   ]
   if (admin) {
-    items.push({
-      value: GetRepositoriesRequest_Scope.ALL,
-      label: 'All Apps (admin)',
-    })
+    items.push({ value: GetRepositoriesRequest_Scope.ALL, label: 'All Apps (admin)' })
   }
   return items
 }
 
-export const allStatuses: SelectOption<ApplicationState>[] = [
-  { label: 'Idle', value: ApplicationState.Idle },
-  { label: 'Deploying', value: ApplicationState.Deploying },
-  { label: 'Running', value: ApplicationState.Running },
-  { label: 'Sleeping', value: ApplicationState.Sleeping },
-  { label: 'Serving', value: ApplicationState.Serving },
-  { label: 'Error', value: ApplicationState.Error },
-]
-export const allOrigins: SelectOption<RepositoryOrigin>[] = [
-  { label: 'GitHub', value: 'GitHub' },
-  { label: 'Gitea', value: 'Gitea' },
-  { label: 'Others', value: 'Others' },
-]
-
-const AppsList: Component<{
-  repoWithApps: RepoWithApp[]
-  query: string
-  parentRef: HTMLDivElement | undefined
-}> = (props) => {
-  const hashes = () => props.repoWithApps.flatMap((r) => r.apps.map((a) => a.commit))
-  const [commits] = createResource(
-    () => hashes(),
-    (hashes) => getRepositoryCommits(hashes),
-  )
-
-  const filteredRepos = createMemo(() => {
-    if (props.query === '') return props.repoWithApps
-    return props.repoWithApps.filter((r) => {
-      const repoMatch = r.repo.name.toLowerCase().includes(props.query.toLowerCase())
-      const appMatch = r.apps.some((a) => a.name.toLowerCase().includes(props.query.toLowerCase()))
-      return repoMatch || appMatch
-    })
-  })
-
-  return (
-    <Show
-      when={filteredRepos().length > 0}
-      fallback={
-        <div class="mt-32 flex flex-col items-center justify-center gap-4 text-text-black">
-          <div class="i-material-symbols:search shrink-0 text-20/20" />
-          <span class="font-bold">No Apps Found</span>
-        </div>
-      }
-    >
-      <Virtualizer
-        data={filteredRepos()}
-        scrollRef={props.parentRef}
-        startMargin={280} // ナビゲーションバー 160px + 検索バー 120px
-      >
-        {(repo) => (
-          <div class="mb-10">
-            <RepositoryList repository={repo.repo} apps={repo.apps} commits={commits()} />
-          </div>
-        )}
-      </Virtualizer>
-    </Show>
-  )
-}
+const Skeletons = () => (
+  <div class="flex w-full flex-col gap-4">
+    <RepositoryList apps={[undefined]} />
+    <RepositoryList apps={[undefined]} />
+    <RepositoryList apps={[undefined]} />
+    <RepositoryList apps={[undefined]} />
+  </div>
+)
 
 export default () => {
-  const [scope, _setScope] = createSessionSignal('apps-scope', GetRepositoriesRequest_Scope.MINE)
-  const [isPending, start] = useTransition()
-
-  const setScope = (scope: GetRepositoriesRequest_Scope) => {
-    start(() => {
-      _setScope(scope)
-    })
-  }
-
+  const [scope, setScope] = createSessionSignal('apps-scope', GetRepositoriesRequest_Scope.MINE)
   const [statuses, setStatuses] = createSessionSignal(
     'apps-statuses-v1',
     allStatuses.map((s) => s.value),
@@ -119,47 +58,48 @@ export default () => {
   const [sort, setSort] = createSessionSignal<keyof typeof sortItems>('apps-sort', sortItems.desc.value)
   const [includeNoApp, setIncludeNoApp] = createSessionSignal('apps-include-no-app', false)
 
-  const [scrollParentRef, setScrollParentRef] = createSignal<HTMLDivElement>()
+  const repos = createMemo(() => client.getRepositories({ scope: scope() }).then((res) => res.repositories))
+  const apps = createMemo(() =>
+    client
+      .getApplications({
+        scope:
+          scope() === GetRepositoriesRequest_Scope.MINE
+            ? GetApplicationsRequest_Scope.MINE
+            : GetApplicationsRequest_Scope.ALL,
+      })
+      .then((res) => res.applications),
+  )
+  // Commits of all apps (not only the filtered ones) so that changing filters does not refetch.
+  const commits = createMemo(() => getRepositoryCommits(apps().map((a) => a.commit)))
 
-  const appScope = () => {
-    const mine = scope() === GetRepositoriesRequest_Scope.MINE
-    return mine ? GetApplicationsRequest_Scope.MINE : GetApplicationsRequest_Scope.ALL
-  }
-  const [repos] = createResource(
-    () => scope(),
-    (scope) => client.getRepositories({ scope }),
-  )
-  const [apps] = createResource(
-    () => appScope(),
-    (scope) => client.getApplications({ scope }),
-  )
-  const allRepoWithApps = () =>
-    useApplicationsFilter(
-      repos()?.repositories ?? [],
-      apps()?.applications ?? [],
+  const allRepoWithApps = createMemo(() =>
+    filterRepositoriesWithApps(
+      repos(),
+      apps(),
       allStatuses.map((s) => s.value),
       allOrigins.map((o) => o.value),
       true,
       'desc',
+    ),
+  )
+  const filteredRepos = createMemo(() => {
+    const q = query().toLowerCase()
+    const list = filterRepositoriesWithApps(repos(), apps(), statuses(), origin(), includeNoApp(), sort())
+    if (q === '') return list
+    return list.filter(
+      (r) => r.repo.name.toLowerCase().includes(q) || r.apps.some((a) => a.name.toLowerCase().includes(q)),
     )
-  const repoWithApps = () =>
-    useApplicationsFilter(
-      repos()?.repositories ?? [],
-      apps()?.applications ?? [],
-      statuses(),
-      origin(),
-      includeNoApp(),
-      sort(),
-    )
+  })
+  const scopeChanging = () => isPending(() => repos())
 
   return (
-    <div class="h-full overflow-y-auto" style={{ 'overflow-anchor': 'none' }} ref={setScrollParentRef}>
+    <div class="h-full overflow-y-auto">
       <WithNav.Container>
         <Title>Apps - NeoShowcase</Title>
         <WithNav.Navs>
           <AppsNav />
           <WithNav.Tabs>
-            <For each={scopeItems(user()?.admin)}>
+            <For each={scopeItems(me().admin)}>
               {(s) => (
                 <TabRound state={s.value === scope() ? 'active' : 'default'} onClick={() => setScope(s.value)}>
                   <div class="i-material-symbols:deployed-code-outline shrink-0 text-2xl/6" />
@@ -167,7 +107,7 @@ export default () => {
                 </TabRound>
               )}
             </For>
-            <A href="/apps/new" class="ml-auto">
+            <a href="/apps/new" class="ml-auto">
               <Button
                 variants="primary"
                 size="medium"
@@ -175,11 +115,11 @@ export default () => {
               >
                 Add New App
               </Button>
-            </A>
+            </a>
           </WithNav.Tabs>
         </WithNav.Navs>
         <WithNav.Body>
-          <div class="flex h-full w-full flex-col bg-ui-background px-[max(calc(50%-500px),32px)] max-md:px-4">
+          <div class="bg-ui-background flex h-full w-full flex-col px-[max(calc(50%-500px),32px)] max-md:px-4">
             <FilterContainer>
               <TextField
                 placeholder="Search"
@@ -187,34 +127,45 @@ export default () => {
                 onInput={(e) => setQuery(e.currentTarget.value)}
                 leftIcon={<div class="i-material-symbols:search shrink-0 text-2xl/6" />}
                 rightIcon={
-                  <AppsFilter
-                    allRepoWithApps={allRepoWithApps()}
-                    statuses={statuses()}
-                    setStatues={setStatuses}
-                    origin={origin()}
-                    setOrigin={setOrigin}
-                    sort={sort()}
-                    setSort={setSort}
-                    includeNoApp={includeNoApp()}
-                    setIncludeNoApp={setIncludeNoApp}
-                  />
+                  <Loading>
+                    <AppsFilter
+                      allRepoWithApps={allRepoWithApps()}
+                      statuses={statuses()}
+                      setStatues={setStatuses}
+                      origin={origin()}
+                      setOrigin={setOrigin}
+                      sort={sort()}
+                      setSort={setSort}
+                      includeNoApp={includeNoApp()}
+                      setIncludeNoApp={setIncludeNoApp}
+                    />
+                  </Loading>
                 }
               />
             </FilterContainer>
-            <Suspense
-              fallback={
-                <div class="flex w-full flex-col gap-4">
-                  <RepositoryList apps={[undefined]} />
-                  <RepositoryList apps={[undefined]} />
-                  <RepositoryList apps={[undefined]} />
-                  <RepositoryList apps={[undefined]} />
-                </div>
-              }
-            >
-              <SuspenseContainer isPending={isPending()}>
-                <AppsList repoWithApps={repoWithApps()} query={query()} parentRef={scrollParentRef()} />
-              </SuspenseContainer>
-            </Suspense>
+            <Loading fallback={<Skeletons />}>
+              <PendingContainer isPending={scopeChanging()}>
+                <Show
+                  when={filteredRepos().length > 0}
+                  fallback={
+                    <div class="text-text-black mt-32 flex flex-col items-center justify-center gap-4">
+                      <div class="i-material-symbols:search text-20/20 shrink-0" />
+                      <span class="font-bold">No Apps Found</span>
+                    </div>
+                  }
+                >
+                  {/* `content-visibility: auto` lets the browser skip layout/paint of off-screen repositories,
+                      which is what the former JS virtualizer was for, without breaking find-in-page or scroll anchoring. */}
+                  <For each={filteredRepos()}>
+                    {(r) => (
+                      <div class="mb-10 [contain-intrinsic-size:auto_300px] [content-visibility:auto]">
+                        <RepositoryList repository={r.repo} apps={r.apps} commits={commits()} />
+                      </div>
+                    )}
+                  </For>
+                </Show>
+              </PendingContainer>
+            </Loading>
           </div>
         </WithNav.Body>
       </WithNav.Container>

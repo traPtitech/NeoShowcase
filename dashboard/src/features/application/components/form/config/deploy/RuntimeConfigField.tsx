@@ -1,67 +1,51 @@
-import { Field, getValues, setValue } from '@modular-forms/solid'
-import { type Component, createResource, Show } from 'solid-js'
+import { Field, getInput, setInput } from '@formisch/solid/v2'
+import { type Component, createSignal, Show, untrack } from 'solid-js'
 import { AutoShutdownConfig_StartupBehavior } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { CheckBox } from '/@/components/templates/CheckBox'
 import { FormItem } from '/@/components/templates/FormItem'
 import { RadioGroup } from '/@/components/templates/RadioGroups'
 import { TextField } from '/@/components/UI/TextField'
 import { ToolTip } from '/@/components/UI/ToolTip'
-import { useApplicationForm } from '/@/features/application/provider/applicationFormProvider'
+import type { ApplicationFormStore } from '../../../../schema/applicationSchema'
 
 type Props = {
+  form: ApplicationFormStore
   readonly?: boolean
   disableEditDB?: boolean
 }
 
+const runtimePath = ['form', 'config', 'deployConfig', 'value', 'runtime'] as const
+
 const RuntimeConfigField: Component<Props> = (props) => {
-  const { formStore } = useApplicationForm()
-  const [useDB, { mutate: setUseDB }] = createResource(
-    () =>
-      getValues(formStore, {
-        shouldActive: false,
-      }).form?.config?.deployConfig,
-    (config) => {
-      if (!config?.type || config?.type === 'static') {
-        return false
-      }
-      // @ts-expect-error: getValuesの結果のpropertyはすべてMaybeになるためnarrowingが正しく行われない
-      return config?.value?.runtime?.useMariadb || config?.value?.runtime?.useMongodb
-    },
+  const buildType = () => getInput(props.form, { path: ['form', 'config', 'buildConfig', 'type'] })
+  const autoShutdown = () => getInput(props.form, { path: [...runtimePath, 'autoShutdown', 'enabled'] })
+
+  // 「Use Database」はチェックボックスの値から導出できない (Yes を選んだ直後は両方 false) ため、初期値だけを導出して別途保持する
+  const [useDB, setUseDB] = createSignal(
+    untrack(
+      () =>
+        !!getInput(props.form, { path: [...runtimePath, 'useMariadb'] }) ||
+        !!getInput(props.form, { path: [...runtimePath, 'useMongodb'] }),
+    ),
   )
 
   const updateUseDB = (value: boolean) => {
     setUseDB(value)
     if (!value) {
-      // @ts-expect-error: runtime でない場合は存在しないため型エラーが出る
-      setValue(formStore, 'form.config.deployConfig.value.runtime.useMariadb', false)
-      // @ts-expect-error
-      setValue(formStore, 'form.config.deployConfig.value.runtime.useMongodb', false)
+      setInput(props.form, { path: [...runtimePath, 'useMariadb'], input: false })
+      setInput(props.form, { path: [...runtimePath, 'useMongodb'], input: false })
     }
   }
 
-  const buildType = () => getValues(formStore).form?.config?.buildConfig?.type
-
-  // @ts-expect-error: autoShutdown は deployConfig.type === "static" の時存在しないためtsの型の仕様上エラーが出る
-  const autoShutdown = () => getValues(formStore).form?.config?.deployConfig?.value?.runtime?.autoShutdown?.enabled
-
-  const setStartupBehavior = (value: string | undefined) => {
-    // @ts-expect-error: deployConfig は form.type === "static" の時存在しないためtsの型の仕様上エラーが出る
-    setValue(formStore, 'form.config.deployConfig.value.runtime.autoShutdown.startup', value)
-  }
-
   const EntryPointField = () => (
-    <Field of={formStore} name="form.config.deployConfig.value.runtime.entrypoint">
-      {(field, fieldProps) => (
+    <Field of={props.form} path={[...runtimePath, 'entrypoint']}>
+      {(field) => (
         <TextField
           label="Entrypoint"
-          info={{
-            props: {
-              content: buildType() === 'cmd' ? 'アプリ起動コマンド' : 'コンテナのEntrypoint上書き',
-            },
-          }}
-          {...fieldProps}
-          value={field.value ?? ''}
-          error={field.error}
+          info={{ content: buildType() === 'cmd' ? 'アプリ起動コマンド' : 'コンテナのEntrypoint上書き' }}
+          {...field.props}
+          value={field.input ?? ''}
+          error={field.errors?.[0]}
           readOnly={props.readonly}
         />
       )}
@@ -69,18 +53,14 @@ const RuntimeConfigField: Component<Props> = (props) => {
   )
 
   const CommandOverrideField = () => (
-    <Field of={formStore} name="form.config.deployConfig.value.runtime.command">
-      {(field, fieldProps) => (
+    <Field of={props.form} path={[...runtimePath, 'command']}>
+      {(field) => (
         <TextField
           label="Command"
-          info={{
-            props: {
-              content: 'コンテナのCommand上書き',
-            },
-          }}
-          {...fieldProps}
-          value={field.value ?? ''}
-          error={field.error}
+          info={{ content: 'コンテナのCommand上書き' }}
+          {...field.props}
+          value={field.input ?? ''}
+          error={field.errors?.[0]}
           readOnly={props.readonly}
         />
       )}
@@ -89,72 +69,44 @@ const RuntimeConfigField: Component<Props> = (props) => {
 
   return (
     <>
-      <ToolTip>
-        <FormItem
-          title="Use Database"
-          helpText="アプリ作成後は変更できません"
-          tooltip={{
-            props: {
-              content: (
-                <>
-                  <div>データーベースを使用する場合はチェック</div>
-                </>
-              ),
-            },
-          }}
-        >
-          <RadioGroup
-            tooltip={{
-              props: {
-                content: <>アプリ作成後は変更できません</>,
-              },
-              disabled: !props.disableEditDB,
-            }}
-            options={[
-              { value: 'true', label: 'Yes' },
-              { value: 'false', label: 'No' },
-            ]}
-            value={useDB() ? 'true' : 'false'}
-            setValue={(v) => updateUseDB(v === 'true')}
-            disabled={props.disableEditDB}
-          />
-        </FormItem>
-      </ToolTip>
+      <FormItem
+        title="Use Database"
+        helpText="アプリ作成後は変更できません"
+        tooltip={{ content: <div>データーベースを使用する場合はチェック</div> }}
+      >
+        <RadioGroup
+          tooltip={{ content: 'アプリ作成後は変更できません', disabled: !props.disableEditDB }}
+          options={[
+            { value: 'true', label: 'Yes' },
+            { value: 'false', label: 'No' },
+          ]}
+          value={useDB() ? 'true' : 'false'}
+          setValue={(v) => updateUseDB(v === 'true')}
+          disabled={props.disableEditDB}
+        />
+      </FormItem>
       <Show when={useDB()}>
         <FormItem title="Database">
-          <ToolTip
-            props={{
-              content: <>アプリ作成後は変更できません</>,
-            }}
-            disabled={!props.disableEditDB}
-          >
+          <ToolTip content="アプリ作成後は変更できません" disabled={!props.disableEditDB}>
             <CheckBox.Container>
-              <Field
-                of={formStore}
-                name="form.config.deployConfig.value.runtime.useMariadb"
-                // @ts-expect-error: useMariadb は deployConfig.type === "static" の時存在しないためtsの型の仕様上エラーが出る
-                type="boolean"
-              >
-                {(field, fieldProps) => (
+              <Field of={props.form} path={[...runtimePath, 'useMariadb']}>
+                {(field) => (
                   <CheckBox.Option
-                    {...fieldProps}
+                    {...field.props}
                     label="MariaDB"
-                    checked={field.value ?? false}
+                    checked={field.input ?? false}
+                    setChecked={(v) => field.onInput(v)}
                     disabled={props.disableEditDB}
                   />
                 )}
               </Field>
-              <Field
-                of={formStore}
-                name="form.config.deployConfig.value.runtime.useMongodb"
-                // @ts-expect-error: useMongodb は deployConfig.type === "static" の時存在しないためtsの型の仕様上エラーが出る
-                type="boolean"
-              >
-                {(field, fieldProps) => (
+              <Field of={props.form} path={[...runtimePath, 'useMongodb']}>
+                {(field) => (
                   <CheckBox.Option
-                    {...fieldProps}
+                    {...field.props}
                     label="MongoDB"
-                    checked={field.value ?? false}
+                    checked={field.input ?? false}
+                    setChecked={(v) => field.onInput(v)}
                     disabled={props.disableEditDB}
                   />
                 )}
@@ -174,46 +126,26 @@ const RuntimeConfigField: Component<Props> = (props) => {
       </FormItem>
       <FormItem
         title="Auto Shutdown"
-        tooltip={{
-          props: {
-            content: '一定期間アクセスがない場合にアプリを自動でシャットダウンします',
-          },
-        }}
+        tooltip={{ content: '一定期間アクセスがない場合にアプリを自動でシャットダウンします' }}
       >
         <CheckBox.Container>
-          <Field
-            of={formStore}
-            name="form.config.deployConfig.value.runtime.autoShutdown.enabled"
-            // @ts-expect-error: autoShutdown は deployConfig.type === "static" の時存在しないためtsの型の仕様上エラーが出る
-            type="boolean"
-          >
-            {(field, fieldProps) => (
+          <Field of={props.form} path={[...runtimePath, 'autoShutdown', 'enabled']}>
+            {(field) => (
               <CheckBox.Option
-                {...fieldProps}
+                {...field.props}
                 label="自動シャットダウン"
-                checked={field.value ?? false}
-                error={field.error}
+                checked={field.input ?? false}
+                setChecked={(v) => field.onInput(v)}
+                error={field.errors?.[0]}
               />
             )}
           </Field>
         </CheckBox.Container>
       </FormItem>
       <Show when={autoShutdown()}>
-        <FormItem
-          title="Startup Behavior"
-          tooltip={{
-            props: {
-              content: '起動時の挙動',
-            },
-          }}
-        >
-          <Field
-            of={formStore}
-            name="form.config.deployConfig.value.runtime.autoShutdown.startup"
-            // @ts-expect-error: autoShutdown は deployConfig.type === "static" の時存在しないためtsの型の仕様上エラーが出る
-            type="string"
-          >
-            {(field, fieldProps) => (
+        <FormItem title="Startup Behavior" tooltip={{ content: '起動時の挙動' }}>
+          <Field of={props.form} path={[...runtimePath, 'autoShutdown', 'startup']}>
+            {(field) => (
               <RadioGroup
                 wrap={false}
                 full
@@ -229,11 +161,11 @@ const RuntimeConfigField: Component<Props> = (props) => {
                     description: 'アクセスに対し、アプリが起動するまでリクエストを待機させます。APIサーバー向け',
                   },
                 ]}
-                value={field.value}
-                setValue={setStartupBehavior}
-                required={true}
-                {...fieldProps}
-                error={field.error}
+                required
+                {...field.props}
+                value={field.input}
+                setValue={(v) => field.onInput(v)}
+                error={field.errors?.[0]}
               />
             )}
           </Field>

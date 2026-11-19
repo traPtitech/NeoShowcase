@@ -1,6 +1,5 @@
 import { type Component, Show } from 'solid-js'
 import { writeToClipboard } from '/@/libs/clipboard'
-import { clsx } from '/@/libs/clsx'
 import { ToolTip } from './ToolTip'
 
 const Code: Component<{
@@ -13,24 +12,20 @@ const Code: Component<{
 
   return (
     <div
-      class={clsx(
-        '!font-[Menlo,Monaco,Consolas,Courier_New,monospace] relative mt-1 w-full min-w-[calc(1lh+8px)] overflow-x-auto whitespace-pre-wrap rounded bg-ui-secondary px-2 py-1 text-regular text-text-black',
-        props.copyable && 'pr-10',
-      )}
+      class={[
+        'bg-ui-secondary text-regular text-text-black relative mt-1 w-full min-w-[calc(1lh+8px)] overflow-x-auto rounded px-2 py-1 !font-[Menlo,Monaco,Consolas,Courier_New,monospace] whitespace-pre-wrap',
+        { 'pr-10': props.copyable },
+      ]}
     >
       {props.value}
       <Show when={props.copyable}>
-        <ToolTip
-          props={{
-            content: 'copy to clipboard',
-          }}
-        >
+        <ToolTip content="copy to clipboard">
           <button
-            class="absolute top-1 right-2 grid size-6 cursor-pointer place-content-center rounded border border-ui-border bg-inherit text-text-black leading-4 hover:bg-black-alpha-200 active:bg-black-alpha-300"
+            class="border-ui-border text-text-black hover:bg-black-alpha-200 active:bg-black-alpha-300 absolute top-1 right-2 grid size-6 cursor-pointer place-content-center rounded border bg-inherit leading-4"
             onClick={handleCopy}
             type="button"
           >
-            <div class="shrink-0 text-xl/5 i-material-symbols:content-copy-outline" />
+            <div class="i-material-symbols:content-copy-outline shrink-0 text-xl/5" />
           </button>
         </ToolTip>
       </Show>

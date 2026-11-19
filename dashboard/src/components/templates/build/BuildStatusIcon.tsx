@@ -1,49 +1,22 @@
-import type { JSXElement } from 'solid-js'
-import { Dynamic } from 'solid-js/web'
+import type { Component } from 'solid-js'
 import { BuildStatus } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { ToolTip } from '/@/components/UI/ToolTip'
 import { buildStatusStr } from '/@/libs/application'
 
-interface IconProps {
-  size: number
-}
-const components: Record<BuildStatus, (size: IconProps) => JSXElement> = {
-  [BuildStatus.QUEUED]: (props) => (
-    <div class="i-material-symbols:schedule shrink-0 text-blue-500" style={{ 'font-size': `${props.size}px` }} />
-  ),
-  [BuildStatus.BUILDING]: (props) => (
-    <div class="i-material-symbols:offline-bolt shrink-0 text-accent-warn" style={{ 'font-size': `${props.size}px` }} />
-  ),
-  [BuildStatus.SUCCEEDED]: (props) => (
-    <div
-      class="i-material-symbols:check-circle shrink-0 text-accent-success"
-      style={{ 'font-size': `${props.size}px` }}
-    />
-  ),
-  [BuildStatus.FAILED]: (props) => (
-    <div class="i-material-symbols:error shrink-0 text-accent-error" style={{ 'font-size': `${props.size}px` }} />
-  ),
-  [BuildStatus.CANCELLED]: (props) => (
-    <div class="i-material-symbols:cancel shrink-0 text-text-disabled" style={{ 'font-size': `${props.size}px` }} />
-  ),
-  [BuildStatus.SKIPPED]: (props) => (
-    <div class="i-material-symbols:skip-next shrink-0 text-text-disabled" style={{ 'font-size': `${props.size}px` }} />
-  ),
+const iconClass: Record<BuildStatus, string> = {
+  [BuildStatus.QUEUED]: 'i-material-symbols:schedule text-blue-500',
+  [BuildStatus.BUILDING]: 'i-material-symbols:offline-bolt text-accent-warn',
+  [BuildStatus.SUCCEEDED]: 'i-material-symbols:check-circle text-accent-success',
+  [BuildStatus.FAILED]: 'i-material-symbols:error text-accent-error',
+  [BuildStatus.CANCELLED]: 'i-material-symbols:cancel text-text-disabled',
+  [BuildStatus.SKIPPED]: 'i-material-symbols:skip-next text-text-disabled',
 }
 
-interface Props {
+export const BuildStatusIcon: Component<{
   state: BuildStatus
   size?: number
-}
-
-export const BuildStatusIcon = (props: Props): JSXElement => {
-  return (
-    <ToolTip
-      props={{
-        content: buildStatusStr[props.state],
-      }}
-    >
-      <Dynamic component={components[props.state]} size={props.size ?? 24} />
-    </ToolTip>
-  )
-}
+}> = (props) => (
+  <ToolTip content={buildStatusStr[props.state]}>
+    <div class={['shrink-0', iconClass[props.state]]} style={{ 'font-size': `${props.size ?? 24}px` }} />
+  </ToolTip>
+)
