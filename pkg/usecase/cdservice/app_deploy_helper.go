@@ -110,34 +110,44 @@ func (s *AppDeployHelper) _collectSharedResources(ctx context.Context) (*domain.
 	return &st, nil
 }
 
-func (s *AppDeployHelper) synchronize(ctx context.Context) error {
+func (s *AppDeployHelper) synchronize(ctx context.Context, timer *syncTimer) error {
 	// Synchronize sharded resource
 	var st domain.DesiredState
 	var err error
-	st.Runtime, err = s._runtimeDesiredStates(ctx)
+	err = timer.measure("runtime_desired_states", func() (err error) {
+		st.Runtime, err = s._runtimeDesiredStates(ctx)
+		return err
+	})
 	if err != nil {
 		return err
 	}
-	st.StaticSites, err = domain.GetActiveStaticSites(ctx, s.cluster, s.appRepo, s.buildRepo)
+	err = timer.measure("active_static_sites", func() (err error) {
+		st.StaticSites, err = domain.GetActiveStaticSites(ctx, s.cluster, s.appRepo, s.buildRepo)
+		return err
+	})
 	if err != nil {
 		return err
 	}
 	slog.InfoContext(ctx, "shard status", "shard_index", s.cluster.MyShardIndex(), "shard_size", s.cluster.Size(), "runtime_count", len(st.Runtime), "static_sites_count", len(st.StaticSites))
 
 	s.ssgen.BroadcastSSGen(&pb.SSGenRequest{Type: pb.SSGenRequest_RELOAD})
-	err = s.backend.Synchronize(ctx, &st)
+	err = timer.measure("backend_synchronize", func() error { return s.backend.Synchronize(ctx, &st) })
 	if err != nil {
 		return err
 	}
 
 	// Only let leader synchronize shared resources (certificates)
 	if s.cluster.IsLeader() {
-		st, err := s._collectSharedResources(ctx)
+		var st *domain.DesiredStateLeader
+		err = timer.measure("collect_shared_resources", func() (err error) {
+			st, err = s._collectSharedResources(ctx)
+			return err
+		})
 		if err != nil {
 			return err
 		}
 		slog.InfoContext(ctx, "shard leader status", "tls_targets_count", len(st.TLSTargetDomains))
-		err = s.backend.SynchronizeShared(ctx, st)
+		err = timer.measure("backend_synchronize_shared", func() error { return s.backend.SynchronizeShared(ctx, st) })
 		if err != nil {
 			return err
 		}
