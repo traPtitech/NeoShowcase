@@ -70,12 +70,19 @@ func (m *ContainerStateMutator) _updateOne(ctx context.Context, appID string) (s
 	return struct{}{}, nil
 }
 
-func (m *ContainerStateMutator) updateAll(ctx context.Context) error {
-	m.lock.Lock()
+func (m *ContainerStateMutator) updateAll(ctx context.Context, timer *syncTimer) error {
+	_ = timer.measure("container_state_lock_wait", func() error {
+		m.lock.Lock()
+		return nil
+	})
 	defer m.lock.Unlock()
 
 	// Fetch all runtime apps
-	allRuntimeApps, err := m.appRepo.GetApplications(ctx, domain.GetApplicationCondition{DeployType: optional.From(domain.DeployTypeRuntime)})
+	var allRuntimeApps []*domain.Application
+	err := timer.measure("get_runtime_apps", func() (err error) {
+		allRuntimeApps, err = m.appRepo.GetApplications(ctx, domain.GetApplicationCondition{DeployType: optional.From(domain.DeployTypeRuntime)})
+		return err
+	})
 	if err != nil {
 		return oops.Wrapf(err, "getting all runtime applications")
 	}
@@ -85,7 +92,11 @@ func (m *ContainerStateMutator) updateAll(ctx context.Context) error {
 	})
 
 	// Fetch actual states
-	containers, err := m.backend.ListContainers(ctx)
+	var containers []*domain.Container
+	err = timer.measure("list_containers", func() (err error) {
+		containers, err = m.backend.ListContainers(ctx)
+		return err
+	})
 	if err != nil {
 		return oops.Wrapf(err, "listing containers")
 	}
@@ -104,7 +115,7 @@ func (m *ContainerStateMutator) updateAll(ctx context.Context) error {
 	}
 
 	// Update
-	err = m.appRepo.BulkUpdateState(ctx, containers)
+	err = timer.measure("bulk_update_state", func() error { return m.appRepo.BulkUpdateState(ctx, containers) })
 	if err != nil {
 		return oops.Wrapf(err, "bulk-updating container state")
 	}

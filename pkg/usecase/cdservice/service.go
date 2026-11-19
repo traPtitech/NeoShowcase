@@ -101,12 +101,13 @@ func NewService(
 
 	doLocalSyncDeploy := scutil.NewCoalescer(func(ctx context.Context) error {
 		start := time.Now()
-		if err := cd.syncDeployments(ctx); err != nil {
-			slog.WarnContext(ctx, "failed to sync deployments", "error", err)
+		var timer syncTimer
+		if err := cd.syncDeployments(ctx, &timer); err != nil {
+			slog.WarnContext(ctx, "failed to sync deployments", slog.Any("error", err), timer.attr())
 			return nil
 		}
 		elapsed := time.Since(start)
-		slog.InfoContext(ctx, "Synced deployments", "duration", elapsed)
+		slog.InfoContext(ctx, "Synced deployments", slog.Duration("duration", elapsed), timer.attr())
 		metrics.ObserveDeployDuration(elapsed)
 		return nil
 	})
@@ -324,21 +325,21 @@ func (cd *service) _syncAppFields(ctx context.Context) error {
 	return nil
 }
 
-func (cd *service) syncDeployments(ctx context.Context) error {
+func (cd *service) syncDeployments(ctx context.Context, timer *syncTimer) error {
 	// Sync app fields from build result in an idempotent way
-	err := cd._syncAppFields(ctx)
+	err := timer.measure("sync_app_fields", func() error { return cd._syncAppFields(ctx) })
 	if err != nil {
 		return err
 	}
 
 	// Synchronize
-	err = cd.deployer.synchronize(ctx)
+	err = cd.deployer.synchronize(ctx, timer)
 	if err != nil {
 		return oops.Wrapf(err, "synchronizing deployments")
 	}
 
 	// Update container states
-	err = cd.mutator.updateAll(ctx)
+	err = cd.mutator.updateAll(ctx, timer)
 	if err != nil {
 		return err
 	}
