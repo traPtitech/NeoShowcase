@@ -25,6 +25,8 @@ RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache
     go install -ldflags "-s -w -X main.version=$SQLDEF_VERSION" github.com/sqldef/sqldef/v3/cmd/mysqldef@$SQLDEF_VERSION
 # keep output directory the same between platforms; workaround for https://github.com/golang/go/issues/57485
 RUN cp /go/bin/mysqldef /mysqldef || cp /go/bin/"$GOOS"_"$GOARCH"/mysqldef /mysqldef
+RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache/go-build \
+    go build -o /ns-datamigrate -ldflags "-s -w" ./migrations/datamigrate
 
 FROM --platform=$BUILDPLATFORM builder AS builder-ns
 RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache/go-build \
@@ -42,10 +44,10 @@ FROM base AS ns-migrate
 
 COPY ./migrations/entrypoint.sh ./
 COPY ./migrations/schema.sql ./
-COPY --from=builder-ns-migrate /mysqldef /usr/local/bin/
+COPY --from=builder-ns-migrate /mysqldef /ns-datamigrate /usr/local/bin/
 
 ENTRYPOINT ["/app/entrypoint.sh"]
-CMD ["/app/schema.sql"]
+CMD ["/app/schema.sql", "ns-datamigrate"]
 
 FROM base AS ns
 COPY --from=builder-ns /app/ns ./

@@ -237,3 +237,47 @@ func (a *Application) WebsiteConflicts(existing []*Application) bool {
 	}
 	return false
 }
+
+// GroupByNestedWebsites splits apps into sets of applications whose websites are the same or nested,
+// directly or through other applications in the same set. Every application appears in exactly one set,
+// and sets and their applications keep the order of apps.
+func GroupByNestedWebsites(apps []*Application) [][]*Application {
+	parent := make([]int, len(apps))
+	for i := range parent {
+		parent[i] = i
+	}
+	var find func(i int) int
+	find = func(i int) int {
+		if parent[i] != i {
+			parent[i] = find(parent[i])
+		}
+		return parent[i]
+	}
+	for i := range apps {
+		for j := i + 1; j < len(apps); j++ {
+			if websitesOverlap(apps[i], apps[j]) {
+				parent[find(j)] = find(i)
+			}
+		}
+	}
+
+	var sets [][]*Application
+	setIndex := make(map[int]int)
+	for i, app := range apps {
+		root := find(i)
+		idx, ok := setIndex[root]
+		if !ok {
+			idx = len(sets)
+			setIndex[root] = idx
+			sets = append(sets, nil)
+		}
+		sets[idx] = append(sets[idx], app)
+	}
+	return sets
+}
+
+func websitesOverlap(a, b *Application) bool {
+	return lo.SomeBy(a.Websites, func(w *Website) bool {
+		return lo.SomeBy(b.Websites, func(w2 *Website) bool { return w.overlapsWith(w2) })
+	})
+}
