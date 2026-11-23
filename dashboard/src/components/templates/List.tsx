@@ -1,4 +1,4 @@
-import { type Component, For, Show } from 'solid-js'
+import { type Component, For } from 'solid-js'
 import type { Application, ApplicationGroup, Build, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { styled } from '/@/components/styled-components'
 import type { CommitsMap } from '/@/libs/api'
@@ -34,42 +34,37 @@ export const List = {
   PlaceHolder,
 }
 
-/** Apps of one group a user created, under a heading of the group. Apps are standalone when `group` is not given. */
+/** Apps without a heading. */
 export const AppsList: Component<{
-  group?: ApplicationGroup
   apps: (Application | undefined)[]
   repositories?: Record<string, Repository>
   commits?: CommitsMap
 }> = (props) => {
   return (
-    <Show
-      when={props.group}
-      fallback={
-        <Container>
-          <For each={props.apps}>
-            {(app) => (
-              <AppRow app={app} repository={app && props.repositories?.[app.repositoryId]} commits={props.commits} />
-            )}
-          </For>
-        </Container>
-      }
-    >
-      {(group) => (
-        <section class={containerClass} aria-label={group().name}>
-          <GroupRow group={group()} appCount={props.apps.length} />
-          <For each={props.apps}>
-            {(app) => (
-              <AppRow
-                app={app}
-                repository={app && props.repositories?.[app.repositoryId]}
-                commits={props.commits}
-                dark
-              />
-            )}
-          </For>
-        </section>
-      )}
-    </Show>
+    <Container>
+      <For each={props.apps}>
+        {(app) => (
+          <AppRow app={app} repository={app && props.repositories?.[app.repositoryId]} commits={props.commits} />
+        )}
+      </For>
+    </Container>
+  )
+}
+
+/** Apps of one group a user created, under a heading of the group. */
+export const GroupAppsList: Component<{
+  group: ApplicationGroup
+  apps: Application[]
+  repositories?: Record<string, Repository>
+  commits?: CommitsMap
+}> = (props) => {
+  return (
+    <section class={containerClass} aria-label={props.group.name}>
+      <GroupRow group={props.group} appCount={props.apps.length} />
+      <For each={props.apps}>
+        {(app) => <AppRow app={app} repository={props.repositories?.[app.repositoryId]} commits={props.commits} dark />}
+      </For>
+    </section>
   )
 }
 

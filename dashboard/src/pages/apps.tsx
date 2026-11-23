@@ -11,7 +11,7 @@ import { WithNav } from '/@/components/layouts/WithNav'
 import { styled } from '/@/components/styled-components'
 import { AppsNav } from '/@/components/templates/AppsNav'
 import AppsFilter from '/@/components/templates/app/AppsFilter'
-import { AppsList } from '/@/components/templates/List'
+import { AppsList, GroupAppsList } from '/@/components/templates/List'
 import type { SelectOption } from '/@/components/templates/Select'
 import { Button } from '/@/components/UI/Button'
 import { TabRound } from '/@/components/UI/TabRound'
@@ -188,12 +188,19 @@ export default () => {
                   <For each={entries()}>
                     {(entry) => (
                       <div class="mb-10 [contain-intrinsic-size:auto_300px] [content-visibility:auto]">
-                        <AppsList
-                          group={entry.groupId === undefined ? undefined : groups()[entry.groupId]}
-                          apps={entry.apps}
-                          repositories={repos()}
-                          commits={commits()}
-                        />
+                        <Show
+                          when={entry.groupId !== undefined && groups()[entry.groupId]}
+                          fallback={<AppsList apps={entry.apps} repositories={repos()} commits={commits()} />}
+                        >
+                          {(group) => (
+                            <GroupAppsList
+                              group={group()}
+                              apps={entry.apps}
+                              repositories={repos()}
+                              commits={commits()}
+                            />
+                          )}
+                        </Show>
                       </div>
                     )}
                   </For>
