@@ -468,6 +468,27 @@ describe('interactions', () => {
     })
   })
 
+  it('apps list and repos list: the search box ignores the case of letters', async () => {
+    await scenario('search case', '/apps', async (ctx) => {
+      await waitForText(ctx, 'runtime-app', 'static-app')
+      const search = () => {
+        const el = ctx.screen.querySelector<HTMLInputElement>('input[placeholder="Search"]')
+        if (!el) throw new Error('no search box')
+        return el
+      }
+      type(ctx, search(), 'STATIC')
+      await waitForNoText(ctx, 'runtime-app')
+      await waitForText(ctx, 'static-app')
+
+      click(ctx, link(ctx, '/repos'))
+      await settle(ctx, () => expect(window.location.pathname).toBe('/repos'))
+      await waitForText(ctx, 'github-repo', 'gitea-repo')
+      type(ctx, search(), 'GITEA')
+      await waitForNoText(ctx, 'github-repo')
+      await waitForText(ctx, 'gitea-repo')
+    })
+  })
+
   it('apps list: apps are listed under their group, and standalone apps without a heading', async () => {
     await scenario('apps by group', '/apps', async (ctx) => {
       await waitForText(ctx, 'runtime-app', 'static-app', 'broken-app')
