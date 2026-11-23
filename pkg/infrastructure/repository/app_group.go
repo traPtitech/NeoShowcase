@@ -55,7 +55,7 @@ func (r *applicationGroupRepository) GetApplicationGroups(ctx context.Context, c
 	return ds.Map(groups, repoconvert.ToDomainApplicationGroup), nil
 }
 
-func (r *applicationGroupRepository) getApplicationGroup(ctx context.Context, ex boil.ContextExecutor, id string) (*models.ApplicationGroup, error) {
+func getApplicationGroup(ctx context.Context, ex boil.ContextExecutor, id string) (*models.ApplicationGroup, error) {
 	group, err := models.ApplicationGroups(
 		models.ApplicationGroupWhere.ID.EQ(id),
 		qm.Load(models.ApplicationGroupRels.Users),
@@ -70,7 +70,7 @@ func (r *applicationGroupRepository) getApplicationGroup(ctx context.Context, ex
 }
 
 func (r *applicationGroupRepository) GetApplicationGroup(ctx context.Context, id string) (*domain.ApplicationGroup, error) {
-	group, err := r.getApplicationGroup(ctx, r.db, id)
+	group, err := getApplicationGroup(ctx, r.db, id)
 	if err != nil {
 		return nil, err
 	}
@@ -101,22 +101,13 @@ func (r *applicationGroupRepository) UpdateApplicationGroup(ctx context.Context,
 	}
 	defer tx.Rollback()
 
-	group, err := r.getApplicationGroup(ctx, tx, id)
+	group, err := getApplicationGroup(ctx, tx, id)
 	if err != nil {
 		return err
 	}
 
-	if args.Name.Valid {
-		group.Name = args.Name.V
-		_, err = group.Update(ctx, tx, boil.Whitelist(models.ApplicationGroupColumns.Name))
-		if err != nil {
-			return oops.Wrapf(err, "updating application group")
-		}
-	}
-	if args.OwnerIDs.Valid {
-		if err = setApplicationGroupOwners(ctx, tx, group, args.OwnerIDs.V); err != nil {
-			return err
-		}
+	if err = updateApplicationGroup(ctx, tx, group, args); err != nil {
+		return err
 	}
 
 	if err = tx.Commit(); err != nil {
@@ -132,7 +123,7 @@ func (r *applicationGroupRepository) DeleteApplicationGroup(ctx context.Context,
 	}
 	defer tx.Rollback()
 
-	group, err := r.getApplicationGroup(ctx, tx, id)
+	group, err := getApplicationGroup(ctx, tx, id)
 	if err != nil {
 		return err
 	}
@@ -142,6 +133,21 @@ func (r *applicationGroupRepository) DeleteApplicationGroup(ctx context.Context,
 
 	if err = tx.Commit(); err != nil {
 		return oops.Wrapf(err, "committing transaction")
+	}
+	return nil
+}
+
+func updateApplicationGroup(ctx context.Context, ex boil.ContextExecutor, group *models.ApplicationGroup, args *domain.UpdateApplicationGroupArgs) error {
+	if args.Name.Valid {
+		group.Name = args.Name.V
+		if _, err := group.Update(ctx, ex, boil.Whitelist(models.ApplicationGroupColumns.Name)); err != nil {
+			return oops.Wrapf(err, "updating application group")
+		}
+	}
+	if args.OwnerIDs.Valid {
+		if err := setApplicationGroupOwners(ctx, ex, group, args.OwnerIDs.V); err != nil {
+			return err
+		}
 	}
 	return nil
 }

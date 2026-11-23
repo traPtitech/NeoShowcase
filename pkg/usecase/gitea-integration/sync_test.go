@@ -54,10 +54,10 @@ func TestSyncRepository_AddsWritersOnlyToStandaloneApps(t *testing.T) {
 
 	shared := domain.NewApplicationGroup("service", []string{owner.ID})
 	require.NoError(t, i.groupRepo.CreateApplicationGroup(ctx, shared))
-	require.NoError(t, i.appRepo.CreateApplication(ctx, newTestApp(repoX.ID, shared), optional.None[[]string]()))
-	require.NoError(t, i.appRepo.CreateApplication(ctx, newTestApp(repoY.ID, shared), optional.None[[]string]()))
+	require.NoError(t, i.appRepo.CreateApplication(ctx, newTestApp(repoX.ID, shared), shared))
+	require.NoError(t, i.appRepo.CreateApplication(ctx, newTestApp(repoY.ID, shared), shared))
 	standalone := domain.NewImplicitApplicationGroup([]string{owner.ID})
-	require.NoError(t, i.appRepo.CreateApplication(ctx, newTestApp(repoX.ID, standalone), optional.From(standalone.OwnerIDs)))
+	require.NoError(t, i.appRepo.CreateApplication(ctx, newTestApp(repoX.ID, standalone), standalone))
 
 	err = i.syncRepository(ctx, "org", []string{writer.ID}, &gitea.Repository{Name: "x", SSHURL: repoX.URL})
 	require.NoError(t, err)

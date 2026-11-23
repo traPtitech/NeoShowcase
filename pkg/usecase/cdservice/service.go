@@ -316,7 +316,7 @@ func (cd *service) _syncAppFields(ctx context.Context) error {
 			err = cd.appRepo.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{
 				CurrentBuild: optional.From(nextBuild.ID),
 				UpdatedAt:    optional.From(nextBuild.FinishedAt.V),
-			})
+			}, nil)
 			if err != nil {
 				return oops.With("app_id", app.ID).Wrapf(err, "syncing application commit")
 			}

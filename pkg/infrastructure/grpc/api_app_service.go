@@ -67,15 +67,8 @@ func (s *APIService) GetApplication(ctx context.Context, req *pb.ApplicationIdRe
 }
 
 func (s *APIService) UpdateApplication(ctx context.Context, req *pb.UpdateApplicationRequest) (*emptypb.Empty, error) {
-	err := s.svc.UpdateApplication(ctx, req.Id, &domain.UpdateApplicationArgs{
-		Name:             optional.FromPtr(req.Name),
-		RefName:          optional.FromPtr(req.RefName),
-		UpdatedAt:        optional.From(time.Now()),
-		Config:           optional.FromNonZero(req.Config).Map(pbconvert.FromPBApplicationConfig),
-		Websites:         optional.FromNonZero(req.Websites).Map(pbconvert.FromPBUpdateWebsites),
-		PortPublications: optional.FromNonZero(req.PortPublications).Map(pbconvert.FromPBUpdatePorts),
-		GroupOwnerIDs:    optional.FromNonZero(req.OwnerIds).Map(pbconvert.FromPBUpdateOwners),
-	})
+	args, ownerIDs := pbconvert.FromPBUpdateApplicationRequest(req, time.Now())
+	err := s.svc.UpdateApplication(ctx, req.Id, args, ownerIDs)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}

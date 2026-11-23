@@ -62,7 +62,7 @@ func (m *ContainerStateMutator) _updateOne(ctx context.Context, appID string) (s
 	err = m.appRepo.UpdateApplication(ctx, appID, &domain.UpdateApplicationArgs{
 		Container:        optional.From(container.State),
 		ContainerMessage: optional.From(container.Message),
-	})
+	}, nil)
 	if err != nil {
 		return struct{}{}, oops.With("app_id", appID).Wrapf(err, "updating application")
 	}

@@ -1,6 +1,8 @@
 package pbconvert
 
 import (
+	"time"
+
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -8,6 +10,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/usecase/apiserver"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/mapper"
+	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
 var AppScopeMapper = mapper.MustNewValueMapper(map[pb.GetApplicationsRequest_Scope]apiserver.GetAppScopeType{
@@ -84,6 +87,17 @@ func FromPBApplication(app *pb.Application) *domain.Application {
 	}
 }
 
-func FromPBUpdateOwners(req *pb.UpdateApplicationRequest_UpdateOwners) []string {
-	return req.OwnerIds
+// FromPBUpdateApplicationRequest returns the changes req makes to the application, updated at now,
+// and the owners that replace those of the application, if req gives them.
+func FromPBUpdateApplicationRequest(req *pb.UpdateApplicationRequest, now time.Time) (*domain.UpdateApplicationArgs, optional.Of[[]string]) {
+	args := &domain.UpdateApplicationArgs{
+		Name:             optional.FromPtr(req.Name),
+		RefName:          optional.FromPtr(req.RefName),
+		UpdatedAt:        optional.From(now),
+		Config:           optional.FromNonZero(req.Config).Map(FromPBApplicationConfig),
+		Websites:         optional.FromNonZero(req.Websites).Map(FromPBUpdateWebsites),
+		PortPublications: optional.FromNonZero(req.PortPublications).Map(FromPBUpdatePorts),
+	}
+	ownerIDs := optional.FromNonZero(req.OwnerIds).Map(func(o *pb.UpdateApplicationRequest_UpdateOwners) []string { return o.OwnerIds })
+	return args, ownerIDs
 }
