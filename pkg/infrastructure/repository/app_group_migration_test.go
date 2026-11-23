@@ -131,3 +131,51 @@ func TestMigrateApplicationGroups_NoApps(t *testing.T) {
 	db := testhelper.OpenDB(t)
 	require.NoError(t, repository.MigrateApplicationGroups(context.Background(), db))
 }
+
+func addLegacyWebsite(t *testing.T, db *sql.DB, appID, fqdn, path string) {
+	t.Helper()
+	_, err := db.ExecContext(t.Context(), `INSERT INTO websites
+		(id, fqdn, path_prefix, strip_prefix, https, h2c, http_port, authentication, application_id)
+		VALUES (?, ?, ?, 0, 1, 0, 80, 'off', ?)`, domain.NewID(), fqdn, path, appID)
+	require.NoError(t, err)
+}
+
+func TestMigrateApplicationGroups_GroupName(t *testing.T) {
+	t.Parallel()
+	ctx := t.Context()
+	db := testhelper.OpenDB(t)
+	u, err := repository.NewUserRepository(db).EnsureUser(ctx, "u")
+	require.NoError(t, err)
+	repo := domain.NewRepository("repo", "https://example.com/repo", optional.None[domain.RepositoryAuth](), []string{u.ID})
+	require.NoError(t, repository.NewGitRepositoryRepository(db).CreateRepository(ctx, repo))
+	appRepo := repository.NewApplicationRepository(db)
+	groupRepo := repository.NewApplicationGroupRepository(db)
+	groupName := func(appID string) string {
+		t.Helper()
+		app, err := appRepo.GetApplication(ctx, appID)
+		require.NoError(t, err)
+		g, err := groupRepo.GetApplicationGroup(ctx, app.GroupID)
+		require.NoError(t, err)
+		return g.Name
+	}
+
+	// The shallowest of an app's websites decides its depth.
+	multi := insertLegacyApp(t, db, repo.ID, legacyApp{name: "multi", fqdn: "a.example.com", path: "/deep/path", ownerIDs: []string{u.ID}})
+	addLegacyWebsite(t, db, multi, "a.example.com", "/")
+	insertLegacyApp(t, db, repo.ID, legacyApp{name: "x", fqdn: "a.example.com", path: "/x", ownerIDs: []string{u.ID}})
+
+	// At the same depth, the name that sorts first wins regardless of the order the migration reads apps in.
+	zeta := insertLegacyApp(t, db, repo.ID, legacyApp{name: "zeta", fqdn: "b.example.com", path: "/", ownerIDs: []string{u.ID}})
+	addLegacyWebsite(t, db, zeta, "c.example.com", "/sub")
+	alpha := insertLegacyApp(t, db, repo.ID, legacyApp{name: "alpha", fqdn: "c.example.com", path: "/", ownerIDs: []string{u.ID}})
+	// The migration reads apps by created_at; zeta comes first, so the order alone would pick it.
+	_, err = db.ExecContext(ctx, `UPDATE applications SET created_at = '2020-01-01 00:00:00' WHERE id = ?`, zeta)
+	require.NoError(t, err)
+	_, err = db.ExecContext(ctx, `UPDATE applications SET created_at = '2020-01-02 00:00:00' WHERE id = ?`, alpha)
+	require.NoError(t, err)
+
+	require.NoError(t, repository.MigrateApplicationGroups(ctx, db))
+
+	assert.Equal(t, "multi", groupName(multi))
+	assert.Equal(t, "alpha", groupName(zeta))
+}

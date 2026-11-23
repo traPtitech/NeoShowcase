@@ -504,30 +504,19 @@ func TestUpdateApplication(t *testing.T) {
 	}
 }
 
-func TestUpdateApplication_UpdateMariaDBConfigIsNotAllowed(t *testing.T) {
+func TestUpdateApplication_UpdateDBConfigIsNotAllowed(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name              string
-		initialUseMariaDB bool
-		updatedUseMariaDB bool
-		expectError       bool
-		errorMessage      string
+		name    string
+		initial domain.BuildConfigRuntimeBuildpack
+		updated domain.BuildConfigRuntimeBuildpack
+		wantErr string
 	}{
-		{
-			name:              "disable MariaDB should fail",
-			initialUseMariaDB: true,
-			updatedUseMariaDB: false,
-			expectError:       true,
-			errorMessage:      "should fail to disable mariadb",
-		},
-		{
-			name:              "enable MariaDB should fail",
-			initialUseMariaDB: false,
-			updatedUseMariaDB: true,
-			expectError:       true,
-			errorMessage:      "should fail to enable mariadb",
-		},
+		{name: "disable MariaDB should fail", initial: domain.BuildConfigRuntimeBuildpack{UseMariaDB: true}, wantErr: "use_mariadb is immutable"},
+		{name: "enable MariaDB should fail", updated: domain.BuildConfigRuntimeBuildpack{UseMariaDB: true}, wantErr: "use_mariadb is immutable"},
+		{name: "disable MongoDB should fail", initial: domain.BuildConfigRuntimeBuildpack{UseMongoDB: true}, wantErr: "use_mongodb is immutable"},
+		{name: "enable MongoDB should fail", updated: domain.BuildConfigRuntimeBuildpack{UseMongoDB: true}, wantErr: "use_mongodb is immutable"},
 	}
 
 	for _, tt := range tests {
@@ -575,7 +564,8 @@ func TestUpdateApplication_UpdateMariaDBConfigIsNotAllowed(t *testing.T) {
 				Commit:       domain.EmptyCommit,
 				Config: domain.ApplicationConfig{
 					BuildConfig: &domain.BuildConfigRuntimeBuildpack{
-						UseMariaDB: tt.initialUseMariaDB,
+						UseMariaDB: tt.initial.UseMariaDB,
+						UseMongoDB: tt.initial.UseMongoDB,
 						Context:    ".",
 					},
 				},
@@ -599,18 +589,12 @@ func TestUpdateApplication_UpdateMariaDBConfigIsNotAllowed(t *testing.T) {
 			// Act
 			err = svc.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{
 				Config: optional.From(domain.ApplicationConfig{
-					BuildConfig: &domain.BuildConfigRuntimeBuildpack{
-						UseMariaDB: tt.updatedUseMariaDB,
-					},
+					BuildConfig: &tt.updated,
 				}),
 			}, optional.None[[]string]())
 
 			// Assert
-			if tt.expectError {
-				assert.Error(t, err, tt.errorMessage)
-			} else {
-				assert.NoError(t, err, "should not fail")
-			}
+			assert.ErrorContains(t, err, tt.wantErr)
 		})
 	}
 }

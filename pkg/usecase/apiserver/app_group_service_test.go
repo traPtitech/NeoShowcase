@@ -234,13 +234,17 @@ func TestMoveApplication(t *testing.T) {
 		}, optional.None[[]string]())
 		require.NoError(t, err)
 
+		owners := []string{web.GetUser(alice).ID, web.GetUser(bob).ID}
+		err = e.svc.UpdateApplicationGroup(alice, aliceGroup.ID, &domain.UpdateApplicationGroupArgs{OwnerIDs: optional.From(owners)})
+		require.NoError(t, err)
+
 		err = e.svc.MoveApplication(alice, backend.App.ID, optional.None[string]())
 		require.NoError(t, err)
 
 		got, err := e.svc.GetApplication(alice, backend.App.ID)
 		require.NoError(t, err)
 		assert.True(t, got.Group.Implicit)
-		assert.ElementsMatch(t, aliceGroup.OwnerIDs, got.Group.OwnerIDs, "the owners of the group it left stay owners")
+		assert.ElementsMatch(t, owners, got.Group.OwnerIDs, "the owners of the group it left stay owners")
 	})
 }
 
