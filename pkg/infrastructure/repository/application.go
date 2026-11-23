@@ -14,6 +14,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository/models"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository/repoconvert"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
+	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
 type applicationRepository struct {
@@ -97,17 +98,14 @@ func (r *applicationRepository) GetApplication(ctx context.Context, id string) (
 	return repoconvert.ToDomainApplication(app), nil
 }
 
-func (r *applicationRepository) CreateApplication(ctx context.Context, app *domain.Application, group *domain.ApplicationGroup) error {
-	if app.GroupID != group.ID {
-		return oops.Errorf("application has group %v, but group %v is given", app.GroupID, group.ID)
-	}
+func (r *applicationRepository) CreateApplication(ctx context.Context, app *domain.Application, standaloneOwnerIDs optional.Of[[]string]) error {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return oops.Wrapf(err, "starting transaction")
 	}
 	defer tx.Rollback()
 
-	if err = insertImplicitApplicationGroup(ctx, tx, group); err != nil {
+	if err = joinApplicationGroup(ctx, tx, app.GroupID, standaloneOwnerIDs); err != nil {
 		return err
 	}
 	ma := repoconvert.FromDomainApplication(app)
@@ -138,7 +136,7 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, app *doma
 	return nil
 }
 
-func (r *applicationRepository) UpdateApplication(ctx context.Context, id string, args *domain.UpdateApplicationArgs, groupArgs *domain.UpdateApplicationGroupArgs) error {
+func (r *applicationRepository) UpdateApplication(ctx context.Context, id string, args *domain.UpdateApplicationArgs, owners optional.Of[domain.ImplicitGroupOwners]) error {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return oops.Wrapf(err, "starting transaction")
@@ -150,12 +148,18 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 		return err
 	}
 
-	if groupArgs != nil {
-		group, err := getApplicationGroup(ctx, tx, app.GroupID.String)
+	if owners.Valid {
+		if err = checkApplicationStillIn(app, owners.V.GroupID); err != nil {
+			return err
+		}
+		group, err := getApplicationGroup(ctx, tx, owners.V.GroupID)
 		if err != nil {
 			return err
 		}
-		if err = updateApplicationGroup(ctx, tx, group, groupArgs); err != nil {
+		if !group.Implicit {
+			return oops.Errorf("group %v is not implicit", group.ID)
+		}
+		if err = setApplicationGroupOwners(ctx, tx, group, owners.V.OwnerIDs); err != nil {
 			return err
 		}
 	}
@@ -234,7 +238,7 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 	return err
 }
 
-func (r *applicationRepository) SetApplicationGroup(ctx context.Context, id string, group *domain.ApplicationGroup) error {
+func (r *applicationRepository) SetApplicationGroup(ctx context.Context, id, fromGroupID, toGroupID string, standaloneOwnerIDs optional.Of[[]string]) error {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return oops.Wrapf(err, "starting transaction")
@@ -245,15 +249,17 @@ func (r *applicationRepository) SetApplicationGroup(ctx context.Context, id stri
 	if err != nil {
 		return err
 	}
-	if err = insertImplicitApplicationGroup(ctx, tx, group); err != nil {
+	if err = checkApplicationStillIn(app, fromGroupID); err != nil {
 		return err
 	}
-	prevGroupID := app.GroupID
-	app.GroupID = null.StringFrom(group.ID)
+	if err = joinApplicationGroup(ctx, tx, toGroupID, standaloneOwnerIDs); err != nil {
+		return err
+	}
+	app.GroupID = null.StringFrom(toGroupID)
 	if _, err = app.Update(ctx, tx, boil.Whitelist(models.ApplicationColumns.GroupID)); err != nil {
 		return oops.Wrapf(err, "updating application group")
 	}
-	if err = deleteImplicitApplicationGroup(ctx, tx, prevGroupID); err != nil {
+	if err = deleteImplicitApplicationGroup(ctx, tx, null.StringFrom(fromGroupID)); err != nil {
 		return err
 	}
 
@@ -263,13 +269,33 @@ func (r *applicationRepository) SetApplicationGroup(ctx context.Context, id stri
 	return nil
 }
 
-// insertImplicitApplicationGroup inserts group if it is implicit.
-// An implicit group holds only one application, so an application joining one always joins a new group.
-func insertImplicitApplicationGroup(ctx context.Context, ex boil.ContextExecutor, group *domain.ApplicationGroup) error {
-	if !group.Implicit {
-		return nil
+// checkApplicationStillIn fails when app has left the group the caller checked it in.
+func checkApplicationStillIn(app *models.Application, groupID string) error {
+	if app.GroupID.String != groupID {
+		return domain.NewError(domain.ErrorTypeFailedPrecondition, "the application has moved to another group", nil)
 	}
-	return insertApplicationGroup(ctx, ex, group)
+	return nil
+}
+
+// joinApplicationGroup prepares the group of groupID for an application to join.
+// With standaloneOwnerIDs, it creates the implicit group of the application; an implicit group holds only one application.
+// Without them, the group has to be an existing group a user created.
+func joinApplicationGroup(ctx context.Context, ex boil.ContextExecutor, groupID string, standaloneOwnerIDs optional.Of[[]string]) error {
+	if standaloneOwnerIDs.Valid {
+		return insertApplicationGroup(ctx, ex, &domain.ApplicationGroup{
+			ID:       groupID,
+			Implicit: true,
+			OwnerIDs: standaloneOwnerIDs.V,
+		})
+	}
+	group, err := getApplicationGroup(ctx, ex, groupID)
+	if err != nil {
+		return err
+	}
+	if group.Implicit {
+		return oops.Errorf("group %v is implicit and holds another application", groupID)
+	}
+	return nil
 }
 
 // deleteImplicitApplicationGroup deletes the group of groupID if it is implicit.

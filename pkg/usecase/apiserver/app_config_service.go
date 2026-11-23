@@ -56,7 +56,7 @@ func (s *Service) StartApplication(ctx context.Context, id string) error {
 	err = s.appRepo.UpdateApplication(ctx, id, &domain.UpdateApplicationArgs{
 		Running:   optional.From(true),
 		UpdatedAt: optional.From(time.Now()),
-	}, nil)
+	}, optional.None[domain.ImplicitGroupOwners]())
 	if err != nil {
 		return oops.Wrapf(err, "marking application as running")
 	}
@@ -85,7 +85,7 @@ func (s *Service) StopApplication(ctx context.Context, id string) error {
 	err = s.appRepo.UpdateApplication(ctx, id, &domain.UpdateApplicationArgs{
 		Running:   optional.From(false),
 		UpdatedAt: optional.From(time.Now()),
-	}, nil)
+	}, optional.None[domain.ImplicitGroupOwners]())
 	if err != nil {
 		return oops.Wrapf(err, "marking application as not running")
 	}

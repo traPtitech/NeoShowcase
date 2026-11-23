@@ -71,15 +71,19 @@ func (a *Application) Apply(args *UpdateApplicationArgs) {
 type ApplicationRepository interface {
 	GetApplications(ctx context.Context, cond GetApplicationCondition) ([]*Application, error)
 	GetApplication(ctx context.Context, id string) (*Application, error)
-	// CreateApplication creates app in group, whose ID has to be app.GroupID, in one transaction.
-	// An implicit group, which holds only app, is created with app; any other group has to exist.
-	CreateApplication(ctx context.Context, app *Application, group *ApplicationGroup) error
-	// UpdateApplication applies args to the application, and groupArgs, when not nil, to its group, in one transaction.
-	UpdateApplication(ctx context.Context, id string, args *UpdateApplicationArgs, groupArgs *UpdateApplicationGroupArgs) error
-	// SetApplicationGroup moves the application into group in one transaction.
-	// An implicit group, which holds only this application, is created with the move; any other group has to exist.
-	// The previous group of the application is deleted when it is implicit.
-	SetApplicationGroup(ctx context.Context, id string, group *ApplicationGroup) error
+	// CreateApplication creates app in one transaction.
+	// When standaloneOwnerIDs is given, the app is standalone: an implicit group of app.GroupID with these owners is created with it.
+	// Otherwise the group of app.GroupID has to be an existing group a user created.
+	CreateApplication(ctx context.Context, app *Application, standaloneOwnerIDs optional.Of[[]string]) error
+	// UpdateApplication applies args to the application, and owners, when given, to its implicit group, in one transaction.
+	// When the application is no longer in owners.GroupID, it fails with ErrorTypeFailedPrecondition and changes nothing.
+	UpdateApplication(ctx context.Context, id string, args *UpdateApplicationArgs, owners optional.Of[ImplicitGroupOwners]) error
+	// SetApplicationGroup moves the application from the group of fromGroupID to the group of toGroupID in one transaction.
+	// When standaloneOwnerIDs is given, the app becomes standalone: an implicit group of toGroupID with these owners is created.
+	// Otherwise toGroupID has to be an existing group a user created.
+	// The previous group is deleted when it is implicit.
+	// When the application is no longer in fromGroupID, it fails with ErrorTypeFailedPrecondition and changes nothing.
+	SetApplicationGroup(ctx context.Context, id, fromGroupID, toGroupID string, standaloneOwnerIDs optional.Of[[]string]) error
 	BulkUpdateState(ctx context.Context, states []*Container) error
 	// DeleteApplication deletes the application, and its group when the group is implicit, in one transaction.
 	DeleteApplication(ctx context.Context, id string) error
@@ -103,6 +107,13 @@ func (g *ApplicationGroup) Apply(args *UpdateApplicationGroupArgs) {
 	if args.OwnerIDs.Valid {
 		g.OwnerIDs = args.OwnerIDs.V
 	}
+}
+
+// ImplicitGroupOwners replaces the owners of the implicit group of a standalone application.
+type ImplicitGroupOwners struct {
+	// GroupID is the implicit group the caller checked the application in.
+	GroupID  string
+	OwnerIDs []string
 }
 
 type ApplicationGroupRepository interface {

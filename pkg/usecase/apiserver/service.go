@@ -96,21 +96,30 @@ func (s *Service) isRepositoryOwner(ctx context.Context, repoID string) error {
 }
 
 func (s *Service) isApplicationOwner(ctx context.Context, appID string) error {
-	app, err := s.appRepo.GetApplication(ctx, appID)
-	if err != nil {
-		return oops.Wrapf(err, "getting application")
-	}
-	return s.isOwnerOfApplicationIn(ctx, app.GroupID)
+	_, _, err := s.getOwnedApplication(ctx, appID)
+	return err
 }
 
-// isOwnerOfApplicationIn checks that the user may operate the applications in the group.
-func (s *Service) isOwnerOfApplicationIn(ctx context.Context, groupID string) error {
-	group, err := s.groupRepo.GetApplicationGroup(ctx, groupID)
+// getOwnedApplication returns the application and its group when the user may operate the application.
+func (s *Service) getOwnedApplication(ctx context.Context, appID string) (*domain.Application, *domain.ApplicationGroup, error) {
+	app, err := s.appRepo.GetApplication(ctx, appID)
 	if err != nil {
-		return oops.Wrapf(err, "getting application group")
+		return nil, nil, oops.Wrapf(err, "getting application")
 	}
+	group, err := s.groupRepo.GetApplicationGroup(ctx, app.GroupID)
+	if err != nil {
+		return nil, nil, oops.Wrapf(err, "getting application group")
+	}
+	if err = checkGroupOwner(ctx, group); err != nil {
+		return nil, nil, err
+	}
+	return app, group, nil
+}
+
+// checkGroupOwner checks that the user may operate the group and the applications in it.
+func checkGroupOwner(ctx context.Context, group *domain.ApplicationGroup) error {
 	if !group.IsOwner(web.GetUser(ctx)) {
-		return domain.NewError(domain.ErrorTypeForbidden, "you do not have permission for this application", nil)
+		return domain.NewError(domain.ErrorTypeForbidden, "you do not have permission for this application group", nil)
 	}
 	return nil
 }

@@ -64,8 +64,8 @@ func (s *Service) UpdateApplicationGroup(ctx context.Context, id string, args *d
 	if err != nil {
 		return err
 	}
-	if !group.IsOwner(web.GetUser(ctx)) {
-		return domain.NewError(domain.ErrorTypeForbidden, "you do not have permission for this group", nil)
+	if err = checkGroupOwner(ctx, group); err != nil {
+		return err
 	}
 	group.Apply(args)
 	if err = group.Validate(); err != nil {
@@ -80,8 +80,8 @@ func (s *Service) DeleteApplicationGroup(ctx context.Context, id string) error {
 	if err != nil {
 		return err
 	}
-	if !group.IsOwner(web.GetUser(ctx)) {
-		return domain.NewError(domain.ErrorTypeForbidden, "you do not have permission for this group", nil)
+	if err = checkGroupOwner(ctx, group); err != nil {
+		return err
 	}
 	apps, err := s.appRepo.GetApplications(ctx, domain.GetApplicationCondition{GroupID: optional.From(id)})
 	if err != nil {
@@ -98,42 +98,35 @@ func (s *Service) DeleteApplicationGroup(ctx context.Context, id string) error {
 // The user has to be an owner of both the current group and the destination.
 // Websites of the application are checked again for conflicts in the destination.
 func (s *Service) MoveApplication(ctx context.Context, appID string, groupID optional.Of[string]) error {
-	user := web.GetUser(ctx)
-	app, err := s.appRepo.GetApplication(ctx, appID)
+	app, src, err := s.getOwnedApplication(ctx, appID)
 	if err != nil {
 		return err
-	}
-	src, err := s.groupRepo.GetApplicationGroup(ctx, app.GroupID)
-	if err != nil {
-		return err
-	}
-	if !src.IsOwner(user) {
-		return domain.NewError(domain.ErrorTypeForbidden, "you do not have permission for this application", nil)
 	}
 
-	var dest *domain.ApplicationGroup
+	var standaloneOwnerIDs optional.Of[[]string]
 	if groupID.Valid {
-		dest, err = s.getExplicitApplicationGroup(ctx, groupID.V)
+		dest, err := s.getExplicitApplicationGroup(ctx, groupID.V)
 		if err != nil {
 			return err
 		}
-		if !dest.IsOwner(user) {
-			return domain.NewError(domain.ErrorTypeForbidden, "you do not have permission for the destination group", nil)
+		if err = checkGroupOwner(ctx, dest); err != nil {
+			return err
 		}
 		if dest.ID == src.ID {
 			return nil
 		}
+		app.GroupID = dest.ID
 	} else {
 		if src.Implicit {
 			return nil
 		}
-		dest = domain.NewImplicitApplicationGroup(lo.Uniq(src.OwnerIDs))
+		standaloneOwnerIDs = optional.From(lo.Uniq(src.OwnerIDs))
+		app.GroupID = domain.NewID()
 	}
-	app.GroupID = dest.ID
 
 	if err = s.validateApp(ctx, app); err != nil {
 		return err
 	}
 
-	return s.appRepo.SetApplicationGroup(ctx, app.ID, dest)
+	return s.appRepo.SetApplicationGroup(ctx, app.ID, src.ID, app.GroupID, standaloneOwnerIDs)
 }
