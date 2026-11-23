@@ -1,6 +1,8 @@
 package domain
 
 import (
+	"unicode/utf8"
+
 	"github.com/samber/lo"
 	"github.com/samber/oops"
 
@@ -36,9 +38,15 @@ func NewImplicitApplicationGroup(ownerIDs []string) *ApplicationGroup {
 	}
 }
 
+// maxApplicationGroupNameLength is the length of the name column in characters.
+const maxApplicationGroupNameLength = 100
+
 func (g *ApplicationGroup) Validate() error {
 	if !g.Implicit && g.Name == "" {
 		return oops.New("name is required")
+	}
+	if utf8.RuneCountInString(g.Name) > maxApplicationGroupNameLength {
+		return oops.Errorf("name must be at most %d characters", maxApplicationGroupNameLength)
 	}
 	if len(g.OwnerIDs) == 0 {
 		return oops.New("owner_ids cannot be empty")

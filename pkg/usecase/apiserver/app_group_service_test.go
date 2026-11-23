@@ -2,6 +2,7 @@ package apiserver_test
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/samber/lo"
@@ -110,6 +111,19 @@ func assertErrorType(t *testing.T, want domain.ErrorType, err error) {
 	require.Error(t, err)
 	_, typ, _ := domain.DecomposeError(err)
 	assert.Equal(t, want, typ, "error: %v", err)
+}
+
+func TestCreateApplicationGroup_NameLength(t *testing.T) {
+	t.Parallel()
+	e := newGroupTestEnv(t)
+	alice := e.as(t, "alice")
+
+	_, err := e.svc.CreateApplicationGroup(alice, strings.Repeat("あ", 101))
+	assertErrorType(t, domain.ErrorTypeBadRequest, err)
+
+	group, err := e.svc.CreateApplicationGroup(alice, strings.Repeat("あ", 100))
+	require.NoError(t, err)
+	assert.Equal(t, strings.Repeat("あ", 100), group.Name)
 }
 
 func TestCreateApplication_InGroup(t *testing.T) {
@@ -361,6 +375,7 @@ func TestUpdateApplicationGroup(t *testing.T) {
 			args *domain.UpdateApplicationGroupArgs
 		}{
 			{"empty name", &domain.UpdateApplicationGroupArgs{Name: optional.From("")}},
+			{"name longer than 100 characters", &domain.UpdateApplicationGroupArgs{Name: optional.From(strings.Repeat("あ", 101))}},
 			{"empty owners", &domain.UpdateApplicationGroupArgs{OwnerIDs: optional.From([]string{})}},
 		}
 		for _, tt := range tests {
@@ -372,7 +387,10 @@ func TestUpdateApplicationGroup(t *testing.T) {
 	})
 
 	t.Run("renames the group", func(t *testing.T) {
-		err := e.svc.UpdateApplicationGroup(alice, group.ID, &domain.UpdateApplicationGroupArgs{Name: optional.From("renamed")})
+		err := e.svc.UpdateApplicationGroup(alice, group.ID, &domain.UpdateApplicationGroupArgs{Name: optional.From(strings.Repeat("あ", 100))})
+		require.NoError(t, err, "a name of 100 characters is accepted")
+
+		err = e.svc.UpdateApplicationGroup(alice, group.ID, &domain.UpdateApplicationGroupArgs{Name: optional.From("renamed")})
 		require.NoError(t, err)
 
 		got, err := e.svc.GetApplicationGroup(alice, group.ID)
