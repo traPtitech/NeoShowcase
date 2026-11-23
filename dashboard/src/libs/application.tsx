@@ -6,7 +6,6 @@ import {
   type CreateWebsiteRequest,
   DeployType,
   PortPublicationProtocol,
-  type Repository,
   type Website,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import type { SelectOption } from '/@/components/templates/Select'
@@ -158,52 +157,44 @@ export const portPublicationProtocolMap: Record<PortPublicationProtocol, string>
   [PortPublicationProtocol.UDP]: 'UDP',
 }
 
-const newestAppDate = (apps: Application[]): number =>
-  Math.max(0, ...apps.map((a) => (a.updatedAt ? timestampDate(a.updatedAt).getTime() : 0)))
-const compareRepoWithApp =
-  (sort: 'asc' | 'desc') =>
-  (a: RepoWithApp, b: RepoWithApp): number => {
-    // Sort by apps updated at
-    if (a.apps.length > 0 && b.apps.length > 0) {
-      if (sort === 'asc') {
-        return newestAppDate(a.apps) - newestAppDate(b.apps)
-      }
-      return newestAppDate(b.apps) - newestAppDate(a.apps)
-    }
-    // Bring up repositories with 1 or more apps at top
-    if ((a.apps.length > 0 && b.apps.length === 0) || (a.apps.length === 0 && b.apps.length > 0)) {
-      return b.apps.length - a.apps.length
-    }
-    // Fallback to sort by repository id
-    return a.repo.id.localeCompare(b.repo.id)
-  }
+const appDate = (app: Application): number => (app.updatedAt ? timestampDate(app.updatedAt).getTime() : 0)
+const newestAppDate = (apps: Application[]): number => Math.max(0, ...apps.map(appDate))
 
-export interface RepoWithApp {
-  repo: Repository
+/**
+ * An entry of the app list: the apps of a group a user created, or a single standalone app (`groupId` undefined).
+ * `apps` is never empty.
+ */
+export interface AppListEntry {
+  groupId?: string
   apps: Application[]
 }
 
-export const filterRepositoriesWithApps = (
-  repos: Repository[],
-  apps: Application[],
-  statuses: ApplicationState[],
-  origins: RepositoryOrigin[],
-  includeNoApp: boolean,
-  sort: 'asc' | 'desc',
-): RepoWithApp[] => {
-  const filteredReposByOrigin = repos.filter((r) => origins.includes(repositoryURLToOrigin(r.url)))
-  const filteredApps = apps.filter((a) => statuses.includes(applicationState(a)))
-
-  const appsMap = {} as Record<string, Application[]>
-  for (const app of filteredApps) {
-    if (!appsMap[app.repositoryId]) appsMap[app.repositoryId] = []
-    appsMap[app.repositoryId].push(app)
+/**
+ * Puts the apps of the same group into one entry, and each standalone app into its own entry.
+ * Entries are ordered by the newest update of their apps, and the apps in an entry by their update, both by `sort`.
+ */
+export const groupApplications = (apps: Application[], sort: 'asc' | 'desc'): AppListEntry[] => {
+  const direction = sort === 'asc' ? 1 : -1
+  const entries: AppListEntry[] = []
+  const groups = new Map<string, AppListEntry>()
+  for (const app of apps) {
+    if (app.groupId === undefined) {
+      entries.push({ apps: [app] })
+      continue
+    }
+    const group = groups.get(app.groupId)
+    if (group) {
+      group.apps.push(app)
+    } else {
+      const entry = { groupId: app.groupId, apps: [app] }
+      groups.set(app.groupId, entry)
+      entries.push(entry)
+    }
   }
-  const res = filteredReposByOrigin.reduce<RepoWithApp[]>((acc, repo) => {
-    if (!includeNoApp && !appsMap[repo.id]) return acc
-    acc.push({ repo, apps: appsMap[repo.id] || [] })
-    return acc
-  }, [])
-  res.sort(compareRepoWithApp(sort))
-  return res
+  for (const entry of entries) {
+    entry.apps.sort((a, b) => direction * (appDate(a) - appDate(b)) || a.id.localeCompare(b.id))
+  }
+  return entries.sort(
+    (a, b) => direction * (newestAppDate(a.apps) - newestAppDate(b.apps)) || a.apps[0].id.localeCompare(b.apps[0].id),
+  )
 }

@@ -71,6 +71,7 @@ export const Router = createRouter({
         },
       ],
     },
+    { path: '/repos', component: lazy(() => import('/@/pages/repos')) },
     { path: '/repos/new', component: lazy(() => import('/@/pages/repos/new')) },
     {
       path: '/repos/:id',

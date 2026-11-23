@@ -1,7 +1,11 @@
 import { create } from '@bufbuild/protobuf'
 import { Code } from '@connectrpc/connect'
 import { describe, expect, it } from 'vitest'
-import { ApplicationGroupSchema } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import {
+  ApplicationGroupSchema,
+  GetApplicationsRequest_Scope,
+  RepositorySchema,
+} from '/@/api/neoshowcase/protobuf/gateway_pb'
 import {
   button,
   buttonContaining,
@@ -368,6 +372,76 @@ describe('interactions', () => {
       type(ctx, search, '')
       await waitForText(ctx, 'runtime-app', 'static-app')
     })
+  })
+
+  it('apps list: apps are listed under their group, and standalone apps without a heading', async () => {
+    await scenario('apps by group', '/apps', async (ctx) => {
+      await waitForText(ctx, 'runtime-app', 'static-app', 'broken-app')
+      const group = ctx.screen.querySelector<HTMLElement>('section[aria-label="web-service"]')
+      if (!group) throw new Error('no section of the group')
+      expect(group.querySelector('a[href="/groups/group-web"]')).not.toBeNull()
+      expect(group.querySelector('a[href="/apps/app-static"]')).not.toBeNull()
+      expect(group.querySelector('a[href="/apps/app-runtime"]')).toBeNull()
+
+      for (const app of ['app-runtime', 'app-error']) {
+        expect(link(ctx, `/apps/${app}`).closest('section')).toBeNull()
+      }
+      // repositories are not headings any more; each app tells its repository
+      expect(ctx.screen.querySelector('a[href^="/repos/"]')).toBeNull()
+      expect(link(ctx, '/apps/app-runtime').textContent).toContain('github-repo')
+      expect(link(ctx, '/apps/app-static').textContent).toContain('github-repo')
+      expect(link(ctx, '/apps/app-error').textContent).toContain('gitea-repo')
+    })
+  })
+
+  it('apps list: searching by a group name lists the apps of the group', async () => {
+    await scenario('apps search by group', '/apps', async (ctx) => {
+      await waitForText(ctx, 'runtime-app', 'static-app')
+      const search = ctx.screen.querySelector<HTMLInputElement>('input[placeholder="Search"]')
+      if (!search) throw new Error('no search box')
+      type(ctx, search, 'web-serv')
+      await waitForNoText(ctx, 'runtime-app')
+      await waitForText(ctx, 'static-app')
+    })
+  })
+
+  it('apps list: the scope tabs choose the apps to list', async () => {
+    await scenario('apps scope', '/apps', async (ctx) => {
+      await waitForText(ctx, 'runtime-app')
+      expect(ctx.backend.requestsTo('getApplications').at(-1)?.scope).toBe(GetApplicationsRequest_Scope.MINE)
+      click(ctx, buttonContaining(ctx, 'All Apps (admin)'))
+      await settle(ctx, () =>
+        expect(ctx.backend.requestsTo('getApplications').at(-1)?.scope).toBe(GetApplicationsRequest_Scope.ALL),
+      )
+      await waitForText(ctx, 'runtime-app', 'static-app', 'broken-app')
+    })
+  })
+
+  it('repos list: lists repositories, also those without apps, with the way to create an app from each', async () => {
+    await scenario(
+      'repos list',
+      '/apps',
+      async (ctx) => {
+        await waitForText(ctx, 'runtime-app')
+        click(ctx, link(ctx, '/repos'))
+        await settle(ctx, () => expect(window.location.pathname).toBe('/repos'))
+        await waitForText(ctx, 'github-repo', 'gitea-repo', 'empty-repo')
+        expect(link(ctx, '/repos/repo-empty').textContent).toContain('empty-repo')
+        expect(link(ctx, '/apps/new?repositoryID=repo-empty')).toBeTruthy()
+      },
+      {
+        setup: (b) =>
+          b.fixtures.repositories.push(
+            create(RepositorySchema, {
+              id: 'repo-empty',
+              name: 'empty-repo',
+              url: 'https://github.com/traPtitech/empty.git',
+              htmlUrl: 'https://github.com/traPtitech/empty',
+              ownerIds: [b.ids.me],
+            }),
+          ),
+      },
+    )
   })
 
   it('tooltip: shows its content on focus of a disabled button', async () => {

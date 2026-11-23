@@ -1,22 +1,30 @@
 import { Title } from '@solidjs/meta'
 import { createMemo, For, isPending, Loading, Show } from 'solid-js'
-import { GetApplicationsRequest_Scope, GetRepositoriesRequest_Scope } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import {
+  type Application,
+  GetApplicationGroupsRequest_Scope,
+  GetApplicationsRequest_Scope,
+  GetRepositoriesRequest_Scope,
+} from '/@/api/neoshowcase/protobuf/gateway_pb'
 import PendingContainer from '/@/components/layouts/PendingContainer'
 import { WithNav } from '/@/components/layouts/WithNav'
 import { styled } from '/@/components/styled-components'
 import { AppsNav } from '/@/components/templates/AppsNav'
 import AppsFilter from '/@/components/templates/app/AppsFilter'
-import { RepositoryList } from '/@/components/templates/List'
+import { AppsList } from '/@/components/templates/List'
 import type { SelectOption } from '/@/components/templates/Select'
 import { Button } from '/@/components/UI/Button'
 import { TabRound } from '/@/components/UI/TabRound'
 import { TextField } from '/@/components/UI/TextField'
 import { client, getRepositoryCommits } from '/@/libs/api'
 import {
+  type AppListEntry,
   allOrigins,
   allStatuses,
-  filterRepositoriesWithApps,
+  applicationState,
+  groupApplications,
   type RepositoryOrigin,
+  repositoryURLToOrigin,
   sortItems,
 } from '/@/libs/application'
 import { me } from '/@/libs/session'
@@ -35,14 +43,19 @@ const scopeItems = (admin: boolean) => {
   return items
 }
 
-const Skeletons = () => (
-  <div class="flex w-full flex-col gap-4">
-    <RepositoryList apps={[undefined]} />
-    <RepositoryList apps={[undefined]} />
-    <RepositoryList apps={[undefined]} />
-    <RepositoryList apps={[undefined]} />
-  </div>
-)
+const Skeletons = () => <AppsList apps={[undefined, undefined, undefined, undefined]} />
+
+/** Puts consecutive standalone apps into one entry, so that they are listed as rows of one list. */
+const joinStandaloneApps = (entries: AppListEntry[]): AppListEntry[] =>
+  entries.reduce<AppListEntry[]>((acc, entry) => {
+    const last = acc.at(-1)
+    if (entry.groupId === undefined && last !== undefined && last.groupId === undefined) {
+      acc[acc.length - 1] = { apps: [...last.apps, ...entry.apps] }
+    } else {
+      acc.push(entry)
+    }
+    return acc
+  }, [])
 
 export default () => {
   const [scope, setScope] = createSessionSignal('apps-scope', GetRepositoriesRequest_Scope.MINE)
@@ -56,9 +69,18 @@ export default () => {
   )
   const [query, setQuery] = createSessionSignal('apps-query', '')
   const [sort, setSort] = createSessionSignal<keyof typeof sortItems>('apps-sort', sortItems.desc.value)
-  const [includeNoApp, setIncludeNoApp] = createSessionSignal('apps-include-no-app', false)
 
-  const repos = createMemo(() => client.getRepositories({ scope: scope() }).then((res) => res.repositories))
+  // Repositories the user can see: "All Apps" lists only their apps, and the apps show their names.
+  const repos = createMemo(() =>
+    client
+      .getRepositories({
+        scope:
+          scope() === GetRepositoriesRequest_Scope.ALL
+            ? GetRepositoriesRequest_Scope.ALL
+            : GetRepositoriesRequest_Scope.PUBLIC,
+      })
+      .then((res) => Object.fromEntries(res.repositories.map((r) => [r.id, r]))),
+  )
   const apps = createMemo(() =>
     client
       .getApplications({
@@ -69,28 +91,33 @@ export default () => {
       })
       .then((res) => res.applications),
   )
+  const groups = createMemo(() =>
+    client
+      .getApplicationGroups({ scope: GetApplicationGroupsRequest_Scope.ALL })
+      .then((res) => Object.fromEntries(res.groups.map((g) => [g.id, g]))),
+  )
   // Commits of all apps (not only the filtered ones) so that changing filters does not refetch.
   const commits = createMemo(() => getRepositoryCommits(apps().map((a) => a.commit)))
 
-  const allRepoWithApps = createMemo(() =>
-    filterRepositoriesWithApps(
-      repos(),
-      apps(),
-      allStatuses.map((s) => s.value),
-      allOrigins.map((o) => o.value),
-      true,
-      'desc',
-    ),
+  const scopedApps = createMemo(() =>
+    scope() === GetRepositoriesRequest_Scope.PUBLIC ? apps().filter((a) => repos()[a.repositoryId]) : apps(),
   )
-  const filteredRepos = createMemo(() => {
-    const q = query().toLowerCase()
-    const list = filterRepositoriesWithApps(repos(), apps(), statuses(), origin(), includeNoApp(), sort())
-    if (q === '') return list
-    return list.filter(
-      (r) => r.repo.name.toLowerCase().includes(q) || r.apps.some((a) => a.name.toLowerCase().includes(q)),
+  const originOf = (app: Application): RepositoryOrigin => {
+    const repo = repos()[app.repositoryId]
+    return repo ? repositoryURLToOrigin(repo.url) : 'Others'
+  }
+  const matchesQuery = (app: Application, q: string) =>
+    [app.name, repos()[app.repositoryId]?.name, app.groupId && groups()[app.groupId]?.name].some((text) =>
+      text?.toLowerCase().includes(q),
     )
+  const entries = createMemo(() => {
+    const q = query().toLowerCase()
+    const filtered = scopedApps().filter(
+      (app) => statuses().includes(applicationState(app)) && origin().includes(originOf(app)) && matchesQuery(app, q),
+    )
+    return joinStandaloneApps(groupApplications(filtered, sort()))
   })
-  const scopeChanging = () => isPending(() => repos())
+  const scopeChanging = () => isPending(() => apps())
 
   return (
     <div class="h-full overflow-y-auto">
@@ -129,15 +156,14 @@ export default () => {
                 rightIcon={
                   <Loading>
                     <AppsFilter
-                      allRepoWithApps={allRepoWithApps()}
+                      apps={scopedApps()}
+                      originOf={originOf}
                       statuses={statuses()}
                       setStatues={setStatuses}
                       origin={origin()}
                       setOrigin={setOrigin}
                       sort={sort()}
                       setSort={setSort}
-                      includeNoApp={includeNoApp()}
-                      setIncludeNoApp={setIncludeNoApp}
                     />
                   </Loading>
                 }
@@ -146,7 +172,7 @@ export default () => {
             <Loading fallback={<Skeletons />}>
               <PendingContainer isPending={scopeChanging()}>
                 <Show
-                  when={filteredRepos().length > 0}
+                  when={entries().length > 0}
                   fallback={
                     <div class="text-text-black mt-32 flex flex-col items-center justify-center gap-4">
                       <div class="i-material-symbols:search text-20/20 shrink-0" />
@@ -154,12 +180,17 @@ export default () => {
                     </div>
                   }
                 >
-                  {/* `content-visibility: auto` lets the browser skip layout/paint of off-screen repositories,
+                  {/* `content-visibility: auto` lets the browser skip layout/paint of off-screen entries,
                       which is what the former JS virtualizer was for, without breaking find-in-page or scroll anchoring. */}
-                  <For each={filteredRepos()}>
-                    {(r) => (
+                  <For each={entries()}>
+                    {(entry) => (
                       <div class="mb-10 [contain-intrinsic-size:auto_300px] [content-visibility:auto]">
-                        <RepositoryList repository={r.repo} apps={r.apps} commits={commits()} />
+                        <AppsList
+                          group={entry.groupId === undefined ? undefined : groups()[entry.groupId]}
+                          apps={entry.apps}
+                          repositories={repos()}
+                          commits={commits()}
+                        />
                       </div>
                     )}
                   </For>

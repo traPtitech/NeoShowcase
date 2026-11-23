@@ -4,7 +4,7 @@ import { idle, scenario, waitForText } from '/@/testing/harness'
 /** Renders the real <App/> against the in-memory backend for every route and checks for errors. */
 
 const routes: { url: string; texts: string[] }[] = [
-  { url: '/apps', texts: ['runtime-app', 'static-app', 'broken-app'] },
+  { url: '/apps', texts: ['runtime-app', 'static-app', 'broken-app', 'web-service'] },
   { url: '/apps/new', texts: ['Repository'] },
   { url: '/apps/new?repositoryID=repo-github', texts: ['github-repo'] },
   { url: '/apps/app-runtime', texts: ['runtime-app', 'feat: add feature A'] },
@@ -20,6 +20,7 @@ const routes: { url: string; texts: string[] }[] = [
   { url: '/apps/app-static', texts: ['static-app'] },
   { url: '/apps/app-static/settings/build', texts: ['static-app'] },
   { url: '/apps/app-error', texts: ['broken-app'] },
+  { url: '/repos', texts: ['github-repo', 'gitea-repo'] },
   { url: '/repos/repo-github', texts: ['github-repo', 'runtime-app'] },
   { url: '/repos/repo-gitea', texts: ['gitea-repo', 'broken-app'] },
   { url: '/repos/repo-github/settings', texts: ['github-repo'] },
