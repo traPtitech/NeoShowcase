@@ -453,6 +453,9 @@ const routes = (router: ConnectRouter) => {
     getApplication: (req) => findOrThrow(fixtures.applications, req.id, 'application'),
     updateApplication: (req) => {
       const app = findOrThrow(fixtures.applications, req.id, 'application')
+      if (req.ownerIds && app.groupId) {
+        throw new ConnectError('owners of an application in a group are managed by the group', Code.InvalidArgument)
+      }
       if (req.name !== undefined) app.name = req.name
       if (req.refName !== undefined) app.refName = req.refName
       if (req.config) app.config = req.config
