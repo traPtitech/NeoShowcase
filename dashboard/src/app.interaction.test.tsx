@@ -349,6 +349,35 @@ describe('interactions', () => {
     })
   })
 
+  it('app group settings: the options of a long group name are cut to the width of the select', async () => {
+    await scenario(
+      'long group name',
+      '/apps/app-static/settings/group',
+      async (ctx) => {
+        await waitForText(ctx, 'あ'.repeat(100))
+        await idle(ctx)
+        const trigger = ctx.screen.querySelector<HTMLButtonElement>('button[aria-haspopup=listbox]')
+        if (!trigger) throw new Error('no group select')
+        for (const e of ['pointerdown', 'pointerup', 'click']) {
+          trigger.dispatchEvent(new MouseEvent(e, { bubbles: true, button: 0 }))
+        }
+        await settle(ctx, () => expect(document.querySelector('[role=option]')).not.toBeNull())
+        // jsdom does not lay out the page, so the classes that bound the width stand in for measuring it
+        const listbox = document.querySelector<HTMLElement>('[role=listbox]')
+        expect(listbox?.parentElement?.className).toMatch(/\bmax-w-/)
+        for (const option of document.querySelectorAll<HTMLElement>('[role=option]')) {
+          expect(option.firstElementChild?.className).toMatch(/\btruncate\b/)
+        }
+      },
+      {
+        setup: (b) => {
+          const group = b.fixtures.groups.find((g) => g.id === b.ids.groupWeb)
+          if (group) group.name = 'あ'.repeat(100)
+        },
+      },
+    )
+  })
+
   // Kobalte treats the empty string as no selection, so "no group" once showed an empty select.
   it('app group settings: a standalone app shows that it is in no group', async () => {
     await scenario('standalone app group', '/apps/app-runtime/settings/group', async (ctx) => {

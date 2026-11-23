@@ -32,10 +32,13 @@ const valueStyle = ['w-full truncate text-left text-regular', 'data-[placeholder
 
 const iconStyle = 'size-6 shrink-0'
 
+// Options can be names users chose, so the list is as wide as the trigger at most and long labels are cut.
 const contentStyleBase =
-  'animate-duration-200 animate-ease-out animate-name-wipe-hide-up rounded-md bg-ui-primary shadow-default data-[expanded]:animate-name-wipe-show-down'
+  'max-w-72 animate-duration-200 animate-ease-out animate-name-wipe-hide-up rounded-md bg-ui-primary shadow-default data-[expanded]:animate-name-wipe-show-down'
 const selectContentStyle = [contentStyleBase, 'origin-[--kb-select-content-transform-origin]']
-const comboBoxContentStyle = [contentStyleBase, 'max-w-72 origin-[--kb-combobox-content-transform-origin]']
+const comboBoxContentStyle = [contentStyleBase, 'origin-[--kb-combobox-content-transform-origin]']
+
+const itemLabelStyle = 'min-w-0 truncate'
 
 const listBoxStyle = 'max-h-100 overflow-y-auto p-1.5'
 
@@ -119,7 +122,9 @@ export const SingleSelect = <T extends string | number>(props: SingleSelectProps
       validationState={props.error ? 'invalid' : 'valid'}
       itemComponent={(itemProps) => (
         <KSelect.Item item={itemProps.item} class={singleItemStyle}>
-          <KSelect.ItemLabel>{itemProps.item.textValue}</KSelect.ItemLabel>
+          <KSelect.ItemLabel class={itemLabelStyle} title={itemProps.item.textValue}>
+            {itemProps.item.textValue}
+          </KSelect.ItemLabel>
         </KSelect.Item>
       )}
     >
@@ -166,7 +171,9 @@ export const MultiSelect = <T extends string | number>(props: MultiSelectProps<T
           <KSelect.ItemIndicator forceMount class={iconStyle}>
             <CheckBoxIcon checked={props.value?.includes(itemProps.item.rawValue.value) ?? false} />
           </KSelect.ItemIndicator>
-          <KSelect.ItemLabel>{itemProps.item.textValue}</KSelect.ItemLabel>
+          <KSelect.ItemLabel class={itemLabelStyle} title={itemProps.item.textValue}>
+            {itemProps.item.textValue}
+          </KSelect.ItemLabel>
         </KSelect.Item>
       )}
     >
@@ -217,7 +224,9 @@ export const ComboBox = <T extends string | number>(props: ComboBoxProps<T>): JS
       validationState={props.error ? 'invalid' : 'valid'}
       itemComponent={(itemProps) => (
         <KComboBox.Item item={itemProps.item} class={singleItemStyle}>
-          <KComboBox.ItemLabel>{itemProps.item.textValue}</KComboBox.ItemLabel>
+          <KComboBox.ItemLabel class={itemLabelStyle} title={itemProps.item.textValue}>
+            {itemProps.item.textValue}
+          </KComboBox.ItemLabel>
         </KComboBox.Item>
       )}
     >
