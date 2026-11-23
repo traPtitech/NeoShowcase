@@ -4,7 +4,6 @@ import type {
   Application,
   CreateApplicationRequest,
   UpdateApplicationRequest,
-  UpdateApplicationRequest_UpdateOwners,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { applicationConfigSchema, configMessageToSchema } from './applicationConfigSchema'
 import { portPublicationMessageToSchema, portPublicationSchema } from './portPublicationSchema'
@@ -40,16 +39,6 @@ type CreateApplicationOutput = v.InferOutput<typeof createApplicationSchema>
 
 // --- update application
 
-const ownersSchema = v.pipe(
-  v.array(v.string()),
-  v.transform(
-    (input): UpdateApplicationRequest_UpdateOwners => ({
-      $typeName: 'neoshowcase.protobuf.UpdateApplicationRequest.UpdateOwners',
-      ownerIds: input,
-    }),
-  ),
-)
-
 export const updateApplicationSchema = v.pipe(
   v.object({
     id: v.string(),
@@ -58,7 +47,6 @@ export const updateApplicationSchema = v.pipe(
     config: v.optional(applicationConfigSchema),
     websites: v.optional(v.array(createWebsiteSchema)),
     portPublications: v.optional(v.array(portPublicationSchema)),
-    ownerIds: v.optional(ownersSchema),
     startOnCreate: v.optional(v.boolean()),
   }),
   v.transform(
@@ -80,7 +68,6 @@ export const updateApplicationSchema = v.pipe(
             portPublications: input.portPublications,
           }
         : undefined,
-      ownerIds: input.ownerIds,
     }),
   ),
 )
@@ -109,7 +96,6 @@ export const getInitialValueOfUpdateAppForm = (input: Application): CreateOrUpda
     config: input.config ? configMessageToSchema(input.config) : undefined,
     websites: input.websites.map((w) => websiteMessageToSchema(w)),
     portPublications: input.portPublications.map((p) => portPublicationMessageToSchema(p)),
-    ownerIds: input.ownerIds,
   },
 })
 

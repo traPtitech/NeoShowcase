@@ -127,6 +127,22 @@ describe('interactions', () => {
     })
   })
 
+  it('app general settings: renaming an app in a group succeeds', async () => {
+    await scenario('rename grouped app', '/apps/app-static/settings', async (ctx) => {
+      await waitForText(ctx, 'Branch')
+      await idle(ctx)
+      await settle(ctx, () => field(ctx, 'Application Name'))
+      type(ctx, field(ctx, 'Application Name'), 'renamed-static')
+      await settle(ctx, () => expect(button(ctx, 'Save').disabled).toBe(false))
+      click(ctx, button(ctx, 'Save'))
+
+      await settle(ctx, () => expect(ctx.backend.requestsTo('updateApplication')).toHaveLength(1))
+      // owners of an app in a group belong to the group, so settings forms must not send them
+      expect(ctx.backend.requestsTo('updateApplication')[0].ownerIds).toBeUndefined()
+      await waitForText(ctx, 'renamed-static')
+    })
+  })
+
   it('app env vars: typing into the trailing empty row appends another empty row', async () => {
     await scenario('env vars rows', '/apps/app-runtime/settings/envVars', async (ctx) => {
       await waitForText(ctx, 'FOO', 'bar')
