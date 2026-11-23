@@ -34,10 +34,13 @@ export const RepositoryRow: Component<Props> = (props) => {
 
   return (
     <Show when={props.repository} fallback={<RepositoryRowSkeleton />}>
-      <Container class="hover:bg-color-overlay-ui-primary-to-black-alpha-50">
-        {/* "Add New App" is a link of its own, so the link to the repository covers the rest of the row instead of the whole row. */}
-        <a href={`/repos/${props.repository?.id}`} class={['min-w-0 flex-1 self-stretch', containerPadding]}>
-          <TitleContainer class="h-full">
+      <Container class="relative hover:bg-color-overlay-ui-primary-to-black-alpha-50">
+        {/* "Add New App" is a link of its own and cannot sit inside this link, so the link stretches over the whole row with a pseudo-element and the button is raised above it. */}
+        <a
+          href={`/repos/${props.repository?.id}`}
+          class={['min-w-0 flex-1', containerPadding, "after:absolute after:inset-0 after:content-['']"]}
+        >
+          <TitleContainer>
             {originToIcon(repositoryURLToOrigin(props.repository!.url), 24)}
             <div class="h4-bold text-text-black truncate">{props.repository!.name}</div>
             <div class="caption-regular text-text-grey whitespace-nowrap">{`${props.appCount} apps`}</div>
@@ -45,7 +48,7 @@ export const RepositoryRow: Component<Props> = (props) => {
         </a>
         <Show when={canEdit()}>
           <div class="shrink-0 pr-4">
-            <a href={`/apps/new?repositoryID=${props.repository!.id}`}>
+            <a href={`/apps/new?repositoryID=${props.repository!.id}`} class="relative">
               <Button
                 variants="border"
                 size="medium"
