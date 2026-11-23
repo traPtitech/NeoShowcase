@@ -10,13 +10,16 @@ import (
 type GetApplicationCondition struct {
 	IDIn         optional.Of[[]string]
 	RepositoryID optional.Of[string]
-	UserID       optional.Of[string]
-	DeployType   optional.Of[DeployType]
-	Running      optional.Of[bool]
+	GroupID      optional.Of[string]
+	// UserID matches applications in the groups the user owns.
+	UserID     optional.Of[string]
+	DeployType optional.Of[DeployType]
+	Running    optional.Of[bool]
 }
 
 type UpdateApplicationArgs struct {
 	Name             optional.Of[string]
+	GroupID          optional.Of[string]
 	RefName          optional.Of[string]
 	Commit           optional.Of[string]
 	Running          optional.Of[bool]
@@ -27,12 +30,14 @@ type UpdateApplicationArgs struct {
 	Config           optional.Of[ApplicationConfig]
 	Websites         optional.Of[[]*Website]
 	PortPublications optional.Of[[]*PortPublication]
-	OwnerIDs         optional.Of[[]string]
 }
 
 func (a *Application) Apply(args *UpdateApplicationArgs) {
 	if args.Name.Valid {
 		a.Name = args.Name.V
+	}
+	if args.GroupID.Valid {
+		a.GroupID = args.GroupID.V
 	}
 	if args.RefName.Valid {
 		a.RefName = args.RefName.V
@@ -65,9 +70,6 @@ func (a *Application) Apply(args *UpdateApplicationArgs) {
 	if args.PortPublications.Valid {
 		a.PortPublications = args.PortPublications.V
 	}
-	if args.OwnerIDs.Valid {
-		a.OwnerIDs = args.OwnerIDs.V
-	}
 }
 
 type ApplicationRepository interface {
@@ -77,6 +79,35 @@ type ApplicationRepository interface {
 	UpdateApplication(ctx context.Context, id string, args *UpdateApplicationArgs) error
 	BulkUpdateState(ctx context.Context, states []*Container) error
 	DeleteApplication(ctx context.Context, id string) error
+}
+
+type GetApplicationGroupCondition struct {
+	IDIn     optional.Of[[]string]
+	UserID   optional.Of[string]
+	Implicit optional.Of[bool]
+}
+
+type UpdateApplicationGroupArgs struct {
+	Name     optional.Of[string]
+	OwnerIDs optional.Of[[]string]
+}
+
+func (g *ApplicationGroup) Apply(args *UpdateApplicationGroupArgs) {
+	if args.Name.Valid {
+		g.Name = args.Name.V
+	}
+	if args.OwnerIDs.Valid {
+		g.OwnerIDs = args.OwnerIDs.V
+	}
+}
+
+type ApplicationGroupRepository interface {
+	GetApplicationGroups(ctx context.Context, cond GetApplicationGroupCondition) ([]*ApplicationGroup, error)
+	GetApplicationGroup(ctx context.Context, id string) (*ApplicationGroup, error)
+	CreateApplicationGroup(ctx context.Context, group *ApplicationGroup) error
+	UpdateApplicationGroup(ctx context.Context, id string, args *UpdateApplicationGroupArgs) error
+	// DeleteApplicationGroup deletes the group. The group must have no applications.
+	DeleteApplicationGroup(ctx context.Context, id string) error
 }
 
 type WebsiteRepository interface {

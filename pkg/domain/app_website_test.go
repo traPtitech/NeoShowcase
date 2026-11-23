@@ -316,17 +316,16 @@ func TestWebsite_ovrlapssWith(t *testing.T) {
 }
 
 func TestApplication_WebsiteConflicts(t *testing.T) {
-	u1 := &User{ID: "user1"}
-	u2 := &User{ID: "user2"}
-	u3 := &User{ID: "user3"}
+	const groupA = "group-a"
+	const groupB = "group-b"
 	existing := &Application{
-		ID: NewID(),
+		ID:      NewID(),
+		GroupID: groupA,
 		Websites: []*Website{{
 			ID:         NewID(),
 			FQDN:       "bar.trap.games",
 			PathPrefix: "/",
 		}},
-		OwnerIDs: []string{u2.ID, u3.ID},
 	}
 	tests := []struct {
 		name     string
@@ -335,93 +334,66 @@ func TestApplication_WebsiteConflicts(t *testing.T) {
 		want     bool
 	}{
 		{
-			name: "ok (different fqdn, no conflict)",
+			name: "ok (different fqdn, different group)",
 			target: &Application{
-				ID: NewID(),
+				ID:      NewID(),
+				GroupID: groupB,
 				Websites: []*Website{{
 					ID:         NewID(),
 					FQDN:       "foo.trap.games",
 					PathPrefix: "/api",
 				}},
-				OwnerIDs: []string{u1.ID, u3.ID},
 			},
 			existing: existing,
 			want:     false,
 		},
 		{
-			name: "ng (conflict, no ownership of the other)",
+			name: "ng (nested in an app of another group)",
 			target: &Application{
-				ID: NewID(),
+				ID:      NewID(),
+				GroupID: groupB,
 				Websites: []*Website{{
 					ID:         NewID(),
 					FQDN:       "bar.trap.games",
 					PathPrefix: "/api",
 				}},
-				OwnerIDs: []string{},
 			},
 			existing: existing,
 			want:     true,
 		},
 		{
-			name: "ng (conflict, owner of the other, but same website)",
+			name: "ok (nested in an app of the same group)",
 			target: &Application{
-				ID: NewID(),
+				ID:      NewID(),
+				GroupID: groupA,
+				Websites: []*Website{{
+					ID:         NewID(),
+					FQDN:       "bar.trap.games",
+					PathPrefix: "/api",
+				}},
+			},
+			existing: existing,
+			want:     false,
+		},
+		{
+			name: "ng (same website in the same group)",
+			target: &Application{
+				ID:      NewID(),
+				GroupID: groupA,
 				Websites: []*Website{{
 					ID:         NewID(),
 					FQDN:       "bar.trap.games",
 					PathPrefix: "/",
 				}},
-				OwnerIDs: []string{u1.ID, u3.ID},
 			},
 			existing: existing,
 			want:     true,
-		},
-		{
-			name: "ng (conflict, actor is admin, but same website)",
-			target: &Application{
-				ID: NewID(),
-				Websites: []*Website{{
-					ID:         NewID(),
-					FQDN:       "bar.trap.games",
-					PathPrefix: "/",
-				}},
-				OwnerIDs: []string{u1.ID, u3.ID},
-			},
-			existing: existing,
-			want:     true,
-		},
-		{
-			name: "ok (conflict, but owner of the other)",
-			target: &Application{
-				ID: NewID(),
-				Websites: []*Website{{
-					ID:         NewID(),
-					FQDN:       "bar.trap.games",
-					PathPrefix: "/api",
-				}},
-				OwnerIDs: []string{u1.ID, u3.ID},
-			},
-			existing: existing,
-			want:     false,
-		},
-		{
-			name: "ok (conflict, but actor is admin)",
-			target: &Application{
-				ID: NewID(),
-				Websites: []*Website{{
-					ID:         NewID(),
-					FQDN:       "bar.trap.games",
-					PathPrefix: "/api",
-				}},
-				OwnerIDs: []string{u1.ID, u3.ID},
-			},
-			existing: existing,
-			want:     false,
 		},
 		{
 			name: "ng (self conflict)",
 			target: &Application{
-				ID: NewID(),
+				ID:      NewID(),
+				GroupID: groupB,
 				Websites: []*Website{
 					{
 						ID:         NewID(),
@@ -434,7 +406,6 @@ func TestApplication_WebsiteConflicts(t *testing.T) {
 						PathPrefix: "/api",
 					},
 				},
-				OwnerIDs: []string{u1.ID, u3.ID},
 			},
 			existing: existing,
 			want:     true,

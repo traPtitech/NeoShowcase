@@ -18,6 +18,7 @@ type Service struct {
 	artifactRepo     domain.ArtifactRepository
 	runtimeImageRepo domain.RuntimeImageRepository
 	appRepo          domain.ApplicationRepository
+	groupRepo        domain.ApplicationGroupRepository
 	buildRepo        domain.BuildRepository
 	envRepo          domain.EnvironmentRepository
 	gitRepo          domain.GitRepositoryRepository
@@ -41,6 +42,7 @@ func NewService(
 	artifactRepo domain.ArtifactRepository,
 	runtimeImageRepo domain.RuntimeImageRepository,
 	appRepo domain.ApplicationRepository,
+	groupRepo domain.ApplicationGroupRepository,
 	buildRepo domain.BuildRepository,
 	envRepo domain.EnvironmentRepository,
 	gitRepo domain.GitRepositoryRepository,
@@ -60,6 +62,7 @@ func NewService(
 		artifactRepo:     artifactRepo,
 		runtimeImageRepo: runtimeImageRepo,
 		appRepo:          appRepo,
+		groupRepo:        groupRepo,
 		buildRepo:        buildRepo,
 		envRepo:          envRepo,
 		gitRepo:          gitRepo,
@@ -93,31 +96,31 @@ func (s *Service) isRepositoryOwner(ctx context.Context, repoID string) error {
 }
 
 func (s *Service) isApplicationOwner(ctx context.Context, appID string) error {
-	user := web.GetUser(ctx)
 	app, err := s.appRepo.GetApplication(ctx, appID)
 	if err != nil {
 		return oops.Wrapf(err, "getting application")
 	}
-	if !app.IsOwner(user) {
+	return s.isOwnerOfApplicationIn(ctx, app.GroupID)
+}
+
+// isOwnerOfApplicationIn checks that the user may operate the applications in the group.
+func (s *Service) isOwnerOfApplicationIn(ctx context.Context, groupID string) error {
+	group, err := s.groupRepo.GetApplicationGroup(ctx, groupID)
+	if err != nil {
+		return oops.Wrapf(err, "getting application group")
+	}
+	if !group.IsOwner(web.GetUser(ctx)) {
 		return domain.NewError(domain.ErrorTypeForbidden, "you do not have permission for this application", nil)
 	}
 	return nil
 }
 
 func (s *Service) isBuildOwner(ctx context.Context, buildID string) error {
-	user := web.GetUser(ctx)
 	build, err := s.buildRepo.GetBuild(ctx, buildID)
 	if err != nil {
 		return oops.Wrapf(err, "getting build")
 	}
-	app, err := s.appRepo.GetApplication(ctx, build.ApplicationID)
-	if err != nil {
-		return oops.Wrapf(err, "getting application")
-	}
-	if !app.IsOwner(user) {
-		return domain.NewError(domain.ErrorTypeForbidden, "you do not have permission for this application", nil)
-	}
-	return nil
+	return s.isApplicationOwner(ctx, build.ApplicationID)
 }
 
 func (s *Service) isAdmin(ctx context.Context) error {

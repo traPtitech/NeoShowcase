@@ -215,6 +215,9 @@ func (w *Website) overlapsWith(target *Website) bool {
 	return w.pathContainedBy(target) || target.pathContainedBy(w)
 }
 
+// WebsiteConflicts reports whether any website of a is the same as another website,
+// or is nested with a website of an application in another group.
+// Websites are allowed to nest only among applications of the same group.
 func (a *Application) WebsiteConflicts(existing []*Application) bool {
 	for _, w := range a.Websites {
 		// check with all other websites
@@ -226,7 +229,7 @@ func (a *Application) WebsiteConflicts(existing []*Application) bool {
 				if w.Equals(w2) {
 					return true
 				}
-				if w.overlapsWith(w2) && len(lo.Intersect(a.OwnerIDs, other.OwnerIDs)) == 0 {
+				if w.overlapsWith(w2) && a.GroupID != other.GroupID {
 					return true
 				}
 			}

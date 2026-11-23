@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"slices"
 	"strconv"
 
 	"github.com/samber/lo"
@@ -46,7 +47,9 @@ func (s *Service) validateApp(ctx context.Context, app *domain.Application) erro
 	return nil
 }
 
-func (s *Service) CreateApplication(ctx context.Context, app *domain.Application) (*domain.Application, error) {
+// CreateApplication creates the application in the group of groupID,
+// or as a standalone application when groupID is not given.
+func (s *Service) CreateApplication(ctx context.Context, app *domain.Application, groupID optional.Of[string]) (*TopAppInfo, error) {
 	repo, err := s.gitRepo.GetRepository(ctx, app.RepositoryID)
 	if err != nil {
 		return nil, oops.Wrapf(err, "getting repository metadata")
@@ -57,8 +60,23 @@ func (s *Service) CreateApplication(ctx context.Context, app *domain.Application
 	}
 
 	// Validate
-	if !repo.CanCreateApp(web.GetUser(ctx)) {
+	user := web.GetUser(ctx)
+	if !repo.CanCreateApp(user) {
 		return nil, domain.NewError(domain.ErrorTypeForbidden, "you cannot create application from this repository", nil)
+	}
+	var newGroup *domain.ApplicationGroup
+	if groupID.Valid {
+		group, err := s.getExplicitApplicationGroup(ctx, groupID.V)
+		if err != nil {
+			return nil, err
+		}
+		if !group.IsOwner(user) {
+			return nil, domain.NewError(domain.ErrorTypeForbidden, "you do not have permission for this group", nil)
+		}
+		app.GroupID = group.ID
+	} else {
+		newGroup = domain.NewImplicitApplicationGroup(lo.Uniq(append(slices.Clone(repo.OwnerIDs), user.ID)))
+		app.GroupID = newGroup.ID
 	}
 	err = s.validateApp(ctx, app)
 	if err != nil {
@@ -66,6 +84,13 @@ func (s *Service) CreateApplication(ctx context.Context, app *domain.Application
 	}
 
 	// Create
+	// The group goes first: if creating the app fails, what is left is an implicit group without apps, which no one sees.
+	if newGroup != nil {
+		err = s.groupRepo.CreateApplicationGroup(ctx, newGroup)
+		if err != nil {
+			return nil, err
+		}
+	}
 	err = s.appRepo.CreateApplication(ctx, app)
 	if err != nil {
 		return nil, err
@@ -83,7 +108,7 @@ func (s *Service) CreateApplication(ctx context.Context, app *domain.Application
 		return nil, oops.Wrapf(err, "requesting repository fetch")
 	}
 
-	return s.appRepo.GetApplication(ctx, app.ID)
+	return s.GetApplication(ctx, app.ID)
 }
 
 func (s *Service) createApplicationDatabase(ctx context.Context, app *domain.Application) error {
@@ -152,15 +177,19 @@ const (
 	GetAppScopeMine GetAppScopeType = iota
 	GetAppScopeAll
 	GetAppScopeRepository
+	GetAppScopeGroup
 )
 
 type GetAppScope struct {
 	Scope        GetAppScopeType
 	RepositoryID optional.Of[string]
+	GroupID      optional.Of[string]
 }
 
 type TopAppInfo struct {
-	App         *domain.Application
+	App *domain.Application
+	// Group is the group the app belongs to. It is an implicit group when the app is standalone.
+	Group       *domain.ApplicationGroup
 	LatestBuild *domain.Build
 }
 
@@ -177,6 +206,11 @@ func (s *Service) GetApplications(ctx context.Context, scope GetAppScope) ([]*To
 			return nil, domain.NewError(domain.ErrorTypeBadRequest, "repository id is required", nil)
 		}
 		cond.RepositoryID = scope.RepositoryID
+	case GetAppScopeGroup:
+		if !scope.GroupID.Valid {
+			return nil, domain.NewError(domain.ErrorTypeBadRequest, "group id is required", nil)
+		}
+		cond.GroupID = scope.GroupID
 	default:
 		return nil, oops.New("unexpected scope type")
 	}
@@ -195,10 +229,19 @@ func (s *Service) GetApplications(ctx context.Context, scope GetAppScope) ([]*To
 	}
 	buildsMap := lo.SliceToMap(builds, func(b *domain.Build) (string, *domain.Build) { return b.ApplicationID, b })
 
+	// Fetch groups
+	groupIDs := lo.Uniq(ds.Map(apps, func(app *domain.Application) string { return app.GroupID }))
+	groups, err := s.groupRepo.GetApplicationGroups(ctx, domain.GetApplicationGroupCondition{IDIn: optional.From(groupIDs)})
+	if err != nil {
+		return nil, err
+	}
+	groupsMap := lo.SliceToMap(groups, func(g *domain.ApplicationGroup) (string, *domain.ApplicationGroup) { return g.ID, g })
+
 	// Construct
 	return ds.Map(apps, func(app *domain.Application) *TopAppInfo {
 		return &TopAppInfo{
 			App:         app,
+			Group:       groupsMap[app.GroupID],
 			LatestBuild: buildsMap[app.ID],
 		}
 	}), nil
@@ -210,6 +253,10 @@ func (s *Service) GetApplication(ctx context.Context, id string) (*TopAppInfo, e
 	if err != nil {
 		return nil, err
 	}
+	group, err := s.groupRepo.GetApplicationGroup(ctx, app.GroupID)
+	if err != nil {
+		return nil, err
+	}
 	// Fetch latest build
 	builds, err := s.buildRepo.GetLatestBuilds(ctx, []string{app.ID})
 	if err != nil {
@@ -217,7 +264,8 @@ func (s *Service) GetApplication(ctx context.Context, id string) (*TopAppInfo, e
 	}
 	// Construct
 	info := &TopAppInfo{
-		App: app,
+		App:   app,
+		Group: group,
 	}
 	if len(builds) > 0 {
 		info.LatestBuild = builds[0]
@@ -226,6 +274,9 @@ func (s *Service) GetApplication(ctx context.Context, id string) (*TopAppInfo, e
 }
 
 func (s *Service) UpdateApplication(ctx context.Context, id string, args *domain.UpdateApplicationArgs) error {
+	if args.GroupID.Valid {
+		return domain.NewError(domain.ErrorTypeBadRequest, "use MoveApplication to change the group", nil)
+	}
 	err := s.isApplicationOwner(ctx, id)
 	if err != nil {
 		return err
@@ -398,8 +449,13 @@ func (s *Service) DeleteApplication(ctx context.Context, id string) error {
 	if err != nil {
 		return err
 	}
-	// delete websites, owners, application
+	// delete websites, application
 	err = s.appRepo.DeleteApplication(ctx, app.ID)
+	if err != nil {
+		return err
+	}
+	// The implicit group belongs to this app only. If deleting it fails, the group is left without apps, which no one sees.
+	err = s.deleteImplicitApplicationGroup(ctx, app.GroupID)
 	if err != nil {
 		return err
 	}

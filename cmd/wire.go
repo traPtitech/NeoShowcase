@@ -78,6 +78,7 @@ var providers = wire.NewSet(
 	repofetcher.NewService,
 	repository.New,
 	repository.NewApplicationRepository,
+	repository.NewApplicationGroupRepository,
 	repository.NewArtifactRepository,
 	repository.NewRuntimeImageRepository,
 	repository.NewBuildRepository,

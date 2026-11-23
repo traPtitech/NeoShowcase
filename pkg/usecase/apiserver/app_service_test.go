@@ -104,19 +104,18 @@ func TestCreateApplication(t *testing.T) {
 					},
 				},
 				PortPublications: []*domain.PortPublication{},
-				OwnerIDs:         []string{user.ID},
 				CreatedAt:        time.Now(),
 				UpdatedAt:        time.Now(),
 			}
 
 			// Act
-			createdApp, err := svc.CreateApplication(ctx, app)
+			createdApp, err := svc.CreateApplication(ctx, app, optional.None[string]())
 			if err != nil {
 				t.Fatal(err)
 			}
 
 			// Assert
-			diff := cmp.Diff(app, createdApp, cmpopts.EquateApproxTime(time.Second), cmpopts.IgnoreUnexported(domain.BuildConfigRuntimeBuildpack{}))
+			diff := cmp.Diff(app, createdApp.App, cmpopts.EquateApproxTime(time.Second), cmpopts.IgnoreUnexported(domain.BuildConfigRuntimeBuildpack{}))
 			if diff != "" {
 				t.Errorf("created application should be equal to the input (-want +got):\n%s", diff)
 			}
@@ -228,12 +227,11 @@ func TestCreateApplication_DuplicateURL(t *testing.T) {
 					},
 				},
 				PortPublications: []*domain.PortPublication{},
-				OwnerIDs:         []string{user.ID},
 				CreatedAt:        time.Now(),
 				UpdatedAt:        time.Now(),
 			}
 
-			_, err = svc.CreateApplication(ctx, firstApp)
+			_, err = svc.CreateApplication(ctx, firstApp, optional.None[string]())
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -262,13 +260,12 @@ func TestCreateApplication_DuplicateURL(t *testing.T) {
 					},
 				},
 				PortPublications: []*domain.PortPublication{},
-				OwnerIDs:         []string{user.ID},
 				CreatedAt:        time.Now(),
 				UpdatedAt:        time.Now(),
 			}
 
 			// Act
-			_, err = svc.CreateApplication(ctx, secondApp)
+			_, err = svc.CreateApplication(ctx, secondApp, optional.None[string]())
 
 			// Assert
 			if tt.expectError {
@@ -378,12 +375,12 @@ func TestDeleteApplication(t *testing.T) {
 						Authentication: domain.AuthenticationTypeOff,
 					},
 				},
-				OwnerIDs: []string{user.ID},
 			}
-			app, err = svc.CreateApplication(ctx, app)
+			created, err := svc.CreateApplication(ctx, app, optional.None[string]())
 			if err != nil {
 				t.Fatal(err)
 			}
+			app = created.App
 
 			// Act
 			err = svc.DeleteApplication(ctx, app.ID)
@@ -478,12 +475,12 @@ func TestUpdateApplication(t *testing.T) {
 						Authentication: domain.AuthenticationTypeOff,
 					},
 				},
-				OwnerIDs: []string{user.ID},
 			}
-			app, err = svc.CreateApplication(ctx, app)
+			created, err := svc.CreateApplication(ctx, app, optional.None[string]())
 			if err != nil {
 				t.Fatal(err)
 			}
+			app = created.App
 
 			// Act
 			app.Name = tt.updatedName
@@ -592,12 +589,12 @@ func TestUpdateApplication_UpdateMariaDBConfigIsNotAllowed(t *testing.T) {
 					},
 				},
 				PortPublications: []*domain.PortPublication{},
-				OwnerIDs:         []string{user.ID},
 			}
-			app, err = svc.CreateApplication(ctx, app)
+			created, err := svc.CreateApplication(ctx, app, optional.None[string]())
 			if err != nil {
 				t.Fatal(err)
 			}
+			app = created.App
 
 			// Act
 			err = svc.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{

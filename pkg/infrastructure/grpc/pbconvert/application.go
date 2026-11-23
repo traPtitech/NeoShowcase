@@ -31,7 +31,8 @@ var ContainerStateMapper = mapper.MustNewValueMapper(map[domain.ContainerState]p
 	domain.ContainerStateUnknown:    pb.Application_UNKNOWN,
 })
 
-func ToPBApplication(app *domain.Application, latestBuild *domain.Build) *pb.Application {
+// ToPBApplication converts app. Owners are taken from group, which may be nil when the receiver does not need them.
+func ToPBApplication(app *domain.Application, group *domain.ApplicationGroup, latestBuild *domain.Build) *pb.Application {
 	pbApp := &pb.Application{
 		Id:               app.ID,
 		Name:             app.Name,
@@ -48,7 +49,9 @@ func ToPBApplication(app *domain.Application, latestBuild *domain.Build) *pb.App
 		Config:           ToPBApplicationConfig(app.Config),
 		Websites:         ds.Map(app.Websites, ToPBWebsite),
 		PortPublications: ds.Map(app.PortPublications, ToPBPortPublication),
-		OwnerIds:         app.OwnerIDs,
+	}
+	if group != nil {
+		pbApp.OwnerIds = group.OwnerIDs
 	}
 	if latestBuild != nil {
 		status := BuildStatusMapper.IntoMust(latestBuild.Status)
@@ -74,7 +77,6 @@ func FromPBApplication(app *pb.Application) *domain.Application {
 		Config:           FromPBApplicationConfig(app.Config),
 		Websites:         ds.Map(app.Websites, FromPBWebsite),
 		PortPublications: ds.Map(app.PortPublications, FromPBPortPublication),
-		OwnerIDs:         app.OwnerIds,
 	}
 }
 

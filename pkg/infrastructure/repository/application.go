@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/aarondl/null/v8"
 	"github.com/aarondl/sqlboiler/v4/boil"
 	"github.com/aarondl/sqlboiler/v4/queries/qm"
-	"github.com/samber/lo"
 	"github.com/samber/oops"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -32,7 +32,6 @@ func (r *applicationRepository) GetApplications(ctx context.Context, cond domain
 		qm.Load(models.ApplicationRels.Repository),
 		qm.Load(models.ApplicationRels.Websites),
 		qm.Load(models.ApplicationRels.PortPublications),
-		qm.Load(models.ApplicationRels.Users),
 	}
 
 	if cond.IDIn.Valid {
@@ -41,15 +40,18 @@ func (r *applicationRepository) GetApplications(ctx context.Context, cond domain
 	if cond.RepositoryID.Valid {
 		mods = append(mods, models.ApplicationWhere.RepositoryID.EQ(cond.RepositoryID.V))
 	}
+	if cond.GroupID.Valid {
+		mods = append(mods, models.ApplicationWhere.GroupID.EQ(null.StringFrom(cond.GroupID.V)))
+	}
 	if cond.UserID.Valid {
 		mods = append(mods,
 			qm.InnerJoin(fmt.Sprintf(
-				"%s ON %s.application_id = %s",
-				models.TableNames.ApplicationOwners,
-				models.TableNames.ApplicationOwners,
-				models.ApplicationTableColumns.ID,
+				"%s ON %s.group_id = %s",
+				models.TableNames.ApplicationGroupOwners,
+				models.TableNames.ApplicationGroupOwners,
+				models.ApplicationTableColumns.GroupID,
 			)),
-			qm.Where(fmt.Sprintf("%s.user_id = ?", models.TableNames.ApplicationOwners), cond.UserID.V),
+			qm.Where(fmt.Sprintf("%s.user_id = ?", models.TableNames.ApplicationGroupOwners), cond.UserID.V),
 		)
 	}
 	if cond.DeployType.Valid {
@@ -73,7 +75,6 @@ func (r *applicationRepository) getApplication(ctx context.Context, id string, f
 		qm.Load(models.ApplicationRels.Repository),
 		qm.Load(models.ApplicationRels.Websites),
 		qm.Load(models.ApplicationRels.PortPublications),
-		qm.Load(models.ApplicationRels.Users),
 	}
 	if forUpdate {
 		mods = append(mods, qm.For("UPDATE"))
@@ -124,11 +125,6 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, app *doma
 		return err
 	}
 
-	err = r.setOwners(ctx, tx, ma, app.OwnerIDs)
-	if err != nil {
-		return err
-	}
-
 	if err = tx.Commit(); err != nil {
 		return oops.Wrapf(err, "committing transaction")
 	}
@@ -152,6 +148,10 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 	if args.Name.Valid {
 		app.Name = args.Name.V
 		cols = append(cols, models.ApplicationColumns.Name)
+	}
+	if args.GroupID.Valid {
+		app.GroupID = null.StringFrom(args.GroupID.V)
+		cols = append(cols, models.ApplicationColumns.GroupID)
 	}
 	if args.RefName.Valid {
 		app.RefName = args.RefName.V
@@ -214,13 +214,6 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 			return err
 		}
 	}
-	if args.OwnerIDs.Valid {
-		err = r.setOwners(ctx, tx, app, args.OwnerIDs.V)
-		if err != nil {
-			return err
-		}
-	}
-
 	err = tx.Commit()
 	if err != nil {
 		return oops.Wrapf(err, "committing transaction")
@@ -264,9 +257,11 @@ func (r *applicationRepository) DeleteApplication(ctx context.Context, id string
 	if err != nil {
 		return err
 	}
+	// application_owners keeps the owners before groups as the source of the group migration.
+	// Its rows reference the application, so they have to go first.
 	err = app.SetUsers(ctx, r.db, false)
 	if err != nil {
-		return oops.Wrapf(err, "deleting application owners")
+		return oops.Wrapf(err, "deleting legacy application owners")
 	}
 	_, err = app.R.PortPublications.DeleteAll(ctx, r.db)
 	if err != nil {
@@ -317,22 +312,6 @@ func (r *applicationRepository) setPortPublications(ctx context.Context, ex boil
 		if err != nil {
 			return oops.Wrapf(err, "inserting port publication")
 		}
-	}
-	return nil
-}
-
-func (r *applicationRepository) setOwners(ctx context.Context, ex boil.ContextExecutor, app *models.Application, ownerIDs []string) error {
-	ownerIDs = lo.Uniq(ownerIDs)
-	users, err := models.Users(models.UserWhere.ID.IN(ownerIDs)).All(ctx, ex)
-	if err != nil {
-		return oops.Wrapf(err, "getting owners")
-	}
-	if len(users) < len(ownerIDs) {
-		return notFound("user")
-	}
-	err = app.SetUsers(ctx, ex, false, users...)
-	if err != nil {
-		return oops.Wrapf(err, "adding owners")
 	}
 	return nil
 }

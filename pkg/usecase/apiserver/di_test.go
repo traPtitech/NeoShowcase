@@ -20,6 +20,7 @@ func DefaultOption(t *testing.T) testhelper.ContainerOption {
 		c.Provide(repository.NewArtifactRepository)
 		c.Provide(repository.NewRuntimeImageRepository)
 		c.Provide(repository.NewApplicationRepository)
+		c.Provide(repository.NewApplicationGroupRepository)
 		c.Provide(repository.NewBuildRepository)
 		c.Provide(repository.NewEnvironmentRepository)
 		c.Provide(repository.NewGitRepositoryRepository)
