@@ -1,5 +1,5 @@
 import { createForm, Field, Form, reset } from '@formisch/solid/v2'
-import { createEffect, createMemo, Loading, Show, untrack } from 'solid-js'
+import { createEffect, Loading, Show, untrack } from 'solid-js'
 import * as v from 'valibot'
 import type { Application } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { DataTable } from '/@/components/layouts/DataTable'
@@ -8,13 +8,7 @@ import { Button } from '/@/components/UI/Button'
 import Skeleton from '/@/components/UI/Skeleton'
 import { useApplicationData } from '/@/features/application/data'
 import GroupSelect from '/@/features/applicationGroup/components/GroupSelect'
-import {
-  client,
-  getApplicationGroup,
-  handleAPIError,
-  revalidateApplicationGroupApps,
-  revalidateMyApplicationGroups,
-} from '/@/libs/api'
+import { client, handleAPIError, revalidateApplicationGroupApps, revalidateMyApplicationGroups } from '/@/libs/api'
 import { toast } from '/@/libs/toast'
 
 const moveSchema = v.object({ groupId: v.optional(v.string()) })
@@ -22,11 +16,7 @@ const moveSchema = v.object({ groupId: v.optional(v.string()) })
 const toInput = (app: Application) => ({ groupId: app.groupId })
 
 export default () => {
-  const { app, refetch, hasPermission } = useApplicationData()
-  const currentGroup = createMemo(() => {
-    const groupId = app().groupId
-    return groupId ? getApplicationGroup(groupId) : undefined
-  })
+  const { app, group: currentGroup, refetch, hasPermission } = useApplicationData()
 
   const form = createForm({ schema: moveSchema, initialInput: untrack(() => toInput(app())) })
   // サーバー側のデータが更新されたらフォームを巻き戻す

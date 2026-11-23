@@ -34,7 +34,7 @@ export const RepositoryRow: Component<Props> = (props) => {
 
   return (
     <Show when={props.repository} fallback={<RepositoryRowSkeleton />}>
-      <Container class="relative hover:bg-color-overlay-ui-primary-to-black-alpha-50">
+      <Container class="hover:bg-color-overlay-ui-primary-to-black-alpha-50 relative">
         {/* "Add New App" is a link of its own and cannot sit inside this link, so the link stretches over the whole row with a pseudo-element and the button is raised above it. */}
         <a
           href={`/repos/${props.repository?.id}`}

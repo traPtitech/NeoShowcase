@@ -1,14 +1,14 @@
-import { createMemo, Show } from 'solid-js'
+import { Show } from 'solid-js'
 import type { User } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { DataTable } from '/@/components/layouts/DataTable'
 import OwnerList, { ReadOnlyOwnerList } from '/@/components/templates/OwnerList'
 import { useApplicationData } from '/@/features/application/data'
-import { client, getApplicationGroup, handleAPIError } from '/@/libs/api'
+import { client, handleAPIError } from '/@/libs/api'
 import { users, usersFromIds } from '/@/libs/session'
 import { toast } from '/@/libs/toast'
 
 export default () => {
-  const { app, refetch, hasPermission } = useApplicationData()
+  const { app, group, refetch, hasPermission } = useApplicationData()
 
   const updateOwners = async (ownerIds: string[], success: string, failure: string) => {
     try {
@@ -33,11 +33,6 @@ export default () => {
       'アプリケーションオーナーを削除しました',
       'アプリケーションオーナーの削除に失敗しました',
     )
-
-  const group = createMemo(() => {
-    const groupId = app().groupId
-    return groupId ? getApplicationGroup(groupId) : undefined
-  })
 
   return (
     <DataTable.Container>
