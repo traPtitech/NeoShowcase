@@ -5,11 +5,9 @@ import (
 
 	"google.golang.org/protobuf/types/known/emptypb"
 
-	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pbconvert"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
-	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
 func (s *APIService) CreateApplicationGroup(ctx context.Context, req *pb.CreateApplicationGroupRequest) (*pb.ApplicationGroup, error) {
@@ -39,10 +37,7 @@ func (s *APIService) GetApplicationGroup(ctx context.Context, req *pb.Applicatio
 }
 
 func (s *APIService) UpdateApplicationGroup(ctx context.Context, req *pb.UpdateApplicationGroupRequest) (*emptypb.Empty, error) {
-	err := s.svc.UpdateApplicationGroup(ctx, req.Id, &domain.UpdateApplicationGroupArgs{
-		Name:     optional.FromPtr(req.Name),
-		OwnerIDs: optional.FromNonZero(req.OwnerIds).Map(pbconvert.FromPBUpdateApplicationGroupOwners),
-	})
+	err := s.svc.UpdateApplicationGroup(ctx, req.Id, pbconvert.FromPBUpdateApplicationGroupRequest(req))
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}

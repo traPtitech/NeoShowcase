@@ -5,6 +5,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/apiserver"
 	"github.com/traPtitech/neoshowcase/pkg/util/mapper"
+	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
 var AppGroupScopeMapper = mapper.MustNewValueMapper(map[apiserver.GetAppGroupScope]pb.GetApplicationGroupsRequest_Scope{
@@ -20,6 +21,11 @@ func ToPBApplicationGroup(group *domain.ApplicationGroup) *pb.ApplicationGroup {
 	}
 }
 
-func FromPBUpdateApplicationGroupOwners(req *pb.UpdateApplicationGroupRequest_UpdateOwners) []string {
-	return req.OwnerIds
+func FromPBUpdateApplicationGroupRequest(req *pb.UpdateApplicationGroupRequest) *domain.UpdateApplicationGroupArgs {
+	return &domain.UpdateApplicationGroupArgs{
+		Name: optional.FromPtr(req.Name),
+		OwnerIDs: optional.FromNonZero(req.OwnerIds).Map(func(o *pb.UpdateApplicationGroupRequest_UpdateOwners) []string {
+			return o.OwnerIds
+		}),
+	}
 }

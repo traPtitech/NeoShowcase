@@ -62,3 +62,24 @@ func TestFromPBUpdateApplicationRequest_Owners(t *testing.T) {
 		assert.False(t, ownerIDs.Valid)
 	})
 }
+
+func TestFromPBUpdateApplicationRequest_NameAndWebsites(t *testing.T) {
+	t.Parallel()
+	name := "new-name"
+	args, _ := pbconvert.FromPBUpdateApplicationRequest(&pb.UpdateApplicationRequest{
+		Id:   "app",
+		Name: &name,
+		Websites: &pb.UpdateApplicationRequest_UpdateWebsites{Websites: []*pb.CreateWebsiteRequest{
+			{Fqdn: "a.example.com", PathPrefix: "/", HttpPort: 80},
+		}},
+	}, time.Now())
+	require.True(t, args.Name.Valid)
+	assert.Equal(t, "new-name", args.Name.V)
+	require.True(t, args.Websites.Valid)
+	require.Len(t, args.Websites.V, 1)
+	assert.Equal(t, "a.example.com", args.Websites.V[0].FQDN)
+
+	args, _ = pbconvert.FromPBUpdateApplicationRequest(&pb.UpdateApplicationRequest{Id: "app"}, time.Now())
+	assert.False(t, args.Name.Valid)
+	assert.False(t, args.Websites.Valid)
+}
