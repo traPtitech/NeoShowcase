@@ -34,7 +34,7 @@ func (s *APIService) CreateApplication(ctx context.Context, req *pb.CreateApplic
 		Websites:         ds.Map(req.Websites, pbconvert.FromPBCreateWebsiteRequest),
 		PortPublications: ds.Map(req.PortPublications, pbconvert.FromPBPortPublication),
 	}
-	created, err := s.svc.CreateApplication(ctx, app, optional.None[string]())
+	created, err := s.svc.CreateApplication(ctx, app, optional.FromPtr(req.GroupId))
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
@@ -45,6 +45,7 @@ func (s *APIService) GetApplications(ctx context.Context, req *pb.GetApplication
 	scope := apiserver.GetAppScope{
 		Scope:        pbconvert.AppScopeMapper.IntoMust(req.Scope),
 		RepositoryID: optional.FromPtr(req.RepositoryId),
+		GroupID:      optional.FromPtr(req.GroupId),
 	}
 	apps, err := s.svc.GetApplications(ctx, scope)
 	if err != nil {
@@ -89,6 +90,14 @@ func (s *APIService) UpdateApplication(ctx context.Context, req *pb.UpdateApplic
 
 func (s *APIService) DeleteApplication(ctx context.Context, req *pb.ApplicationIdRequest) (*emptypb.Empty, error) {
 	err := s.svc.DeleteApplication(ctx, req.Id)
+	if err != nil {
+		return nil, handleUseCaseError(err)
+	}
+	return &emptypb.Empty{}, nil
+}
+
+func (s *APIService) MoveApplication(ctx context.Context, req *pb.MoveApplicationRequest) (*emptypb.Empty, error) {
+	err := s.svc.MoveApplication(ctx, req.ApplicationId, optional.FromPtr(req.GroupId))
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}

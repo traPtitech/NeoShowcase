@@ -14,6 +14,7 @@ var AppScopeMapper = mapper.MustNewValueMapper(map[pb.GetApplicationsRequest_Sco
 	pb.GetApplicationsRequest_MINE:       apiserver.GetAppScopeMine,
 	pb.GetApplicationsRequest_ALL:        apiserver.GetAppScopeAll,
 	pb.GetApplicationsRequest_REPOSITORY: apiserver.GetAppScopeRepository,
+	pb.GetApplicationsRequest_GROUP:      apiserver.GetAppScopeGroup,
 })
 
 var DeployTypeMapper = mapper.MustNewValueMapper(map[domain.DeployType]pb.DeployType{
@@ -52,6 +53,9 @@ func ToPBApplication(app *domain.Application, group *domain.ApplicationGroup, la
 	}
 	if group != nil {
 		pbApp.OwnerIds = group.OwnerIDs
+		if !group.Implicit {
+			pbApp.GroupId = &group.ID
+		}
 	}
 	if latestBuild != nil {
 		status := BuildStatusMapper.IntoMust(latestBuild.Status)
