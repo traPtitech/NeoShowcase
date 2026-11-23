@@ -140,7 +140,8 @@ func (i *Integration) syncRepository(ctx context.Context, username string, gitea
 		}
 	}
 
-	// Sync owners of the groups of generated applications
+	// Sync owners of the standalone applications generated from the repository.
+	// A group users created may hold applications from other repositories, so its owners are left to the group owners.
 	apps, err := i.appRepo.GetApplications(ctx, domain.GetApplicationCondition{RepositoryID: optional.From(repo.ID)})
 	if err != nil {
 		return oops.With("repo_id", repo.ID).Wrapf(err, "getting applications")
@@ -149,7 +150,10 @@ func (i *Integration) syncRepository(ctx context.Context, username string, gitea
 	if len(groupIDs) == 0 {
 		return nil
 	}
-	groups, err := i.groupRepo.GetApplicationGroups(ctx, domain.GetApplicationGroupCondition{IDIn: optional.From(groupIDs)})
+	groups, err := i.groupRepo.GetApplicationGroups(ctx, domain.GetApplicationGroupCondition{
+		IDIn:     optional.From(groupIDs),
+		Implicit: optional.From(true),
+	})
 	if err != nil {
 		return oops.With("repo_id", repo.ID).Wrapf(err, "getting application groups")
 	}
@@ -164,7 +168,7 @@ func (i *Integration) syncRepository(ctx context.Context, username string, gitea
 }
 
 func (i *Integration) syncApplicationGroup(ctx context.Context, group *domain.ApplicationGroup, giteaOwnerIDs []string) error {
-	// Are all repository owners on Gitea also an owner of the group of generated applications on NeoShowcase?
+	// Are all repository owners on Gitea also an owner of the generated application on NeoShowcase?
 	allOwnersAdded := lo.EveryBy(giteaOwnerIDs, func(ownerID string) bool { return slices.Contains(group.OwnerIDs, ownerID) })
 	if !allOwnersAdded {
 		newOwners := ds.UniqMergeSlice(group.OwnerIDs, giteaOwnerIDs)
