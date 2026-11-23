@@ -1,6 +1,6 @@
 import { createForm, Form, handleSubmit, setInput, validate } from '@formisch/solid/v2'
 import { useNavigate, useSearchParams } from '@solidjs/router'
-import { type Component, createEffect, createMemo, createSignal, For, Match, Show, Switch } from 'solid-js'
+import { type Component, createEffect, createMemo, createSignal, For, Match, Show, Switch, untrack } from 'solid-js'
 import { Progress } from '/@/components/UI/StepProgress'
 import { client, getRepository, handleAPIError } from '/@/libs/api'
 import { toast } from '/@/libs/toast'
@@ -28,7 +28,10 @@ const CreateAppForm: Component = () => {
 
   const form = createForm({
     schema: createOrUpdateApplicationSchema,
-    initialInput: getInitialValueOfCreateAppForm(),
+    // グループのページから来た場合 (?groupID=) はそのグループを選んだ状態で始める
+    initialInput: getInitialValueOfCreateAppForm(
+      untrack(() => (typeof searchParams.groupID === 'string' ? searchParams.groupID : '')),
+    ),
   })
   const envVarForm = createForm({ schema: envVarSchema, initialInput: envVarsMessageToSchema() })
 

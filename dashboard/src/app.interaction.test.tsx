@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   button,
   buttonContaining,
+  type Ctx,
   click,
   field,
   idle,
@@ -17,35 +18,40 @@ import {
 /** User flows against the in-memory backend, where Solid 2 / Kobalte 2 / Formisch integration is most fragile. */
 
 describe('interactions', () => {
+  /** Fills the create-app form from the repository step up to the URL step, choosing github-repo. */
+  const fillCreateAppForm = async (ctx: Ctx, query: string) => {
+    await waitForText(ctx, 'github-repo')
+    click(ctx, buttonContaining(ctx, 'github-repo'))
+    await settle(ctx, () => expect(window.location.search).toBe(`?${query}repositoryID=repo-github`))
+    await waitForText(ctx, 'Create Application from')
+
+    type(ctx, field(ctx, 'Application Name'), 'new-app')
+    // branch: type to open the combobox, then pick the option
+    const branch = await settle(ctx, () => expect(ctx.screen.querySelector('[role=combobox]')).not.toBeNull()).then(
+      () => ctx.screen.querySelector<HTMLInputElement>('[role=combobox]') as HTMLInputElement,
+    )
+    type(ctx, branch, 'mai')
+    await settle(ctx, () => expect(ctx.screen.querySelector('[role=option]')?.textContent).toBe('main'))
+    const option = ctx.screen.querySelector<HTMLElement>('[role=option]') as HTMLElement
+    for (const e of ['pointerdown', 'pointerup', 'click']) {
+      option.dispatchEvent(new MouseEvent(e, { bubbles: true, button: 0 }))
+    }
+    await settle(ctx, () => expect(branch.value).toBe('main'))
+
+    const radio = (name: string, value: string) =>
+      ctx.screen.querySelector<HTMLInputElement>(`input[type=radio][name='${name}'][value='${value}']`) as HTMLElement
+    click(ctx, radio('["form","config","deployConfig","type"]', 'runtime'))
+    await settle(ctx, () => expect(ctx.screen.textContent).toContain('Build Type'))
+    click(ctx, radio('["form","config","buildConfig","type"]', 'buildpack'))
+
+    // step 2 -> 3
+    click(ctx, button(ctx, 'Next'))
+    await settle(ctx, () => expect(button(ctx, 'Create Application')).toBeTruthy())
+  }
+
   it('create app: walks the three steps and calls createApplication', async () => {
     await scenario('create app', '/apps/new', async (ctx) => {
-      await waitForText(ctx, 'github-repo')
-      click(ctx, buttonContaining(ctx, 'github-repo'))
-      await settle(ctx, () => expect(window.location.search).toBe('?repositoryID=repo-github'))
-      await waitForText(ctx, 'Create Application from')
-
-      type(ctx, field(ctx, 'Application Name'), 'new-app')
-      // branch: type to open the combobox, then pick the option
-      const branch = await settle(ctx, () => expect(ctx.screen.querySelector('[role=combobox]')).not.toBeNull()).then(
-        () => ctx.screen.querySelector<HTMLInputElement>('[role=combobox]') as HTMLInputElement,
-      )
-      type(ctx, branch, 'mai')
-      await settle(ctx, () => expect(ctx.screen.querySelector('[role=option]')?.textContent).toBe('main'))
-      const option = ctx.screen.querySelector<HTMLElement>('[role=option]') as HTMLElement
-      for (const e of ['pointerdown', 'pointerup', 'click']) {
-        option.dispatchEvent(new MouseEvent(e, { bubbles: true, button: 0 }))
-      }
-      await settle(ctx, () => expect(branch.value).toBe('main'))
-
-      const radio = (name: string, value: string) =>
-        ctx.screen.querySelector<HTMLInputElement>(`input[type=radio][name='${name}'][value='${value}']`) as HTMLElement
-      click(ctx, radio('["form","config","deployConfig","type"]', 'runtime'))
-      await settle(ctx, () => expect(ctx.screen.textContent).toContain('Build Type'))
-      click(ctx, radio('["form","config","buildConfig","type"]', 'buildpack'))
-
-      // step 2 -> 3
-      click(ctx, button(ctx, 'Next'))
-      await settle(ctx, () => expect(button(ctx, 'Create Application')).toBeTruthy())
+      await fillCreateAppForm(ctx, '')
       // the form was already submitted by "Next", yet a freshly added URL row must not start out with errors
       click(ctx, button(ctx, 'Add URL'))
       const subdomain = await settle(ctx, () =>
@@ -57,12 +63,95 @@ describe('interactions', () => {
       click(ctx, button(ctx, 'Create Application'))
       await settle(ctx, () =>
         expect(ctx.backend.requestsTo('createApplication')).toEqual([
-          expect.objectContaining({ name: 'new-app', refName: 'main', repositoryId: 'repo-github' }),
+          expect.objectContaining({
+            name: 'new-app',
+            refName: 'main',
+            repositoryId: 'repo-github',
+          }),
         ]),
       )
       // navigates to the created app
       await settle(ctx, () => expect(window.location.pathname).toBe('/apps/app-new'))
       await waitForText(ctx, 'new-app')
+    })
+  })
+
+  it('create app: "Add New App" of a group creates the app in that group', async () => {
+    await scenario('create app in group', '/groups/group-web', async (ctx) => {
+      await waitForText(ctx, 'static-app')
+      click(ctx, button(ctx, 'Add New App'))
+      await settle(ctx, () => expect(window.location.pathname).toBe('/apps/new'))
+      await fillCreateAppForm(ctx, 'groupID=group-web&')
+      click(ctx, button(ctx, 'Create Application'))
+      await settle(ctx, () =>
+        expect(ctx.backend.requestsTo('createApplication')).toEqual([
+          expect.objectContaining({ name: 'new-app', groupId: 'group-web' }),
+        ]),
+      )
+    })
+  })
+
+  it('groups: creating a group opens its page', async () => {
+    await scenario('create group', '/groups', async (ctx) => {
+      await waitForText(ctx, 'web-service')
+      click(ctx, link(ctx, '/groups/new'))
+      await waitForText(ctx, 'Create Group')
+      type(ctx, field(ctx, 'Group Name'), 'new-service')
+      click(ctx, button(ctx, 'Create'))
+      await settle(ctx, () =>
+        expect(ctx.backend.requestsTo('createApplicationGroup')).toEqual([
+          expect.objectContaining({ name: 'new-service' }),
+        ]),
+      )
+      await settle(ctx, () => expect(window.location.pathname).toBe('/groups/group-new'))
+      await waitForText(ctx, 'new-service', 'No Apps')
+    })
+  })
+
+  it('groups: adding an owner updates the group', async () => {
+    await scenario('group owners', '/groups/group-web/settings/owners', async (ctx) => {
+      await settle(ctx, () => expect(button(ctx, 'Add Owners').disabled).toBe(false))
+      click(ctx, button(ctx, 'Add Owners'))
+      await settle(ctx, () => expect(document.querySelector('[role=dialog]')).not.toBeNull())
+      await waitForText(ctx, 'other-user')
+      click(ctx, button(ctx, 'Add'))
+      await settle(ctx, () =>
+        expect(ctx.backend.requestsTo('updateApplicationGroup')).toEqual([
+          expect.objectContaining({
+            id: 'group-web',
+            ownerIds: expect.objectContaining({ ownerIds: ['user-admin', 'user-other'] }),
+          }),
+        ]),
+      )
+    })
+  })
+
+  it('app group settings: moving an app out of its group makes it standalone', async () => {
+    await scenario('move app', '/apps/app-static/settings/group', async (ctx) => {
+      await waitForText(ctx, 'web-service')
+      await idle(ctx)
+      const trigger = ctx.screen.querySelector<HTMLButtonElement>('button[aria-haspopup=listbox]')
+      if (!trigger) throw new Error('no group select')
+      for (const e of ['pointerdown', 'pointerup', 'click']) {
+        trigger.dispatchEvent(new MouseEvent(e, { bubbles: true, button: 0 }))
+      }
+      const standalone = await settle(ctx, () =>
+        expect([...document.querySelectorAll('[role=option]')].some((o) => o.textContent?.includes('なし'))).toBe(true),
+      ).then(
+        () =>
+          [...document.querySelectorAll<HTMLElement>('[role=option]')].find((o) =>
+            o.textContent?.includes('なし'),
+          ) as HTMLElement,
+      )
+      for (const e of ['pointerdown', 'pointerup', 'click']) {
+        standalone.dispatchEvent(new MouseEvent(e, { bubbles: true, button: 0 }))
+      }
+      await settle(ctx, () => expect(button(ctx, 'Save').disabled).toBe(false))
+      click(ctx, button(ctx, 'Save'))
+      await settle(ctx, () => expect(ctx.backend.requestsTo('moveApplication')).toHaveLength(1))
+      const [req] = ctx.backend.requestsTo('moveApplication')
+      expect(req.applicationId).toBe('app-static')
+      expect(req.groupId).toBeUndefined()
     })
   })
 

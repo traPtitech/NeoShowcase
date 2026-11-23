@@ -1,9 +1,11 @@
 import { Field, getInput } from '@formisch/solid/v2'
-import { type Component, Show } from 'solid-js'
+import { type Component, Loading, Show } from 'solid-js'
 import type { Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { CheckBox } from '/@/components/templates/CheckBox'
 import { FormItem } from '/@/components/templates/FormItem'
 import { Button } from '/@/components/UI/Button'
+import Skeleton from '/@/components/UI/Skeleton'
+import GroupSelect, { noGroup } from '/@/features/applicationGroup/components/GroupSelect'
 import { originToIcon, repositoryURLToOrigin } from '/@/libs/application'
 import type { ApplicationFormStore } from '../../schema/applicationSchema'
 import type { EnvVarFormStore } from '../../schema/envVarSchema'
@@ -28,6 +30,26 @@ const GeneralStep: Component<{
         {props.repo.name}
       </h2>
       <NameField form={props.form} />
+      <Loading fallback={<Skeleton height={48} />}>
+        <Field of={props.form} path={['form', 'groupId']}>
+          {(field) => (
+            <GroupSelect
+              name={field.props.name}
+              label="Group"
+              info={{
+                content: (
+                  <>
+                    <div>同じグループのアプリ同士は URL を入れ子にできます</div>
+                    <div>オーナーはグループで管理します</div>
+                  </>
+                ),
+              }}
+              value={field.input ?? noGroup}
+              setValue={(groupId) => field.onInput(groupId)}
+            />
+          )}
+        </Field>
+      </Loading>
       <BranchField form={props.form} repo={props.repo} />
       <BuildTypeField form={props.form} />
       <Show

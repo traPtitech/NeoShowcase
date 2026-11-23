@@ -15,6 +15,8 @@ const createApplicationSchema = v.pipe(
   v.object({
     name: v.pipe(v.string(), v.nonEmpty('Enter Application Name')),
     repositoryId: v.string(),
+    /** Empty or missing for a standalone application. */
+    groupId: v.optional(v.string()),
     refName: v.pipe(v.string(), v.nonEmpty('Enter Branch Name')),
     config: applicationConfigSchema,
     websites: v.optional(v.array(createWebsiteSchema)),
@@ -26,6 +28,7 @@ const createApplicationSchema = v.pipe(
       $typeName: 'neoshowcase.protobuf.CreateApplicationRequest',
       name: input.name,
       repositoryId: input.repositoryId,
+      groupId: input.groupId || undefined,
       refName: input.refName,
       config: input.config,
       websites: input.websites ?? [],
@@ -74,11 +77,12 @@ export const updateApplicationSchema = v.pipe(
 
 type UpdateApplicationOutput = v.InferOutput<typeof updateApplicationSchema>
 
-export const getInitialValueOfCreateAppForm = (): CreateOrUpdateApplicationInput => ({
+export const getInitialValueOfCreateAppForm = (groupId = ''): CreateOrUpdateApplicationInput => ({
   type: 'create',
   form: {
     name: '',
     repositoryId: '',
+    groupId,
     refName: '',
     config: {},
     websites: [],

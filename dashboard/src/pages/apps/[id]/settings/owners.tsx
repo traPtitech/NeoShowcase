@@ -1,8 +1,9 @@
+import { createMemo, Show } from 'solid-js'
 import type { User } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { DataTable } from '/@/components/layouts/DataTable'
 import OwnerList from '/@/components/templates/OwnerList'
 import { useApplicationData } from '/@/features/application/data'
-import { client, handleAPIError } from '/@/libs/api'
+import { client, getApplicationGroup, handleAPIError } from '/@/libs/api'
 import { users, usersFromIds } from '/@/libs/session'
 import { toast } from '/@/libs/toast'
 
@@ -33,19 +34,48 @@ export default () => {
       'アプリケーションオーナーの削除に失敗しました',
     )
 
+  const group = createMemo(() => {
+    const groupId = app().groupId
+    return groupId ? getApplicationGroup(groupId) : undefined
+  })
+
   return (
     <DataTable.Container>
       <DataTable.Title>Owners</DataTable.Title>
       <DataTable.SubTitle>
         オーナーはアプリ設定の変更, アプリログ/メトリクスの閲覧, 環境変数の閲覧, ビルドログの閲覧が可能になります
       </DataTable.SubTitle>
-      <OwnerList
-        owners={usersFromIds(app().ownerIds)}
-        users={users()}
-        handleAddOwner={handleAddOwner}
-        handleDeleteOwner={handleDeleteOwner}
-        hasPermission={hasPermission()}
-      />
+      <Show
+        when={group()}
+        fallback={
+          <OwnerList
+            owners={usersFromIds(app().ownerIds)}
+            users={users()}
+            handleAddOwner={handleAddOwner}
+            handleDeleteOwner={handleDeleteOwner}
+            hasPermission={hasPermission()}
+          />
+        }
+      >
+        {(group) => (
+          <>
+            <div class="text-regular text-text-black">
+              このアプリはグループ{' '}
+              <a href={`/groups/${group().id}/settings/owners`} class="text-primary-main">
+                {group().name}
+              </a>{' '}
+              に属しているため、オーナーはグループで編集します。
+            </div>
+            <OwnerList
+              owners={usersFromIds(group().ownerIds)}
+              users={users()}
+              handleAddOwner={handleAddOwner}
+              handleDeleteOwner={handleDeleteOwner}
+              hasPermission={false}
+            />
+          </>
+        )}
+      </Show>
     </DataTable.Container>
   )
 }
