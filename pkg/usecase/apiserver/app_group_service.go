@@ -111,29 +111,30 @@ func (s *Service) MoveApplication(ctx context.Context, appID string, groupID opt
 		return domain.NewError(domain.ErrorTypeForbidden, "you do not have permission for this application", nil)
 	}
 
-	var dest *domain.ApplicationGroup
+	var newGroup *domain.ApplicationGroup
 	if groupID.Valid {
-		dest, err = s.getExplicitApplicationGroup(ctx, groupID.V)
+		dest, err := s.getExplicitApplicationGroup(ctx, groupID.V)
 		if err != nil {
 			return err
 		}
 		if !dest.IsOwner(user) {
 			return domain.NewError(domain.ErrorTypeForbidden, "you do not have permission for the destination group", nil)
 		}
+		if dest.ID == src.ID {
+			return nil
+		}
+		app.GroupID = dest.ID
 	} else {
 		if src.Implicit {
 			return nil
 		}
-		dest = domain.NewImplicitApplicationGroup(lo.Uniq(src.OwnerIDs))
-	}
-	if dest.ID == src.ID {
-		return nil
+		newGroup = domain.NewImplicitApplicationGroup(lo.Uniq(src.OwnerIDs))
+		app.GroupID = newGroup.ID
 	}
 
-	app.GroupID = dest.ID
 	if err = s.validateApp(ctx, app); err != nil {
 		return err
 	}
 
-	return s.appRepo.SetApplicationGroup(ctx, app.ID, dest)
+	return s.appRepo.SetApplicationGroup(ctx, app.ID, app.GroupID, newGroup)
 }

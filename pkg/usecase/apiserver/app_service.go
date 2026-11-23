@@ -64,26 +64,27 @@ func (s *Service) CreateApplication(ctx context.Context, app *domain.Application
 	if !repo.CanCreateApp(user) {
 		return nil, domain.NewError(domain.ErrorTypeForbidden, "you cannot create application from this repository", nil)
 	}
-	var group *domain.ApplicationGroup
+	var newGroup *domain.ApplicationGroup
 	if groupID.Valid {
-		group, err = s.getExplicitApplicationGroup(ctx, groupID.V)
+		group, err := s.getExplicitApplicationGroup(ctx, groupID.V)
 		if err != nil {
 			return nil, err
 		}
 		if !group.IsOwner(user) {
 			return nil, domain.NewError(domain.ErrorTypeForbidden, "you do not have permission for this group", nil)
 		}
+		app.GroupID = group.ID
 	} else {
-		group = domain.NewImplicitApplicationGroup(lo.Uniq(append(slices.Clone(repo.OwnerIDs), user.ID)))
+		newGroup = domain.NewImplicitApplicationGroup(lo.Uniq(append(slices.Clone(repo.OwnerIDs), user.ID)))
+		app.GroupID = newGroup.ID
 	}
-	app.GroupID = group.ID
 	err = s.validateApp(ctx, app)
 	if err != nil {
 		return nil, err
 	}
 
 	// Create
-	err = s.appRepo.CreateApplication(ctx, app, group)
+	err = s.appRepo.CreateApplication(ctx, app, newGroup)
 	if err != nil {
 		return nil, err
 	}

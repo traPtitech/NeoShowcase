@@ -97,18 +97,15 @@ func (r *applicationRepository) GetApplication(ctx context.Context, id string) (
 	return repoconvert.ToDomainApplication(app), nil
 }
 
-func (r *applicationRepository) CreateApplication(ctx context.Context, app *domain.Application, group *domain.ApplicationGroup) error {
-	if app.GroupID != group.ID {
-		return oops.Errorf("application group id %v does not match group %v", app.GroupID, group.ID)
-	}
+func (r *applicationRepository) CreateApplication(ctx context.Context, app *domain.Application, newGroup *domain.ApplicationGroup) error {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return oops.Wrapf(err, "starting transaction")
 	}
 	defer tx.Rollback()
 
-	if group.Implicit {
-		if err = insertApplicationGroup(ctx, tx, group); err != nil {
+	if newGroup != nil {
+		if err = insertApplicationGroup(ctx, tx, newGroup); err != nil {
 			return err
 		}
 	}
@@ -226,7 +223,7 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 	return err
 }
 
-func (r *applicationRepository) SetApplicationGroup(ctx context.Context, id string, group *domain.ApplicationGroup) error {
+func (r *applicationRepository) SetApplicationGroup(ctx context.Context, id string, groupID string, newGroup *domain.ApplicationGroup) error {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return oops.Wrapf(err, "starting transaction")
@@ -237,13 +234,13 @@ func (r *applicationRepository) SetApplicationGroup(ctx context.Context, id stri
 	if err != nil {
 		return err
 	}
-	if group.Implicit {
-		if err = insertApplicationGroup(ctx, tx, group); err != nil {
+	if newGroup != nil {
+		if err = insertApplicationGroup(ctx, tx, newGroup); err != nil {
 			return err
 		}
 	}
 	prevGroupID := app.GroupID
-	app.GroupID = null.StringFrom(group.ID)
+	app.GroupID = null.StringFrom(groupID)
 	if _, err = app.Update(ctx, tx, boil.Whitelist(models.ApplicationColumns.GroupID)); err != nil {
 		return oops.Wrapf(err, "updating application group")
 	}

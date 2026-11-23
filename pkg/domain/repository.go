@@ -71,14 +71,15 @@ func (a *Application) Apply(args *UpdateApplicationArgs) {
 type ApplicationRepository interface {
 	GetApplications(ctx context.Context, cond GetApplicationCondition) ([]*Application, error)
 	GetApplication(ctx context.Context, id string) (*Application, error)
-	// CreateApplication creates app in group, whose ID has to be app.GroupID.
-	// An implicit group is created together with app in one transaction; any other group has to exist.
-	CreateApplication(ctx context.Context, app *Application, group *ApplicationGroup) error
+	// CreateApplication creates app in the group of app.GroupID.
+	// newGroup, when not nil, is that group, and is created together with app in one transaction;
+	// when nil, the group has to exist.
+	CreateApplication(ctx context.Context, app *Application, newGroup *ApplicationGroup) error
 	UpdateApplication(ctx context.Context, id string, args *UpdateApplicationArgs) error
-	// SetApplicationGroup moves the application into group in one transaction.
-	// An implicit group is created; any other group has to exist.
+	// SetApplicationGroup moves the application into the group of groupID in one transaction.
+	// newGroup, when not nil, is that group, and is created in the transaction; when nil, the group has to exist.
 	// The previous group of the application is deleted when it is implicit.
-	SetApplicationGroup(ctx context.Context, id string, group *ApplicationGroup) error
+	SetApplicationGroup(ctx context.Context, id string, groupID string, newGroup *ApplicationGroup) error
 	BulkUpdateState(ctx context.Context, states []*Container) error
 	// DeleteApplication deletes the application, and its group when the group is implicit, in one transaction.
 	DeleteApplication(ctx context.Context, id string) error
