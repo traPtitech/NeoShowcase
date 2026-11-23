@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/aarondl/null/v8"
-	"github.com/aarondl/sqlboiler/v4/boil"
 	"github.com/aarondl/sqlboiler/v4/queries/qm"
 	"github.com/samber/lo"
 	"github.com/samber/oops"
@@ -58,17 +57,8 @@ func MigrateApplicationGroups(ctx context.Context, db *sql.DB) error {
 
 	for _, set := range domain.GroupByNestedWebsites(apps) {
 		group := groupForMigration(set, owners)
-		mg := repoconvert.FromDomainApplicationGroup(group)
-		if err = mg.Insert(ctx, tx, boil.Blacklist()); err != nil {
-			return oops.Wrapf(err, "inserting application group")
-		}
-		for _, ownerID := range group.OwnerIDs {
-			_, err = tx.ExecContext(ctx,
-				"INSERT INTO "+models.TableNames.ApplicationGroupOwners+" (user_id, group_id) VALUES (?, ?)",
-				ownerID, group.ID)
-			if err != nil {
-				return oops.Wrapf(err, "inserting application group owner")
-			}
+		if err = insertApplicationGroup(ctx, tx, group); err != nil {
+			return err
 		}
 		_, err = models.Applications(
 			models.ApplicationWhere.ID.IN(ds.Map(set, func(app *domain.Application) string { return app.ID })),

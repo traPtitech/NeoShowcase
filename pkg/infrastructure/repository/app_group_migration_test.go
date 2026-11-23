@@ -114,6 +114,16 @@ func TestMigrateApplicationGroups(t *testing.T) {
 		assert.True(t, group.Implicit)
 		assert.ElementsMatch(t, []string{u2}, group.OwnerIDs)
 	})
+
+	t.Run("an app without owners gets a group without owners", func(t *testing.T) {
+		orphan := insertLegacyApp(t, db, repo.ID, legacyApp{name: "orphan", fqdn: "orphan.example.com", path: "/"})
+
+		require.NoError(t, repository.MigrateApplicationGroups(ctx, db))
+
+		group := groupOf(orphan)
+		assert.True(t, group.Implicit)
+		assert.Empty(t, group.OwnerIDs)
+	})
 }
 
 func TestMigrateApplicationGroups_NoApps(t *testing.T) {
