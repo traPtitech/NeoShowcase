@@ -12,13 +12,13 @@ import (
 )
 
 // getExplicitApplicationGroup returns the group a user created.
-// Implicit groups are reported as not found, since users do not see them.
+// Groups users do not see are reported as not found.
 func (s *Service) getExplicitApplicationGroup(ctx context.Context, id string) (*domain.ApplicationGroup, error) {
 	group, err := s.groupRepo.GetApplicationGroup(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	if group.Implicit {
+	if !group.VisibleID().Valid {
 		return nil, domain.NewError(domain.ErrorTypeNotFound, "application group not found", nil)
 	}
 	return group, nil

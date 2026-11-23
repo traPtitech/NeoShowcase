@@ -53,8 +53,8 @@ func ToPBApplication(app *domain.Application, group *domain.ApplicationGroup, la
 	}
 	if group != nil {
 		pbApp.OwnerIds = group.OwnerIDs
-		if !group.Implicit {
-			pbApp.GroupId = &group.ID
+		if id := group.VisibleID(); id.Valid {
+			pbApp.GroupId = &id.V
 		}
 	}
 	if latestBuild != nil {

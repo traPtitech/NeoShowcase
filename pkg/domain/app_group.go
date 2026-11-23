@@ -3,6 +3,8 @@ package domain
 import (
 	"github.com/samber/lo"
 	"github.com/samber/oops"
+
+	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
 // ApplicationGroup is a set of applications that share owners and may nest their websites with each other.
@@ -42,6 +44,14 @@ func (g *ApplicationGroup) Validate() error {
 		return oops.New("owner_ids cannot be empty")
 	}
 	return nil
+}
+
+// VisibleID returns the ID users know the group by, or none for an implicit group, which users do not see.
+func (g *ApplicationGroup) VisibleID() optional.Of[string] {
+	if g.Implicit {
+		return optional.None[string]()
+	}
+	return optional.From(g.ID)
 }
 
 func (g *ApplicationGroup) IsOwner(user *User) bool {
