@@ -175,15 +175,30 @@ describe('interactions', () => {
   })
 
   it('groups list: clicking anywhere in the row of a group opens the group', async () => {
-    await scenario('groups row', '/groups', async (ctx) => {
-      await waitForText(ctx, 'web-service')
-      const icon = [...ctx.screen.querySelectorAll<HTMLElement>('.i-material-symbols\\:folder-outline')].find((el) =>
-        el.parentElement?.textContent?.includes('web-service'),
-      )
-      if (!icon) throw new Error('no icon in the row of web-service')
-      click(ctx, icon)
-      await settle(ctx, () => expect(window.location.pathname).toBe('/groups/group-web'))
-    })
+    await scenario(
+      'groups row',
+      '/groups',
+      async (ctx) => {
+        await waitForText(ctx, 'web-service', 'api-service')
+        const name = [...ctx.screen.querySelectorAll<HTMLElement>('div')].findLast(
+          (el) => el.textContent?.trim() === 'web-service',
+        )
+        if (!name) throw new Error('no name of web-service')
+        // the outermost element that holds only the name of the group, i.e. the whole row
+        let row = name
+        while (row.parentElement && row.parentElement.textContent?.trim() === 'web-service') row = row.parentElement
+        // this page does not tell the number of apps of each group
+        expect(link(ctx, '/groups/group-web').textContent?.trim()).toBe('web-service')
+        click(ctx, row)
+        await settle(ctx, () => expect(window.location.pathname).toBe('/groups/group-web'))
+      },
+      {
+        setup: (b) =>
+          b.fixtures.groups.push(
+            create(ApplicationGroupSchema, { id: 'group-api', name: 'api-service', ownerIds: [b.ids.me] }),
+          ),
+      },
+    )
   })
 
   it('groups: adding an owner updates the group', async () => {
