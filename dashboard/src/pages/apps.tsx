@@ -18,7 +18,6 @@ import { TabRound } from '/@/components/UI/TabRound'
 import { TextField } from '/@/components/UI/TextField'
 import { client, getRepositoryCommits } from '/@/libs/api'
 import {
-  type AppListEntry,
   allOrigins,
   allStatuses,
   applicationState,
@@ -44,18 +43,6 @@ const scopeItems = (admin: boolean) => {
 }
 
 const Skeletons = () => <AppsList apps={[undefined, undefined, undefined, undefined]} />
-
-/** Puts consecutive standalone apps into one entry, so that they are listed as rows of one list. */
-const joinStandaloneApps = (entries: AppListEntry[]): AppListEntry[] =>
-  entries.reduce<AppListEntry[]>((acc, entry) => {
-    const last = acc.at(-1)
-    if (entry.groupId === undefined && last !== undefined && last.groupId === undefined) {
-      acc[acc.length - 1] = { apps: [...last.apps, ...entry.apps] }
-    } else {
-      acc.push(entry)
-    }
-    return acc
-  }, [])
 
 export default () => {
   const [scope, setScope] = createSessionSignal('apps-scope', GetRepositoriesRequest_Scope.MINE)
@@ -115,7 +102,7 @@ export default () => {
     const filtered = scopedApps().filter(
       (app) => statuses().includes(applicationState(app)) && origin().includes(originOf(app)) && matchesQuery(app, q),
     )
-    return joinStandaloneApps(groupApplications(filtered, sort()))
+    return groupApplications(filtered, sort())
   })
   const scopeChanging = () => isPending(() => apps())
 

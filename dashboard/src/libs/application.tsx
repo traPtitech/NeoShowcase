@@ -161,8 +161,8 @@ const appDate = (app: Application): number => (app.updatedAt ? timestampDate(app
 const newestAppDate = (apps: Application[]): number => Math.max(0, ...apps.map(appDate))
 
 /**
- * An entry of the app list: the apps of a group a user created, or a single standalone app (`groupId` undefined).
- * `apps` is never empty.
+ * An entry of the app list: the apps of a group a user created, or standalone apps that are next to each other
+ * in the list (`groupId` undefined). `apps` is never empty.
  */
 export interface AppListEntry {
   groupId?: string
@@ -170,16 +170,17 @@ export interface AppListEntry {
 }
 
 /**
- * Puts the apps of the same group into one entry, and each standalone app into its own entry.
- * Entries are ordered by the newest update of their apps, and the apps in an entry by their update, both by `sort`.
+ * Lists apps as entries: the apps of the same group share one entry, and so do standalone apps that are next to
+ * each other. Groups and standalone apps are ordered by the newest update of their apps, and the apps in a group
+ * by their update, both by `sort`.
  */
 export const groupApplications = (apps: Application[], sort: 'asc' | 'desc'): AppListEntry[] => {
   const direction = sort === 'asc' ? 1 : -1
-  const entries: AppListEntry[] = []
+  const items: AppListEntry[] = []
   const groups = new Map<string, AppListEntry>()
   for (const app of apps) {
     if (app.groupId === undefined) {
-      entries.push({ apps: [app] })
+      items.push({ apps: [app] })
       continue
     }
     const group = groups.get(app.groupId)
@@ -188,13 +189,22 @@ export const groupApplications = (apps: Application[], sort: 'asc' | 'desc'): Ap
     } else {
       const entry = { groupId: app.groupId, apps: [app] }
       groups.set(app.groupId, entry)
-      entries.push(entry)
+      items.push(entry)
     }
   }
-  for (const entry of entries) {
-    entry.apps.sort((a, b) => direction * (appDate(a) - appDate(b)) || a.id.localeCompare(b.id))
+  for (const item of items) {
+    item.apps.sort((a, b) => direction * (appDate(a) - appDate(b)) || a.id.localeCompare(b.id))
   }
-  return entries.sort(
+  items.sort(
     (a, b) => direction * (newestAppDate(a.apps) - newestAppDate(b.apps)) || a.apps[0].id.localeCompare(b.apps[0].id),
   )
+  return items.reduce<AppListEntry[]>((entries, item) => {
+    const last = entries.at(-1)
+    if (item.groupId === undefined && last !== undefined && last.groupId === undefined) {
+      last.apps.push(...item.apps)
+    } else {
+      entries.push(item)
+    }
+    return entries
+  }, [])
 }
