@@ -204,6 +204,47 @@ describe('interactions', () => {
     })
   })
 
+  it('groups: each owner has a button to delete it from the owners', async () => {
+    await scenario(
+      'delete group owner',
+      '/groups/group-web/settings/owners',
+      async (ctx) => {
+        await waitForText(ctx, 'admin-user', 'other-user')
+        await settle(ctx, () =>
+          expect(
+            [...ctx.screen.querySelectorAll('button')].filter((b) => b.textContent?.trim() === 'Delete'),
+          ).toHaveLength(2),
+        )
+        const otherRow = find(ctx, 'div', 'other-user').parentElement
+        click(ctx, otherRow?.querySelector('button') as HTMLElement)
+        await settle(ctx, () => expect(document.querySelector('[role=dialog]')).not.toBeNull())
+        click(ctx, button(ctx, 'Yes, Delete'))
+        await settle(ctx, () =>
+          expect(ctx.backend.requestsTo('updateApplicationGroup')).toEqual([
+            expect.objectContaining({
+              id: 'group-web',
+              ownerIds: expect.objectContaining({ ownerIds: ['user-admin'] }),
+            }),
+          ]),
+        )
+      },
+      {
+        setup: (b) => {
+          const group = b.fixtures.groups.find((g) => g.id === b.ids.groupWeb)
+          group?.ownerIds.push(b.ids.other)
+        },
+      },
+    )
+  })
+
+  it('app owners: a grouped app shows its owners without buttons to delete them', async () => {
+    await scenario('grouped app owners read only', '/apps/app-static/settings/owners', async (ctx) => {
+      await waitForText(ctx, 'admin-user', 'グループのオーナー設定から編集してください')
+      await idle(ctx)
+      expect(() => button(ctx, 'Delete')).toThrow()
+    })
+  })
+
   it('group settings: renaming the group calls updateApplicationGroup and shows the new name', async () => {
     await scenario('rename group', '/groups/group-web/settings', async (ctx) => {
       await waitForText(ctx, 'Delete Group')
