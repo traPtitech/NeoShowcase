@@ -4,16 +4,16 @@ import { type SelectOption, SingleSelect } from '/@/components/templates/Select'
 import type { TooltipProps } from '/@/components/UI/ToolTip'
 import { getMyApplicationGroups } from '/@/libs/api'
 
-/** The option value meaning "not in any group": a standalone application. */
-export const noGroup = ''
+// The option value of "no group". Kobalte's Select treats the empty string as no selection and shows nothing.
+const noGroup = '__none__'
 
 type Props = {
   name?: string
   label?: string
   info?: TooltipProps
-  /** Group ID, or `noGroup`. */
-  value: string
-  setValue: (groupId: string) => void
+  /** Group ID, or undefined for a standalone application. */
+  value: string | undefined
+  setValue: (groupId: string | undefined) => void
   /** The group the application is in now. Listed even when the user does not own it. */
   current?: ApplicationGroup
   readOnly?: boolean
@@ -38,8 +38,8 @@ const GroupSelect: Component<Props> = (props) => {
           label={props.label}
           info={props.info}
           options={opts}
-          value={props.value}
-          setValue={(v) => props.setValue(v ?? noGroup)}
+          value={props.value || noGroup}
+          setValue={(v) => props.setValue(v === noGroup ? undefined : v)}
           readOnly={props.readOnly}
         />
       )}

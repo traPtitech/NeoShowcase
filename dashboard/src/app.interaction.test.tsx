@@ -147,11 +147,21 @@ describe('interactions', () => {
         standalone.dispatchEvent(new MouseEvent(e, { bubbles: true, button: 0 }))
       }
       await settle(ctx, () => expect(button(ctx, 'Save').disabled).toBe(false))
+      expect(trigger.textContent).toContain('なし (単体のアプリ)')
       click(ctx, button(ctx, 'Save'))
       await settle(ctx, () => expect(ctx.backend.requestsTo('moveApplication')).toHaveLength(1))
       const [req] = ctx.backend.requestsTo('moveApplication')
       expect(req.applicationId).toBe('app-static')
       expect(req.groupId).toBeUndefined()
+    })
+  })
+
+  // Kobalte treats the empty string as no selection, so "no group" once showed an empty select.
+  it('app group settings: a standalone app shows that it is in no group', async () => {
+    await scenario('standalone app group', '/apps/app-runtime/settings/group', async (ctx) => {
+      await settle(ctx, () =>
+        expect(ctx.screen.querySelector('button[aria-haspopup=listbox]')?.textContent).toContain('なし (単体のアプリ)'),
+      )
     })
   })
 

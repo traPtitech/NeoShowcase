@@ -5,7 +5,7 @@ import { CheckBox } from '/@/components/templates/CheckBox'
 import { FormItem } from '/@/components/templates/FormItem'
 import { Button } from '/@/components/UI/Button'
 import Skeleton from '/@/components/UI/Skeleton'
-import GroupSelect, { noGroup } from '/@/features/applicationGroup/components/GroupSelect'
+import GroupSelect from '/@/features/applicationGroup/components/GroupSelect'
 import { originToIcon, repositoryURLToOrigin } from '/@/libs/application'
 import type { ApplicationFormStore } from '../../schema/applicationSchema'
 import type { EnvVarFormStore } from '../../schema/envVarSchema'
@@ -44,7 +44,7 @@ const GeneralStep: Component<{
                   </>
                 ),
               }}
-              value={field.input ?? noGroup}
+              value={field.input}
               setValue={(groupId) => field.onInput(groupId)}
             />
           )}

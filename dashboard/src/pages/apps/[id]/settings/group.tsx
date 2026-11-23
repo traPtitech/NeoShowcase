@@ -7,7 +7,7 @@ import FormBox from '/@/components/layouts/FormBox'
 import { Button } from '/@/components/UI/Button'
 import Skeleton from '/@/components/UI/Skeleton'
 import { useApplicationData } from '/@/features/application/data'
-import GroupSelect, { noGroup } from '/@/features/applicationGroup/components/GroupSelect'
+import GroupSelect from '/@/features/applicationGroup/components/GroupSelect'
 import {
   client,
   getApplicationGroup,
@@ -17,9 +17,9 @@ import {
 } from '/@/libs/api'
 import { toast } from '/@/libs/toast'
 
-const moveSchema = v.object({ groupId: v.string() })
+const moveSchema = v.object({ groupId: v.optional(v.string()) })
 
-const toInput = (app: Application) => ({ groupId: app.groupId ?? noGroup })
+const toInput = (app: Application) => ({ groupId: app.groupId })
 
 export default () => {
   const { app, refetch, hasPermission } = useApplicationData()
@@ -50,13 +50,13 @@ export default () => {
           try {
             await client.moveApplication({
               applicationId: app().id,
-              groupId: output.groupId === noGroup ? undefined : output.groupId,
+              groupId: output.groupId,
             })
             toast.success('アプリケーションのグループを変更しました')
             refetch()
             revalidateMyApplicationGroups()
             if (from) revalidateApplicationGroupApps(from)
-            if (output.groupId !== noGroup) revalidateApplicationGroupApps(output.groupId)
+            if (output.groupId) revalidateApplicationGroupApps(output.groupId)
           } catch (e) {
             handleAPIError(e, 'アプリケーションのグループの変更に失敗しました')
           }
@@ -70,7 +70,7 @@ export default () => {
                   <GroupSelect
                     name={field.props.name}
                     label="Group"
-                    value={field.input ?? noGroup}
+                    value={field.input}
                     setValue={(groupId) => field.onInput(groupId)}
                     current={currentGroup()}
                     readOnly={!hasPermission()}
