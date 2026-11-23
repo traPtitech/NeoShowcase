@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -48,6 +49,16 @@ func (e *groupTestEnv) as(t *testing.T, name string) context.Context {
 	t.Helper()
 	ctx := t.Context()
 	web.SetUser(&ctx, apiserver.CreateUser(e.c, name))
+	return ctx
+}
+
+// asAdmin returns a context of the admin user with the name, creating the user if needed.
+func (e *groupTestEnv) asAdmin(t *testing.T, name string) context.Context {
+	t.Helper()
+	ctx := t.Context()
+	user := apiserver.CreateUser(e.c, name)
+	user.Admin = true
+	web.SetUser(&ctx, user)
 	return ctx
 }
 
@@ -282,6 +293,10 @@ func TestGetApplicationGroup_ImplicitIsHidden(t *testing.T) {
 	assertErrorType(t, domain.ErrorTypeNotFound, err)
 	err = e.svc.MoveApplication(alice, app.App.ID, optional.From(app.Group.ID))
 	assertErrorType(t, domain.ErrorTypeNotFound, err)
+	err = e.svc.UpdateApplicationGroup(alice, app.Group.ID, &domain.UpdateApplicationGroupArgs{Name: optional.From("visible")})
+	assertErrorType(t, domain.ErrorTypeNotFound, err)
+	err = e.svc.DeleteApplicationGroup(alice, app.Group.ID)
+	assertErrorType(t, domain.ErrorTypeNotFound, err)
 }
 
 // A rejected owner change used to leave the other changes of the same update applied.
@@ -324,4 +339,140 @@ func TestUpdateApplication_OwnersAreValidatedBeforeAnyChange(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "renamed", got.App.Name)
 	assert.Equal(t, []string{web.GetUser(bob).ID}, got.Group.OwnerIDs)
+}
+
+func TestUpdateApplicationGroup(t *testing.T) {
+	t.Parallel()
+	e := newGroupTestEnv(t)
+	alice := e.as(t, "alice")
+	bob := e.as(t, "bob")
+
+	group, err := e.svc.CreateApplicationGroup(alice, "service")
+	require.NoError(t, err)
+
+	t.Run("needs ownership", func(t *testing.T) {
+		err := e.svc.UpdateApplicationGroup(bob, group.ID, &domain.UpdateApplicationGroupArgs{Name: optional.From("taken")})
+		assertErrorType(t, domain.ErrorTypeForbidden, err)
+	})
+
+	t.Run("rejects invalid values", func(t *testing.T) {
+		tests := []struct {
+			name string
+			args *domain.UpdateApplicationGroupArgs
+		}{
+			{"empty name", &domain.UpdateApplicationGroupArgs{Name: optional.From("")}},
+			{"empty owners", &domain.UpdateApplicationGroupArgs{OwnerIDs: optional.From([]string{})}},
+		}
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				err := e.svc.UpdateApplicationGroup(alice, group.ID, tt.args)
+				assertErrorType(t, domain.ErrorTypeBadRequest, err)
+			})
+		}
+	})
+
+	t.Run("renames the group", func(t *testing.T) {
+		err := e.svc.UpdateApplicationGroup(alice, group.ID, &domain.UpdateApplicationGroupArgs{Name: optional.From("renamed")})
+		require.NoError(t, err)
+
+		got, err := e.svc.GetApplicationGroup(alice, group.ID)
+		require.NoError(t, err)
+		assert.Equal(t, "renamed", got.Name)
+		assert.Equal(t, []string{web.GetUser(alice).ID}, got.OwnerIDs)
+	})
+}
+
+func TestGetApplicationGroups_Mine(t *testing.T) {
+	t.Parallel()
+	e := newGroupTestEnv(t)
+	alice := e.as(t, "alice")
+	bob := e.as(t, "bob")
+
+	aliceGroup, err := e.svc.CreateApplicationGroup(alice, "alice-service")
+	require.NoError(t, err)
+	bobGroup, err := e.svc.CreateApplicationGroup(bob, "bob-service")
+	require.NoError(t, err)
+
+	ids := func(groups []*domain.ApplicationGroup) []string {
+		return lo.Map(groups, func(g *domain.ApplicationGroup, _ int) string { return g.ID })
+	}
+
+	mine, err := e.svc.GetApplicationGroups(alice, apiserver.GetAppGroupScopeMine)
+	require.NoError(t, err)
+	assert.ElementsMatch(t, []string{aliceGroup.ID}, ids(mine), "only the groups the user owns are listed")
+
+	all, err := e.svc.GetApplicationGroups(alice, apiserver.GetAppGroupScopeAll)
+	require.NoError(t, err)
+	assert.ElementsMatch(t, []string{aliceGroup.ID, bobGroup.ID}, ids(all))
+
+	err = e.svc.UpdateApplicationGroup(alice, aliceGroup.ID, &domain.UpdateApplicationGroupArgs{
+		OwnerIDs: optional.From([]string{web.GetUser(alice).ID, web.GetUser(bob).ID}),
+	})
+	require.NoError(t, err)
+	bobMine, err := e.svc.GetApplicationGroups(bob, apiserver.GetAppGroupScopeMine)
+	require.NoError(t, err)
+	assert.ElementsMatch(t, []string{aliceGroup.ID, bobGroup.ID}, ids(bobMine), "a group is listed for an owner added later")
+}
+
+func TestAdminOperatesGroupsOfOthers(t *testing.T) {
+	t.Parallel()
+	e := newGroupTestEnv(t)
+	alice := e.as(t, "alice")
+	admin := e.asAdmin(t, "admin")
+
+	aliceGroup, err := e.svc.CreateApplicationGroup(alice, "alice-service")
+	require.NoError(t, err)
+	app, err := e.svc.CreateApplication(alice, e.newApp("app", "admin.example.com", "/"), optional.From(aliceGroup.ID))
+	require.NoError(t, err)
+	adminGroup, err := e.svc.CreateApplicationGroup(admin, "admin-service")
+	require.NoError(t, err)
+
+	err = e.svc.UpdateApplication(admin, app.App.ID, &domain.UpdateApplicationArgs{Name: optional.From("renamed")}, optional.None[[]string]())
+	require.NoError(t, err)
+	err = e.svc.UpdateApplicationGroup(admin, aliceGroup.ID, &domain.UpdateApplicationGroupArgs{Name: optional.From("renamed-service")})
+	require.NoError(t, err)
+	err = e.svc.MoveApplication(admin, app.App.ID, optional.From(adminGroup.ID))
+	require.NoError(t, err)
+
+	got, err := e.svc.GetApplication(admin, app.App.ID)
+	require.NoError(t, err)
+	assert.Equal(t, "renamed", got.App.Name)
+	assert.Equal(t, adminGroup.ID, got.Group.ID)
+}
+
+func TestUnknownOwnerIDsAreRejected(t *testing.T) {
+	t.Parallel()
+	e := newGroupTestEnv(t)
+	alice := e.as(t, "alice")
+	aliceID := web.GetUser(alice).ID
+
+	t.Run("standalone app", func(t *testing.T) {
+		app, err := e.svc.CreateApplication(alice, e.newApp("standalone", "unknown-owner.example.com", "/"), optional.None[string]())
+		require.NoError(t, err)
+
+		err = e.svc.UpdateApplication(alice, app.App.ID, &domain.UpdateApplicationArgs{Name: optional.From("renamed")},
+			optional.From([]string{aliceID, "no-such-user"}))
+		assertErrorType(t, domain.ErrorTypeNotFound, err)
+
+		got, err := e.svc.GetApplication(alice, app.App.ID)
+		require.NoError(t, err)
+		assert.Equal(t, app.App.Name, got.App.Name)
+		assert.ElementsMatch(t, app.Group.OwnerIDs, got.Group.OwnerIDs)
+	})
+
+	t.Run("application group", func(t *testing.T) {
+		group, err := e.svc.CreateApplicationGroup(alice, "service")
+		require.NoError(t, err)
+
+		err = e.svc.UpdateApplicationGroup(alice, group.ID, &domain.UpdateApplicationGroupArgs{
+			Name:     optional.From("renamed"),
+			OwnerIDs: optional.From([]string{aliceID, "no-such-user"}),
+		})
+		assertErrorType(t, domain.ErrorTypeNotFound, err)
+
+		got, err := e.svc.GetApplicationGroup(alice, group.ID)
+		require.NoError(t, err)
+		assert.Equal(t, "service", got.Name)
+		assert.Equal(t, []string{aliceID}, got.OwnerIDs)
+	})
 }
