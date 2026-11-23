@@ -14,7 +14,7 @@ type Props = {
   /** Group ID, or undefined for a standalone application. */
   value: string | undefined
   setValue: (groupId: string | undefined) => void
-  /** The group the application is in now. Listed even when the user does not own it. */
+  /** A group listed even when the user does not own it, such as the group the application is in now. */
   current?: ApplicationGroup
   readOnly?: boolean
 }

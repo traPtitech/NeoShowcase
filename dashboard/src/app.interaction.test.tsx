@@ -1,5 +1,7 @@
+import { create } from '@bufbuild/protobuf'
 import { Code } from '@connectrpc/connect'
 import { describe, expect, it } from 'vitest'
+import { ApplicationGroupSchema } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import {
   button,
   buttonContaining,
@@ -89,6 +91,25 @@ describe('interactions', () => {
         ]),
       )
     })
+  })
+
+  it('create app: "Add New App" of a group the admin does not own shows that group as selected', async () => {
+    await scenario(
+      'create app in a group of others',
+      '/apps/new?groupID=group-other&repositoryID=repo-github',
+      async (ctx) => {
+        await waitForText(ctx, 'Create Application from')
+        const select = () => ctx.screen.querySelector<HTMLSelectElement>(`select[name='["form","groupId"]']`)
+        await settle(ctx, () => expect(select()?.value).toBe('group-other'))
+        expect(select()?.selectedOptions[0]?.textContent).toBe('other-service')
+      },
+      {
+        setup: (b) =>
+          b.fixtures.groups.push(
+            create(ApplicationGroupSchema, { id: 'group-other', name: 'other-service', ownerIds: [b.ids.other] }),
+          ),
+      },
+    )
   })
 
   it('groups: creating a group opens its page', async () => {

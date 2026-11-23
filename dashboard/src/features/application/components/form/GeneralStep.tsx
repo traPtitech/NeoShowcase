@@ -1,6 +1,6 @@
 import { Field, getInput } from '@formisch/solid/v2'
 import { type Component, Loading, Show } from 'solid-js'
-import type { Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import type { ApplicationGroup, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { CheckBox } from '/@/components/templates/CheckBox'
 import { FormItem } from '/@/components/templates/FormItem'
 import { Button } from '/@/components/UI/Button'
@@ -19,6 +19,8 @@ const GeneralStep: Component<{
   form: ApplicationFormStore
   envVarForm: EnvVarFormStore
   repo: Repository
+  /** The group the form starts with, listed even when the user does not own it. */
+  initialGroup?: ApplicationGroup
   backToRepoStep: () => void
   proceedToWebsiteStep: () => void
 }> = (props) => (
@@ -46,6 +48,7 @@ const GeneralStep: Component<{
               }}
               value={field.input}
               setValue={(groupId) => field.onInput(groupId)}
+              current={props.initialGroup}
             />
           )}
         </Field>

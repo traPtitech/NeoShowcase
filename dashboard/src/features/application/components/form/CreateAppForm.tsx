@@ -2,7 +2,7 @@ import { createForm, Form, handleSubmit, setInput, validate } from '@formisch/so
 import { useNavigate, useSearchParams } from '@solidjs/router'
 import { type Component, createEffect, createMemo, createSignal, For, Match, Show, Switch, untrack } from 'solid-js'
 import { Progress } from '/@/components/UI/StepProgress'
-import { client, getRepository, handleAPIError } from '/@/libs/api'
+import { client, getApplicationGroup, getRepository, handleAPIError } from '/@/libs/api'
 import { toast } from '/@/libs/toast'
 import {
   createOrUpdateApplicationSchema,
@@ -26,12 +26,13 @@ const CreateAppForm: Component = () => {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
 
+  // グループのページから来た場合 (?groupID=) はそのグループを選んだ状態で始める
+  const initialGroupId = untrack(() => (typeof searchParams.groupID === 'string' ? searchParams.groupID : ''))
+  // 自分がオーナーでないグループ (admin の場合) も選択肢に出すため、ここで取得して渡す
+  const initialGroup = createMemo(() => (initialGroupId !== '' ? getApplicationGroup(initialGroupId) : undefined))
   const form = createForm({
     schema: createOrUpdateApplicationSchema,
-    // グループのページから来た場合 (?groupID=) はそのグループを選んだ状態で始める
-    initialInput: getInitialValueOfCreateAppForm(
-      untrack(() => (typeof searchParams.groupID === 'string' ? searchParams.groupID : '')),
-    ),
+    initialInput: getInitialValueOfCreateAppForm(initialGroupId),
   })
   const envVarForm = createForm({ schema: envVarSchema, initialInput: envVarsMessageToSchema() })
 
@@ -119,6 +120,7 @@ const CreateAppForm: Component = () => {
                   form={form}
                   envVarForm={envVarForm}
                   repo={repo()}
+                  initialGroup={initialGroup()}
                   backToRepoStep={goToRepoStep}
                   proceedToWebsiteStep={proceedToWebsiteStep}
                 />
