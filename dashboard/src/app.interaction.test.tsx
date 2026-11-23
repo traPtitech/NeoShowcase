@@ -397,11 +397,15 @@ describe('interactions', () => {
         await idle(ctx)
         await openSelect(ctx)
         // jsdom does not lay out the page, so the classes that bound the width stand in for measuring it
-        const listbox = document.querySelector<HTMLElement>('[role=listbox]')
-        expect(listbox?.parentElement?.className).toMatch(/\bmax-w-/)
-        for (const option of document.querySelectorAll<HTMLElement>('[role=option]')) {
-          expect(option.firstElementChild?.className).toMatch(/\btruncate\b/)
-        }
+        const maxWidth = (el: Element | null | undefined) => el?.className.match(/\bmax-w-\S+/)?.[0]
+        const triggerWidth = maxWidth(ctx.screen.querySelector('button[aria-haspopup=listbox]'))
+        expect(triggerWidth).toMatch(/^max-w-\d+$/)
+        expect(maxWidth(document.querySelector('[role=listbox]')?.parentElement)).toBe(triggerWidth)
+        const long = [...document.querySelectorAll<HTMLElement>('[role=option]')].find((o) =>
+          o.textContent?.includes('あ'.repeat(100)),
+        )
+        expect(long?.firstElementChild?.className).toMatch(/\btruncate\b/)
+        expect(long?.firstElementChild?.getAttribute('title')).toBe('あ'.repeat(100))
       },
       {
         setup: (b) => {
