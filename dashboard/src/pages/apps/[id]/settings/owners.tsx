@@ -1,7 +1,7 @@
 import { createMemo, Show } from 'solid-js'
 import type { User } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { DataTable } from '/@/components/layouts/DataTable'
-import OwnerList from '/@/components/templates/OwnerList'
+import OwnerList, { ReadOnlyOwnerList } from '/@/components/templates/OwnerList'
 import { useApplicationData } from '/@/features/application/data'
 import { client, getApplicationGroup, handleAPIError } from '/@/libs/api'
 import { users, usersFromIds } from '/@/libs/session'
@@ -58,22 +58,18 @@ export default () => {
         }
       >
         {(group) => (
-          <>
-            <div class="text-regular text-text-black">
-              このアプリはグループ{' '}
-              <a href={`/groups/${group().id}/settings/owners`} class="text-primary-main">
-                {group().name}
-              </a>{' '}
-              に属しているため、オーナーはグループで編集します。
-            </div>
-            <OwnerList
-              owners={usersFromIds(group().ownerIds)}
-              users={users()}
-              handleAddOwner={handleAddOwner}
-              handleDeleteOwner={handleDeleteOwner}
-              hasPermission={false}
-            />
-          </>
+          <ReadOnlyOwnerList
+            owners={usersFromIds(group().ownerIds)}
+            notice={
+              <>
+                このアプリはグループ {group().name} に属しています。オーナーは
+                <a href={`/groups/${group().id}/settings/owners`} class="text-primary-main">
+                  グループのオーナー設定
+                </a>
+                から編集してください
+              </>
+            }
+          />
         )}
       </Show>
     </DataTable.Container>

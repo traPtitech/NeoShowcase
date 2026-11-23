@@ -1,3 +1,4 @@
+import type { JSX } from '@solidjs/web'
 import { type Component, createMemo, createSignal, For, Show } from 'solid-js'
 import type { User } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { styled } from '/@/components/styled-components'
@@ -115,12 +116,11 @@ const OwnerRow: Component<{
   )
 }
 
-const OwnerList: Component<{
+/** Owners with a search box. `action` sits next to the search box; `deleteOwner`, when given, adds a delete button to each owner. */
+const OwnersView: Component<{
   owners: User[]
-  users: User[]
-  handleAddOwner: (user: User) => Promise<void>
-  handleDeleteOwner: (user: User) => Promise<void>
-  hasPermission: boolean
+  action: JSX.Element
+  deleteOwner?: (user: User) => void
 }> = (props) => {
   const [searchUserQuery, setSearchUserQuery] = createSignal('')
   const filteredOwners = createMemo(() => {
@@ -128,11 +128,6 @@ const OwnerList: Component<{
       return props.owners
     }
     return props.owners.filter(({ name }) => name.toLowerCase().includes(searchUserQuery().toLowerCase()))
-  })
-
-  const nonOwners = createMemo(() => props.users.filter((u) => !props.owners.some((o) => o.id === u.id)))
-  const { Modal: AddUserModal, open: openAddUserModal } = useModal({
-    showCloseButton: true,
   })
 
   return (
@@ -144,29 +139,10 @@ const OwnerList: Component<{
           value={searchUserQuery()}
           onInput={(e) => setSearchUserQuery(e.currentTarget.value)}
         />
-        <Button
-          variants="primary"
-          size="medium"
-          leftIcon={<div class="i-material-symbols:add shrink-0 text-2xl/6" />}
-          onClick={openAddUserModal}
-          disabled={!props.hasPermission}
-          tooltip={{
-            content: !props.hasPermission ? '設定を変更するにはオーナーになる必要があります' : undefined,
-          }}
-        >
-          Add Owners
-        </Button>
-        <AddUserModal.Container fit={false}>
-          <AddUserModal.Header>Add Owner</AddUserModal.Header>
-          <AddUserModal.Body fit={false}>
-            <AddOwners addOwner={props.handleAddOwner} nonOwners={nonOwners()} />
-          </AddUserModal.Body>
-        </AddUserModal.Container>
+        {props.action}
       </div>
       <UsersContainer>
-        <For each={filteredOwners()}>
-          {(owner) => <OwnerRow user={owner} deleteOwner={props.hasPermission ? props.handleDeleteOwner : undefined} />}
-        </For>
+        <For each={filteredOwners()}>{(owner) => <OwnerRow user={owner} deleteOwner={props.deleteOwner} />}</For>
         <Show when={filteredOwners().length === 0}>
           <UserPlaceholder>No Owners Found</UserPlaceholder>
         </Show>
@@ -174,5 +150,55 @@ const OwnerList: Component<{
     </>
   )
 }
+
+const OwnerList: Component<{
+  owners: User[]
+  users: User[]
+  handleAddOwner: (user: User) => Promise<void>
+  handleDeleteOwner: (user: User) => Promise<void>
+  hasPermission: boolean
+}> = (props) => {
+  const nonOwners = createMemo(() => props.users.filter((u) => !props.owners.some((o) => o.id === u.id)))
+  const { Modal: AddUserModal, open: openAddUserModal } = useModal({
+    showCloseButton: true,
+  })
+
+  return (
+    <OwnersView
+      owners={props.owners}
+      deleteOwner={props.hasPermission ? props.handleDeleteOwner : undefined}
+      action={
+        <>
+          <Button
+            variants="primary"
+            size="medium"
+            leftIcon={<div class="i-material-symbols:add shrink-0 text-2xl/6" />}
+            onClick={openAddUserModal}
+            disabled={!props.hasPermission}
+            tooltip={{
+              content: !props.hasPermission ? '設定を変更するにはオーナーになる必要があります' : undefined,
+            }}
+          >
+            Add Owners
+          </Button>
+          <AddUserModal.Container fit={false}>
+            <AddUserModal.Header>Add Owner</AddUserModal.Header>
+            <AddUserModal.Body fit={false}>
+              <AddOwners addOwner={props.handleAddOwner} nonOwners={nonOwners()} />
+            </AddUserModal.Body>
+          </AddUserModal.Container>
+        </>
+      }
+    />
+  )
+}
+
+/** Owners that are edited somewhere else. `notice` tells where, in place of the button to add owners. */
+export const ReadOnlyOwnerList: Component<{
+  owners: User[]
+  notice: JSX.Element
+}> = (props) => (
+  <OwnersView owners={props.owners} action={<div class="text-regular text-text-black w-full">{props.notice}</div>} />
+)
 
 export default OwnerList

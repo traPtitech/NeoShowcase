@@ -186,6 +186,15 @@ describe('interactions', () => {
     })
   })
 
+  it('app owners: an app in a group sends its owner to the group settings instead of saying they are not an owner', async () => {
+    await scenario('grouped app owners', '/apps/app-static/settings/owners', async (ctx) => {
+      await waitForText(ctx, 'admin-user', 'web-service', 'グループのオーナー設定から編集してください')
+      expect(link(ctx, '/groups/group-web/settings/owners').textContent).toContain('グループのオーナー設定')
+      expect(ctx.screen.textContent).not.toContain('設定を変更するにはオーナーになる必要があります')
+      expect(() => button(ctx, 'Add Owners')).toThrow()
+    })
+  })
+
   it('settings: add an SSH key through the modal', async () => {
     await scenario('add ssh key', '/settings', async (ctx) => {
       await waitForText(ctx, 'laptop')
