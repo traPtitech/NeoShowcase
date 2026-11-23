@@ -437,7 +437,8 @@ const routes = (router: ConnectRouter) => {
       app.repositoryId = req.repositoryId
       app.refName = req.refName
       app.groupId = req.groupId
-      app.ownerIds = req.groupId ? findOrThrow(fixtures.groups, req.groupId, 'group').ownerIds : [ids.me]
+      // like the server, a given group ID has to name a group, even when it is empty
+      app.ownerIds = req.groupId !== undefined ? findOrThrow(fixtures.groups, req.groupId, 'group').ownerIds : [ids.me]
       fixtures.applications.push(app)
       return app
     },
