@@ -64,7 +64,7 @@ func (s *Service) CreateApplication(ctx context.Context, app *domain.Application
 	if !repo.CanCreateApp(user) {
 		return nil, domain.NewError(domain.ErrorTypeForbidden, "you cannot create application from this repository", nil)
 	}
-	var newGroup *domain.ApplicationGroup
+	var newImplicitGroupOwnerIDs optional.Of[[]string]
 	if groupID.Valid {
 		group, err := s.getExplicitApplicationGroup(ctx, groupID.V)
 		if err != nil {
@@ -75,8 +75,8 @@ func (s *Service) CreateApplication(ctx context.Context, app *domain.Application
 		}
 		app.GroupID = group.ID
 	} else {
-		newGroup = domain.NewImplicitApplicationGroup(lo.Uniq(append(slices.Clone(repo.OwnerIDs), user.ID)))
-		app.GroupID = newGroup.ID
+		app.GroupID = domain.NewID()
+		newImplicitGroupOwnerIDs = optional.From(lo.Uniq(append(slices.Clone(repo.OwnerIDs), user.ID)))
 	}
 	err = s.validateApp(ctx, app)
 	if err != nil {
@@ -84,7 +84,7 @@ func (s *Service) CreateApplication(ctx context.Context, app *domain.Application
 	}
 
 	// Create
-	err = s.appRepo.CreateApplication(ctx, app, newGroup)
+	err = s.appRepo.CreateApplication(ctx, app, newImplicitGroupOwnerIDs)
 	if err != nil {
 		return nil, err
 	}
@@ -266,11 +266,10 @@ func (s *Service) GetApplication(ctx context.Context, id string) (*TopAppInfo, e
 	return info, nil
 }
 
-// UpdateApplication applies args to the application.
-// ownerIDs, when given, replace the owners of a standalone application; an application in a group a user created
-// takes its owners from the group, so giving ownerIDs for it is rejected.
-// Every change is validated before any of them is written.
-func (s *Service) UpdateApplication(ctx context.Context, id string, args *domain.UpdateApplicationArgs, ownerIDs optional.Of[[]string]) error {
+// UpdateApplication applies args to the application in one transaction.
+// args.GroupOwnerIDs, when given, replace the owners of a standalone application; an application in a group a user
+// created takes its owners from the group, so giving them for it is rejected.
+func (s *Service) UpdateApplication(ctx context.Context, id string, args *domain.UpdateApplicationArgs) error {
 	app, err := s.appRepo.GetApplication(ctx, id)
 	if err != nil {
 		return err
@@ -299,25 +298,17 @@ func (s *Service) UpdateApplication(ctx context.Context, id string, args *domain
 	if appBefore.Config.BuildConfig.MongoDB() != app.Config.BuildConfig.MongoDB() {
 		return domain.NewError(domain.ErrorTypeBadRequest, "use_mongodb is immutable", nil)
 	}
-	var groupArgs *domain.UpdateApplicationGroupArgs
-	if ownerIDs.Valid {
+	if args.GroupOwnerIDs.Valid {
 		if !group.Implicit {
 			return domain.NewError(domain.ErrorTypeBadRequest, "owners of an application in a group are managed by the group", nil)
 		}
-		groupArgs = &domain.UpdateApplicationGroupArgs{OwnerIDs: optional.From(ownerIDs.V)}
-		group.Apply(groupArgs)
+		group.Apply(&domain.UpdateApplicationGroupArgs{OwnerIDs: args.GroupOwnerIDs})
 		if err = group.Validate(); err != nil {
 			return domain.NewError(domain.ErrorTypeBadRequest, "invalid owners", err)
 		}
 	}
 
 	// Update
-	// Owners go first, since unknown user IDs are only found by writing them.
-	if groupArgs != nil {
-		if err = s.groupRepo.UpdateApplicationGroup(ctx, group.ID, groupArgs); err != nil {
-			return err
-		}
-	}
 	err = s.appRepo.UpdateApplication(ctx, id, args)
 	if err != nil {
 		return oops.Wrapf(err, "updating application")

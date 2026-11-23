@@ -486,7 +486,7 @@ func TestUpdateApplication(t *testing.T) {
 			app.Name = tt.updatedName
 			err = svc.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{
 				Name: optional.From(app.Name),
-			}, optional.None[[]string]())
+			})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -603,7 +603,7 @@ func TestUpdateApplication_UpdateMariaDBConfigIsNotAllowed(t *testing.T) {
 						UseMariaDB: tt.updatedUseMariaDB,
 					},
 				}),
-			}, optional.None[[]string]())
+			})
 
 			// Assert
 			if tt.expectError {

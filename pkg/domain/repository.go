@@ -29,6 +29,9 @@ type UpdateApplicationArgs struct {
 	Config           optional.Of[ApplicationConfig]
 	Websites         optional.Of[[]*Website]
 	PortPublications optional.Of[[]*PortPublication]
+	// GroupOwnerIDs replaces the owners of the group the application belongs to. Apply does not use it,
+	// since an application has no owners of its own.
+	GroupOwnerIDs optional.Of[[]string]
 }
 
 func (a *Application) Apply(args *UpdateApplicationArgs) {
@@ -71,15 +74,17 @@ func (a *Application) Apply(args *UpdateApplicationArgs) {
 type ApplicationRepository interface {
 	GetApplications(ctx context.Context, cond GetApplicationCondition) ([]*Application, error)
 	GetApplication(ctx context.Context, id string) (*Application, error)
-	// CreateApplication creates app in the group of app.GroupID.
-	// newGroup, when not nil, is that group, and is created together with app in one transaction;
-	// when nil, the group has to exist.
-	CreateApplication(ctx context.Context, app *Application, newGroup *ApplicationGroup) error
+	// CreateApplication creates app in the group of app.GroupID in one transaction.
+	// newImplicitGroupOwnerIDs, when given, are the owners of that group, which is created in the transaction
+	// as an implicit group; when not given, the group has to exist.
+	CreateApplication(ctx context.Context, app *Application, newImplicitGroupOwnerIDs optional.Of[[]string]) error
+	// UpdateApplication applies args to the application, including args.GroupOwnerIDs to its group, in one transaction.
 	UpdateApplication(ctx context.Context, id string, args *UpdateApplicationArgs) error
 	// SetApplicationGroup moves the application into the group of groupID in one transaction.
-	// newGroup, when not nil, is that group, and is created in the transaction; when nil, the group has to exist.
+	// newImplicitGroupOwnerIDs, when given, are the owners of that group, which is created in the transaction
+	// as an implicit group; when not given, the group has to exist.
 	// The previous group of the application is deleted when it is implicit.
-	SetApplicationGroup(ctx context.Context, id string, groupID string, newGroup *ApplicationGroup) error
+	SetApplicationGroup(ctx context.Context, id string, groupID string, newImplicitGroupOwnerIDs optional.Of[[]string]) error
 	BulkUpdateState(ctx context.Context, states []*Container) error
 	// DeleteApplication deletes the application, and its group when the group is implicit, in one transaction.
 	DeleteApplication(ctx context.Context, id string) error

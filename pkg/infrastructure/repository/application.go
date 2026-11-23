@@ -14,6 +14,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository/models"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository/repoconvert"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
+	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
 type applicationRepository struct {
@@ -97,17 +98,15 @@ func (r *applicationRepository) GetApplication(ctx context.Context, id string) (
 	return repoconvert.ToDomainApplication(app), nil
 }
 
-func (r *applicationRepository) CreateApplication(ctx context.Context, app *domain.Application, newGroup *domain.ApplicationGroup) error {
+func (r *applicationRepository) CreateApplication(ctx context.Context, app *domain.Application, newImplicitGroupOwnerIDs optional.Of[[]string]) error {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return oops.Wrapf(err, "starting transaction")
 	}
 	defer tx.Rollback()
 
-	if newGroup != nil {
-		if err = insertApplicationGroup(ctx, tx, newGroup); err != nil {
-			return err
-		}
+	if err = insertImplicitApplicationGroup(ctx, tx, app.GroupID, newImplicitGroupOwnerIDs); err != nil {
+		return err
 	}
 	ma := repoconvert.FromDomainApplication(app)
 	if err = ma.Insert(ctx, tx, boil.Blacklist()); err != nil {
@@ -147,6 +146,16 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 	app, err := r.getApplication(ctx, id, true, tx)
 	if err != nil {
 		return err
+	}
+
+	if args.GroupOwnerIDs.Valid {
+		group, err := models.FindApplicationGroup(ctx, tx, app.GroupID.String)
+		if err != nil {
+			return oops.Wrapf(err, "getting application group")
+		}
+		if err = setApplicationGroupOwners(ctx, tx, group, args.GroupOwnerIDs.V); err != nil {
+			return err
+		}
 	}
 
 	var cols []string
@@ -223,7 +232,7 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 	return err
 }
 
-func (r *applicationRepository) SetApplicationGroup(ctx context.Context, id string, groupID string, newGroup *domain.ApplicationGroup) error {
+func (r *applicationRepository) SetApplicationGroup(ctx context.Context, id string, groupID string, newImplicitGroupOwnerIDs optional.Of[[]string]) error {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return oops.Wrapf(err, "starting transaction")
@@ -234,10 +243,8 @@ func (r *applicationRepository) SetApplicationGroup(ctx context.Context, id stri
 	if err != nil {
 		return err
 	}
-	if newGroup != nil {
-		if err = insertApplicationGroup(ctx, tx, newGroup); err != nil {
-			return err
-		}
+	if err = insertImplicitApplicationGroup(ctx, tx, groupID, newImplicitGroupOwnerIDs); err != nil {
+		return err
 	}
 	prevGroupID := app.GroupID
 	app.GroupID = null.StringFrom(groupID)
@@ -252,6 +259,14 @@ func (r *applicationRepository) SetApplicationGroup(ctx context.Context, id stri
 		return oops.Wrapf(err, "committing transaction")
 	}
 	return nil
+}
+
+// insertImplicitApplicationGroup inserts an implicit group of groupID with the owners, if the owners are given.
+func insertImplicitApplicationGroup(ctx context.Context, ex boil.ContextExecutor, groupID string, ownerIDs optional.Of[[]string]) error {
+	if !ownerIDs.Valid {
+		return nil
+	}
+	return insertApplicationGroup(ctx, ex, &domain.ApplicationGroup{ID: groupID, Implicit: true, OwnerIDs: ownerIDs.V})
 }
 
 // deleteImplicitApplicationGroup deletes the group of groupID if it is implicit.

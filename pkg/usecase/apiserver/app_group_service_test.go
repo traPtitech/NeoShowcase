@@ -102,7 +102,7 @@ func TestCreateApplication_Standalone(t *testing.T) {
 	assert.Empty(t, groups, "standalone apps are not listed as groups")
 
 	bob := e.as(t, "bob")
-	err = e.svc.UpdateApplication(bob, created.App.ID, &domain.UpdateApplicationArgs{Name: optional.From("renamed")}, optional.None[[]string]())
+	err = e.svc.UpdateApplication(bob, created.App.ID, &domain.UpdateApplicationArgs{Name: optional.From("renamed")})
 	assertErrorType(t, domain.ErrorTypeForbidden, err)
 }
 
@@ -152,7 +152,7 @@ func TestCreateApplication_InGroup(t *testing.T) {
 		OwnerIDs: optional.From([]string{web.GetUser(alice).ID, web.GetUser(bob).ID}),
 	})
 	require.NoError(t, err)
-	err = e.svc.UpdateApplication(bob, created.App.ID, &domain.UpdateApplicationArgs{Name: optional.From("renamed")}, optional.None[[]string]())
+	err = e.svc.UpdateApplication(bob, created.App.ID, &domain.UpdateApplicationArgs{Name: optional.From("renamed")})
 	require.NoError(t, err)
 
 	mine, err := e.svc.GetApplications(bob, apiserver.GetAppScope{Scope: apiserver.GetAppScopeMine})
@@ -219,7 +219,7 @@ func TestMoveApplication(t *testing.T) {
 			Websites: optional.From([]*domain.Website{{
 				ID: domain.NewID(), FQDN: "move.example.com", PathPrefix: "/api", HTTPPort: 80,
 			}}),
-		}, optional.None[[]string]())
+		})
 		require.NoError(t, err, "nesting is allowed in the same group")
 
 		err = e.svc.MoveApplication(alice, backend.App.ID, optional.None[string]())
@@ -231,7 +231,7 @@ func TestMoveApplication(t *testing.T) {
 			Websites: optional.From([]*domain.Website{{
 				ID: domain.NewID(), FQDN: "move-api.example.com", PathPrefix: "/", HTTPPort: 80,
 			}}),
-		}, optional.None[[]string]())
+		})
 		require.NoError(t, err)
 
 		err = e.svc.MoveApplication(alice, backend.App.ID, optional.None[string]())
@@ -253,19 +253,19 @@ func TestUpdateApplication_StandaloneOwners(t *testing.T) {
 	standalone, err := e.svc.CreateApplication(alice, e.newApp("standalone", "owners.example.com", "/"), optional.None[string]())
 	require.NoError(t, err)
 
-	err = e.svc.UpdateApplication(alice, standalone.App.ID, &domain.UpdateApplicationArgs{}, optional.From([]string{web.GetUser(alice).ID, web.GetUser(bob).ID}))
+	err = e.svc.UpdateApplication(alice, standalone.App.ID, &domain.UpdateApplicationArgs{GroupOwnerIDs: optional.From([]string{web.GetUser(alice).ID, web.GetUser(bob).ID})})
 	require.NoError(t, err)
-	err = e.svc.UpdateApplication(bob, standalone.App.ID, &domain.UpdateApplicationArgs{Name: optional.From("renamed")}, optional.None[[]string]())
+	err = e.svc.UpdateApplication(bob, standalone.App.ID, &domain.UpdateApplicationArgs{Name: optional.From("renamed")})
 	require.NoError(t, err, "a new owner can operate the app")
 
-	err = e.svc.UpdateApplication(alice, standalone.App.ID, &domain.UpdateApplicationArgs{}, optional.From([]string{}))
+	err = e.svc.UpdateApplication(alice, standalone.App.ID, &domain.UpdateApplicationArgs{GroupOwnerIDs: optional.From([]string{})})
 	assertErrorType(t, domain.ErrorTypeBadRequest, err)
 
 	group, err := e.svc.CreateApplicationGroup(alice, "service")
 	require.NoError(t, err)
 	grouped, err := e.svc.CreateApplication(alice, e.newApp("grouped", "owners-grouped.example.com", "/"), optional.From(group.ID))
 	require.NoError(t, err)
-	err = e.svc.UpdateApplication(alice, grouped.App.ID, &domain.UpdateApplicationArgs{}, optional.From([]string{web.GetUser(bob).ID}))
+	err = e.svc.UpdateApplication(alice, grouped.App.ID, &domain.UpdateApplicationArgs{GroupOwnerIDs: optional.From([]string{web.GetUser(bob).ID})})
 	assertErrorType(t, domain.ErrorTypeBadRequest, err)
 }
 
@@ -337,7 +337,7 @@ func TestUpdateApplication_OwnersAreValidatedBeforeAnyChange(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := e.svc.UpdateApplication(alice, tt.app.App.ID, &domain.UpdateApplicationArgs{Name: optional.From("renamed")}, optional.From(tt.ownerIDs))
+			err := e.svc.UpdateApplication(alice, tt.app.App.ID, &domain.UpdateApplicationArgs{Name: optional.From("renamed"), GroupOwnerIDs: optional.From(tt.ownerIDs)})
 			assertErrorType(t, domain.ErrorTypeBadRequest, err)
 
 			got, err := e.svc.GetApplication(alice, tt.app.App.ID)
@@ -346,8 +346,10 @@ func TestUpdateApplication_OwnersAreValidatedBeforeAnyChange(t *testing.T) {
 		})
 	}
 
-	err = e.svc.UpdateApplication(alice, standalone.App.ID, &domain.UpdateApplicationArgs{Name: optional.From("renamed")},
-		optional.From([]string{web.GetUser(bob).ID}))
+	err = e.svc.UpdateApplication(alice, standalone.App.ID, &domain.UpdateApplicationArgs{
+		Name:          optional.From("renamed"),
+		GroupOwnerIDs: optional.From([]string{web.GetUser(bob).ID}),
+	})
 	require.NoError(t, err, "an owner may hand the app over to others in the same update")
 	got, err := e.svc.GetApplication(bob, standalone.App.ID)
 	require.NoError(t, err)
@@ -445,7 +447,7 @@ func TestAdminOperatesGroupsOfOthers(t *testing.T) {
 	adminGroup, err := e.svc.CreateApplicationGroup(admin, "admin-service")
 	require.NoError(t, err)
 
-	err = e.svc.UpdateApplication(admin, app.App.ID, &domain.UpdateApplicationArgs{Name: optional.From("renamed")}, optional.None[[]string]())
+	err = e.svc.UpdateApplication(admin, app.App.ID, &domain.UpdateApplicationArgs{Name: optional.From("renamed")})
 	require.NoError(t, err)
 	err = e.svc.UpdateApplicationGroup(admin, aliceGroup.ID, &domain.UpdateApplicationGroupArgs{Name: optional.From("renamed-service")})
 	require.NoError(t, err)
@@ -468,8 +470,10 @@ func TestUnknownOwnerIDsAreRejected(t *testing.T) {
 		app, err := e.svc.CreateApplication(alice, e.newApp("standalone", "unknown-owner.example.com", "/"), optional.None[string]())
 		require.NoError(t, err)
 
-		err = e.svc.UpdateApplication(alice, app.App.ID, &domain.UpdateApplicationArgs{Name: optional.From("renamed")},
-			optional.From([]string{aliceID, "no-such-user"}))
+		err = e.svc.UpdateApplication(alice, app.App.ID, &domain.UpdateApplicationArgs{
+			Name:          optional.From("renamed"),
+			GroupOwnerIDs: optional.From([]string{aliceID, "no-such-user"}),
+		})
 		assertErrorType(t, domain.ErrorTypeNotFound, err)
 
 		got, err := e.svc.GetApplication(alice, app.App.ID)
@@ -602,4 +606,29 @@ func TestOwnerOnlyOperationsFollowTheGroup(t *testing.T) {
 	envs, err := e.svc.GetEnvironmentVariables(bob, appID)
 	require.NoError(t, err)
 	assert.Contains(t, lo.Map(envs, func(env *domain.Environment, _ int) string { return env.Key }), "KEY")
+}
+
+func TestUpdateApplication_OwnersAreNotChangedWhenTheAppFailsToUpdate(t *testing.T) {
+	t.Parallel()
+	e := newGroupTestEnv(t)
+	alice := e.as(t, "alice")
+	bob := e.as(t, "bob")
+
+	other, err := e.svc.CreateApplication(alice, e.newApp("other", "failing-other.example.com", "/"), optional.None[string]())
+	require.NoError(t, err)
+	app, err := e.svc.CreateApplication(alice, e.newApp("app", "failing.example.com", "/"), optional.None[string]())
+	require.NoError(t, err)
+
+	// A website ID taken by another app passes validation and fails only when written.
+	err = e.svc.UpdateApplication(alice, app.App.ID, &domain.UpdateApplicationArgs{
+		Websites: optional.From([]*domain.Website{{
+			ID: other.App.Websites[0].ID, FQDN: "failing.example.com", PathPrefix: "/", HTTPPort: 80,
+		}}),
+		GroupOwnerIDs: optional.From([]string{web.GetUser(bob).ID}),
+	})
+	require.Error(t, err)
+
+	got, err := e.svc.GetApplication(alice, app.App.ID)
+	require.NoError(t, err)
+	assert.ElementsMatch(t, app.Group.OwnerIDs, got.Group.OwnerIDs)
 }

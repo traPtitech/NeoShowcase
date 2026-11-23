@@ -37,11 +37,11 @@ func newAppRepoTestEnv(t *testing.T) *appRepoTestEnv {
 	}
 }
 
-func (e *appRepoTestEnv) newApp(group *domain.ApplicationGroup) *domain.Application {
+func (e *appRepoTestEnv) newApp(groupID string) *domain.Application {
 	return &domain.Application{
 		ID:           domain.NewID(),
 		Name:         "app",
-		GroupID:      group.ID,
+		GroupID:      groupID,
 		RepositoryID: e.repoID,
 		RefName:      "main",
 		Commit:       domain.EmptyCommit,
@@ -76,27 +76,31 @@ func TestApplicationRepository_ImplicitGroupLivesWithItsApp(t *testing.T) {
 	e := newAppRepoTestEnv(t)
 	ctx := t.Context()
 	explicit := e.createExplicitGroup()
+	owners := optional.From([]string{e.ownerID})
 
-	implicit := domain.NewImplicitApplicationGroup([]string{e.ownerID})
-	app := e.newApp(implicit)
-	require.NoError(t, e.appRepo.CreateApplication(ctx, app, implicit))
-	assert.ElementsMatch(t, []string{explicit.ID, implicit.ID}, e.groupIDs(), "an implicit group is created with its app")
+	app := e.newApp(domain.NewID())
+	require.NoError(t, e.appRepo.CreateApplication(ctx, app, owners))
+	assert.ElementsMatch(t, []string{explicit.ID, app.GroupID}, e.groupIDs(), "an implicit group is created with its app")
+	created, err := e.groupRepo.GetApplicationGroup(ctx, app.GroupID)
+	require.NoError(t, err)
+	assert.True(t, created.Implicit)
+	assert.Equal(t, []string{e.ownerID}, created.OwnerIDs)
 
-	require.NoError(t, e.appRepo.SetApplicationGroup(ctx, app.ID, explicit.ID, nil))
+	require.NoError(t, e.appRepo.SetApplicationGroup(ctx, app.ID, explicit.ID, optional.None[[]string]()))
 	assert.ElementsMatch(t, []string{explicit.ID}, e.groupIDs(), "an app leaving its implicit group deletes the group")
 
-	back := domain.NewImplicitApplicationGroup([]string{e.ownerID})
-	require.NoError(t, e.appRepo.SetApplicationGroup(ctx, app.ID, back.ID, back))
+	backID := domain.NewID()
+	require.NoError(t, e.appRepo.SetApplicationGroup(ctx, app.ID, backID, owners))
 	got, err := e.appRepo.GetApplication(ctx, app.ID)
 	require.NoError(t, err)
-	assert.Equal(t, back.ID, got.GroupID)
-	assert.ElementsMatch(t, []string{explicit.ID, back.ID}, e.groupIDs(), "an app leaving a group the user created leaves the group")
+	assert.Equal(t, backID, got.GroupID)
+	assert.ElementsMatch(t, []string{explicit.ID, backID}, e.groupIDs(), "an app leaving a group the user created leaves the group")
 
 	require.NoError(t, e.appRepo.DeleteApplication(ctx, app.ID))
 	assert.ElementsMatch(t, []string{explicit.ID}, e.groupIDs(), "deleting an app deletes its implicit group")
 
-	inExplicit := e.newApp(explicit)
-	require.NoError(t, e.appRepo.CreateApplication(ctx, inExplicit, nil))
+	inExplicit := e.newApp(explicit.ID)
+	require.NoError(t, e.appRepo.CreateApplication(ctx, inExplicit, optional.None[[]string]()))
 	require.NoError(t, e.appRepo.DeleteApplication(ctx, inExplicit.ID))
 	assert.ElementsMatch(t, []string{explicit.ID}, e.groupIDs(), "deleting an app keeps a group the user created")
 }
@@ -105,34 +109,15 @@ func TestApplicationRepository_CreateApplicationFailureLeavesNoImplicitGroup(t *
 	t.Parallel()
 	e := newAppRepoTestEnv(t)
 	ctx := t.Context()
+	owners := optional.From([]string{e.ownerID})
 
-	first := domain.NewImplicitApplicationGroup([]string{e.ownerID})
-	app := e.newApp(first)
-	require.NoError(t, e.appRepo.CreateApplication(ctx, app, first))
+	app := e.newApp(domain.NewID())
+	require.NoError(t, e.appRepo.CreateApplication(ctx, app, owners))
 
-	second := domain.NewImplicitApplicationGroup([]string{e.ownerID})
-	duplicate := e.newApp(second)
+	duplicate := e.newApp(domain.NewID())
 	duplicate.ID = app.ID
-	require.Error(t, e.appRepo.CreateApplication(ctx, duplicate, second))
-	assert.ElementsMatch(t, []string{first.ID}, e.groupIDs())
-}
-
-func TestApplicationRepository_NewGroupIsCreatedWithItsApp(t *testing.T) {
-	t.Parallel()
-	e := newAppRepoTestEnv(t)
-	ctx := t.Context()
-
-	created := domain.NewApplicationGroup("created-with-app", []string{e.ownerID})
-	app := e.newApp(created)
-	require.NoError(t, e.appRepo.CreateApplication(ctx, app, created))
-	assert.ElementsMatch(t, []string{created.ID}, e.groupIDs(), "a group a user created can be created with its first app")
-
-	moved := domain.NewApplicationGroup("moved-into", []string{e.ownerID})
-	require.NoError(t, e.appRepo.SetApplicationGroup(ctx, app.ID, moved.ID, moved))
-	got, err := e.appRepo.GetApplication(ctx, app.ID)
-	require.NoError(t, err)
-	assert.Equal(t, moved.ID, got.GroupID)
-	assert.ElementsMatch(t, []string{created.ID, moved.ID}, e.groupIDs(), "a group a user created can be created when an app moves into it")
+	require.Error(t, e.appRepo.CreateApplication(ctx, duplicate, owners))
+	assert.ElementsMatch(t, []string{app.GroupID}, e.groupIDs())
 }
 
 // Applications created before groups keep their owners in application_owners, which references the application.
