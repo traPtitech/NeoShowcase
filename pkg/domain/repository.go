@@ -19,7 +19,6 @@ type GetApplicationCondition struct {
 
 type UpdateApplicationArgs struct {
 	Name             optional.Of[string]
-	GroupID          optional.Of[string]
 	RefName          optional.Of[string]
 	Commit           optional.Of[string]
 	Running          optional.Of[bool]
@@ -35,9 +34,6 @@ type UpdateApplicationArgs struct {
 func (a *Application) Apply(args *UpdateApplicationArgs) {
 	if args.Name.Valid {
 		a.Name = args.Name.V
-	}
-	if args.GroupID.Valid {
-		a.GroupID = args.GroupID.V
 	}
 	if args.RefName.Valid {
 		a.RefName = args.RefName.V
@@ -75,9 +71,16 @@ func (a *Application) Apply(args *UpdateApplicationArgs) {
 type ApplicationRepository interface {
 	GetApplications(ctx context.Context, cond GetApplicationCondition) ([]*Application, error)
 	GetApplication(ctx context.Context, id string) (*Application, error)
-	CreateApplication(ctx context.Context, app *Application) error
+	// CreateApplication creates app in group, whose ID has to be app.GroupID.
+	// An implicit group is created together with app in one transaction; any other group has to exist.
+	CreateApplication(ctx context.Context, app *Application, group *ApplicationGroup) error
 	UpdateApplication(ctx context.Context, id string, args *UpdateApplicationArgs) error
+	// SetApplicationGroup moves the application into group in one transaction.
+	// An implicit group is created; any other group has to exist.
+	// The previous group of the application is deleted when it is implicit.
+	SetApplicationGroup(ctx context.Context, id string, group *ApplicationGroup) error
 	BulkUpdateState(ctx context.Context, states []*Container) error
+	// DeleteApplication deletes the application, and its group when the group is implicit, in one transaction.
 	DeleteApplication(ctx context.Context, id string) error
 }
 

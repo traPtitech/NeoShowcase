@@ -97,13 +97,21 @@ func (r *applicationRepository) GetApplication(ctx context.Context, id string) (
 	return repoconvert.ToDomainApplication(app), nil
 }
 
-func (r *applicationRepository) CreateApplication(ctx context.Context, app *domain.Application) error {
+func (r *applicationRepository) CreateApplication(ctx context.Context, app *domain.Application, group *domain.ApplicationGroup) error {
+	if app.GroupID != group.ID {
+		return oops.Errorf("application group id %v does not match group %v", app.GroupID, group.ID)
+	}
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return oops.Wrapf(err, "starting transaction")
 	}
 	defer tx.Rollback()
 
+	if group.Implicit {
+		if err = insertApplicationGroup(ctx, tx, group); err != nil {
+			return err
+		}
+	}
 	ma := repoconvert.FromDomainApplication(app)
 	if err = ma.Insert(ctx, tx, boil.Blacklist()); err != nil {
 		return oops.Wrapf(err, "creating application")
@@ -148,10 +156,6 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 	if args.Name.Valid {
 		app.Name = args.Name.V
 		cols = append(cols, models.ApplicationColumns.Name)
-	}
-	if args.GroupID.Valid {
-		app.GroupID = null.StringFrom(args.GroupID.V)
-		cols = append(cols, models.ApplicationColumns.GroupID)
 	}
 	if args.RefName.Valid {
 		app.RefName = args.RefName.V
@@ -222,6 +226,56 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 	return err
 }
 
+func (r *applicationRepository) SetApplicationGroup(ctx context.Context, id string, group *domain.ApplicationGroup) error {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return oops.Wrapf(err, "starting transaction")
+	}
+	defer tx.Rollback()
+
+	app, err := r.getApplication(ctx, id, true, tx)
+	if err != nil {
+		return err
+	}
+	if group.Implicit {
+		if err = insertApplicationGroup(ctx, tx, group); err != nil {
+			return err
+		}
+	}
+	prevGroupID := app.GroupID
+	app.GroupID = null.StringFrom(group.ID)
+	if _, err = app.Update(ctx, tx, boil.Whitelist(models.ApplicationColumns.GroupID)); err != nil {
+		return oops.Wrapf(err, "updating application group")
+	}
+	if err = deleteImplicitApplicationGroup(ctx, tx, prevGroupID); err != nil {
+		return err
+	}
+
+	if err = tx.Commit(); err != nil {
+		return oops.Wrapf(err, "committing transaction")
+	}
+	return nil
+}
+
+// deleteImplicitApplicationGroup deletes the group of groupID if it is implicit.
+// Call it after the application in the group has left it.
+func deleteImplicitApplicationGroup(ctx context.Context, ex boil.ContextExecutor, groupID null.String) error {
+	if !groupID.Valid {
+		return nil
+	}
+	group, err := models.ApplicationGroups(
+		models.ApplicationGroupWhere.ID.EQ(groupID.String),
+		models.ApplicationGroupWhere.Implicit.EQ(true),
+	).One(ctx, ex)
+	if err != nil {
+		if isNoRowsErr(err) {
+			return nil
+		}
+		return oops.Wrapf(err, "getting application group")
+	}
+	return deleteApplicationGroup(ctx, ex, group)
+}
+
 func (r *applicationRepository) BulkUpdateState(ctx context.Context, states []*domain.Container) error {
 	// NOTE: sqlboiler does not support bulk insert/update by default, could use custom templating
 	// Run all updates in one transaction: with autocommit, every UPDATE pays a commit and the total grows with the number of apps.
@@ -253,31 +307,44 @@ func (r *applicationRepository) BulkUpdateState(ctx context.Context, states []*d
 }
 
 func (r *applicationRepository) DeleteApplication(ctx context.Context, id string) error {
-	app, err := r.getApplication(ctx, id, false, r.db)
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return oops.Wrapf(err, "starting transaction")
+	}
+	defer tx.Rollback()
+
+	app, err := r.getApplication(ctx, id, true, tx)
 	if err != nil {
 		return err
 	}
 	// application_owners keeps the owners before groups as the source of the group migration.
 	// Its rows reference the application, so they have to go first.
-	err = app.SetUsers(ctx, r.db, false)
+	err = app.SetUsers(ctx, tx, false)
 	if err != nil {
 		return oops.Wrapf(err, "deleting legacy application owners")
 	}
-	_, err = app.R.PortPublications.DeleteAll(ctx, r.db)
+	_, err = app.R.PortPublications.DeleteAll(ctx, tx)
 	if err != nil {
 		return oops.Wrapf(err, "deleting port publications")
 	}
-	_, err = app.R.Websites.DeleteAll(ctx, r.db)
+	_, err = app.R.Websites.DeleteAll(ctx, tx)
 	if err != nil {
 		return oops.Wrapf(err, "deleting websites")
 	}
-	_, err = app.R.ApplicationConfig.Delete(ctx, r.db)
+	_, err = app.R.ApplicationConfig.Delete(ctx, tx)
 	if err != nil {
 		return oops.Wrapf(err, "deleting application config")
 	}
-	_, err = app.Delete(ctx, r.db)
+	_, err = app.Delete(ctx, tx)
 	if err != nil {
 		return oops.Wrapf(err, "deleting application")
+	}
+	if err = deleteImplicitApplicationGroup(ctx, tx, app.GroupID); err != nil {
+		return err
+	}
+
+	if err = tx.Commit(); err != nil {
+		return oops.Wrapf(err, "committing transaction")
 	}
 	return nil
 }

@@ -24,17 +24,6 @@ func (s *Service) getExplicitApplicationGroup(ctx context.Context, id string) (*
 	return group, nil
 }
 
-func (s *Service) deleteImplicitApplicationGroup(ctx context.Context, id string) error {
-	group, err := s.groupRepo.GetApplicationGroup(ctx, id)
-	if err != nil {
-		return err
-	}
-	if !group.Implicit {
-		return nil
-	}
-	return s.groupRepo.DeleteApplicationGroup(ctx, id)
-}
-
 func (s *Service) CreateApplicationGroup(ctx context.Context, name string) (*domain.ApplicationGroup, error) {
 	group := domain.NewApplicationGroup(name, []string{web.GetUser(ctx).ID})
 	if err := group.Validate(); err != nil {
@@ -123,7 +112,6 @@ func (s *Service) MoveApplication(ctx context.Context, appID string, groupID opt
 	}
 
 	var dest *domain.ApplicationGroup
-	createDest := false
 	if groupID.Valid {
 		dest, err = s.getExplicitApplicationGroup(ctx, groupID.V)
 		if err != nil {
@@ -137,7 +125,6 @@ func (s *Service) MoveApplication(ctx context.Context, appID string, groupID opt
 			return nil
 		}
 		dest = domain.NewImplicitApplicationGroup(lo.Uniq(src.OwnerIDs))
-		createDest = true
 	}
 	if dest.ID == src.ID {
 		return nil
@@ -148,19 +135,5 @@ func (s *Service) MoveApplication(ctx context.Context, appID string, groupID opt
 		return err
 	}
 
-	// Each step leaves at most an implicit group without apps on failure, which no one sees.
-	if createDest {
-		if err = s.groupRepo.CreateApplicationGroup(ctx, dest); err != nil {
-			return err
-		}
-	}
-	if err = s.appRepo.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{GroupID: optional.From(dest.ID)}); err != nil {
-		return oops.Wrapf(err, "updating application group")
-	}
-	if src.Implicit {
-		if err = s.groupRepo.DeleteApplicationGroup(ctx, src.ID); err != nil {
-			return err
-		}
-	}
-	return nil
+	return s.appRepo.SetApplicationGroup(ctx, app.ID, dest)
 }

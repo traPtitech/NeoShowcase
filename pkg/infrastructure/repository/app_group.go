@@ -84,11 +84,7 @@ func (r *applicationGroupRepository) CreateApplicationGroup(ctx context.Context,
 	}
 	defer tx.Rollback()
 
-	mg := repoconvert.FromDomainApplicationGroup(group)
-	if err = mg.Insert(ctx, tx, boil.Blacklist()); err != nil {
-		return oops.Wrapf(err, "inserting application group")
-	}
-	if err = r.setOwners(ctx, tx, mg, group.OwnerIDs); err != nil {
+	if err = insertApplicationGroup(ctx, tx, group); err != nil {
 		return err
 	}
 
@@ -118,7 +114,7 @@ func (r *applicationGroupRepository) UpdateApplicationGroup(ctx context.Context,
 		}
 	}
 	if args.OwnerIDs.Valid {
-		if err = r.setOwners(ctx, tx, group, args.OwnerIDs.V); err != nil {
+		if err = setApplicationGroupOwners(ctx, tx, group, args.OwnerIDs.V); err != nil {
 			return err
 		}
 	}
@@ -140,11 +136,8 @@ func (r *applicationGroupRepository) DeleteApplicationGroup(ctx context.Context,
 	if err != nil {
 		return err
 	}
-	if err = group.SetUsers(ctx, tx, false); err != nil {
-		return oops.Wrapf(err, "deleting application group owners")
-	}
-	if _, err = group.Delete(ctx, tx); err != nil {
-		return oops.Wrapf(err, "deleting application group")
+	if err = deleteApplicationGroup(ctx, tx, group); err != nil {
+		return err
 	}
 
 	if err = tx.Commit(); err != nil {
@@ -153,7 +146,25 @@ func (r *applicationGroupRepository) DeleteApplicationGroup(ctx context.Context,
 	return nil
 }
 
-func (r *applicationGroupRepository) setOwners(ctx context.Context, ex boil.ContextExecutor, group *models.ApplicationGroup, ownerIDs []string) error {
+func insertApplicationGroup(ctx context.Context, ex boil.ContextExecutor, group *domain.ApplicationGroup) error {
+	mg := repoconvert.FromDomainApplicationGroup(group)
+	if err := mg.Insert(ctx, ex, boil.Blacklist()); err != nil {
+		return oops.Wrapf(err, "inserting application group")
+	}
+	return setApplicationGroupOwners(ctx, ex, mg, group.OwnerIDs)
+}
+
+func deleteApplicationGroup(ctx context.Context, ex boil.ContextExecutor, group *models.ApplicationGroup) error {
+	if err := group.SetUsers(ctx, ex, false); err != nil {
+		return oops.Wrapf(err, "deleting application group owners")
+	}
+	if _, err := group.Delete(ctx, ex); err != nil {
+		return oops.Wrapf(err, "deleting application group")
+	}
+	return nil
+}
+
+func setApplicationGroupOwners(ctx context.Context, ex boil.ContextExecutor, group *models.ApplicationGroup, ownerIDs []string) error {
 	ownerIDs = lo.Uniq(ownerIDs)
 	users, err := models.Users(models.UserWhere.ID.IN(ownerIDs)).All(ctx, ex)
 	if err != nil {

@@ -64,34 +64,26 @@ func (s *Service) CreateApplication(ctx context.Context, app *domain.Application
 	if !repo.CanCreateApp(user) {
 		return nil, domain.NewError(domain.ErrorTypeForbidden, "you cannot create application from this repository", nil)
 	}
-	var newGroup *domain.ApplicationGroup
+	var group *domain.ApplicationGroup
 	if groupID.Valid {
-		group, err := s.getExplicitApplicationGroup(ctx, groupID.V)
+		group, err = s.getExplicitApplicationGroup(ctx, groupID.V)
 		if err != nil {
 			return nil, err
 		}
 		if !group.IsOwner(user) {
 			return nil, domain.NewError(domain.ErrorTypeForbidden, "you do not have permission for this group", nil)
 		}
-		app.GroupID = group.ID
 	} else {
-		newGroup = domain.NewImplicitApplicationGroup(lo.Uniq(append(slices.Clone(repo.OwnerIDs), user.ID)))
-		app.GroupID = newGroup.ID
+		group = domain.NewImplicitApplicationGroup(lo.Uniq(append(slices.Clone(repo.OwnerIDs), user.ID)))
 	}
+	app.GroupID = group.ID
 	err = s.validateApp(ctx, app)
 	if err != nil {
 		return nil, err
 	}
 
 	// Create
-	// The group goes first: if creating the app fails, what is left is an implicit group without apps, which no one sees.
-	if newGroup != nil {
-		err = s.groupRepo.CreateApplicationGroup(ctx, newGroup)
-		if err != nil {
-			return nil, err
-		}
-	}
-	err = s.appRepo.CreateApplication(ctx, app)
+	err = s.appRepo.CreateApplication(ctx, app, group)
 	if err != nil {
 		return nil, err
 	}
@@ -278,9 +270,6 @@ func (s *Service) GetApplication(ctx context.Context, id string) (*TopAppInfo, e
 // takes its owners from the group, so giving ownerIDs for it is rejected.
 // Every change is validated before any of them is written.
 func (s *Service) UpdateApplication(ctx context.Context, id string, args *domain.UpdateApplicationArgs, ownerIDs optional.Of[[]string]) error {
-	if args.GroupID.Valid {
-		return domain.NewError(domain.ErrorTypeBadRequest, "use MoveApplication to change the group", nil)
-	}
 	app, err := s.appRepo.GetApplication(ctx, id)
 	if err != nil {
 		return err
@@ -469,11 +458,6 @@ func (s *Service) DeleteApplication(ctx context.Context, id string) error {
 	}
 	// delete websites, application
 	err = s.appRepo.DeleteApplication(ctx, app.ID)
-	if err != nil {
-		return err
-	}
-	// The implicit group belongs to this app only. If deleting it fails, the group is left without apps, which no one sees.
-	err = s.deleteImplicitApplicationGroup(ctx, app.GroupID)
 	if err != nil {
 		return err
 	}
