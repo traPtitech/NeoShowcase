@@ -110,13 +110,14 @@ func (s *Service) getOwnedApplication(ctx context.Context, appID string) (*domai
 	if err != nil {
 		return nil, nil, oops.Wrapf(err, "getting application group")
 	}
-	if err = checkGroupOwner(ctx, group); err != nil {
-		return nil, nil, err
+	// A standalone application hides its group from users, so the refusal names the application.
+	if !group.IsOwner(web.GetUser(ctx)) {
+		return nil, nil, domain.NewError(domain.ErrorTypeForbidden, "you do not have permission for this application", nil)
 	}
 	return app, group, nil
 }
 
-// checkGroupOwner checks that the user may operate the group and the applications in it.
+// checkGroupOwner checks that the user may operate a group a user created.
 func checkGroupOwner(ctx context.Context, group *domain.ApplicationGroup) error {
 	if !group.IsOwner(web.GetUser(ctx)) {
 		return domain.NewError(domain.ErrorTypeForbidden, "you do not have permission for this application group", nil)

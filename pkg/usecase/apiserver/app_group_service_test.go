@@ -633,3 +633,36 @@ func TestUpdateApplication_OwnersAreNotChangedWhenTheAppFailsToUpdate(t *testing
 	require.NoError(t, err)
 	assert.ElementsMatch(t, app.Group.OwnerIDs, got.Group.OwnerIDs)
 }
+
+// The group of a standalone app is hidden from users, so a refusal to operate an app does not name a group.
+func TestOperationsOnAppOfOthers_AreRefusedForTheApplication(t *testing.T) {
+	t.Parallel()
+	e := newGroupTestEnv(t)
+	alice := e.as(t, "alice")
+	eve := e.as(t, "eve")
+
+	created, err := e.svc.CreateApplication(alice, e.newApp("app", "refused.example.com", "/"), optional.None[string]())
+	require.NoError(t, err)
+	appID := created.App.ID
+
+	operations := []struct {
+		name string
+		call func(ctx context.Context) error
+	}{
+		{"start the app", func(ctx context.Context) error { return e.svc.StartApplication(ctx, appID) }},
+		{"delete the app", func(ctx context.Context) error { return e.svc.DeleteApplication(ctx, appID) }},
+		{"get environment variables", func(ctx context.Context) error {
+			_, err := e.svc.GetEnvironmentVariables(ctx, appID)
+			return err
+		}},
+		{"move the app", func(ctx context.Context) error { return e.svc.MoveApplication(ctx, appID, optional.None[string]()) }},
+	}
+	for _, op := range operations {
+		t.Run(op.name, func(t *testing.T) {
+			err := op.call(eve)
+			assertErrorType(t, domain.ErrorTypeForbidden, err)
+			msg, _, _ := domain.DecomposeError(err)
+			assert.Equal(t, "you do not have permission for this application", msg)
+		})
+	}
+}
