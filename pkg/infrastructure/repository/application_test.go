@@ -134,3 +134,23 @@ func TestApplicationRepository_NewGroupIsCreatedWithItsApp(t *testing.T) {
 	assert.Equal(t, moved.ID, got.GroupID)
 	assert.ElementsMatch(t, []string{created.ID, moved.ID}, e.groupIDs(), "a group a user created can be created when an app moves into it")
 }
+
+// Applications created before groups keep their owners in application_owners, which references the application.
+func TestApplicationRepository_DeleteMigratedApplication(t *testing.T) {
+	t.Parallel()
+	ctx := t.Context()
+	db := testhelper.OpenDB(t)
+	user, err := repository.NewUserRepository(db).EnsureUser(ctx, "owner")
+	require.NoError(t, err)
+	repo := domain.NewRepository("repo", "https://example.com/repo", optional.None[domain.RepositoryAuth](), []string{user.ID})
+	require.NoError(t, repository.NewGitRepositoryRepository(db).CreateRepository(ctx, repo))
+	appID := insertLegacyApp(t, db, repo.ID, legacyApp{name: "legacy", fqdn: "legacy.example.com", path: "/", ownerIDs: []string{user.ID}})
+	require.NoError(t, repository.MigrateApplicationGroups(ctx, db))
+	appRepo := repository.NewApplicationRepository(db)
+
+	require.NoError(t, appRepo.DeleteApplication(ctx, appID))
+
+	_, err = appRepo.GetApplication(ctx, appID)
+	_, typ, _ := domain.DecomposeError(err)
+	assert.Equal(t, domain.ErrorTypeNotFound, typ)
+}

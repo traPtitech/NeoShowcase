@@ -494,3 +494,112 @@ func TestUnknownOwnerIDsAreRejected(t *testing.T) {
 		assert.Equal(t, []string{aliceID}, got.OwnerIDs)
 	})
 }
+
+func TestGetApplications_Scopes(t *testing.T) {
+	t.Parallel()
+	e := newGroupTestEnv(t)
+	alice := e.as(t, "alice")
+	bob := e.as(t, "bob")
+
+	aliceGroup, err := e.svc.CreateApplicationGroup(alice, "alice-service")
+	require.NoError(t, err)
+	bobGroup, err := e.svc.CreateApplicationGroup(bob, "bob-service")
+	require.NoError(t, err)
+	aliceGrouped, err := e.svc.CreateApplication(alice, e.newApp("alice-grouped", "scope-alice-grouped.example.com", "/"), optional.From(aliceGroup.ID))
+	require.NoError(t, err)
+	aliceStandalone, err := e.svc.CreateApplication(alice, e.newApp("alice-standalone", "scope-alice-standalone.example.com", "/"), optional.None[string]())
+	require.NoError(t, err)
+	bobGrouped, err := e.svc.CreateApplication(bob, e.newApp("bob-grouped", "scope-bob-grouped.example.com", "/"), optional.From(bobGroup.ID))
+	require.NoError(t, err)
+	bobStandalone, err := e.svc.CreateApplication(bob, e.newApp("bob-standalone", "scope-bob-standalone.example.com", "/"), optional.None[string]())
+	require.NoError(t, err)
+
+	appIDs := func(apps []*apiserver.TopAppInfo) []string {
+		return lo.Map(apps, func(a *apiserver.TopAppInfo, _ int) string { return a.App.ID })
+	}
+
+	tests := []struct {
+		name  string
+		scope apiserver.GetAppScope
+		want  []*apiserver.TopAppInfo
+	}{
+		{"mine", apiserver.GetAppScope{Scope: apiserver.GetAppScopeMine}, []*apiserver.TopAppInfo{aliceGrouped, aliceStandalone}},
+		{"all", apiserver.GetAppScope{Scope: apiserver.GetAppScopeAll}, []*apiserver.TopAppInfo{aliceGrouped, aliceStandalone, bobGrouped, bobStandalone}},
+		{"group", apiserver.GetAppScope{Scope: apiserver.GetAppScopeGroup, GroupID: optional.From(bobGroup.ID)}, []*apiserver.TopAppInfo{bobGrouped}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := e.svc.GetApplications(alice, tt.scope)
+			require.NoError(t, err)
+			assert.ElementsMatch(t, appIDs(tt.want), appIDs(got))
+		})
+	}
+
+	t.Run("each app comes with its group", func(t *testing.T) {
+		got, err := e.svc.GetApplications(alice, apiserver.GetAppScope{Scope: apiserver.GetAppScopeAll})
+		require.NoError(t, err)
+		byID := lo.SliceToMap(got, func(a *apiserver.TopAppInfo) (string, *apiserver.TopAppInfo) { return a.App.ID, a })
+		for _, want := range []*apiserver.TopAppInfo{aliceGrouped, aliceStandalone, bobGrouped, bobStandalone} {
+			require.Contains(t, byID, want.App.ID)
+			gotGroup := byID[want.App.ID].Group
+			require.NotNil(t, gotGroup, want.App.Name)
+			assert.Equal(t, want.Group.ID, gotGroup.ID, want.App.Name)
+			assert.Equal(t, want.Group.Implicit, gotGroup.Implicit, want.App.Name)
+			assert.ElementsMatch(t, want.Group.OwnerIDs, gotGroup.OwnerIDs, want.App.Name)
+		}
+		assert.Equal(t, aliceGroup.ID, byID[aliceGrouped.App.ID].Group.ID)
+		assert.Equal(t, []string{web.GetUser(bob).ID}, byID[bobGrouped.App.ID].Group.OwnerIDs)
+	})
+
+	t.Run("group scope needs a group", func(t *testing.T) {
+		_, err := e.svc.GetApplications(alice, apiserver.GetAppScope{Scope: apiserver.GetAppScopeGroup})
+		assertErrorType(t, domain.ErrorTypeBadRequest, err)
+	})
+}
+
+func TestOwnerOnlyOperationsFollowTheGroup(t *testing.T) {
+	t.Parallel()
+	e := newGroupTestEnv(t)
+	alice := e.as(t, "alice")
+	bob := e.as(t, "bob")
+
+	group, err := e.svc.CreateApplicationGroup(alice, "service")
+	require.NoError(t, err)
+	app, err := e.svc.CreateApplication(alice, e.newApp("app", "owner-only.example.com", "/"), optional.From(group.ID))
+	require.NoError(t, err)
+	appID := app.App.ID
+
+	operations := []struct {
+		name string
+		call func(ctx context.Context) error
+	}{
+		{"get environment variables", func(ctx context.Context) error {
+			_, err := e.svc.GetEnvironmentVariables(ctx, appID)
+			return err
+		}},
+		{"set an environment variable", func(ctx context.Context) error {
+			return e.svc.SetEnvironmentVariable(ctx, appID, "KEY", "value")
+		}},
+		{"delete an environment variable", func(ctx context.Context) error {
+			return e.svc.DeleteEnvironmentVariable(ctx, appID, "KEY")
+		}},
+		{"start the app", func(ctx context.Context) error { return e.svc.StartApplication(ctx, appID) }},
+		{"stop the app", func(ctx context.Context) error { return e.svc.StopApplication(ctx, appID) }},
+		{"retry a build", func(ctx context.Context) error { return e.svc.RetryCommitBuild(ctx, appID, exampleCommitHash) }},
+		{"delete the app", func(ctx context.Context) error { return e.svc.DeleteApplication(ctx, appID) }},
+	}
+	for _, op := range operations {
+		t.Run(op.name, func(t *testing.T) {
+			assertErrorType(t, domain.ErrorTypeForbidden, op.call(bob))
+		})
+	}
+
+	err = e.svc.UpdateApplicationGroup(alice, group.ID, &domain.UpdateApplicationGroupArgs{
+		OwnerIDs: optional.From([]string{web.GetUser(alice).ID, web.GetUser(bob).ID}),
+	})
+	require.NoError(t, err)
+	require.NoError(t, e.svc.SetEnvironmentVariable(bob, appID, "KEY", "value"), "an owner added to the group can operate the app")
+	envs, err := e.svc.GetEnvironmentVariables(bob, appID)
+	require.NoError(t, err)
+	assert.Contains(t, lo.Map(envs, func(env *domain.Environment, _ int) string { return env.Key }), "KEY")
+}
