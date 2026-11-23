@@ -701,6 +701,8 @@ describe('interactions', () => {
     )
   })
 
+  // jsdom has no layout, so this test cannot see that the link of the repository covers the empty parts of the row
+  // or that "Add New App" sits above that link. Both are checked by hand in a browser.
   it('repos list: clicking anywhere in the row of a repository opens it, and "Add New App" opens the create form', async () => {
     await scenario('repos row', '/repos', async (ctx) => {
       await waitForText(ctx, 'github-repo')
