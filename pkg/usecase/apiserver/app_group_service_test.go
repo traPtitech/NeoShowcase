@@ -100,3 +100,186 @@ func assertErrorType(t *testing.T, want domain.ErrorType, err error) {
 	_, typ, _ := domain.DecomposeError(err)
 	assert.Equal(t, want, typ, "error: %v", err)
 }
+
+func TestCreateApplication_InGroup(t *testing.T) {
+	t.Parallel()
+	e := newGroupTestEnv(t)
+	alice := e.as(t, "alice")
+	bob := e.as(t, "bob")
+
+	group, err := e.svc.CreateApplicationGroup(alice, "service")
+	require.NoError(t, err)
+
+	_, err = e.svc.CreateApplication(bob, e.newApp("intruder", "in-group.example.com", "/"), optional.From(group.ID))
+	assertErrorType(t, domain.ErrorTypeForbidden, err)
+
+	created, err := e.svc.CreateApplication(alice, e.newApp("frontend", "in-group.example.com", "/"), optional.From(group.ID))
+	require.NoError(t, err)
+	assert.Equal(t, group.ID, created.Group.ID)
+
+	apps, err := e.svc.GetApplications(alice, apiserver.GetAppScope{Scope: apiserver.GetAppScopeGroup, GroupID: optional.From(group.ID)})
+	require.NoError(t, err)
+	require.Len(t, apps, 1)
+	assert.Equal(t, created.App.ID, apps[0].App.ID)
+
+	// Adding an owner to the group lets the user operate the apps in it.
+	err = e.svc.UpdateApplicationGroup(alice, group.ID, &domain.UpdateApplicationGroupArgs{
+		OwnerIDs: optional.From([]string{web.GetUser(alice).ID, web.GetUser(bob).ID}),
+	})
+	require.NoError(t, err)
+	err = e.svc.UpdateApplication(bob, created.App.ID, &domain.UpdateApplicationArgs{Name: optional.From("renamed")})
+	require.NoError(t, err)
+
+	mine, err := e.svc.GetApplications(bob, apiserver.GetAppScope{Scope: apiserver.GetAppScopeMine})
+	require.NoError(t, err)
+	assert.Len(t, mine, 1, "apps of the groups the user owns are the user's apps")
+}
+
+func TestCreateApplication_NestedWebsites(t *testing.T) {
+	t.Parallel()
+	e := newGroupTestEnv(t)
+	alice := e.as(t, "alice")
+
+	group, err := e.svc.CreateApplicationGroup(alice, "service")
+	require.NoError(t, err)
+	_, err = e.svc.CreateApplication(alice, e.newApp("frontend", "nested.example.com", "/"), optional.From(group.ID))
+	require.NoError(t, err)
+
+	_, err = e.svc.CreateApplication(alice, e.newApp("other", "nested.example.com", "/api"), optional.None[string]())
+	assertErrorType(t, domain.ErrorTypeBadRequest, err)
+
+	_, err = e.svc.CreateApplication(alice, e.newApp("same", "nested.example.com", "/"), optional.From(group.ID))
+	assertErrorType(t, domain.ErrorTypeBadRequest, err)
+
+	_, err = e.svc.CreateApplication(alice, e.newApp("backend", "nested.example.com", "/api"), optional.From(group.ID))
+	require.NoError(t, err)
+}
+
+func TestMoveApplication(t *testing.T) {
+	t.Parallel()
+	e := newGroupTestEnv(t)
+	alice := e.as(t, "alice")
+	bob := e.as(t, "bob")
+
+	aliceGroup, err := e.svc.CreateApplicationGroup(alice, "alice-service")
+	require.NoError(t, err)
+	bobGroup, err := e.svc.CreateApplicationGroup(bob, "bob-service")
+	require.NoError(t, err)
+	_, err = e.svc.CreateApplication(alice, e.newApp("frontend", "move.example.com", "/"), optional.From(aliceGroup.ID))
+	require.NoError(t, err)
+	backend, err := e.svc.CreateApplication(alice, e.newApp("backend", "move-api.example.com", "/"), optional.None[string]())
+	require.NoError(t, err)
+
+	t.Run("needs ownership of the destination", func(t *testing.T) {
+		err := e.svc.MoveApplication(alice, backend.App.ID, optional.From(bobGroup.ID))
+		assertErrorType(t, domain.ErrorTypeForbidden, err)
+	})
+
+	t.Run("needs ownership of the source", func(t *testing.T) {
+		err := e.svc.MoveApplication(bob, backend.App.ID, optional.From(bobGroup.ID))
+		assertErrorType(t, domain.ErrorTypeForbidden, err)
+	})
+
+	t.Run("moves a standalone app into a group", func(t *testing.T) {
+		err := e.svc.MoveApplication(alice, backend.App.ID, optional.From(aliceGroup.ID))
+		require.NoError(t, err)
+
+		got, err := e.svc.GetApplication(alice, backend.App.ID)
+		require.NoError(t, err)
+		assert.Equal(t, aliceGroup.ID, got.Group.ID)
+	})
+
+	t.Run("websites are checked in the destination", func(t *testing.T) {
+		err := e.svc.UpdateApplication(alice, backend.App.ID, &domain.UpdateApplicationArgs{
+			Websites: optional.From([]*domain.Website{{
+				ID: domain.NewID(), FQDN: "move.example.com", PathPrefix: "/api", HTTPPort: 80,
+			}}),
+		})
+		require.NoError(t, err, "nesting is allowed in the same group")
+
+		err = e.svc.MoveApplication(alice, backend.App.ID, optional.None[string]())
+		assertErrorType(t, domain.ErrorTypeBadRequest, err)
+	})
+
+	t.Run("moves an app out of a group to be standalone", func(t *testing.T) {
+		err := e.svc.UpdateApplication(alice, backend.App.ID, &domain.UpdateApplicationArgs{
+			Websites: optional.From([]*domain.Website{{
+				ID: domain.NewID(), FQDN: "move-api.example.com", PathPrefix: "/", HTTPPort: 80,
+			}}),
+		})
+		require.NoError(t, err)
+
+		err = e.svc.MoveApplication(alice, backend.App.ID, optional.None[string]())
+		require.NoError(t, err)
+
+		got, err := e.svc.GetApplication(alice, backend.App.ID)
+		require.NoError(t, err)
+		assert.True(t, got.Group.Implicit)
+		assert.ElementsMatch(t, aliceGroup.OwnerIDs, got.Group.OwnerIDs, "the owners of the group it left stay owners")
+	})
+}
+
+func TestUpdateStandaloneApplicationOwners(t *testing.T) {
+	t.Parallel()
+	e := newGroupTestEnv(t)
+	alice := e.as(t, "alice")
+	bob := e.as(t, "bob")
+
+	standalone, err := e.svc.CreateApplication(alice, e.newApp("standalone", "owners.example.com", "/"), optional.None[string]())
+	require.NoError(t, err)
+
+	err = e.svc.UpdateStandaloneApplicationOwners(alice, standalone.App.ID, []string{web.GetUser(alice).ID, web.GetUser(bob).ID})
+	require.NoError(t, err)
+	err = e.svc.UpdateApplication(bob, standalone.App.ID, &domain.UpdateApplicationArgs{Name: optional.From("renamed")})
+	require.NoError(t, err, "a new owner can operate the app")
+
+	err = e.svc.UpdateStandaloneApplicationOwners(alice, standalone.App.ID, []string{})
+	assertErrorType(t, domain.ErrorTypeBadRequest, err)
+
+	group, err := e.svc.CreateApplicationGroup(alice, "service")
+	require.NoError(t, err)
+	grouped, err := e.svc.CreateApplication(alice, e.newApp("grouped", "owners-grouped.example.com", "/"), optional.From(group.ID))
+	require.NoError(t, err)
+	err = e.svc.UpdateStandaloneApplicationOwners(alice, grouped.App.ID, []string{web.GetUser(bob).ID})
+	assertErrorType(t, domain.ErrorTypeBadRequest, err)
+}
+
+func TestDeleteApplicationGroup(t *testing.T) {
+	t.Parallel()
+	e := newGroupTestEnv(t)
+	alice := e.as(t, "alice")
+	bob := e.as(t, "bob")
+
+	group, err := e.svc.CreateApplicationGroup(alice, "service")
+	require.NoError(t, err)
+	app, err := e.svc.CreateApplication(alice, e.newApp("app", "delete-group.example.com", "/"), optional.From(group.ID))
+	require.NoError(t, err)
+
+	err = e.svc.DeleteApplicationGroup(bob, group.ID)
+	assertErrorType(t, domain.ErrorTypeForbidden, err)
+
+	err = e.svc.DeleteApplicationGroup(alice, group.ID)
+	assertErrorType(t, domain.ErrorTypeBadRequest, err)
+
+	require.NoError(t, e.svc.MoveApplication(alice, app.App.ID, optional.None[string]()))
+	require.NoError(t, e.svc.DeleteApplicationGroup(alice, group.ID))
+
+	_, err = e.svc.GetApplicationGroup(alice, group.ID)
+	assertErrorType(t, domain.ErrorTypeNotFound, err)
+}
+
+func TestGetApplicationGroup_ImplicitIsHidden(t *testing.T) {
+	t.Parallel()
+	e := newGroupTestEnv(t)
+	alice := e.as(t, "alice")
+
+	app, err := e.svc.CreateApplication(alice, e.newApp("app", "hidden.example.com", "/"), optional.None[string]())
+	require.NoError(t, err)
+
+	_, err = e.svc.GetApplicationGroup(alice, app.Group.ID)
+	assertErrorType(t, domain.ErrorTypeNotFound, err)
+	_, err = e.svc.CreateApplication(alice, e.newApp("app2", "hidden2.example.com", "/"), optional.From(app.Group.ID))
+	assertErrorType(t, domain.ErrorTypeNotFound, err)
+	err = e.svc.MoveApplication(alice, app.App.ID, optional.From(app.Group.ID))
+	assertErrorType(t, domain.ErrorTypeNotFound, err)
+}
