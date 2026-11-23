@@ -147,6 +147,65 @@ describe('interactions', () => {
     })
   })
 
+  it('group settings: renaming the group calls updateApplicationGroup and shows the new name', async () => {
+    await scenario('rename group', '/groups/group-web/settings', async (ctx) => {
+      await waitForText(ctx, 'Delete Group')
+      await idle(ctx)
+      await settle(ctx, () => field(ctx, 'Group Name'))
+
+      type(ctx, field(ctx, 'Group Name'), 'あ'.repeat(101))
+      await settle(ctx, () => expect(button(ctx, 'Save').disabled).toBe(false))
+      click(ctx, button(ctx, 'Save'))
+      await waitForText(ctx, 'Group Name must be 100 characters or less')
+      expect(ctx.backend.requestsTo('updateApplicationGroup')).toHaveLength(0)
+
+      type(ctx, field(ctx, 'Group Name'), 'renamed-service')
+      await settle(ctx, () => expect(button(ctx, 'Save').disabled).toBe(false))
+      click(ctx, button(ctx, 'Save'))
+      await settle(ctx, () =>
+        expect(ctx.backend.requestsTo('updateApplicationGroup')).toEqual([
+          expect.objectContaining({ id: 'group-web', name: 'renamed-service' }),
+        ]),
+      )
+      await settle(ctx, () => expect(ctx.screen.querySelector('.h1-medium')?.textContent).toBe('renamed-service'))
+    })
+  })
+
+  it('group settings: a group with apps cannot be deleted', async () => {
+    await scenario('delete group with apps', '/groups/group-web/settings', async (ctx) => {
+      await waitForText(ctx, 'Delete Group')
+      await idle(ctx)
+      expect(button(ctx, 'Delete Group').disabled).toBe(true)
+    })
+  })
+
+  it('group settings: deleting an empty group calls deleteApplicationGroup and opens the group list', async () => {
+    await scenario(
+      'delete group',
+      '/groups/group-empty/settings',
+      async (ctx) => {
+        await waitForText(ctx, 'Delete Group')
+        await settle(ctx, () => expect(button(ctx, 'Delete Group').disabled).toBe(false))
+        click(ctx, button(ctx, 'Delete Group'))
+        await settle(ctx, () => expect(document.querySelector('[role=dialog]')).not.toBeNull())
+        click(ctx, button(ctx, 'Yes, Delete'))
+        await settle(ctx, () =>
+          expect(ctx.backend.requestsTo('deleteApplicationGroup')).toEqual([
+            expect.objectContaining({ groupId: 'group-empty' }),
+          ]),
+        )
+        await settle(ctx, () => expect(window.location.pathname).toBe('/groups'))
+        await waitForNoText(ctx, 'empty-service')
+      },
+      {
+        setup: (b) =>
+          b.fixtures.groups.push(
+            create(ApplicationGroupSchema, { id: 'group-empty', name: 'empty-service', ownerIds: [b.ids.me] }),
+          ),
+      },
+    )
+  })
+
   it('app group settings: moving an app out of its group makes it standalone', async () => {
     await scenario('move app', '/apps/app-static/settings/group', async (ctx) => {
       await waitForText(ctx, 'web-service')
