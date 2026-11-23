@@ -140,6 +140,8 @@ describe('interactions', () => {
           }),
         ]),
       )
+      // a standalone app is sent without a group, since an empty group ID names no group
+      expect(ctx.backend.requestsTo('createApplication')[0].groupId).toBeUndefined()
       // navigates to the created app
       await settle(ctx, () => expect(window.location.pathname).toBe('/apps/app-new'))
       await waitForText(ctx, 'new-app')
@@ -467,6 +469,79 @@ describe('interactions', () => {
     })
   })
 
+  it('group settings: a user who does not own the group cannot change it', async () => {
+    await scenario(
+      'group of others',
+      '/groups/group-web/settings',
+      async (ctx) => {
+        await waitForText(ctx, 'Delete Group')
+        await idle(ctx)
+        expect(button(ctx, 'Save').disabled).toBe(true)
+        expect(button(ctx, 'Delete Group').disabled).toBe(true)
+
+        click(ctx, link(ctx, '/groups/group-web/settings/owners'))
+        await settle(ctx, () => button(ctx, 'Add Owners'))
+        await idle(ctx)
+        expect(button(ctx, 'Add Owners').disabled).toBe(true)
+      },
+      {
+        setup: (b) => {
+          b.fixtures.users[0].admin = false
+          const group = b.fixtures.groups.find((g) => g.id === b.ids.groupWeb)
+          if (group) group.ownerIds = [b.ids.other]
+          // an empty group could be deleted by its owners, so only ownership keeps Delete Group disabled
+          for (const app of b.fixtures.applications) if (app.groupId === b.ids.groupWeb) app.groupId = undefined
+        },
+      },
+    )
+  })
+
+  it('app owners: adding an owner to a standalone app updates the app', async () => {
+    await scenario('standalone app owners', '/apps/app-runtime/settings/owners', async (ctx) => {
+      await settle(ctx, () => expect(button(ctx, 'Add Owners').disabled).toBe(false))
+      click(ctx, button(ctx, 'Add Owners'))
+      await settle(ctx, () => expect(document.querySelector('[role=dialog]')).not.toBeNull())
+      await waitForText(ctx, 'other-user')
+      click(ctx, button(ctx, 'Add'))
+      await settle(ctx, () =>
+        expect(ctx.backend.requestsTo('updateApplication')).toEqual([
+          expect.objectContaining({
+            id: 'app-runtime',
+            ownerIds: expect.objectContaining({ ownerIds: ['user-admin', 'user-other'] }),
+          }),
+        ]),
+      )
+    })
+  })
+
+  it('app owners: deleting an owner of a standalone app updates the app', async () => {
+    await scenario(
+      'delete standalone app owner',
+      '/apps/app-runtime/settings/owners',
+      async (ctx) => {
+        await waitForText(ctx, 'admin-user', 'other-user')
+        const otherRow = find(ctx, 'div', 'other-user').parentElement
+        click(ctx, otherRow?.querySelector('button') as HTMLElement)
+        await settle(ctx, () => expect(document.querySelector('[role=dialog]')).not.toBeNull())
+        click(ctx, button(ctx, 'Yes, Delete'))
+        await settle(ctx, () =>
+          expect(ctx.backend.requestsTo('updateApplication')).toEqual([
+            expect.objectContaining({
+              id: 'app-runtime',
+              ownerIds: expect.objectContaining({ ownerIds: ['user-admin'] }),
+            }),
+          ]),
+        )
+      },
+      {
+        setup: (b) => {
+          const app = b.fixtures.applications.find((a) => a.id === b.ids.appRuntime)
+          app?.ownerIds.push(b.ids.other)
+        },
+      },
+    )
+  })
+
   it('app general settings: rename enables Save and calls updateApplication', async () => {
     await scenario('rename app', '/apps/app-runtime/settings', async (ctx) => {
       await waitForText(ctx, 'Branch')
@@ -545,24 +620,47 @@ describe('interactions', () => {
   })
 
   it('apps list and repos list: the search box ignores the case of letters', async () => {
-    await scenario('search case', '/apps', async (ctx) => {
-      await waitForText(ctx, 'runtime-app', 'static-app')
-      const search = () => {
-        const el = ctx.screen.querySelector<HTMLInputElement>('input[placeholder="Search"]')
-        if (!el) throw new Error('no search box')
-        return el
-      }
-      type(ctx, search(), 'STATIC')
-      await waitForNoText(ctx, 'runtime-app')
-      await waitForText(ctx, 'static-app')
+    await scenario(
+      'search case',
+      '/apps',
+      async (ctx) => {
+        await waitForText(ctx, 'runtime-app', 'Static-App')
+        const search = () => {
+          const el = ctx.screen.querySelector<HTMLInputElement>('input[placeholder="Search"]')
+          if (!el) throw new Error('no search box')
+          return el
+        }
+        type(ctx, search(), 'STATIC')
+        await waitForNoText(ctx, 'runtime-app')
+        await waitForText(ctx, 'Static-App')
 
-      click(ctx, link(ctx, '/repos'))
-      await settle(ctx, () => expect(window.location.pathname).toBe('/repos'))
-      await waitForText(ctx, 'github-repo', 'gitea-repo')
-      type(ctx, search(), 'GITEA')
-      await waitForNoText(ctx, 'github-repo')
-      await waitForText(ctx, 'gitea-repo')
-    })
+        type(ctx, search(), 'static-app')
+        await waitForNoText(ctx, 'runtime-app')
+        await waitForText(ctx, 'Static-App')
+
+        // by the name of the group, which also has capital letters
+        type(ctx, search(), 'web-service')
+        await waitForNoText(ctx, 'runtime-app')
+        await waitForText(ctx, 'Static-App')
+
+        click(ctx, link(ctx, '/repos'))
+        await settle(ctx, () => expect(window.location.pathname).toBe('/repos'))
+        await waitForText(ctx, 'github-repo', 'Gitea-Repo')
+        type(ctx, search(), 'gitea')
+        await waitForNoText(ctx, 'github-repo')
+        await waitForText(ctx, 'Gitea-Repo')
+      },
+      {
+        setup: (b) => {
+          const app = b.fixtures.applications.find((a) => a.id === b.ids.appStatic)
+          if (app) app.name = 'Static-App'
+          const group = b.fixtures.groups.find((g) => g.id === b.ids.groupWeb)
+          if (group) group.name = 'Web-Service'
+          const repo = b.fixtures.repositories.find((r) => r.id === b.ids.repoGitea)
+          if (repo) repo.name = 'Gitea-Repo'
+        },
+      },
+    )
   })
 
   it('apps list: apps are listed under their group, and standalone apps without a heading', async () => {
