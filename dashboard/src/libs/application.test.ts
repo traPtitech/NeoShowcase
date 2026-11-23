@@ -28,7 +28,12 @@ describe('groupApplications', () => {
   })
 
   test('standalone apps next to each other in the order share one entry', () => {
-    const mixed = [app('s1', undefined, 5000), app('s2', undefined, 4000), app('g1', 'G', 3000), app('s3', undefined, 1000)]
+    const mixed = [
+      app('s1', undefined, 5000),
+      app('s2', undefined, 4000),
+      app('g1', 'G', 3000),
+      app('s3', undefined, 1000),
+    ]
     expect(shape(mixed, 'desc')).toEqual([
       { groupId: undefined, ids: ['s1', 's2'] },
       { groupId: 'G', ids: ['g1'] },

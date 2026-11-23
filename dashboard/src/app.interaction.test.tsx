@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 import {
   ApplicationGroupSchema,
   GetApplicationsRequest_Scope,
+  GetRepositoriesRequest_Scope,
   RepositorySchema,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import {
@@ -54,6 +55,38 @@ describe('interactions', () => {
     click(ctx, button(ctx, 'Next'))
     await settle(ctx, () => expect(button(ctx, 'Create Application')).toBeTruthy())
   }
+
+  /** Opens the filter menu next to the search box and toggles the checkbox whose label starts with `label`. */
+  const toggleFilter = async (ctx: Ctx, label: string) => {
+    const search = ctx.screen.querySelector<HTMLInputElement>('input[placeholder="Search"]')
+    let trigger: HTMLElement | null | undefined
+    for (let el = search?.parentElement; el && !trigger; el = el.parentElement) {
+      trigger = el.querySelector<HTMLElement>('button[aria-haspopup="true"]')
+    }
+    if (!trigger) throw new Error('no filter menu next to the search box')
+    if (trigger.getAttribute('aria-expanded') !== 'true') {
+      trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
+      ctx.flush()
+    }
+    const checkbox = await settle(ctx, () =>
+      expect(
+        [...ctx.screen.querySelectorAll('label')].find((l) => l.textContent?.trim().startsWith(label)),
+      ).toBeTruthy(),
+    ).then(() => [...ctx.screen.querySelectorAll('label')].find((l) => l.textContent?.trim().startsWith(label)))
+    click(ctx, checkbox as HTMLElement)
+  }
+
+  /** Adds empty-repo, a repository of the user without apps. */
+  const addEmptyRepository = (b: Ctx['backend']) =>
+    b.fixtures.repositories.push(
+      create(RepositorySchema, {
+        id: 'repo-empty',
+        name: 'empty-repo',
+        url: 'https://github.com/traPtitech/empty.git',
+        htmlUrl: 'https://github.com/traPtitech/empty',
+        ownerIds: [b.ids.me],
+      }),
+    )
 
   it('create app: walks the three steps and calls createApplication', async () => {
     await scenario('create app', '/apps/new', async (ctx) => {
@@ -382,6 +415,7 @@ describe('interactions', () => {
       expect(group.querySelector('a[href="/groups/group-web"]')).not.toBeNull()
       expect(group.querySelector('a[href="/apps/app-static"]')).not.toBeNull()
       expect(group.querySelector('a[href="/apps/app-runtime"]')).toBeNull()
+      expect(group.textContent).toContain('1 apps')
 
       for (const app of ['app-runtime', 'app-error']) {
         expect(link(ctx, `/apps/${app}`).closest('section')).toBeNull()
@@ -403,6 +437,56 @@ describe('interactions', () => {
       await waitForNoText(ctx, 'runtime-app')
       await waitForText(ctx, 'static-app')
     })
+  })
+
+  it('apps list: searching by a repository name lists the apps of the repository', async () => {
+    await scenario('apps search by repo', '/apps', async (ctx) => {
+      await waitForText(ctx, 'runtime-app', 'broken-app')
+      const search = ctx.screen.querySelector<HTMLInputElement>('input[placeholder="Search"]')
+      if (!search) throw new Error('no search box')
+      type(ctx, search, 'gitea')
+      await waitForNoText(ctx, 'runtime-app')
+      await waitForText(ctx, 'broken-app')
+    })
+  })
+
+  it('apps list: the status and origin filters narrow the list', async () => {
+    await scenario('apps status filter', '/apps', async (ctx) => {
+      await waitForText(ctx, 'runtime-app', 'static-app', 'broken-app')
+      // broken-app is the only app that is not running
+      await toggleFilter(ctx, 'Idle')
+      await waitForNoText(ctx, 'broken-app')
+      await waitForText(ctx, 'runtime-app', 'static-app')
+
+      await toggleFilter(ctx, 'Idle')
+      await waitForText(ctx, 'broken-app')
+      await toggleFilter(ctx, 'GitHub')
+      await waitForNoText(ctx, 'runtime-app')
+      await waitForNoText(ctx, 'static-app')
+      await waitForText(ctx, 'broken-app')
+    })
+  })
+
+  it('apps list: "All Apps" leaves out apps of repositories the user cannot see', async () => {
+    await scenario(
+      'apps public scope',
+      '/apps',
+      async (ctx) => {
+        await waitForText(ctx, 'runtime-app', 'broken-app')
+        click(ctx, buttonContaining(ctx, 'All Apps'))
+        await settle(ctx, () =>
+          expect(ctx.backend.requestsTo('getRepositories').at(-1)?.scope).toBe(GetRepositoriesRequest_Scope.PUBLIC),
+        )
+        await waitForNoText(ctx, 'broken-app')
+        await waitForText(ctx, 'runtime-app', 'static-app')
+      },
+      {
+        // the mock backend ignores the scope of getRepositories: leave the repository of broken-app out of every scope
+        setup: (b) => {
+          b.fixtures.repositories = b.fixtures.repositories.filter((r) => r.id !== b.ids.repoGitea)
+        },
+      },
+    )
   })
 
   it('apps list: the scope tabs choose the apps to list', async () => {
@@ -429,18 +513,60 @@ describe('interactions', () => {
         expect(link(ctx, '/repos/repo-empty').textContent).toContain('empty-repo')
         expect(link(ctx, '/apps/new?repositoryID=repo-empty')).toBeTruthy()
       },
-      {
-        setup: (b) =>
-          b.fixtures.repositories.push(
-            create(RepositorySchema, {
-              id: 'repo-empty',
-              name: 'empty-repo',
-              url: 'https://github.com/traPtitech/empty.git',
-              htmlUrl: 'https://github.com/traPtitech/empty',
-              ownerIds: [b.ids.me],
-            }),
-          ),
+      { setup: addEmptyRepository },
+    )
+  })
+
+  it('repos list: each repository tells the number of its apps', async () => {
+    await scenario(
+      'repos app counts',
+      '/repos',
+      async (ctx) => {
+        await waitForText(ctx, 'github-repo', 'gitea-repo', 'empty-repo')
+        const row = (id: string) => link(ctx, `/repos/${id}`).parentElement?.textContent
+        await settle(ctx, () => expect(row('repo-github')).toContain('2 apps'))
+        expect(row('repo-gitea')).toContain('1 apps')
+        expect(row('repo-empty')).toContain('0 apps')
       },
+      { setup: addEmptyRepository },
+    )
+  })
+
+  it('repos list: the search box and the origin filter narrow the list', async () => {
+    await scenario('repos filter', '/repos', async (ctx) => {
+      await waitForText(ctx, 'github-repo', 'gitea-repo')
+      const search = ctx.screen.querySelector<HTMLInputElement>('input[placeholder="Search"]')
+      if (!search) throw new Error('no search box')
+      type(ctx, search, 'gitea')
+      await waitForNoText(ctx, 'github-repo')
+      await waitForText(ctx, 'gitea-repo')
+
+      type(ctx, search, '')
+      await waitForText(ctx, 'github-repo', 'gitea-repo')
+      await toggleFilter(ctx, 'GitHub')
+      await waitForNoText(ctx, 'github-repo')
+      await waitForText(ctx, 'gitea-repo')
+    })
+  })
+
+  it('repo settings: deleting a repository without apps calls deleteRepository and opens the repository list', async () => {
+    await scenario(
+      'delete repo',
+      '/repos/repo-empty/settings',
+      async (ctx) => {
+        await waitForText(ctx, 'Delete Repository')
+        await settle(ctx, () => expect(button(ctx, 'Delete Repository').disabled).toBe(false))
+        click(ctx, button(ctx, 'Delete Repository'))
+        await settle(ctx, () => expect(document.querySelector('[role=dialog]')).not.toBeNull())
+        click(ctx, button(ctx, 'Yes, Delete'))
+        await settle(ctx, () =>
+          expect(ctx.backend.requestsTo('deleteRepository')).toEqual([
+            expect.objectContaining({ repositoryId: 'repo-empty' }),
+          ]),
+        )
+        await settle(ctx, () => expect(window.location.pathname).toBe('/repos'))
+      },
+      { setup: addEmptyRepository },
     )
   })
 
