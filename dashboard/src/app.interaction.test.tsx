@@ -3,6 +3,7 @@ import { Code } from '@connectrpc/connect'
 import { describe, expect, it } from 'vitest'
 import {
   ApplicationGroupSchema,
+  GetApplicationGroupsRequest_Scope,
   GetApplicationsRequest_Scope,
   GetRepositoriesRequest_Scope,
   RepositorySchema,
@@ -527,6 +528,40 @@ describe('interactions', () => {
         },
       },
     )
+  })
+
+  it('apps list: each scope tab asks for the repositories, apps and groups it lists', async () => {
+    await scenario('apps scope requests', '/apps', async (ctx) => {
+      const lastScopes = () => ({
+        repositories: ctx.backend.requestsTo('getRepositories').at(-1)?.scope,
+        applications: ctx.backend.requestsTo('getApplications').at(-1)?.scope,
+        groups: ctx.backend.requestsTo('getApplicationGroups').at(-1)?.scope,
+      })
+      await waitForText(ctx, 'runtime-app')
+      expect(lastScopes()).toEqual({
+        repositories: GetRepositoriesRequest_Scope.PUBLIC,
+        applications: GetApplicationsRequest_Scope.MINE,
+        groups: GetApplicationGroupsRequest_Scope.ALL,
+      })
+
+      click(ctx, find(ctx, 'button', 'All Apps'))
+      await settle(ctx, () =>
+        expect(lastScopes()).toEqual({
+          repositories: GetRepositoriesRequest_Scope.PUBLIC,
+          applications: GetApplicationsRequest_Scope.ALL,
+          groups: GetApplicationGroupsRequest_Scope.ALL,
+        }),
+      )
+
+      click(ctx, buttonContaining(ctx, 'All Apps (admin)'))
+      await settle(ctx, () =>
+        expect(lastScopes()).toEqual({
+          repositories: GetRepositoriesRequest_Scope.ALL,
+          applications: GetApplicationsRequest_Scope.ALL,
+          groups: GetApplicationGroupsRequest_Scope.ALL,
+        }),
+      )
+    })
   })
 
   it('apps list: the scope tabs choose the apps to list', async () => {

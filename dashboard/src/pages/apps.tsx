@@ -42,6 +42,33 @@ const scopeItems = (admin: boolean) => {
   return items
 }
 
+/**
+ * What a scope tab lists: the scopes to request repositories and apps with, and whether to leave out apps of
+ * repositories the user cannot see.
+ */
+const listingOf = (scope: GetRepositoriesRequest_Scope) => {
+  switch (scope) {
+    case GetRepositoriesRequest_Scope.ALL:
+      return {
+        repositories: GetRepositoriesRequest_Scope.ALL,
+        applications: GetApplicationsRequest_Scope.ALL,
+        visibleRepositoriesOnly: false,
+      }
+    case GetRepositoriesRequest_Scope.PUBLIC:
+      return {
+        repositories: GetRepositoriesRequest_Scope.PUBLIC,
+        applications: GetApplicationsRequest_Scope.ALL,
+        visibleRepositoriesOnly: true,
+      }
+    default:
+      return {
+        repositories: GetRepositoriesRequest_Scope.PUBLIC,
+        applications: GetApplicationsRequest_Scope.MINE,
+        visibleRepositoriesOnly: false,
+      }
+  }
+}
+
 const Skeletons = () => <AppsList apps={[undefined, undefined, undefined, undefined]} />
 
 export default () => {
@@ -57,26 +84,15 @@ export default () => {
   const [query, setQuery] = createSessionSignal('apps-query', '')
   const [sort, setSort] = createSessionSignal<keyof typeof sortItems>('apps-sort', sortItems.desc.value)
 
-  // Repositories the user can see: "All Apps" lists only their apps, and the apps show their names.
+  const listing = () => listingOf(scope())
+  // The apps show the names of their repositories.
   const repos = createMemo(() =>
     client
-      .getRepositories({
-        scope:
-          scope() === GetRepositoriesRequest_Scope.ALL
-            ? GetRepositoriesRequest_Scope.ALL
-            : GetRepositoriesRequest_Scope.PUBLIC,
-      })
+      .getRepositories({ scope: listing().repositories })
       .then((res) => Object.fromEntries(res.repositories.map((r) => [r.id, r]))),
   )
   const apps = createMemo(() =>
-    client
-      .getApplications({
-        scope:
-          scope() === GetRepositoriesRequest_Scope.MINE
-            ? GetApplicationsRequest_Scope.MINE
-            : GetApplicationsRequest_Scope.ALL,
-      })
-      .then((res) => res.applications),
+    client.getApplications({ scope: listing().applications }).then((res) => res.applications),
   )
   const groups = createMemo(() =>
     client
@@ -87,7 +103,7 @@ export default () => {
   const commits = createMemo(() => getRepositoryCommits(apps().map((a) => a.commit)))
 
   const scopedApps = createMemo(() =>
-    scope() === GetRepositoriesRequest_Scope.PUBLIC ? apps().filter((a) => repos()[a.repositoryId]) : apps(),
+    listing().visibleRepositoriesOnly ? apps().filter((a) => repos()[a.repositoryId]) : apps(),
   )
   const originOf = (app: Application): RepositoryOrigin => {
     const repo = repos()[app.repositoryId]
