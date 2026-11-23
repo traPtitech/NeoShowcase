@@ -103,7 +103,7 @@ func (s *Service) MoveApplication(ctx context.Context, appID string, groupID opt
 		return err
 	}
 
-	var standaloneOwnerIDs optional.Of[[]string]
+	var implicitGroup optional.Of[*domain.ApplicationGroup]
 	if groupID.Valid {
 		dest, err := s.getExplicitApplicationGroup(ctx, groupID.V)
 		if err != nil {
@@ -120,13 +120,12 @@ func (s *Service) MoveApplication(ctx context.Context, appID string, groupID opt
 		if src.Implicit {
 			return nil
 		}
-		standaloneOwnerIDs = optional.From(lo.Uniq(src.OwnerIDs))
-		app.GroupID = domain.NewID()
+		implicitGroup = optional.From(app.MakeStandalone(lo.Uniq(src.OwnerIDs)))
 	}
 
 	if err = s.validateApp(ctx, app); err != nil {
 		return err
 	}
 
-	return s.appRepo.SetApplicationGroup(ctx, app.ID, src.ID, app.GroupID, standaloneOwnerIDs)
+	return s.appRepo.SetApplicationGroup(ctx, app.ID, src.ID, app.GroupID, implicitGroup)
 }

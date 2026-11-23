@@ -37,3 +37,13 @@ func TestApplicationGroup_IsOwner(t *testing.T) {
 		})
 	}
 }
+
+func TestApplication_MakeStandalone(t *testing.T) {
+	t.Parallel()
+	app := &domain.Application{ID: "app", GroupID: "service"}
+	group := app.MakeStandalone([]string{"user"})
+	assert.True(t, group.Implicit)
+	assert.Equal(t, []string{"user"}, group.OwnerIDs)
+	assert.Equal(t, group.ID, app.GroupID, "the app is put into the new group")
+	assert.NotEqual(t, "service", group.ID)
+}

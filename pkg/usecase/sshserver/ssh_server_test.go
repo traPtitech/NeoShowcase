@@ -76,9 +76,25 @@ func (e *sshTestEnv) newKey(user *domain.User) gossh.PublicKey {
 	return key
 }
 
-func (e *sshTestEnv) newApp(groupID string, standaloneOwnerIDs optional.Of[[]string]) *domain.Application {
+// newApp creates an app in the group of groupID, a group a user created.
+func (e *sshTestEnv) newApp(groupID string) *domain.Application {
 	e.t.Helper()
-	app := &domain.Application{
+	app := e.appOf(groupID)
+	require.NoError(e.t, e.server.appRepo.CreateApplication(e.t.Context(), app, optional.None[*domain.ApplicationGroup]()))
+	return app
+}
+
+// newStandaloneApp creates an app in its implicit group with ownerIDs.
+func (e *sshTestEnv) newStandaloneApp(ownerIDs []string) *domain.Application {
+	e.t.Helper()
+	app := e.appOf("")
+	group := app.MakeStandalone(ownerIDs)
+	require.NoError(e.t, e.server.appRepo.CreateApplication(e.t.Context(), app, optional.From(group)))
+	return app
+}
+
+func (e *sshTestEnv) appOf(groupID string) *domain.Application {
+	return &domain.Application{
 		ID:           domain.NewID(),
 		Name:         "app",
 		GroupID:      groupID,
@@ -91,8 +107,6 @@ func (e *sshTestEnv) newApp(groupID string, standaloneOwnerIDs optional.Of[[]str
 			BuildConfig: &domain.BuildConfigRuntimeBuildpack{Context: "."},
 		},
 	}
-	require.NoError(e.t, e.server.appRepo.CreateApplication(e.t.Context(), app, standaloneOwnerIDs))
-	return app
 }
 
 func (e *sshTestEnv) canLogIn(app *domain.Application, key gossh.PublicKey) bool {
@@ -109,8 +123,8 @@ func TestPublicKeyHandler_LetsInOwnersOfTheGroupOfTheApp(t *testing.T) {
 
 	group := domain.NewApplicationGroup("service", []string{groupOwner.ID})
 	require.NoError(t, e.server.groupRepo.CreateApplicationGroup(t.Context(), group))
-	inGroup := e.newApp(group.ID, optional.None[[]string]())
-	standalone := e.newApp(domain.NewID(), optional.From([]string{standaloneOwner.ID}))
+	inGroup := e.newApp(group.ID)
+	standalone := e.newStandaloneApp([]string{standaloneOwner.ID})
 
 	assert.True(t, e.canLogIn(inGroup, groupOwnerKey))
 	assert.False(t, e.canLogIn(inGroup, standaloneOwnerKey), "owning another app does not let a user in")

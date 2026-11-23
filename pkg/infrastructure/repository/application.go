@@ -98,14 +98,14 @@ func (r *applicationRepository) GetApplication(ctx context.Context, id string) (
 	return repoconvert.ToDomainApplication(app), nil
 }
 
-func (r *applicationRepository) CreateApplication(ctx context.Context, app *domain.Application, standaloneOwnerIDs optional.Of[[]string]) error {
+func (r *applicationRepository) CreateApplication(ctx context.Context, app *domain.Application, implicitGroup optional.Of[*domain.ApplicationGroup]) error {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return oops.Wrapf(err, "starting transaction")
 	}
 	defer tx.Rollback()
 
-	if err = joinApplicationGroup(ctx, tx, app.GroupID, standaloneOwnerIDs); err != nil {
+	if err = joinApplicationGroup(ctx, tx, app.GroupID, implicitGroup); err != nil {
 		return err
 	}
 	ma := repoconvert.FromDomainApplication(app)
@@ -238,7 +238,7 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 	return err
 }
 
-func (r *applicationRepository) SetApplicationGroup(ctx context.Context, id, fromGroupID, toGroupID string, standaloneOwnerIDs optional.Of[[]string]) error {
+func (r *applicationRepository) SetApplicationGroup(ctx context.Context, id, fromGroupID, toGroupID string, implicitGroup optional.Of[*domain.ApplicationGroup]) error {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return oops.Wrapf(err, "starting transaction")
@@ -252,7 +252,7 @@ func (r *applicationRepository) SetApplicationGroup(ctx context.Context, id, fro
 	if err = checkApplicationStillIn(app, fromGroupID); err != nil {
 		return err
 	}
-	if err = joinApplicationGroup(ctx, tx, toGroupID, standaloneOwnerIDs); err != nil {
+	if err = joinApplicationGroup(ctx, tx, toGroupID, implicitGroup); err != nil {
 		return err
 	}
 	app.GroupID = null.StringFrom(toGroupID)
@@ -278,15 +278,14 @@ func checkApplicationStillIn(app *models.Application, groupID string) error {
 }
 
 // joinApplicationGroup prepares the group of groupID for an application to join.
-// With standaloneOwnerIDs, it creates the implicit group of the application; an implicit group holds only one application.
-// Without them, the group has to be an existing group a user created.
-func joinApplicationGroup(ctx context.Context, ex boil.ContextExecutor, groupID string, standaloneOwnerIDs optional.Of[[]string]) error {
-	if standaloneOwnerIDs.Valid {
-		return insertApplicationGroup(ctx, ex, &domain.ApplicationGroup{
-			ID:       groupID,
-			Implicit: true,
-			OwnerIDs: standaloneOwnerIDs.V,
-		})
+// With implicitGroup, it creates implicitGroup as the group of the application; an implicit group holds only one application.
+// Without it, the group has to be an existing group a user created.
+func joinApplicationGroup(ctx context.Context, ex boil.ContextExecutor, groupID string, implicitGroup optional.Of[*domain.ApplicationGroup]) error {
+	if implicitGroup.Valid {
+		if !implicitGroup.V.Implicit || implicitGroup.V.ID != groupID {
+			return oops.Errorf("group %v is not an implicit group of id %v", implicitGroup.V.ID, groupID)
+		}
+		return insertApplicationGroup(ctx, ex, implicitGroup.V)
 	}
 	group, err := getApplicationGroup(ctx, ex, groupID)
 	if err != nil {

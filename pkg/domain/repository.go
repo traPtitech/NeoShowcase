@@ -72,18 +72,18 @@ type ApplicationRepository interface {
 	GetApplications(ctx context.Context, cond GetApplicationCondition) ([]*Application, error)
 	GetApplication(ctx context.Context, id string) (*Application, error)
 	// CreateApplication creates app in one transaction.
-	// When standaloneOwnerIDs is given, the app is standalone: an implicit group of app.GroupID with these owners is created with it.
+	// When implicitGroup is given, the app is standalone: implicitGroup, which has to be implicit and have the ID app.GroupID, is created with it.
 	// Otherwise the group of app.GroupID has to be an existing group a user created.
-	CreateApplication(ctx context.Context, app *Application, standaloneOwnerIDs optional.Of[[]string]) error
+	CreateApplication(ctx context.Context, app *Application, implicitGroup optional.Of[*ApplicationGroup]) error
 	// UpdateApplication applies args to the application, and owners, when given, to its implicit group, in one transaction.
 	// When the application is no longer in owners.GroupID, it fails with ErrorTypeFailedPrecondition and changes nothing.
 	UpdateApplication(ctx context.Context, id string, args *UpdateApplicationArgs, owners optional.Of[ImplicitGroupOwners]) error
 	// SetApplicationGroup moves the application from the group of fromGroupID to the group of toGroupID in one transaction.
-	// When standaloneOwnerIDs is given, the app becomes standalone: an implicit group of toGroupID with these owners is created.
+	// When implicitGroup is given, the app becomes standalone: implicitGroup, which has to be implicit and have the ID toGroupID, is created.
 	// Otherwise toGroupID has to be an existing group a user created.
 	// The previous group is deleted when it is implicit.
 	// When the application is no longer in fromGroupID, it fails with ErrorTypeFailedPrecondition and changes nothing.
-	SetApplicationGroup(ctx context.Context, id, fromGroupID, toGroupID string, standaloneOwnerIDs optional.Of[[]string]) error
+	SetApplicationGroup(ctx context.Context, id, fromGroupID, toGroupID string, implicitGroup optional.Of[*ApplicationGroup]) error
 	BulkUpdateState(ctx context.Context, states []*Container) error
 	// DeleteApplication deletes the application, and its group when the group is implicit, in one transaction.
 	DeleteApplication(ctx context.Context, id string) error

@@ -64,7 +64,7 @@ func (s *Service) CreateApplication(ctx context.Context, app *domain.Application
 	if !repo.CanCreateApp(user) {
 		return nil, domain.NewError(domain.ErrorTypeForbidden, "you cannot create application from this repository", nil)
 	}
-	var standaloneOwnerIDs optional.Of[[]string]
+	var implicitGroup optional.Of[*domain.ApplicationGroup]
 	if groupID.Valid {
 		group, err := s.getExplicitApplicationGroup(ctx, groupID.V)
 		if err != nil {
@@ -75,8 +75,7 @@ func (s *Service) CreateApplication(ctx context.Context, app *domain.Application
 		}
 		app.GroupID = group.ID
 	} else {
-		standaloneOwnerIDs = optional.From(lo.Uniq(append(slices.Clone(repo.OwnerIDs), user.ID)))
-		app.GroupID = domain.NewID()
+		implicitGroup = optional.From(app.MakeStandalone(lo.Uniq(append(slices.Clone(repo.OwnerIDs), user.ID))))
 	}
 	err = s.validateApp(ctx, app)
 	if err != nil {
@@ -84,7 +83,7 @@ func (s *Service) CreateApplication(ctx context.Context, app *domain.Application
 	}
 
 	// Create
-	err = s.appRepo.CreateApplication(ctx, app, standaloneOwnerIDs)
+	err = s.appRepo.CreateApplication(ctx, app, implicitGroup)
 	if err != nil {
 		return nil, err
 	}

@@ -38,6 +38,14 @@ func NewImplicitApplicationGroup(ownerIDs []string) *ApplicationGroup {
 	}
 }
 
+// MakeStandalone puts the application into a new implicit group with ownerIDs, and returns the group.
+// The group exists only in memory until it is created together with the application.
+func (a *Application) MakeStandalone(ownerIDs []string) *ApplicationGroup {
+	group := NewImplicitApplicationGroup(ownerIDs)
+	a.GroupID = group.ID
+	return group
+}
+
 // maxApplicationGroupNameLength is the length of the name column in characters.
 const maxApplicationGroupNameLength = 100
 

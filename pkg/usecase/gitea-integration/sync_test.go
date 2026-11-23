@@ -43,8 +43,9 @@ func newSyncTestIntegration(t *testing.T) *Integration {
 // createStandaloneApp creates a standalone app of the repository and returns the ID of its implicit group.
 func (i *Integration) createStandaloneApp(t *testing.T, repoID string, ownerIDs []string) string {
 	t.Helper()
-	app := newTestApp(repoID, domain.NewID())
-	require.NoError(t, i.appRepo.CreateApplication(t.Context(), app, optional.From(ownerIDs)))
+	app := newTestApp(repoID, "")
+	group := app.MakeStandalone(ownerIDs)
+	require.NoError(t, i.appRepo.CreateApplication(t.Context(), app, optional.From(group)))
 	return app.GroupID
 }
 
@@ -73,8 +74,8 @@ func TestSyncRepository_AddsWritersOnlyToStandaloneApps(t *testing.T) {
 
 	shared := domain.NewApplicationGroup("service", []string{owner.ID})
 	require.NoError(t, i.groupRepo.CreateApplicationGroup(ctx, shared))
-	require.NoError(t, i.appRepo.CreateApplication(ctx, newTestApp(repoX.ID, shared.ID), optional.None[[]string]()))
-	require.NoError(t, i.appRepo.CreateApplication(ctx, newTestApp(repoY.ID, shared.ID), optional.None[[]string]()))
+	require.NoError(t, i.appRepo.CreateApplication(ctx, newTestApp(repoX.ID, shared.ID), optional.None[*domain.ApplicationGroup]()))
+	require.NoError(t, i.appRepo.CreateApplication(ctx, newTestApp(repoY.ID, shared.ID), optional.None[*domain.ApplicationGroup]()))
 	standalone := i.createStandaloneApp(t, repoX.ID, []string{owner.ID})
 	standaloneOfY := i.createStandaloneApp(t, repoY.ID, []string{owner.ID})
 
