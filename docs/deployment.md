@@ -48,3 +48,12 @@ See [../.local-manifest](../.local-manifest) for a complete list of require comp
 Required components are (almost) the same with docker-backed deployment.
 
 Our production manifest is also available at [traPtitech/manifest](https://github.com/traPtitech/manifest).
+
+## Upgrading
+
+`ns-migrate` applies `migrations/schema.sql` and then migrates the data the schema change cannot, such as putting existing applications into application groups.
+Run it before starting the new version of the other components.
+Every data migration is safe to run again.
+
+Applications created by the previous version of ns-gateway have no application group, and the new version cannot show them until they are migrated.
+The new ns-gateway migrates them when it starts, so stop the previous ns-gateway before starting the new one (for example, use the `Recreate` deployment strategy on k8s) for the release that introduces application groups.
