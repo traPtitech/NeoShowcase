@@ -57,13 +57,19 @@ describe('interactions', () => {
   }
 
   /** Opens the filter menu next to the search box and toggles the checkbox whose label starts with `label`. */
-  const toggleFilter = async (ctx: Ctx, label: string) => {
+  /** Returns the button that opens the filter menu next to the search box. */
+  const filterTrigger = (ctx: Ctx): HTMLElement => {
     const search = ctx.screen.querySelector<HTMLInputElement>('input[placeholder="Search"]')
     let trigger: HTMLElement | null | undefined
     for (let el = search?.parentElement; el && !trigger; el = el.parentElement) {
       trigger = el.querySelector<HTMLElement>('button[aria-haspopup="true"]')
     }
     if (!trigger) throw new Error('no filter menu next to the search box')
+    return trigger
+  }
+
+  const toggleFilter = async (ctx: Ctx, label: string) => {
+    const trigger = filterTrigger(ctx)
     if (trigger.getAttribute('aria-expanded') !== 'true') {
       trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
       ctx.flush()
@@ -467,6 +473,27 @@ describe('interactions', () => {
     })
   })
 
+  it('apps list: the filter menu counts the apps left by the other filter', async () => {
+    await scenario('apps filter counts', '/apps', async (ctx) => {
+      await waitForText(ctx, 'runtime-app', 'static-app', 'broken-app')
+      const filteredMark = () => filterTrigger(ctx).querySelector('.bg-primary-main')
+      expect(filteredMark()).toBeNull()
+
+      // runtime-app (Running) and static-app (Serving) come from GitHub, broken-app (Idle) from Gitea
+      await toggleFilter(ctx, 'Idle')
+      await waitForText(ctx, 'Running (1)', 'Serving (1)', 'Idle (1)', 'GitHub (2)', 'Gitea (0)')
+      await settle(ctx, () => expect(filteredMark()).not.toBeNull())
+
+      await toggleFilter(ctx, 'Idle')
+      await waitForText(ctx, 'Gitea (1)')
+      await settle(ctx, () => expect(filteredMark()).toBeNull())
+
+      // the counts by origin follow only the status filter, so GitHub keeps its count when unchecked
+      await toggleFilter(ctx, 'GitHub')
+      await waitForText(ctx, 'Running (0)', 'Serving (0)', 'Idle (1)', 'GitHub (2)', 'Gitea (1)')
+    })
+  })
+
   it('apps list: "All Apps" leaves out apps of repositories the user cannot see', async () => {
     await scenario(
       'apps public scope',
@@ -546,6 +573,45 @@ describe('interactions', () => {
       await toggleFilter(ctx, 'GitHub')
       await waitForNoText(ctx, 'github-repo')
       await waitForText(ctx, 'gitea-repo')
+    })
+  })
+
+  it('repos list: repositories are listed in name order', async () => {
+    await scenario(
+      'repos order',
+      '/repos',
+      async (ctx) => {
+        await waitForText(ctx, 'github-repo', 'gitea-repo', 'empty-repo')
+        const hrefs = [...ctx.screen.querySelectorAll<HTMLAnchorElement>('a[href^="/repos/repo-"]')].map((a) =>
+          a.getAttribute('href'),
+        )
+        // the fixtures hold github-repo, gitea-repo and then empty-repo
+        expect([...new Set(hrefs)]).toEqual(['/repos/repo-empty', '/repos/repo-gitea', '/repos/repo-github'])
+      },
+      { setup: addEmptyRepository },
+    )
+  })
+
+  it('repos list: the scope tabs choose the scope of getRepositories', async () => {
+    await scenario('repos scope', '/repos', async (ctx) => {
+      await waitForText(ctx, 'github-repo')
+      expect(ctx.backend.requestsTo('getRepositories').at(-1)?.scope).toBe(GetRepositoriesRequest_Scope.MINE)
+      click(ctx, buttonContaining(ctx, 'All Repositories'))
+      await settle(ctx, () =>
+        expect(ctx.backend.requestsTo('getRepositories').at(-1)?.scope).toBe(GetRepositoriesRequest_Scope.PUBLIC),
+      )
+    })
+  })
+
+  it('repo page: links back to the repository list', async () => {
+    await scenario('repo back link', '/repos/repo-github', async (ctx) => {
+      await waitForText(ctx, 'github-repo')
+      // the header also links to /repos: look at the back link of the Nav
+      await settle(ctx, () =>
+        expect(ctx.screen.querySelector('a:has(.i-material-symbols\\:arrow-back)')?.getAttribute('href')).toBe(
+          '/repos',
+        ),
+      )
     })
   })
 
