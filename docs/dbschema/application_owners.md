@@ -2,7 +2,7 @@
 
 ## Description
 
-アプリケーション所有者テーブル
+アプリケーション所有者テーブル(廃止予定。グループへの移行元としてのみ残す)
 
 <details>
 <summary><strong>Table Definition</strong></summary>
@@ -15,7 +15,7 @@ CREATE TABLE `application_owners` (
   KEY `fk_application_owners_application_id` (`application_id`),
   CONSTRAINT `fk_application_owners_application_id` FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`),
   CONSTRAINT `fk_application_owners_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='アプリケーション所有者テーブル'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='アプリケーション所有者テーブル(廃止予定。グループへの移行元としてのみ残す)'
 ```
 
 </details>
@@ -62,6 +62,7 @@ erDiagram
 "applications" {
   char_22_ id PK
   varchar_100_ name
+  char_22_ group_id FK
   varchar_22_ repository_id FK
   varchar_100_ ref_name
   char_40_ commit

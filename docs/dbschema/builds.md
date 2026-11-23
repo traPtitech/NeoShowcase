@@ -32,7 +32,7 @@ CREATE TABLE `builds` (
 
 | Name | Type | Default | Nullable | Children | Parents | Comment |
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
-| id | char(22) |  | false | [artifacts](artifacts.md) [runtime_images](runtime_images.md) |  | ビルドID |
+| id | char(22) |  | false | [runtime_images](runtime_images.md) [artifacts](artifacts.md) |  | ビルドID |
 | commit | char(40) |  | false |  |  | コミットハッシュ |
 | config_hash | char(16) |  | false |  |  | ビルド設定のハッシュ |
 | status | enum('building','succeeded','failed','canceled','queued','skipped') |  | false |  |  | ビルドの状態 |
@@ -63,8 +63,8 @@ CREATE TABLE `builds` (
 ```mermaid
 erDiagram
 
-"artifacts" }o--|| "builds" : "FOREIGN KEY (build_id) REFERENCES builds (id)"
 "runtime_images" |o--|| "builds" : "FOREIGN KEY (build_id) REFERENCES builds (id)"
+"artifacts" }o--|| "builds" : "FOREIGN KEY (build_id) REFERENCES builds (id)"
 "builds" }o--|| "applications" : "FOREIGN KEY (application_id) REFERENCES applications (id)"
 
 "builds" {
@@ -79,6 +79,11 @@ erDiagram
   tinyint_1_ retriable
   char_22_ application_id FK
 }
+"runtime_images" {
+  char_22_ build_id PK
+  bigint_20_ size
+  datetime_6_ created_at
+}
 "artifacts" {
   char_22_ id PK
   varchar_1000_ name
@@ -87,14 +92,10 @@ erDiagram
   datetime_6_ deleted_at
   varchar_22_ build_id FK
 }
-"runtime_images" {
-  char_22_ build_id PK
-  bigint_20_ size
-  datetime_6_ created_at
-}
 "applications" {
   char_22_ id PK
   varchar_100_ name
+  char_22_ group_id FK
   varchar_22_ repository_id FK
   varchar_100_ ref_name
   char_40_ commit

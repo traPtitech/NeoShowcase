@@ -11,6 +11,7 @@
 CREATE TABLE `applications` (
   `id` char(22) NOT NULL COMMENT 'アプリケーションID',
   `name` varchar(100) NOT NULL COMMENT 'アプリケーション名',
+  `group_id` char(22) DEFAULT NULL COMMENT 'グループID(既存データの移行が済むまでNULLがありうる)',
   `repository_id` varchar(22) NOT NULL COMMENT 'リポジトリID',
   `ref_name` varchar(100) NOT NULL COMMENT 'Gitブランチ・タグ名',
   `commit` char(40) NOT NULL COMMENT '解決されたコミット',
@@ -23,6 +24,8 @@ CREATE TABLE `applications` (
   `updated_at` datetime(6) NOT NULL COMMENT '更新日時',
   PRIMARY KEY (`id`),
   KEY `fk_applications_repository_id` (`repository_id`),
+  KEY `fk_applications_group_id` (`group_id`),
+  CONSTRAINT `fk_applications_group_id` FOREIGN KEY (`group_id`) REFERENCES `application_groups` (`id`),
   CONSTRAINT `fk_applications_repository_id` FOREIGN KEY (`repository_id`) REFERENCES `repositories` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='アプリケーションテーブル'
 ```
@@ -33,8 +36,9 @@ CREATE TABLE `applications` (
 
 | Name | Type | Default | Nullable | Children | Parents | Comment |
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
-| id | char(22) |  | false | [environments](environments.md) [application_config](application_config.md) [websites](websites.md) [application_owners](application_owners.md) [port_publications](port_publications.md) [builds](builds.md) |  | アプリケーションID |
+| id | char(22) |  | false | [application_config](application_config.md) [environments](environments.md) [websites](websites.md) [builds](builds.md) [application_owners](application_owners.md) [port_publications](port_publications.md) |  | アプリケーションID |
 | name | varchar(100) |  | false |  |  | アプリケーション名 |
+| group_id | char(22) | NULL | true |  | [application_groups](application_groups.md) | グループID(既存データの移行が済むまでNULLがありうる) |
 | repository_id | varchar(22) |  | false |  | [repositories](repositories.md) | リポジトリID |
 | ref_name | varchar(100) |  | false |  |  | Gitブランチ・タグ名 |
 | commit | char(40) |  | false |  |  | 解決されたコミット |
@@ -50,6 +54,7 @@ CREATE TABLE `applications` (
 
 | Name | Type | Definition |
 | ---- | ---- | ---------- |
+| fk_applications_group_id | FOREIGN KEY | FOREIGN KEY (group_id) REFERENCES application_groups (id) |
 | fk_applications_repository_id | FOREIGN KEY | FOREIGN KEY (repository_id) REFERENCES repositories (id) |
 | PRIMARY | PRIMARY KEY | PRIMARY KEY (id) |
 
@@ -57,6 +62,7 @@ CREATE TABLE `applications` (
 
 | Name | Definition |
 | ---- | ---------- |
+| fk_applications_group_id | KEY fk_applications_group_id (group_id) USING BTREE |
 | fk_applications_repository_id | KEY fk_applications_repository_id (repository_id) USING BTREE |
 | PRIMARY | PRIMARY KEY (id) USING BTREE |
 
@@ -65,17 +71,19 @@ CREATE TABLE `applications` (
 ```mermaid
 erDiagram
 
-"environments" }o--|| "applications" : "FOREIGN KEY (application_id) REFERENCES applications (id)"
 "application_config" |o--|| "applications" : "FOREIGN KEY (application_id) REFERENCES applications (id)"
+"environments" }o--|| "applications" : "FOREIGN KEY (application_id) REFERENCES applications (id)"
 "websites" }o--|| "applications" : "FOREIGN KEY (application_id) REFERENCES applications (id)"
+"builds" }o--|| "applications" : "FOREIGN KEY (application_id) REFERENCES applications (id)"
 "application_owners" }o--|| "applications" : "FOREIGN KEY (application_id) REFERENCES applications (id)"
 "port_publications" }o--|| "applications" : "FOREIGN KEY (application_id) REFERENCES applications (id)"
-"builds" }o--|| "applications" : "FOREIGN KEY (application_id) REFERENCES applications (id)"
+"applications" }o--o| "application_groups" : "FOREIGN KEY (group_id) REFERENCES application_groups (id)"
 "applications" }o--|| "repositories" : "FOREIGN KEY (repository_id) REFERENCES repositories (id)"
 
 "applications" {
   char_22_ id PK
   varchar_100_ name
+  char_22_ group_id FK
   varchar_22_ repository_id FK
   varchar_100_ ref_name
   char_40_ commit
@@ -86,12 +94,6 @@ erDiagram
   char_22_ current_build
   datetime_6_ created_at
   datetime_6_ updated_at
-}
-"environments" {
-  char_22_ application_id PK
-  varchar_100_ key PK
-  text value
-  tinyint_1_ system
 }
 "application_config" {
   char_22_ application_id PK
@@ -109,6 +111,12 @@ erDiagram
   text entrypoint
   text command
 }
+"environments" {
+  char_22_ application_id PK
+  varchar_100_ key PK
+  text value
+  tinyint_1_ system
+}
 "websites" {
   char_22_ id PK
   varchar_100_ fqdn
@@ -119,16 +127,6 @@ erDiagram
   int_11_ http_port
   enum__off___soft___hard__ authentication
   char_22_ application_id FK
-}
-"application_owners" {
-  char_22_ user_id PK
-  char_22_ application_id PK
-}
-"port_publications" {
-  char_22_ application_id FK
-  int_11_ internet_port PK
-  int_11_ application_port
-  enum__tcp___udp__ protocol PK
 }
 "builds" {
   char_22_ id PK
@@ -141,6 +139,21 @@ erDiagram
   datetime_6_ finished_at
   tinyint_1_ retriable
   char_22_ application_id FK
+}
+"application_owners" {
+  char_22_ user_id PK
+  char_22_ application_id PK
+}
+"port_publications" {
+  char_22_ application_id FK
+  int_11_ internet_port PK
+  int_11_ application_port
+  enum__tcp___udp__ protocol PK
+}
+"application_groups" {
+  char_22_ id PK
+  varchar_100_ name
+  tinyint_1_ implicit
 }
 "repositories" {
   char_22_ id PK
