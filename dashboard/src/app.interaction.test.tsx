@@ -13,6 +13,7 @@ import {
   type Ctx,
   click,
   field,
+  find,
   idle,
   link,
   scenario,
@@ -169,6 +170,18 @@ describe('interactions', () => {
       )
       await settle(ctx, () => expect(window.location.pathname).toBe('/groups/group-new'))
       await waitForText(ctx, 'new-service', 'No Apps')
+    })
+  })
+
+  it('groups list: clicking anywhere in the row of a group opens the group', async () => {
+    await scenario('groups row', '/groups', async (ctx) => {
+      await waitForText(ctx, 'web-service')
+      const icon = [...ctx.screen.querySelectorAll<HTMLElement>('.i-material-symbols\\:folder-outline')].find((el) =>
+        el.parentElement?.textContent?.includes('web-service'),
+      )
+      if (!icon) throw new Error('no icon in the row of web-service')
+      click(ctx, icon)
+      await settle(ctx, () => expect(window.location.pathname).toBe('/groups/group-web'))
     })
   })
 
@@ -557,6 +570,37 @@ describe('interactions', () => {
       },
       { setup: addEmptyRepository },
     )
+  })
+
+  it('repos list: clicking anywhere in the row of a repository opens it, and "Add New App" opens the create form', async () => {
+    await scenario('repos row', '/repos', async (ctx) => {
+      await waitForText(ctx, 'github-repo')
+      const count = await settle(ctx, () => find(ctx, 'div', '2 apps')).then(() => find(ctx, 'div', '2 apps'))
+      click(ctx, count)
+      await settle(ctx, () => expect(window.location.pathname).toBe('/repos/repo-github'))
+
+      window.history.back()
+      await settle(ctx, () => expect(window.location.pathname).toBe('/repos'))
+      await waitForText(ctx, 'github-repo')
+      const addApp = await settle(ctx, () => link(ctx, '/apps/new?repositoryID=repo-github')).then(() =>
+        link(ctx, '/apps/new?repositoryID=repo-github'),
+      )
+      click(ctx, addApp.querySelector('button') as HTMLElement)
+      await settle(ctx, () =>
+        expect(`${window.location.pathname}${window.location.search}`).toBe('/apps/new?repositoryID=repo-github'),
+      )
+    })
+  })
+
+  it('apps list: clicking anywhere in the heading of a group opens the group', async () => {
+    await scenario('apps group heading', '/apps', async (ctx) => {
+      await waitForText(ctx, 'static-app')
+      const group = ctx.screen.querySelector<HTMLElement>('section[aria-label="web-service"]')
+      const count = [...(group?.querySelectorAll<HTMLElement>('div') ?? [])].find((el) => el.textContent === '1 apps')
+      if (!count) throw new Error('no app count in the heading of web-service')
+      click(ctx, count)
+      await settle(ctx, () => expect(window.location.pathname).toBe('/groups/group-web'))
+    })
   })
 
   it('repos list: the search box and the origin filter narrow the list', async () => {

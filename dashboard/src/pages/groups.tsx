@@ -4,6 +4,7 @@ import { GetApplicationGroupsRequest_Scope } from '/@/api/neoshowcase/protobuf/g
 import { MainViewContainer } from '/@/components/layouts/MainView'
 import PendingContainer from '/@/components/layouts/PendingContainer'
 import { WithNav } from '/@/components/layouts/WithNav'
+import { GroupRow } from '/@/components/templates/app/GroupRow'
 import { List } from '/@/components/templates/List'
 import { Nav } from '/@/components/templates/Nav'
 import { Button } from '/@/components/UI/Button'
@@ -64,16 +65,7 @@ export default () => {
                     </List.PlaceHolder>
                   }
                 >
-                  <For each={groups()}>
-                    {(group) => (
-                      <List.Row>
-                        <div class="i-material-symbols:folder-outline shrink-0 text-2xl/6" />
-                        <a href={`/groups/${group.id}`} class="h4-bold text-text-black truncate">
-                          {group.name}
-                        </a>
-                      </List.Row>
-                    )}
-                  </For>
+                  <For each={groups()}>{(group) => <GroupRow group={group} />}</For>
                 </Show>
               </List.Container>
             </PendingContainer>
