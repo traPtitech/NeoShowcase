@@ -273,19 +273,26 @@ func (s *Service) GetApplication(ctx context.Context, id string) (*TopAppInfo, e
 	return info, nil
 }
 
-func (s *Service) UpdateApplication(ctx context.Context, id string, args *domain.UpdateApplicationArgs) error {
+// UpdateApplication applies args to the application.
+// ownerIDs, when given, replace the owners of a standalone application; an application in a group a user created
+// takes its owners from the group, so giving ownerIDs for it is rejected.
+// Every change is validated before any of them is written.
+func (s *Service) UpdateApplication(ctx context.Context, id string, args *domain.UpdateApplicationArgs, ownerIDs optional.Of[[]string]) error {
 	if args.GroupID.Valid {
 		return domain.NewError(domain.ErrorTypeBadRequest, "use MoveApplication to change the group", nil)
 	}
-	err := s.isApplicationOwner(ctx, id)
-	if err != nil {
-		return err
-	}
-
 	app, err := s.appRepo.GetApplication(ctx, id)
 	if err != nil {
 		return err
 	}
+	group, err := s.groupRepo.GetApplicationGroup(ctx, app.GroupID)
+	if err != nil {
+		return err
+	}
+	if !group.IsOwner(web.GetUser(ctx)) {
+		return domain.NewError(domain.ErrorTypeForbidden, "you do not have permission for this application", nil)
+	}
+	appBefore := *app
 	app.Apply(args)
 
 	for _, website := range app.Websites {
@@ -296,20 +303,31 @@ func (s *Service) UpdateApplication(ctx context.Context, id string, args *domain
 		return err
 	}
 	// Validate immutable fields
-	{
-		appBefore, err := s.appRepo.GetApplication(ctx, id)
-		if err != nil {
-			return err
+	if appBefore.Config.BuildConfig.MariaDB() != app.Config.BuildConfig.MariaDB() {
+		return domain.NewError(domain.ErrorTypeBadRequest, "use_mariadb is immutable", nil)
+	}
+	if appBefore.Config.BuildConfig.MongoDB() != app.Config.BuildConfig.MongoDB() {
+		return domain.NewError(domain.ErrorTypeBadRequest, "use_mongodb is immutable", nil)
+	}
+	var groupArgs *domain.UpdateApplicationGroupArgs
+	if ownerIDs.Valid {
+		if !group.Implicit {
+			return domain.NewError(domain.ErrorTypeBadRequest, "owners of an application in a group are managed by the group", nil)
 		}
-		if appBefore.Config.BuildConfig.MariaDB() != app.Config.BuildConfig.MariaDB() {
-			return domain.NewError(domain.ErrorTypeBadRequest, "use_mariadb is immutable", nil)
-		}
-		if appBefore.Config.BuildConfig.MongoDB() != app.Config.BuildConfig.MongoDB() {
-			return domain.NewError(domain.ErrorTypeBadRequest, "use_mongodb is immutable", nil)
+		groupArgs = &domain.UpdateApplicationGroupArgs{OwnerIDs: optional.From(ownerIDs.V)}
+		group.Apply(groupArgs)
+		if err = group.Validate(); err != nil {
+			return domain.NewError(domain.ErrorTypeBadRequest, "invalid owners", err)
 		}
 	}
 
 	// Update
+	// Owners go first, since unknown user IDs are only found by writing them.
+	if groupArgs != nil {
+		if err = s.groupRepo.UpdateApplicationGroup(ctx, group.ID, groupArgs); err != nil {
+			return err
+		}
+	}
 	err = s.appRepo.UpdateApplication(ctx, id, args)
 	if err != nil {
 		return oops.Wrapf(err, "updating application")

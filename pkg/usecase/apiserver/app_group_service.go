@@ -104,31 +104,6 @@ func (s *Service) DeleteApplicationGroup(ctx context.Context, id string) error {
 	return s.groupRepo.DeleteApplicationGroup(ctx, id)
 }
 
-// UpdateStandaloneApplicationOwners sets the owners of an application that is not in any group a user created.
-// The owners of an application in such a group are the owners of the group.
-func (s *Service) UpdateStandaloneApplicationOwners(ctx context.Context, appID string, ownerIDs []string) error {
-	app, err := s.appRepo.GetApplication(ctx, appID)
-	if err != nil {
-		return err
-	}
-	group, err := s.groupRepo.GetApplicationGroup(ctx, app.GroupID)
-	if err != nil {
-		return err
-	}
-	if !group.IsOwner(web.GetUser(ctx)) {
-		return domain.NewError(domain.ErrorTypeForbidden, "you do not have permission for this application", nil)
-	}
-	if !group.Implicit {
-		return domain.NewError(domain.ErrorTypeBadRequest, "owners of an application in a group are managed by the group", nil)
-	}
-	args := &domain.UpdateApplicationGroupArgs{OwnerIDs: optional.From(ownerIDs)}
-	group.Apply(args)
-	if err = group.Validate(); err != nil {
-		return domain.NewError(domain.ErrorTypeBadRequest, "invalid owners", err)
-	}
-	return s.groupRepo.UpdateApplicationGroup(ctx, group.ID, args)
-}
-
 // MoveApplication moves the application into the group of groupID,
 // or makes it standalone when groupID is not given.
 // The user has to be an owner of both the current group and the destination.

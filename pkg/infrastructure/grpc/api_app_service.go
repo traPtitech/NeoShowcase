@@ -74,16 +74,9 @@ func (s *APIService) UpdateApplication(ctx context.Context, req *pb.UpdateApplic
 		Config:           optional.FromNonZero(req.Config).Map(pbconvert.FromPBApplicationConfig),
 		Websites:         optional.FromNonZero(req.Websites).Map(pbconvert.FromPBUpdateWebsites),
 		PortPublications: optional.FromNonZero(req.PortPublications).Map(pbconvert.FromPBUpdatePorts),
-	})
+	}, optional.FromNonZero(req.OwnerIds).Map(pbconvert.FromPBUpdateOwners))
 	if err != nil {
 		return nil, handleUseCaseError(err)
-	}
-	// Owners go last: removing oneself from the owners would forbid the other updates.
-	if req.OwnerIds != nil {
-		err = s.svc.UpdateStandaloneApplicationOwners(ctx, req.Id, pbconvert.FromPBUpdateOwners(req.OwnerIds))
-		if err != nil {
-			return nil, handleUseCaseError(err)
-		}
 	}
 	return &emptypb.Empty{}, nil
 }
