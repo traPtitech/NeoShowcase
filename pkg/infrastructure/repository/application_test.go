@@ -215,3 +215,23 @@ func TestApplicationRepository_UpdateOwnersOfStandaloneApp(t *testing.T) {
 	require.NoError(t, err)
 	assert.ElementsMatch(t, []string{e.ownerID, other.ID}, got.OwnerIDs)
 }
+
+func TestApplicationRepository_UpdateOwnersRefusesExplicitGroup(t *testing.T) {
+	t.Parallel()
+	e := newAppRepoTestEnv(t)
+	ctx := t.Context()
+	other, err := repository.NewUserRepository(e.db).EnsureUser(ctx, "other")
+	require.NoError(t, err)
+	explicit := e.createExplicitGroup()
+	app := e.newApp(explicit.ID)
+	require.NoError(t, e.appRepo.CreateApplication(ctx, app, optional.None[[]string]()))
+
+	err = e.appRepo.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{}, optional.From(domain.ImplicitGroupOwners{
+		GroupID:  explicit.ID,
+		OwnerIDs: []string{other.ID},
+	}))
+	require.Error(t, err, "owners of a group a user created are not replaced through an app")
+	got, err := e.groupRepo.GetApplicationGroup(ctx, explicit.ID)
+	require.NoError(t, err)
+	assert.ElementsMatch(t, []string{e.ownerID}, got.OwnerIDs)
+}
