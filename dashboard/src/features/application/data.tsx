@@ -10,7 +10,6 @@ import {
   getRepositoryCommits,
   isOwner,
   revalidateApplication,
-  revalidateApplicationGroup,
   revalidateBuilds,
 } from '/@/libs/api'
 import { me } from '/@/libs/session'
@@ -25,7 +24,7 @@ export type ApplicationData = {
   builds: Accessor<Build[]>
   commits: Accessor<CommitsMap>
   hasPermission: Accessor<boolean>
-  /** Re-fetch the application, its group and its builds (quiet: content stays on screen). */
+  /** Re-fetch the application and its builds (quiet: content stays on screen). */
   refetch: () => void
 }
 
@@ -46,8 +45,6 @@ export const ApplicationDataProvider: ParentComponent<{ id: string }> = (props) 
   const hasPermission = createMemo(() => isOwner(me(), app()))
   const refetch = () => {
     revalidateApplication(props.id)
-    const groupId = app().groupId
-    if (groupId) revalidateApplicationGroup(groupId)
     revalidateBuilds(props.id)
   }
   return (
