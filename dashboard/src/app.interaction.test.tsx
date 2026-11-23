@@ -84,6 +84,29 @@ describe('interactions', () => {
     click(ctx, checkbox as HTMLElement)
   }
 
+  /** Opens the select on the page and returns it once its options are shown. */
+  const openSelect = async (ctx: Ctx): Promise<HTMLButtonElement> => {
+    const trigger = ctx.screen.querySelector<HTMLButtonElement>('button[aria-haspopup=listbox]')
+    if (!trigger) throw new Error('no select')
+    for (const e of ['pointerdown', 'pointerup', 'click']) {
+      trigger.dispatchEvent(new MouseEvent(e, { bubbles: true, button: 0 }))
+    }
+    await settle(ctx, () => expect(document.querySelector('[role=option]')).not.toBeNull())
+    return trigger
+  }
+
+  /** Chooses the option of the open select whose text contains `text`. */
+  const chooseOption = (ctx: Ctx, text: string) => {
+    const option = [...document.querySelectorAll<HTMLElement>('[role=option]')].find((o) =>
+      o.textContent?.includes(text),
+    )
+    if (!option) throw new Error(`no option containing "${text}"`)
+    for (const e of ['pointerdown', 'pointerup', 'click']) {
+      option.dispatchEvent(new MouseEvent(e, { bubbles: true, button: 0 }))
+    }
+    ctx.flush()
+  }
+
   /** Adds empty-repo, a repository of the user without apps. */
   const addEmptyRepository = (b: Ctx['backend']) =>
     b.fixtures.repositories.push(
@@ -323,22 +346,8 @@ describe('interactions', () => {
     await scenario('move app', '/apps/app-static/settings/group', async (ctx) => {
       await waitForText(ctx, 'web-service')
       await idle(ctx)
-      const trigger = ctx.screen.querySelector<HTMLButtonElement>('button[aria-haspopup=listbox]')
-      if (!trigger) throw new Error('no group select')
-      for (const e of ['pointerdown', 'pointerup', 'click']) {
-        trigger.dispatchEvent(new MouseEvent(e, { bubbles: true, button: 0 }))
-      }
-      const standalone = await settle(ctx, () =>
-        expect([...document.querySelectorAll('[role=option]')].some((o) => o.textContent?.includes('なし'))).toBe(true),
-      ).then(
-        () =>
-          [...document.querySelectorAll<HTMLElement>('[role=option]')].find((o) =>
-            o.textContent?.includes('なし'),
-          ) as HTMLElement,
-      )
-      for (const e of ['pointerdown', 'pointerup', 'click']) {
-        standalone.dispatchEvent(new MouseEvent(e, { bubbles: true, button: 0 }))
-      }
+      const trigger = await openSelect(ctx)
+      chooseOption(ctx, 'なし')
       await settle(ctx, () => expect(button(ctx, 'Save').disabled).toBe(false))
       expect(trigger.textContent).toContain('なし (単体のアプリ)')
       click(ctx, button(ctx, 'Save'))
@@ -346,6 +355,34 @@ describe('interactions', () => {
       const [req] = ctx.backend.requestsTo('moveApplication')
       expect(req.applicationId).toBe('app-static')
       expect(req.groupId).toBeUndefined()
+      // the page shows the app as moved: the link to the group it left is gone and nothing is left to save
+      await settle(ctx, () => expect(ctx.screen.querySelector('a[href="/groups/group-web"]')).toBeNull())
+      await settle(ctx, () => expect(button(ctx, 'Save').disabled).toBe(true))
+      expect(trigger.textContent).toContain('なし (単体のアプリ)')
+    })
+  })
+
+  it('app group settings: the group an app left no longer lists it', async () => {
+    await scenario('move app from group page', '/groups/group-web', async (ctx) => {
+      await waitForText(ctx, 'static-app')
+      click(ctx, link(ctx, '/apps/app-static'))
+      await settle(ctx, () => link(ctx, '/apps/app-static/settings'))
+      click(ctx, link(ctx, '/apps/app-static/settings'))
+      await settle(ctx, () => link(ctx, '/apps/app-static/settings/group'))
+      click(ctx, link(ctx, '/apps/app-static/settings/group'))
+      await settle(ctx, () => link(ctx, '/groups/group-web'))
+      await idle(ctx)
+      await openSelect(ctx)
+      chooseOption(ctx, 'なし')
+      await settle(ctx, () => expect(button(ctx, 'Save').disabled).toBe(false))
+      click(ctx, button(ctx, 'Save'))
+      await settle(ctx, () => expect(ctx.backend.requestsTo('moveApplication')).toHaveLength(1))
+
+      click(ctx, link(ctx, '/groups'))
+      await settle(ctx, () => link(ctx, '/groups/group-web'))
+      click(ctx, link(ctx, '/groups/group-web'))
+      await waitForText(ctx, 'No Apps')
+      expect(ctx.screen.textContent).not.toContain('static-app')
     })
   })
 
@@ -356,12 +393,7 @@ describe('interactions', () => {
       async (ctx) => {
         await waitForText(ctx, 'あ'.repeat(100))
         await idle(ctx)
-        const trigger = ctx.screen.querySelector<HTMLButtonElement>('button[aria-haspopup=listbox]')
-        if (!trigger) throw new Error('no group select')
-        for (const e of ['pointerdown', 'pointerup', 'click']) {
-          trigger.dispatchEvent(new MouseEvent(e, { bubbles: true, button: 0 }))
-        }
-        await settle(ctx, () => expect(document.querySelector('[role=option]')).not.toBeNull())
+        await openSelect(ctx)
         // jsdom does not lay out the page, so the classes that bound the width stand in for measuring it
         const listbox = document.querySelector<HTMLElement>('[role=listbox]')
         expect(listbox?.parentElement?.className).toMatch(/\bmax-w-/)
