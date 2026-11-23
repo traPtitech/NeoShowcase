@@ -487,6 +487,19 @@ describe('interactions', () => {
     })
   })
 
+  it('apps list: choosing "Oldest" lists the apps in the reverse order', async () => {
+    await scenario('apps sort', '/apps', async (ctx) => {
+      await waitForText(ctx, 'runtime-app', 'static-app', 'broken-app')
+      const order = () =>
+        [...ctx.screen.querySelectorAll<HTMLAnchorElement>('a[href^="/apps/app-"]')].map((a) => a.getAttribute('href'))
+      // broken-app is the newest, then static-app, then runtime-app
+      expect(order()).toEqual(['/apps/app-error', '/apps/app-static', '/apps/app-runtime'])
+
+      await toggleFilter(ctx, 'Oldest')
+      await settle(ctx, () => expect(order()).toEqual(['/apps/app-runtime', '/apps/app-static', '/apps/app-error']))
+    })
+  })
+
   it('apps list: the filter menu counts the apps left by the other filter', async () => {
     await scenario('apps filter counts', '/apps', async (ctx) => {
       await waitForText(ctx, 'runtime-app', 'static-app', 'broken-app')
@@ -602,6 +615,10 @@ describe('interactions', () => {
         await settle(ctx, () => expect(row('repo-github')).toContain('2 apps'))
         expect(row('repo-gitea')).toContain('1 apps')
         expect(row('repo-empty')).toContain('0 apps')
+        // apps of other users count too, not only the apps of the user
+        expect(ctx.backend.requestsTo('getApplications').map((r) => r.scope)).toEqual([
+          GetApplicationsRequest_Scope.ALL,
+        ])
       },
       { setup: addEmptyRepository },
     )
