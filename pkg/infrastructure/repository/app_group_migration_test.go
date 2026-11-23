@@ -67,7 +67,7 @@ func TestMigrateApplicationGroups(t *testing.T) {
 
 	front := insertLegacyApp(t, db, repo.ID, legacyApp{name: "front", fqdn: "svc.example.com", path: "/", ownerIDs: []string{u1}})
 	api := insertLegacyApp(t, db, repo.ID, legacyApp{name: "api", fqdn: "svc.example.com", path: "/api", ownerIDs: []string{u2}})
-	// Nested only under api, so it joins the group through api.
+	// Nested under both front and api.
 	apiV2 := insertLegacyApp(t, db, repo.ID, legacyApp{name: "api-v2", fqdn: "svc.example.com", path: "/api/v2", ownerIDs: []string{u1}})
 	other := insertLegacyApp(t, db, repo.ID, legacyApp{name: "other", fqdn: "other.example.com", path: "/", ownerIDs: []string{u3}})
 

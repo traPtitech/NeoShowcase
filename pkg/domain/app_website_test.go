@@ -418,3 +418,43 @@ func TestApplication_WebsiteConflicts(t *testing.T) {
 		})
 	}
 }
+
+func TestGroupByNestedWebsites(t *testing.T) {
+	t.Parallel()
+	app := func(id, fqdn, path string) *Application {
+		return &Application{ID: id, Websites: []*Website{{ID: id + "-w", FQDN: fqdn, PathPrefix: path}}}
+	}
+	ids := func(sets [][]*Application) [][]string {
+		var out [][]string
+		for _, s := range sets {
+			var ss []string
+			for _, a := range s {
+				ss = append(ss, a.ID)
+			}
+			out = append(out, ss)
+		}
+		return out
+	}
+	tests := []struct {
+		name string
+		apps []*Application
+		want [][]string
+	}{
+		{
+			name: "apps joined only through a later app form one set",
+			apps: []*Application{app("a", "x.com", "/a"), app("c", "x.com", "/c"), app("b", "x.com", "/")},
+			want: [][]string{{"a", "c", "b"}},
+		},
+		{
+			name: "apps that do not overlap form separate sets in input order",
+			apps: []*Application{app("p", "p.com", "/"), app("q", "q.com", "/"), app("p2", "p.com", "/v2")},
+			want: [][]string{{"p", "p2"}, {"q"}},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			assert.Equal(t, tt.want, ids(GroupByNestedWebsites(tt.apps)))
+		})
+	}
+}
