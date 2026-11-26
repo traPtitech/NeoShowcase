@@ -25,6 +25,12 @@ Biome's `noRestrictedImports` enforces this.
 
 - `createEffect(compute, apply)` — two functions. Writes go in `apply`, event handlers, or `onSettled`.
   Writing a signal in a component body / memo / effect compute throws in dev.
+- An effect whose compute reads query-backed data (directly or via props, e.g. `() => props.appID` from `app().id`)
+  re-runs whenever a revalidation settles, **even if the value is equal**. When the effect resets state or (re)starts
+  work, key it on a memo of the primitive: `const id = createMemo(() => props.appID); createEffect(id, ...)`.
+- Async work started for a resource (`await` in a handler or effect) must check it is still for the current visit
+  before writing signals: route components are reused across param changes, so give each run an `AbortController`
+  that the effect cleanup aborts, rather than comparing ids.
 - `onMount` → `onSettled(() => { ...; return cleanup })`. Component-level timers/listeners live there.
 - `createResource` → `createMemo(() => fetch...())` (async memo). Reading it before it resolves suspends the
   nearest `<Loading>`. `.latest`/`.loading`/`.state` do not exist: use `<Loading>` for first load,
@@ -90,6 +96,10 @@ Biome's `noRestrictedImports` enforces this.
   the real `App` at a URL and fails on console errors, error views and Solid diagnostics.
 - `src/app.smoke.test.tsx` renders every route; `src/app.interaction.test.tsx` covers key flows.
   Add a route → add a smoke case. Fix a runtime bug → add a test that reproduces it.
+- The harness calls `vi.resetModules()` per scenario: import app modules a scenario drives directly (e.g.
+  `revalidateApplication`) with `await import(...)` after mount — a top-level import targets a stale instance.
+- `backend.holdNext(method)` delays the next unary call until the returned `release()`, for race scenarios.
+- `backend.dropOutputStream(n)` makes the next `n` container log streams break after their lines.
 
 ## Commands
 

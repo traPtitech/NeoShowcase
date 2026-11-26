@@ -1,5 +1,5 @@
 import { Code } from '@connectrpc/connect'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import {
   button,
   buttonContaining,
@@ -199,6 +199,86 @@ describe('interactions', () => {
       await settle(ctx, () => expect(window.location.pathname).toBe('/apps'))
       await waitForText(ctx, 'static-app')
     })
+  })
+
+  it('app page: "Load more" prepends older container logs and keeps the loaded ones', async () => {
+    await scenario('container log load more', '/apps/app-runtime', async (ctx) => {
+      await waitForText(ctx, 'previous log line', 'streamed line 1', 'streamed line 2')
+      click(ctx, button(ctx, 'Load more'))
+      await waitForText(ctx, 'older log line 1', 'previous log line', 'streamed line 1', 'streamed line 2')
+      click(ctx, button(ctx, 'Load more'))
+      await waitForText(ctx, 'older log line 2', 'older log line 1', 'previous log line', 'streamed line 2')
+      // the page revalidates the app every 10s; the loaded logs must survive it
+      // (imported after mount: the harness resets modules per scenario, so a top-level import targets a stale cache;
+      // the short timeout makes sure this revalidation, not the page's own 10s poll, is what we observe)
+      const { revalidateApplication } = await import('/@/libs/api')
+      const fetched = ctx.backend.requestsTo('getApplication').length
+      revalidateApplication('app-runtime')
+      await settle(ctx, () => expect(ctx.backend.requestsTo('getApplication').length).toBeGreaterThan(fetched), 2_000)
+      await idle(ctx, 200)
+      for (const t of ['older log line 2', 'older log line 1', 'previous log line', 'streamed line 1']) {
+        expect(ctx.screen.textContent).toContain(t)
+      }
+      // each request continues from the oldest line loaded so far
+      const befores = ctx.backend.requestsTo('getOutput').map((r) => (r.before as { seconds: bigint }).seconds)
+      expect(befores).toHaveLength(3)
+      expect(befores[1]).toBe(befores[0] - 60n)
+      expect(befores[2]).toBe(befores[1] - 60n)
+    })
+  })
+
+  it('app page: a "Load more" response of an earlier visit does not leak into a later visit of the same app', async () => {
+    await scenario('container log stale load more', '/apps/app-runtime', async (ctx) => {
+      // client-side navigation that reuses the app page (as Back/Forward between apps does)
+      const go = (path: string) => {
+        window.history.pushState(null, '', path)
+        window.dispatchEvent(new PopStateEvent('popstate'))
+      }
+      await waitForText(ctx, 'previous log line', 'streamed line 1')
+      const release = ctx.backend.holdNext('getOutput')
+      click(ctx, button(ctx, 'Load more'))
+      await settle(ctx, () => expect(ctx.backend.requestsTo('getOutput')).toHaveLength(2))
+
+      go('/apps/app-error')
+      await waitForText(ctx, 'broken-app', 'older log line 2')
+      go('/apps/app-runtime')
+      await waitForText(ctx, 'runtime-app', 'older log line 3')
+
+      release() // the held response ('older log line 1', for the first visit) arrives now
+      await idle(ctx, 200)
+      expect(ctx.screen.textContent).not.toContain('older log line 1')
+      expect(button(ctx, 'Load more').disabled).toBe(false)
+    })
+  })
+
+  it('app page: the container log stream reconnects after it breaks, without repeating lines', async () => {
+    await scenario(
+      'container log reconnect',
+      '/apps/app-runtime',
+      async (ctx) => {
+        vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+        try {
+          ctx.backend.dropOutputStream(1)
+          await waitForText(ctx, 'previous log line', 'streamed line 2')
+          await settle(ctx, () => expect(ctx.backend.requestsTo('getOutputStream')).toHaveLength(1))
+          await vi.advanceTimersByTimeAsync(3000)
+          await settle(ctx, () => expect(ctx.backend.requestsTo('getOutputStream')).toHaveLength(2))
+          await vi.advanceTimersByTimeAsync(0)
+          ctx.flush()
+        } finally {
+          vi.useRealTimers()
+        }
+        await idle(ctx, 100)
+        // the second connection resends both lines (the mock ignores `begin`): each is shown once
+        const count = (text: string) => (ctx.screen.textContent ?? '').split(text).length - 1
+        expect(count('streamed line 1')).toBe(1)
+        expect(count('streamed line 2')).toBe(1)
+        // it resumes from the last line received
+        const second = ctx.backend.requestsTo('getOutputStream')[1] as { begin: { seconds: bigint } }
+        expect(second.begin.seconds).toBe(BigInt(Date.parse('2024-01-02T00:00:02Z') / 1000))
+      },
+      { expectedErrors: ['stream broke'] },
+    )
   })
 
   it('build page: a running build streams its log', async () => {

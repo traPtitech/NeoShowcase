@@ -334,6 +334,20 @@ export const failMethod = (
   failureCodes.set(method, code)
 }
 export const recover = (method: string) => failing.delete(method)
+
+/** Number of upcoming `getOutputStream` connections that break after sending their lines. */
+let outputStreamDrops = 0
+export const dropOutputStream = (times = 1) => {
+  outputStreamDrops = times
+}
+
+/** Unary methods whose next call waits until the returned `release()` is called. */
+const held = new Map<string, Promise<void>>()
+export const holdNext = (method: string) => {
+  let release!: () => void
+  held.set(method, new Promise<void>((resolve) => (release = resolve)))
+  return release
+}
 const failureMessages = new Map<string, string>()
 const failureCodes = new Map<string, Code>()
 
@@ -343,6 +357,8 @@ export const resetMockBackend = () => {
   failing.clear()
   failureMessages.clear()
   failureCodes.clear()
+  held.clear()
+  outputStreamDrops = 0
 }
 
 // --- Service implementation
@@ -474,14 +490,27 @@ const routes = (router: ConnectRouter) => {
         ),
       })
     },
-    getOutput: () =>
-      create(ApplicationOutputsSchema, {
-        outputs: [create(ApplicationOutputSchema, { time: ts('2024-01-02T00:00:00Z'), log: 'previous log line' })],
-      }),
+    // one line a minute older than `before` per call: 'previous log line', then 'older log line 1', 2, ...
+    getOutput: (req) => {
+      const n = requestsTo('getOutput').indexOf(req as unknown as Record<string, unknown>) // by arrival, even if held
+      const before = req.before?.seconds ?? BigInt(Math.floor(Date.now() / 1000))
+      return create(ApplicationOutputsSchema, {
+        outputs: [
+          create(ApplicationOutputSchema, {
+            time: create(TimestampSchema, { seconds: before - 60n }),
+            log: n === 0 ? 'previous log line' : `older log line ${n}`,
+          }),
+        ],
+      })
+    },
     // yields a couple of lines, then keeps the stream open until the client aborts
     getOutputStream: async function* (_req, ctx) {
       yield create(ApplicationOutputSchema, { time: ts('2024-01-02T00:00:01Z'), log: 'streamed line 1' })
       yield create(ApplicationOutputSchema, { time: ts('2024-01-02T00:00:02Z'), log: 'streamed line 2' })
+      if (outputStreamDrops > 0) {
+        outputStreamDrops--
+        throw new ConnectError('stream broke', Code.Unavailable)
+      }
       await waitUntilAborted(ctx.signal)
     },
 
@@ -534,7 +563,11 @@ const routes = (router: ConnectRouter) => {
             failureCodes.get(method) ?? Code.Unavailable,
           )
         }
-        return (fn as (req: object, ctx: unknown) => unknown)(req, ctx)
+        const call = () => (fn as (req: object, ctx: unknown) => unknown)(req, ctx)
+        const gate = held.get(method)
+        if (!gate) return call()
+        held.delete(method)
+        return gate.then(call)
       },
     ]),
   )
