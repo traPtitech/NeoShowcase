@@ -1,6 +1,5 @@
 import { Code } from '@connectrpc/connect'
 import { describe, expect, it } from 'vitest'
-import { revalidateApplication } from '/@/libs/api'
 import {
   button,
   buttonContaining,
@@ -210,9 +209,12 @@ describe('interactions', () => {
       click(ctx, button(ctx, 'Load more'))
       await waitForText(ctx, 'older log line 2', 'older log line 1', 'previous log line', 'streamed line 2')
       // the page revalidates the app every 10s; the loaded logs must survive it
+      // (imported after mount: the harness resets modules per scenario, so a top-level import targets a stale cache;
+      // the short timeout makes sure this revalidation, not the page's own 10s poll, is what we observe)
+      const { revalidateApplication } = await import('/@/libs/api')
       const fetched = ctx.backend.requestsTo('getApplication').length
       revalidateApplication('app-runtime')
-      await settle(ctx, () => expect(ctx.backend.requestsTo('getApplication').length).toBeGreaterThan(fetched))
+      await settle(ctx, () => expect(ctx.backend.requestsTo('getApplication').length).toBeGreaterThan(fetched), 2_000)
       await idle(ctx, 200)
       for (const t of ['older log line 2', 'older log line 1', 'previous log line', 'streamed line 1']) {
         expect(ctx.screen.textContent).toContain(t)
