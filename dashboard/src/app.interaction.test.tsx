@@ -256,6 +256,67 @@ describe('interactions', () => {
     })
   })
 
+  describe('list rows survive a refetch', () => {
+    // Each refetch returns new objects; rows keyed by object identity would be recreated and lose their state.
+    it('build history: refreshing the list keeps the focused build link', async () => {
+      await scenario('builds refetch focus', '/apps/app-runtime/builds', async (ctx) => {
+        await settle(ctx, () => link(ctx, '/apps/app-runtime/builds/build-ok'))
+        await idle(ctx)
+        const focused = link(ctx, '/apps/app-runtime/builds/build-ok')
+        focused.focus()
+        const before = ctx.backend.requestsTo('getBuilds').length
+        const { revalidateBuilds } = await import('/@/libs/api')
+        revalidateBuilds('app-runtime')
+        await settle(ctx, () => expect(ctx.backend.requestsTo('getBuilds').length).toBeGreaterThan(before))
+        await idle(ctx, 100)
+        expect(focused.isConnected).toBe(true)
+        expect(document.activeElement).toBe(focused)
+      })
+    })
+
+    it('settings: refreshing the SSH keys keeps an open delete confirmation', async () => {
+      await scenario('ssh keys refetch dialog', '/settings', async (ctx) => {
+        await waitForText(ctx, 'laptop')
+        click(ctx, button(ctx, 'Delete'))
+        await waitForText(ctx, 'Delete SSH Key')
+        // the kept row still shows the refetched data
+        ctx.backend.fixtures.userKeys[0].name = 'renamed-laptop'
+        const { revalidateUserKeys } = await import('/@/libs/api')
+        revalidateUserKeys()
+        await waitForText(ctx, 'renamed-laptop')
+        expect(ctx.screen.textContent).toContain('Delete SSH Key')
+      })
+    })
+
+    it('owners: retrying the session data keeps an open owner delete confirmation', async () => {
+      await scenario('owners refetch dialog', '/apps/app-runtime/settings/owners', async (ctx) => {
+        await waitForText(ctx, 'Add Owners')
+        click(ctx, await settle(ctx, () => button(ctx, 'Delete')).then(() => button(ctx, 'Delete')))
+        await waitForText(ctx, 'Delete Owner')
+        const before = ctx.backend.requestsTo('getUsers').length
+        const { retryAll } = await import('/@/libs/session')
+        await retryAll()
+        await settle(ctx, () => expect(ctx.backend.requestsTo('getUsers').length).toBeGreaterThan(before))
+        await idle(ctx, 100)
+        expect(ctx.screen.textContent).toContain('Delete Owner')
+      })
+    })
+  })
+
+  it('app page: an unchanged app revalidation does not refetch the metrics', async () => {
+    await scenario('metrics on app revalidation', '/apps/app-runtime', async (ctx) => {
+      await settle(ctx, () => expect(ctx.backend.requestsTo('getApplicationMetrics').length).toBeGreaterThan(0))
+      await idle(ctx, 100)
+      const metrics = ctx.backend.requestsTo('getApplicationMetrics').length
+      const apps = ctx.backend.requestsTo('getApplication').length
+      const { revalidateApplication } = await import('/@/libs/api')
+      revalidateApplication('app-runtime')
+      await settle(ctx, () => expect(ctx.backend.requestsTo('getApplication').length).toBeGreaterThan(apps))
+      await idle(ctx, 100)
+      expect(ctx.backend.requestsTo('getApplicationMetrics')).toHaveLength(metrics)
+    })
+  })
+
   describe('error boundaries', () => {
     // Settings: the key list is its own section, so its failure must not take down the page, header or nav.
     it('a failing section shows its own error and Retry, leaving the page and header usable', async () => {

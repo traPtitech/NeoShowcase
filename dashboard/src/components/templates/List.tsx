@@ -44,7 +44,9 @@ export const RepositoryList: Component<{
   return (
     <Container>
       <RepositoryRow repository={props.repository} appCount={props.apps.length} />
-      <For each={props.apps}>{(app) => <AppRow app={app} commits={props.commits} dark />}</For>
+      <For each={props.apps} keyed={(app) => app?.id}>
+        {(app) => <AppRow app={app()} commits={props.commits} dark />}
+      </For>
     </Container>
   )
 }
@@ -55,7 +57,9 @@ export const AppsList: Component<{
 }> = (props) => {
   return (
     <Container>
-      <For each={props.apps}>{(app) => <AppRow app={app} commits={props.commits} />}</For>
+      <For each={props.apps} keyed={(app) => app?.id}>
+        {(app) => <AppRow app={app()} commits={props.commits} />}
+      </For>
     </Container>
   )
 }
@@ -67,9 +71,14 @@ export const BuildList: Component<{
 }> = (props) => {
   return (
     <Container>
-      <For each={props.builds}>
+      <For each={props.builds} keyed={(b) => b.build.id}>
         {(b) => (
-          <BuildRow build={b.build} commits={props.commits} app={b.app} isCurrent={b.build.id === props.currentBuild} />
+          <BuildRow
+            build={b().build}
+            commits={props.commits}
+            app={b().app}
+            isCurrent={b().build.id === props.currentBuild}
+          />
         )}
       </For>
     </Container>
