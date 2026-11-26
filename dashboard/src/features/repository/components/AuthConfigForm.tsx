@@ -58,7 +58,7 @@ const AuthConfigForm: Component<Props> = (props) => {
               />
             )}
           </Field>
-          <AuthMethodField form={form} />
+          <AuthMethodField form={form} repositoryID={props.repo.id} />
         </FormBox.Forms>
         <FormBox.Actions>
           <Button

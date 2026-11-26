@@ -79,6 +79,7 @@ export const ids = {
   buildOk: 'build-ok',
   buildFailed: 'build-failed',
   buildRunning: 'build-running',
+  buildRunning2: 'build-running-2',
 }
 
 export const hashes = {
@@ -255,6 +256,15 @@ const createFixtures = () => {
       startedAt: nullTs('2024-02-02T00:00:05Z'),
       retriable: false,
     }),
+    create(BuildSchema, {
+      id: ids.buildRunning2,
+      applicationId: ids.appStatic,
+      commit: hashes.b,
+      status: BuildStatus.BUILDING,
+      queuedAt: ts('2024-02-01T00:00:00Z'),
+      startedAt: nullTs('2024-02-01T00:00:05Z'),
+      retriable: false,
+    }),
   )
 
   const commits = [
@@ -337,12 +347,31 @@ export const recover = (method: string) => failing.delete(method)
 const failureMessages = new Map<string, string>()
 const failureCodes = new Map<string, Code>()
 
+/** Unary methods whose responses are held back until released. */
+const held = new Map<string, Promise<void>>()
+
+/** Holds back the responses of the unary `method` until the returned `release()` is called. */
+export const holdMethod = (method: string) => {
+  let release!: () => void
+  held.set(
+    method,
+    new Promise<void>((resolve) => {
+      release = resolve
+    }),
+  )
+  return () => {
+    held.delete(method)
+    release()
+  }
+}
+
 export const resetMockBackend = () => {
   fixtures = createFixtures()
   requests.length = 0
   failing.clear()
   failureMessages.clear()
   failureCodes.clear()
+  held.clear()
 }
 
 // --- Service implementation
@@ -513,8 +542,8 @@ const routes = (router: ConnectRouter) => {
     cancelBuild: () => ({}),
     getBuildArtifact: () => create(ArtifactContentSchema, { filename: 'artifact.tar', content: new Uint8Array() }),
     getBuildLog: () => create(BuildLogSchema, { log: new TextEncoder().encode('step 1: build\nstep 2: done\n') }),
-    getBuildLogStream: async function* (_req, ctx) {
-      yield create(BuildLogSchema, { log: new TextEncoder().encode('streamed build line 1\n') })
+    getBuildLogStream: async function* (req, ctx) {
+      yield create(BuildLogSchema, { log: new TextEncoder().encode(`streamed build line 1 of ${req.buildId}\n`) })
       await waitUntilAborted(ctx.signal)
     },
   }
@@ -534,7 +563,9 @@ const routes = (router: ConnectRouter) => {
             failureCodes.get(method) ?? Code.Unavailable,
           )
         }
-        return (fn as (req: object, ctx: unknown) => unknown)(req, ctx)
+        const call = () => (fn as (req: object, ctx: unknown) => unknown)(req, ctx)
+        const gate = held.get(method)
+        return gate ? gate.then(call) : call()
       },
     ]),
   )
