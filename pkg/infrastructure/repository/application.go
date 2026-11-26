@@ -96,7 +96,7 @@ func (r *applicationRepository) GetApplication(ctx context.Context, id string) (
 	return repoconvert.ToDomainApplication(app), nil
 }
 
-func (r *applicationRepository) CreateApplication(ctx context.Context, app *domain.Application) error {
+func (r *applicationRepository) CreateApplication(ctx context.Context, app *domain.Application, envs []*domain.Environment) error {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return oops.Wrapf(err, "starting transaction")
@@ -127,6 +127,13 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, app *doma
 	err = r.setOwners(ctx, tx, ma, app.OwnerIDs)
 	if err != nil {
 		return err
+	}
+
+	for _, env := range envs {
+		err = repoconvert.FromDomainEnvironment(env).Insert(ctx, tx, boil.Blacklist())
+		if err != nil {
+			return oops.Wrapf(err, "creating environment")
+		}
 	}
 
 	if err = tx.Commit(); err != nil {

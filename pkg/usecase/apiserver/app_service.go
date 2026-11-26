@@ -66,14 +66,19 @@ func (s *Service) CreateApplication(ctx context.Context, app *domain.Application
 	}
 
 	// Create
-	err = s.appRepo.CreateApplication(ctx, app)
+	// Deletion drops only the databases named by system variables, so the
+	// variables are stored with the application before any database is created.
+	conns := s.newDatabaseConnections(app)
+	envs := lo.FlatMap(conns, func(c databaseConnection, _ int) []*domain.Environment { return c.systemEnvs(app.ID) })
+	err = s.appRepo.CreateApplication(ctx, app, envs)
 	if err != nil {
 		return nil, err
 	}
-
-	err = s.createApplicationDatabase(ctx, app)
-	if err != nil {
-		return nil, err
+	for _, c := range conns {
+		err = c.manager.Create(ctx, domain.CreateArgs{Database: c.name, Password: c.password})
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Sync
@@ -86,92 +91,74 @@ func (s *Service) CreateApplication(ctx context.Context, app *domain.Application
 	return s.appRepo.GetApplication(ctx, app.ID)
 }
 
-func (s *Service) createApplicationDatabase(ctx context.Context, app *domain.Application) error {
-	dbName := domain.DBName(app.ID)
-
-	if app.Config.BuildConfig.MariaDB() {
-		host, port := s.mariaDBManager.GetHost()
-		dbPassword := random.SecureGeneratePassword(32)
-		dbSetting := domain.CreateArgs{
-			Database: dbName,
-			Password: dbPassword,
-		}
-		err := s.mariaDBManager.Create(ctx, dbSetting)
-		if err != nil {
-			return err
-		}
-
-		envs := []*domain.Environment{
-			{ApplicationID: app.ID, Key: domain.EnvMariaDBHostnameKey, Value: host, System: true},
-			{ApplicationID: app.ID, Key: domain.EnvMariaDBPortKey, Value: strconv.Itoa(port), System: true},
-			{ApplicationID: app.ID, Key: domain.EnvMariaDBUserKey, Value: dbName, System: true},
-			{ApplicationID: app.ID, Key: domain.EnvMariaDBPasswordKey, Value: dbPassword, System: true},
-			{ApplicationID: app.ID, Key: domain.EnvMariaDBDatabaseKey, Value: dbName, System: true},
-		}
-		for _, env := range envs {
-			err = s.envRepo.SetEnv(ctx, env)
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	if app.Config.BuildConfig.MongoDB() {
-		host, port := s.mongoDBManager.GetHost()
-		dbPassword := random.SecureGeneratePassword(32)
-		dbSetting := domain.CreateArgs{
-			Database: dbName,
-			Password: dbPassword,
-		}
-		err := s.mongoDBManager.Create(ctx, dbSetting)
-		if err != nil {
-			return err
-		}
-
-		envs := []*domain.Environment{
-			{ApplicationID: app.ID, Key: domain.EnvMongoDBHostnameKey, Value: host, System: true},
-			{ApplicationID: app.ID, Key: domain.EnvMongoDBPortKey, Value: strconv.Itoa(port), System: true},
-			{ApplicationID: app.ID, Key: domain.EnvMongoDBUserKey, Value: dbName, System: true},
-			{ApplicationID: app.ID, Key: domain.EnvMongoDBPasswordKey, Value: dbPassword, System: true},
-			{ApplicationID: app.ID, Key: domain.EnvMongoDBDatabaseKey, Value: dbName, System: true},
-		}
-		for _, env := range envs {
-			err = s.envRepo.SetEnv(ctx, env)
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
-}
-
 type databaseManager interface {
+	GetHost() (host string, port int)
+	Create(ctx context.Context, args domain.CreateArgs) error
 	Delete(ctx context.Context, args domain.DeleteArgs) error
 }
 
-// applicationDatabase is a kind of database an application uses, and the key
-// of the system variable that names the application's database.
+// applicationDatabase is a kind of database an application uses, and the keys
+// of the system variables that give the application its connection settings.
 type applicationDatabase struct {
-	manager databaseManager
-	nameKey string
+	manager                                         databaseManager
+	hostKey, portKey, userKey, passwordKey, nameKey string
 }
 
 func (s *Service) applicationDatabases(app *domain.Application) []applicationDatabase {
 	var dbs []applicationDatabase
 	if app.Config.BuildConfig.MariaDB() {
 		dbs = append(dbs, applicationDatabase{
-			manager: s.mariaDBManager,
-			nameKey: domain.EnvMariaDBDatabaseKey,
+			manager:     s.mariaDBManager,
+			hostKey:     domain.EnvMariaDBHostnameKey,
+			portKey:     domain.EnvMariaDBPortKey,
+			userKey:     domain.EnvMariaDBUserKey,
+			passwordKey: domain.EnvMariaDBPasswordKey,
+			nameKey:     domain.EnvMariaDBDatabaseKey,
 		})
 	}
 	if app.Config.BuildConfig.MongoDB() {
 		dbs = append(dbs, applicationDatabase{
-			manager: s.mongoDBManager,
-			nameKey: domain.EnvMongoDBDatabaseKey,
+			manager:     s.mongoDBManager,
+			hostKey:     domain.EnvMongoDBHostnameKey,
+			portKey:     domain.EnvMongoDBPortKey,
+			userKey:     domain.EnvMongoDBUserKey,
+			passwordKey: domain.EnvMongoDBPasswordKey,
+			nameKey:     domain.EnvMongoDBDatabaseKey,
 		})
 	}
 	return dbs
+}
+
+// databaseConnection is a database newly assigned to an application and the
+// settings the application connects to it with.
+type databaseConnection struct {
+	applicationDatabase
+	host           string
+	port           int
+	name, password string
+}
+
+func (s *Service) newDatabaseConnections(app *domain.Application) []databaseConnection {
+	return lo.Map(s.applicationDatabases(app), func(db applicationDatabase, _ int) databaseConnection {
+		host, port := db.manager.GetHost()
+		return databaseConnection{
+			applicationDatabase: db,
+			host:                host,
+			port:                port,
+			name:                domain.DBName(app.ID),
+			password:            random.SecureGeneratePassword(32),
+		}
+	})
+}
+
+func (c databaseConnection) systemEnvs(appID string) []*domain.Environment {
+	return []*domain.Environment{
+		{ApplicationID: appID, Key: c.hostKey, Value: c.host, System: true},
+		{ApplicationID: appID, Key: c.portKey, Value: strconv.Itoa(c.port), System: true},
+		{ApplicationID: appID, Key: c.userKey, Value: c.name, System: true},
+		{ApplicationID: appID, Key: c.passwordKey, Value: c.password, System: true},
+		{ApplicationID: appID, Key: c.nameKey, Value: c.name, System: true},
+	}
 }
 
 type GetAppScopeType int
