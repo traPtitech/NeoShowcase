@@ -1,5 +1,6 @@
 import { Dialog } from '@kobalte/core/dialog'
-import { createSignal, merge, type ParentComponent, Show } from 'solid-js'
+import { useLocation } from '@solidjs/router'
+import { createEffect, createMemo, createSignal, merge, type ParentComponent, Show } from 'solid-js'
 import { styled } from '/@/components/styled-components'
 
 const useModal = (options?: { showCloseButton?: boolean; closeOnClickOutside?: boolean }) => {
@@ -8,7 +9,20 @@ const useModal = (options?: { showCloseButton?: boolean; closeOnClickOutside?: b
   // モーダルを開くときはopen()を呼ぶ
   const open = () => setIsOpen(true)
   // モーダルを閉じるときはclose()を呼ぶ
-  const close = () => setIsOpen(false)
+  const close = () => {
+    setIsOpen(false)
+  }
+  // 遷移したら閉じる (ルートのコンポーネントはパラメータが変わっても使い回されるため、
+  // 開いたままだと別のリソースに対する操作になってしまう)
+  const location = useLocation()
+  const pathname = createMemo(() => location.pathname)
+  createEffect(
+    pathname,
+    () => {
+      close()
+    },
+    { defer: true },
+  )
 
   const Container: ParentComponent<{
     fit?: boolean

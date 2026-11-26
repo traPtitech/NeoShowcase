@@ -61,6 +61,23 @@ func TestBackend_runtimeResources_portPublications(t *testing.T) {
 		}, svc.Spec.Ports)
 	})
 
+	// readinessProbe は website の HTTP ポートしか見ないので、公開ポートだけを listen するアプリの Pod は Ready にならない。
+	// Ready 前の Pod を除外すると、そのようなアプリに公開ポートから届かなくなっていた。
+	t.Run("websiteのポートをlistenしないPodにも公開ポートから届く", func(t *testing.T) {
+		app := &domain.Application{
+			ID:               "app5",
+			Config:           domain.ApplicationConfig{BuildConfig: &domain.BuildConfigRuntimeBuildpack{}},
+			Websites:         []*domain.Website{{ID: "app5-web", FQDN: "app5.example.com", PathPrefix: "/", HTTPPort: 80}},
+			PortPublications: []*domain.PortPublication{{InternetPort: 39514, ApplicationPort: 4433, Protocol: domain.PortPublicationProtocolUDP}},
+		}
+		var rsc resources
+		b.runtimeResources(&rsc, []*domain.RuntimeDesiredState{{App: app}})
+
+		svcs := loadBalancerServices(&rsc)
+		require.Len(t, svcs, 1)
+		assert.True(t, svcs[0].Spec.PublishNotReadyAddresses)
+	})
+
 	t.Run("公開ポートがないアプリにはLoadBalancer Serviceを作らない", func(t *testing.T) {
 		app := &domain.Application{
 			ID:     "app2",

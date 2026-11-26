@@ -1,11 +1,13 @@
 import { Code } from '@connectrpc/connect'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { Repository_AuthMethod } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import {
   button,
   buttonContaining,
   click,
+  dialog,
   field,
+  go,
   idle,
   link,
   scenario,
@@ -202,6 +204,86 @@ describe('interactions', () => {
     })
   })
 
+  it('app page: "Load more" prepends older container logs and keeps the loaded ones', async () => {
+    await scenario('container log load more', '/apps/app-runtime', async (ctx) => {
+      await waitForText(ctx, 'previous log line', 'streamed line 1', 'streamed line 2')
+      click(ctx, button(ctx, 'Load more'))
+      await waitForText(ctx, 'older log line 1', 'previous log line', 'streamed line 1', 'streamed line 2')
+      click(ctx, button(ctx, 'Load more'))
+      await waitForText(ctx, 'older log line 2', 'older log line 1', 'previous log line', 'streamed line 2')
+      // the page revalidates the app every 10s; the loaded logs must survive it
+      // (imported after mount: the harness resets modules per scenario, so a top-level import targets a stale cache;
+      // the short timeout makes sure this revalidation, not the page's own 10s poll, is what we observe)
+      const { revalidateApplication } = await import('/@/libs/api')
+      const fetched = ctx.backend.requestsTo('getApplication').length
+      revalidateApplication('app-runtime')
+      await settle(ctx, () => expect(ctx.backend.requestsTo('getApplication').length).toBeGreaterThan(fetched), 2_000)
+      await idle(ctx, 200)
+      for (const t of ['older log line 2', 'older log line 1', 'previous log line', 'streamed line 1']) {
+        expect(ctx.screen.textContent).toContain(t)
+      }
+      // each request continues from the oldest line loaded so far
+      const befores = ctx.backend.requestsTo('getOutput').map((r) => (r.before as { seconds: bigint }).seconds)
+      expect(befores).toHaveLength(3)
+      expect(befores[1]).toBe(befores[0] - 60n)
+      expect(befores[2]).toBe(befores[1] - 60n)
+    })
+  })
+
+  it('app page: a "Load more" response of an earlier visit does not leak into a later visit of the same app', async () => {
+    await scenario('container log stale load more', '/apps/app-runtime', async (ctx) => {
+      // client-side navigation that reuses the app page (as Back/Forward between apps does)
+      const go = (path: string) => {
+        window.history.pushState(null, '', path)
+        window.dispatchEvent(new PopStateEvent('popstate'))
+      }
+      await waitForText(ctx, 'previous log line', 'streamed line 1')
+      const release = ctx.backend.holdNext('getOutput')
+      click(ctx, button(ctx, 'Load more'))
+      await settle(ctx, () => expect(ctx.backend.requestsTo('getOutput')).toHaveLength(2))
+
+      go('/apps/app-error')
+      await waitForText(ctx, 'broken-app', 'older log line 2')
+      go('/apps/app-runtime')
+      await waitForText(ctx, 'runtime-app', 'older log line 3')
+
+      release() // the held response ('older log line 1', for the first visit) arrives now
+      await idle(ctx, 200)
+      expect(ctx.screen.textContent).not.toContain('older log line 1')
+      expect(button(ctx, 'Load more').disabled).toBe(false)
+    })
+  })
+
+  it('app page: the container log stream reconnects after it breaks, without repeating lines', async () => {
+    await scenario(
+      'container log reconnect',
+      '/apps/app-runtime',
+      async (ctx) => {
+        vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+        try {
+          ctx.backend.dropOutputStream(1)
+          await waitForText(ctx, 'previous log line', 'streamed line 2')
+          await settle(ctx, () => expect(ctx.backend.requestsTo('getOutputStream')).toHaveLength(1))
+          await vi.advanceTimersByTimeAsync(3000)
+          await settle(ctx, () => expect(ctx.backend.requestsTo('getOutputStream')).toHaveLength(2))
+          await vi.advanceTimersByTimeAsync(0)
+          ctx.flush()
+        } finally {
+          vi.useRealTimers()
+        }
+        await idle(ctx, 100)
+        // the second connection resends both lines (the mock ignores `begin`): each is shown once
+        const count = (text: string) => (ctx.screen.textContent ?? '').split(text).length - 1
+        expect(count('streamed line 1')).toBe(1)
+        expect(count('streamed line 2')).toBe(1)
+        // it resumes from the last line received
+        const second = ctx.backend.requestsTo('getOutputStream')[1] as { begin: { seconds: bigint } }
+        expect(second.begin.seconds).toBe(BigInt(Date.parse('2024-01-02T00:00:02Z') / 1000))
+      },
+      { expectedErrors: ['stream broke'] },
+    )
+  })
+
   it('build page: a running build streams its log', async () => {
     await scenario('build log stream', '/apps/app-static/builds/build-running', async (ctx) => {
       await waitForText(ctx, 'streamed build line 1')
@@ -254,6 +336,229 @@ describe('interactions', () => {
       await settle(ctx, () => expect(ctx.backend.requestsTo('updateApplication')).toHaveLength(1))
       const [req] = ctx.backend.requestsTo('updateApplication') as { websites?: { websites: { fqdn: string }[] } }[]
       expect(req.websites?.websites.map((w) => w.fqdn)).toEqual(['runtime-app.trap.show', 'second.trap.show'])
+    })
+  })
+
+  describe('state bound to the previous resource after the route param changes', () => {
+    // Route components are reused across param changes, so anything captured for one resource must not
+    // carry over to the next.
+    it('app general settings: an open delete confirmation does not delete another app', async () => {
+      await scenario('delete app retarget', '/apps/app-runtime/settings', async (ctx) => {
+        await settle(ctx, () => button(ctx, 'Delete Application'))
+        await idle(ctx)
+        click(ctx, button(ctx, 'Delete Application'))
+        await settle(ctx, () => expect(dialog(ctx)).not.toBeNull())
+
+        go(ctx, '/apps/app-static/settings')
+        await settle(ctx, () => expect(field(ctx, 'Application Name').value).toBe('static-app'))
+        await idle(ctx)
+        // the confirmation was for runtime-app: it is gone, and nothing deletes static-app in its place
+        const confirm = [...ctx.screen.querySelectorAll<HTMLElement>('button')].find(
+          (b) => b.textContent?.trim() === 'Yes, Delete',
+        )
+        if (confirm) click(ctx, confirm)
+        await idle(ctx)
+        expect(ctx.backend.requestsTo('deleteApplication')).toEqual([])
+        expect(dialog(ctx)).toBeNull()
+      })
+    })
+
+    it('repo general settings: an open delete confirmation does not delete another repo', async () => {
+      await scenario(
+        'delete repo retarget',
+        '/repos/repo-github/settings',
+        async (ctx) => {
+          await settle(ctx, () => expect(button(ctx, 'Delete Repository').disabled).toBe(false))
+          click(ctx, button(ctx, 'Delete Repository'))
+          await settle(ctx, () => expect(dialog(ctx)).not.toBeNull())
+
+          go(ctx, '/repos/repo-gitea/settings')
+          await settle(ctx, () => expect(field(ctx, 'Repository Name').value).toBe('gitea-repo'))
+          await idle(ctx)
+          const confirm = [...ctx.screen.querySelectorAll<HTMLElement>('button')].find(
+            (b) => b.textContent?.trim() === 'Yes, Delete',
+          )
+          if (confirm) click(ctx, confirm)
+          await idle(ctx)
+          expect(ctx.backend.requestsTo('deleteRepository')).toEqual([])
+          expect(dialog(ctx)).toBeNull()
+        },
+        // a repository can only be deleted once it has no applications
+        { setup: (b) => b.fixtures.applications.splice(0) },
+      )
+    })
+
+    it('repo authorization: a key generated for one repo does not land in another repo', async () => {
+      await scenario(
+        'generated key retarget',
+        '/repos/repo-gitea/settings/authorization',
+        async (ctx) => {
+          await settle(ctx, () => buttonContaining(ctx, '専用公開鍵を生成する'))
+          await idle(ctx)
+          const release = ctx.backend.holdMethod('generateKeyPair')
+          click(ctx, buttonContaining(ctx, '専用公開鍵を生成する'))
+          await settle(ctx, () => expect(ctx.backend.requestsTo('generateKeyPair')).toHaveLength(1))
+
+          // the response for gitea-repo arrives after moving to github-repo
+          go(ctx, '/repos/repo-github/settings/authorization')
+          await settle(ctx, () => expect(field(ctx, 'Repository URL').value).toContain('NeoShowcase'))
+          release()
+          await idle(ctx, 100)
+          expect(ctx.screen.textContent).not.toContain('(このリポジトリ専用)')
+          expect(field(ctx, 'Repository URL').closest('form')?.textContent).toContain('NeoShowcase全体共通')
+          expect(button(ctx, 'Save').disabled).toBe(true)
+
+          // a key generated for github-repo stays with github-repo
+          click(ctx, buttonContaining(ctx, '専用公開鍵を生成する'))
+          await waitForText(ctx, 'ssh-ed25519 AAAAgenerated')
+          go(ctx, '/repos/repo-gitea/settings/authorization')
+          await settle(ctx, () => expect(field(ctx, 'Repository URL').value).toContain('gitea-repo'))
+          await idle(ctx)
+          expect(ctx.screen.textContent).not.toContain('(このリポジトリ専用)')
+          await waitForNoText(ctx, 'ssh-ed25519 AAAAgenerated')
+        },
+        {
+          setup: (b) => {
+            b.fixtures.repositories[0].authMethod = b.fixtures.repositories[1].authMethod
+          },
+        },
+      )
+    })
+
+    it('build page: switching between two running builds shows the log of the selected one', async () => {
+      await scenario('switch running builds', '/apps/app-static/builds/build-running', async (ctx) => {
+        await waitForText(ctx, 'streamed build line 1 of build-running')
+        go(ctx, '/apps/app-static/builds/build-running-2')
+        await waitForText(ctx, 'streamed build line 1 of build-running-2')
+        expect(ctx.screen.textContent).not.toMatch(/of build-running(?!-2)/)
+        expect(ctx.backend.requestsTo('getBuildLogStream').map((r) => r.buildId)).toEqual([
+          'build-running',
+          'build-running-2',
+        ])
+      })
+    })
+
+    it('build page: Rebuild does not navigate back once the user has left', async () => {
+      await scenario('rebuild then leave', '/apps/app-static/builds/build-running', async (ctx) => {
+        await waitForText(ctx, 'streamed build line 1')
+        vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+        try {
+          click(ctx, button(ctx, 'Rebuild'))
+          await settle(ctx, () => expect(ctx.backend.requestsTo('retryCommitBuild')).toHaveLength(1))
+          await vi.advanceTimersByTimeAsync(0)
+          click(ctx, link(ctx, '/apps'))
+          await settle(ctx, () => expect(window.location.pathname).toBe('/apps'))
+          await vi.advanceTimersByTimeAsync(2000)
+          ctx.flush()
+        } finally {
+          vi.useRealTimers()
+        }
+        await idle(ctx)
+        expect(window.location.pathname).toBe('/apps')
+      })
+    })
+  })
+
+  describe('list rows survive a refetch', () => {
+    // Each refetch returns new objects; rows keyed by object identity would be recreated and lose their state.
+    it('build history: refreshing the list keeps the focused build link', async () => {
+      await scenario('builds refetch focus', '/apps/app-runtime/builds', async (ctx) => {
+        await settle(ctx, () => link(ctx, '/apps/app-runtime/builds/build-ok'))
+        await idle(ctx)
+        const focused = link(ctx, '/apps/app-runtime/builds/build-ok')
+        focused.focus()
+        const before = ctx.backend.requestsTo('getBuilds').length
+        const { revalidateBuilds } = await import('/@/libs/api')
+        revalidateBuilds('app-runtime')
+        await settle(ctx, () => expect(ctx.backend.requestsTo('getBuilds').length).toBeGreaterThan(before))
+        await idle(ctx, 100)
+        expect(focused.isConnected).toBe(true)
+        expect(document.activeElement).toBe(focused)
+      })
+    })
+
+    it('settings: refreshing the SSH keys keeps an open delete confirmation', async () => {
+      await scenario('ssh keys refetch dialog', '/settings', async (ctx) => {
+        await waitForText(ctx, 'laptop')
+        click(ctx, button(ctx, 'Delete'))
+        await waitForText(ctx, 'Delete SSH Key')
+        // the kept row still shows the refetched data
+        ctx.backend.fixtures.userKeys[0].name = 'renamed-laptop'
+        const { revalidateUserKeys } = await import('/@/libs/api')
+        revalidateUserKeys()
+        await waitForText(ctx, 'renamed-laptop')
+        expect(ctx.screen.textContent).toContain('Delete SSH Key')
+      })
+    })
+
+    it('owners: retrying the session data keeps an open owner delete confirmation', async () => {
+      await scenario('owners refetch dialog', '/apps/app-runtime/settings/owners', async (ctx) => {
+        await waitForText(ctx, 'Add Owners')
+        click(ctx, await settle(ctx, () => button(ctx, 'Delete')).then(() => button(ctx, 'Delete')))
+        await waitForText(ctx, 'Delete Owner')
+        const before = ctx.backend.requestsTo('getUsers').length
+        const { retryAll } = await import('/@/libs/session')
+        await retryAll()
+        await settle(ctx, () => expect(ctx.backend.requestsTo('getUsers').length).toBeGreaterThan(before))
+        await idle(ctx, 100)
+        expect(ctx.screen.textContent).toContain('Delete Owner')
+      })
+    })
+  })
+
+  it('build page: a build whose live log is lost shows that, without retrying the stream', async () => {
+    await scenario(
+      'lost build log',
+      '/apps/app-static/builds/build-running',
+      async (ctx) => {
+        await waitForText(ctx, 'ビルドログを表示できません')
+        vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval'] })
+        try {
+          await vi.advanceTimersByTimeAsync(10_000)
+          ctx.flush()
+        } finally {
+          vi.useRealTimers()
+        }
+        expect(ctx.backend.requestsTo('getBuildLogStream')).toHaveLength(1)
+      },
+      {
+        setup: (b) =>
+          b.failMethod('getBuildLogStream', 'build log stream no longer available', 1, Code.FailedPrecondition),
+      },
+    )
+  })
+
+  it('build page: revalidating a finished build neither re-fetches its log nor scrolls it', async () => {
+    await scenario('finished build revalidation', '/apps/app-runtime/builds/build-ok', async (ctx) => {
+      await waitForText(ctx, 'step 2: done')
+      await idle(ctx)
+      const log = [...ctx.screen.querySelectorAll<HTMLElement>('code')].find((el) =>
+        el.textContent?.includes('step 2: done'),
+      ) as HTMLElement
+      const scrolls = vi.fn()
+      Object.defineProperty(log, 'scrollTop', { configurable: true, get: () => 0, set: scrolls })
+
+      const { revalidateBuild, revalidateApplication } = await import('/@/libs/api')
+      revalidateBuild('build-ok')
+      revalidateApplication('app-runtime')
+      await settle(ctx, () => expect(ctx.backend.requestsTo('getBuild').length).toBeGreaterThanOrEqual(2))
+      await idle(ctx, 100)
+      expect(ctx.backend.requestsTo('getBuildLog')).toHaveLength(1)
+      expect(scrolls).not.toHaveBeenCalled()
+    })
+  })
+
+  it('app page: an unchanged app revalidation does not refetch the metrics', async () => {
+    await scenario('metrics on app revalidation', '/apps/app-runtime', async (ctx) => {
+      await settle(ctx, () => expect(ctx.backend.requestsTo('getApplicationMetrics').length).toBeGreaterThan(0))
+      await idle(ctx, 100)
+      const metrics = ctx.backend.requestsTo('getApplicationMetrics').length
+      const apps = ctx.backend.requestsTo('getApplication').length
+      const { revalidateApplication } = await import('/@/libs/api')
+      revalidateApplication('app-runtime')
+      await settle(ctx, () => expect(ctx.backend.requestsTo('getApplication').length).toBeGreaterThan(apps))
+      await idle(ctx, 100)
+      expect(ctx.backend.requestsTo('getApplicationMetrics')).toHaveLength(metrics)
     })
   })
 

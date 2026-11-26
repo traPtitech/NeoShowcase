@@ -54,10 +54,15 @@ export const AppMetrics: Component<AppMetricsProps> = (props) => {
   const option = <K extends keyof AppMetricsOptions>(key: K): AppMetricsOptions[K] | undefined =>
     props[key] ?? knownMetricsOptions[props.metricsName]?.[key]
 
+  // The props come from query-backed data, and Solid 2 re-runs a computation reading such data whenever a
+  // revalidation settles, even with an identical value. Memoized primitives only notify on an actual change,
+  // so an unchanged app revalidation does not refetch the metrics ahead of the refresh timer.
+  const appID = createMemo(() => props.appID)
+  const metricsName = createMemo(() => props.metricsName)
   const metrics = createMemo(() =>
     client.getApplicationMetrics({
-      applicationId: props.appID,
-      metricsName: props.metricsName,
+      applicationId: appID(),
+      metricsName: metricsName(),
       before: timestampNow(),
       limitSeconds: 3600n,
     }),

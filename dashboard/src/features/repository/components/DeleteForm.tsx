@@ -1,5 +1,5 @@
 import { useNavigate } from '@solidjs/router'
-import type { Component } from 'solid-js'
+import { type Component, createSignal } from 'solid-js'
 import type { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import FormBox from '/@/components/layouts/FormBox'
 import { FormItem } from '/@/components/templates/FormItem'
@@ -22,9 +22,18 @@ const DeleteForm: Component<Props> = (props) => {
 
   const canDeleteRepository = () => props.apps.length === 0
 
+  // 確認ダイアログを開いた時点のリポジトリ (開いたまま別のリポジトリに移っても、そちらを削除しない)
+  const [target, setTarget] = createSignal<string>()
+  const openConfirm = () => {
+    setTarget(props.repo.id)
+    open()
+  }
+
   const deleteRepository = async () => {
+    const repositoryId = target()
+    if (repositoryId !== props.repo.id) return close()
     try {
-      await client.deleteRepository({ repositoryId: props.repo.id })
+      await client.deleteRepository({ repositoryId })
       toast.success('リポジトリを削除しました')
       close()
       navigate('/apps')
@@ -47,7 +56,7 @@ const DeleteForm: Component<Props> = (props) => {
           <Button
             variants="primaryError"
             size="small"
-            onClick={open}
+            onClick={openConfirm}
             type="button"
             disabled={!canDeleteRepository() || !props.hasPermission}
             tooltip={{
