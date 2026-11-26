@@ -34,6 +34,9 @@ Biome's `noRestrictedImports` enforces this.
   `isPending`.
 - `splitProps` → `omit(props, 'a', 'b')`; `mergeProps` → `merge(...)` (`undefined` overrides!).
 - `<For>` default (keyed): `(item, i) => ...` where `item` is a value, `i` an accessor.
+  That keys rows by object identity, and every refetch returns new objects, so rows remount (focus, open dialogs
+  and inputs inside them are lost). Lists of API entities: `<For each={xs()} keyed={(x) => x.id}>` — then `item`
+  is an accessor (`x()`), updated in place when a row with the same id gets new data.
   `<For keyed={false}>`: `item` is an accessor, `i` a number. `<Show>` function children get an accessor.
   Never read accessors at the top of these callbacks — read them in JSX.
 - `Context.Provider` → `<Context value={...}>`. Default-less `useContext` throws when missing — no wrapper hooks.

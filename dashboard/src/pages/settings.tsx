@@ -151,7 +151,9 @@ export default () => {
                   }
                 >
                   <List.Container>
-                    <For each={keys()}>{(key) => <SshKeyRow key={key} />}</For>
+                    <For each={keys()} keyed={(key) => key.id}>
+                      {(key) => <SshKeyRow key={key()} />}
+                    </For>
                   </List.Container>
                 </Show>
               </DataTable.Container>

@@ -48,13 +48,13 @@ const AddOwners: Component<{
         }
       >
         <div class="border-ui-border min-h-0 flex-1 overflow-y-auto rounded-lg border">
-          <For each={filteredUsers()}>
+          <For each={filteredUsers()} keyed={(user) => user.id}>
             {(user) => (
               <div class="border-ui-border w-full [&:not(:last-child)]:border-b">
                 <UserRowContainer>
-                  <UserAvatar user={user} size={32} />
-                  <UserName>{user.name}</UserName>
-                  <Button variants="ghost" size="small" onClick={() => props.addOwner(user)}>
+                  <UserAvatar user={user()} size={32} />
+                  <UserName>{user().name}</UserName>
+                  <Button variants="ghost" size="small" onClick={() => props.addOwner(user())}>
                     Add
                   </Button>
                 </UserRowContainer>
@@ -164,8 +164,10 @@ const OwnerList: Component<{
         </AddUserModal.Container>
       </div>
       <UsersContainer>
-        <For each={filteredOwners()}>
-          {(owner) => <OwnerRow user={owner} deleteOwner={props.hasPermission ? props.handleDeleteOwner : undefined} />}
+        <For each={filteredOwners()} keyed={(owner) => owner.id}>
+          {(owner) => (
+            <OwnerRow user={owner()} deleteOwner={props.hasPermission ? props.handleDeleteOwner : undefined} />
+          )}
         </For>
         <Show when={filteredOwners().length === 0}>
           <UserPlaceholder>No Owners Found</UserPlaceholder>

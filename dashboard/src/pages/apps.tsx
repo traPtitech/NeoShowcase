@@ -156,10 +156,10 @@ export default () => {
                 >
                   {/* `content-visibility: auto` lets the browser skip layout/paint of off-screen repositories,
                       which is what the former JS virtualizer was for, without breaking find-in-page or scroll anchoring. */}
-                  <For each={filteredRepos()}>
+                  <For each={filteredRepos()} keyed={(r) => r.repo.id}>
                     {(r) => (
                       <div class="mb-10 [contain-intrinsic-size:auto_300px] [content-visibility:auto]">
-                        <RepositoryList repository={r.repo} apps={r.apps} commits={commits()} />
+                        <RepositoryList repository={r().repo} apps={r().apps} commits={commits()} />
                       </div>
                     )}
                   </For>
