@@ -334,6 +334,14 @@ export const failMethod = (
   failureCodes.set(method, code)
 }
 export const recover = (method: string) => failing.delete(method)
+
+/** Unary methods whose next call waits until the returned `release()` is called. */
+const held = new Map<string, Promise<void>>()
+export const holdNext = (method: string) => {
+  let release!: () => void
+  held.set(method, new Promise<void>((resolve) => (release = resolve)))
+  return release
+}
 const failureMessages = new Map<string, string>()
 const failureCodes = new Map<string, Code>()
 
@@ -343,6 +351,7 @@ export const resetMockBackend = () => {
   failing.clear()
   failureMessages.clear()
   failureCodes.clear()
+  held.clear()
 }
 
 // --- Service implementation
@@ -476,7 +485,7 @@ const routes = (router: ConnectRouter) => {
     },
     // one line a minute older than `before` per call: 'previous log line', then 'older log line 1', 2, ...
     getOutput: (req) => {
-      const n = requestsTo('getOutput').length - 1
+      const n = requestsTo('getOutput').indexOf(req as unknown as Record<string, unknown>) // by arrival, even if held
       const before = req.before?.seconds ?? BigInt(Math.floor(Date.now() / 1000))
       return create(ApplicationOutputsSchema, {
         outputs: [
@@ -543,7 +552,11 @@ const routes = (router: ConnectRouter) => {
             failureCodes.get(method) ?? Code.Unavailable,
           )
         }
-        return (fn as (req: object, ctx: unknown) => unknown)(req, ctx)
+        const call = () => (fn as (req: object, ctx: unknown) => unknown)(req, ctx)
+        const gate = held.get(method)
+        if (!gate) return call()
+        held.delete(method)
+        return gate.then(call)
       },
     ]),
   )

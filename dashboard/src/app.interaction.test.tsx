@@ -227,6 +227,30 @@ describe('interactions', () => {
     })
   })
 
+  it('app page: a "Load more" response of an earlier visit does not leak into a later visit of the same app', async () => {
+    await scenario('container log stale load more', '/apps/app-runtime', async (ctx) => {
+      // client-side navigation that reuses the app page (as Back/Forward between apps does)
+      const go = (path: string) => {
+        window.history.pushState(null, '', path)
+        window.dispatchEvent(new PopStateEvent('popstate'))
+      }
+      await waitForText(ctx, 'previous log line', 'streamed line 1')
+      const release = ctx.backend.holdNext('getOutput')
+      click(ctx, button(ctx, 'Load more'))
+      await settle(ctx, () => expect(ctx.backend.requestsTo('getOutput')).toHaveLength(2))
+
+      go('/apps/app-error')
+      await waitForText(ctx, 'broken-app', 'older log line 2')
+      go('/apps/app-runtime')
+      await waitForText(ctx, 'runtime-app', 'older log line 3')
+
+      release() // the held response ('older log line 1', for the first visit) arrives now
+      await idle(ctx, 200)
+      expect(ctx.screen.textContent).not.toContain('older log line 1')
+      expect(button(ctx, 'Load more').disabled).toBe(false)
+    })
+  })
+
   it('build page: a running build streams its log', async () => {
     await scenario('build log stream', '/apps/app-static/builds/build-running', async (ctx) => {
       await waitForText(ctx, 'streamed build line 1')

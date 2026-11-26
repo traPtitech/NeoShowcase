@@ -21,12 +21,13 @@ const stripLogLines = (logs: ApplicationOutput[]): ApplicationOutput[] => {
   return logs
 }
 
-const loadLogChunk = async (appID: string, before: Timestamp, limit: number): Promise<ApplicationOutput[]> => {
-  const res = await client.getOutput({
-    applicationId: appID,
-    before: before,
-    limit: limit,
-  })
+const loadLogChunk = async (
+  appID: string,
+  before: Timestamp,
+  limit: number,
+  signal: AbortSignal,
+): Promise<ApplicationOutput[]> => {
+  const res = await client.getOutput({ applicationId: appID, before, limit }, { signal })
   return res.outputs
 }
 
@@ -50,11 +51,15 @@ export const ContainerLog: Component<ContainerLogProps> = (props) => {
   const loadDisabled = () =>
     timestampNow().seconds - loadedUntil().seconds >= loadLimitSeconds || logs().length >= logLinesLimit
 
-  const load = async (appID: string, before: Timestamp) => {
+  // Aborted when the app changes or the component goes away. It is per visit, not per app id: after A → B → A,
+  // a response requested during the first visit of A must not land in the second one.
+  let visit = new AbortController()
+
+  const load = async (appID: string, before: Timestamp, signal: AbortSignal) => {
     setLoading(true)
     try {
-      const loadedOlderLogs = await loadLogChunk(appID, before, 100)
-      if (appID !== props.appID) return // switched to another app meanwhile
+      const loadedOlderLogs = await loadLogChunk(appID, before, 100, signal)
+      if (signal.aborted) return
       if (loadedOlderLogs.length === 0) {
         setLoadedUntil(addTimestamp(before, -loadDuration))
       } else {
@@ -63,6 +68,7 @@ export const ContainerLog: Component<ContainerLogProps> = (props) => {
       sortByTimestamp(loadedOlderLogs)
       setLogs((prev) => stripLogLines(loadedOlderLogs.concat(prev)))
     } catch (e) {
+      if (signal.aborted) return
       handleAPIError(e, 'ログの読み込み中にエラーが発生しました')
     }
     setLoading(false)
@@ -74,12 +80,14 @@ export const ContainerLog: Component<ContainerLogProps> = (props) => {
   // and restart the stream; the memo only propagates an actual change of id.
   const appID = createMemo(() => props.appID)
   createEffect(appID, (appID) => {
+    const abort = new AbortController()
+    visit = abort
     const begin = timestampNow()
     setLogs([])
     setLoadedUntil(begin)
-    void load(appID, begin)
+    setLoading(false)
+    void load(appID, begin, abort.signal)
 
-    const abort = new AbortController()
     void (async () => {
       try {
         for await (const log of client.getOutputStream({ applicationId: appID, begin }, { signal: abort.signal })) {
@@ -112,7 +120,12 @@ export const ContainerLog: Component<ContainerLogProps> = (props) => {
         <div class="mb-1.5 flex items-center gap-2">
           Loaded until {timestampDate(loadedUntil()).toLocaleString()}
           <Show when={!loadDisabled()} fallback={<span>(reached load limit)</span>}>
-            <Button variants="ghost" size="small" onClick={() => load(props.appID, loadedUntil())} disabled={loading()}>
+            <Button
+              variants="ghost"
+              size="small"
+              onClick={() => load(appID(), loadedUntil(), visit.signal)}
+              disabled={loading()}
+            >
               {loading() ? 'Loading...' : 'Load more'}
             </Button>
           </Show>
