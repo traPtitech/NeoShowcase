@@ -132,3 +132,29 @@ func (f *appFixture) env(t *testing.T, key string) (*domain.Environment, bool) {
 	require.NoError(t, err)
 	return lo.Find(envs, func(e *domain.Environment) bool { return e.Key == key })
 }
+
+// setUserEnv stores key as a user-defined variable directly through the repository,
+// bypassing the API check that protects system variables.
+func (f *appFixture) setUserEnv(t *testing.T, key, value string) {
+	t.Helper()
+	f.storeEnv(t, key, value, false)
+}
+
+// setSystemEnv stores key as a system variable directly through the repository,
+// as NeoShowcase does when it creates the application.
+func (f *appFixture) setSystemEnv(t *testing.T, key, value string) {
+	t.Helper()
+	f.storeEnv(t, key, value, true)
+}
+
+func (f *appFixture) storeEnv(t *testing.T, key, value string, system bool) {
+	t.Helper()
+	require.NoError(t, f.c.Invoke(func(repo domain.EnvironmentRepository) error {
+		return repo.SetEnv(t.Context(), &domain.Environment{
+			ApplicationID: f.app.ID,
+			Key:           key,
+			Value:         value,
+			System:        system,
+		})
+	}))
+}

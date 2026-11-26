@@ -146,6 +146,34 @@ func (s *Service) createApplicationDatabase(ctx context.Context, app *domain.App
 	return nil
 }
 
+type databaseManager interface {
+	Delete(ctx context.Context, args domain.DeleteArgs) error
+}
+
+// applicationDatabase is a kind of database an application uses, and the key
+// of the system variable that names the application's database.
+type applicationDatabase struct {
+	manager databaseManager
+	nameKey string
+}
+
+func (s *Service) applicationDatabases(app *domain.Application) []applicationDatabase {
+	var dbs []applicationDatabase
+	if app.Config.BuildConfig.MariaDB() {
+		dbs = append(dbs, applicationDatabase{
+			manager: s.mariaDBManager,
+			nameKey: domain.EnvMariaDBDatabaseKey,
+		})
+	}
+	if app.Config.BuildConfig.MongoDB() {
+		dbs = append(dbs, applicationDatabase{
+			manager: s.mongoDBManager,
+			nameKey: domain.EnvMongoDBDatabaseKey,
+		})
+	}
+	return dbs
+}
+
 type GetAppScopeType int
 
 const (
@@ -279,29 +307,44 @@ func (s *Service) UpdateApplication(ctx context.Context, id string, args *domain
 }
 
 func (s *Service) deleteApplicationDatabase(ctx context.Context, app *domain.Application, envs []*domain.Environment) error {
-	if app.Config.BuildConfig.MariaDB() {
-		dbKey, ok := lo.Find(envs, func(e *domain.Environment) bool { return e.Key == domain.EnvMariaDBDatabaseKey })
-		if !ok {
-			return oops.New("mariadb name not found in env key")
-		}
-		err := s.mariaDBManager.Delete(ctx, domain.DeleteArgs{Database: dbKey.Value})
+	type target struct {
+		manager databaseManager
+		name    string
+	}
+
+	// Resolve every name before dropping anything, so that a refused name
+	// does not leave the application with some of its databases dropped.
+	var targets []target
+	for _, db := range s.applicationDatabases(app) {
+		name, err := systemDatabaseName(envs, db.nameKey)
 		if err != nil {
 			return err
 		}
+		targets = append(targets, target{manager: db.manager, name: name})
 	}
 
-	if app.Config.BuildConfig.MongoDB() {
-		dbKey, ok := lo.Find(envs, func(e *domain.Environment) bool { return e.Key == domain.EnvMongoDBDatabaseKey })
-		if !ok {
-			return oops.New("mongodb name not found in env key")
-		}
-		err := s.mongoDBManager.Delete(ctx, domain.DeleteArgs{Database: dbKey.Value})
+	for _, t := range targets {
+		err := t.manager.Delete(ctx, domain.DeleteArgs{Database: t.name})
 		if err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+// systemDatabaseName reads the DB name only from a variable injected by
+// NeoShowcase: a user-set value may name another application's DB.
+func systemDatabaseName(envs []*domain.Environment, key string) (string, error) {
+	env, ok := lo.Find(envs, func(e *domain.Environment) bool { return e.Key == key && e.System })
+	if !ok {
+		return "", domain.NewError(
+			domain.ErrorTypeFailedPrecondition,
+			"database name of the application is not managed by NeoShowcase; contact an administrator",
+			oops.Errorf("system environment variable %s not found", key),
+		)
+	}
+	return env.Value, nil
 }
 
 func (s *Service) deleteApplicationImages(ctx context.Context, app *domain.Application) error {

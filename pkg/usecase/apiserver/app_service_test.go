@@ -2,6 +2,7 @@ package apiserver_test
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/test/mocks"
@@ -614,6 +616,95 @@ func TestUpdateApplication_UpdateMariaDBConfigIsNotAllowed(t *testing.T) {
 			} else {
 				assert.NoError(t, err, "should not fail")
 			}
+		})
+	}
+}
+
+func TestDeleteApplication_DeletesDatabasesNamedBySystemVariables(t *testing.T) {
+	t.Parallel()
+	f := newAppFixture(t, "delete-app-system-db", appDatabases{MariaDB: true, MongoDB: true})
+	mariaDBName, ok := f.env(t, domain.EnvMariaDBDatabaseKey)
+	require.True(t, ok)
+	// NeoShowcase gives both databases the same name; a distinct MongoDB name
+	// tells apart which variable each manager is given.
+	const mongoDBName = "nsapp_mongo_only"
+	f.setSystemEnv(t, domain.EnvMongoDBDatabaseKey, mongoDBName)
+
+	err := f.svc.DeleteApplication(f.ctx, f.app.ID)
+
+	require.NoError(t, err)
+	mariaDBCalls := f.mariaDB.DeleteCalls()
+	require.Len(t, mariaDBCalls, 1)
+	assert.Equal(t, mariaDBName.Value, mariaDBCalls[0].Args.Database)
+	mongoDBCalls := f.mongoDB.DeleteCalls()
+	require.Len(t, mongoDBCalls, 1)
+	assert.Equal(t, mongoDBName, mongoDBCalls[0].Args.Database)
+}
+
+// Applications whose system variables were overwritten before overwriting was
+// rejected hold a user-chosen DB name, which may point to another application's DB.
+// Deletion must stop before dropping any of the application's databases.
+func TestDeleteApplication_RefusesToDeleteDatabaseNamedByUserVariable(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name        string
+		tamperedKey string
+	}{
+		{name: "mariadb", tamperedKey: domain.EnvMariaDBDatabaseKey},
+		{name: "mongodb", tamperedKey: domain.EnvMongoDBDatabaseKey},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			f := newAppFixture(t, "delete-app-tampered-"+tt.name, appDatabases{MariaDB: true, MongoDB: true})
+			f.setUserEnv(t, tt.tamperedKey, "nsapp_someone_else")
+
+			err := f.svc.DeleteApplication(f.ctx, f.app.ID)
+
+			_, typ, _ := domain.DecomposeError(err)
+			assert.Equal(t, domain.ErrorTypeFailedPrecondition, typ)
+			assert.Empty(t, f.mariaDB.DeleteCalls())
+			assert.Empty(t, f.mongoDB.DeleteCalls())
+			_, err = f.svc.GetApplication(f.ctx, f.app.ID)
+			assert.NoError(t, err, "application should not be deleted")
+		})
+	}
+}
+
+// Once the application and its variables are gone, nothing records the name of
+// a database left undropped. Deletion must stop at the first failed drop.
+func TestDeleteApplication_StopsWhenDatabaseDeletionFails(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name            string
+		failMariaDB     bool
+		failMongoDB     bool
+		wantMongoDBCall bool
+	}{
+		{name: "mariadb", failMariaDB: true, wantMongoDBCall: false},
+		{name: "mongodb", failMongoDB: true, wantMongoDBCall: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			f := newAppFixture(t, "delete-app-db-fails-"+tt.name, appDatabases{MariaDB: true, MongoDB: true})
+			failIf := func(fail bool) func(context.Context, domain.DeleteArgs) error {
+				return func(context.Context, domain.DeleteArgs) error {
+					if fail {
+						return errors.New("drop failed")
+					}
+					return nil
+				}
+			}
+			f.mariaDB.DeleteFunc = failIf(tt.failMariaDB)
+			f.mongoDB.DeleteFunc = failIf(tt.failMongoDB)
+
+			err := f.svc.DeleteApplication(f.ctx, f.app.ID)
+
+			assert.Error(t, err)
+			assert.Equal(t, tt.wantMongoDBCall, len(f.mongoDB.DeleteCalls()) > 0)
+			_, err = f.svc.GetApplication(f.ctx, f.app.ID)
+			assert.NoError(t, err, "application should not be deleted")
 		})
 	}
 }
