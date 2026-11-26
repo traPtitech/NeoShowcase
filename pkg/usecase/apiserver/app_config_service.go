@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/samber/lo"
 	"github.com/samber/oops"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -31,6 +32,10 @@ func (s *Service) SetEnvironmentVariable(ctx context.Context, applicationID stri
 	if err != nil {
 		return domain.NewError(domain.ErrorTypeBadRequest, "invalid environment variable", err)
 	}
+	err = s.rejectSystemEnvironmentVariable(ctx, applicationID, key)
+	if err != nil {
+		return err
+	}
 
 	return s.envRepo.SetEnv(ctx, env)
 }
@@ -40,11 +45,29 @@ func (s *Service) DeleteEnvironmentVariable(ctx context.Context, applicationID s
 	if err != nil {
 		return err
 	}
+	err = s.rejectSystemEnvironmentVariable(ctx, applicationID, key)
+	if err != nil {
+		return err
+	}
 
 	return s.envRepo.DeleteEnv(ctx, domain.GetEnvCondition{
 		ApplicationID: optional.From(applicationID),
 		Key:           optional.From(key),
 	})
+}
+
+func (s *Service) rejectSystemEnvironmentVariable(ctx context.Context, applicationID string, key string) error {
+	envs, err := s.envRepo.GetEnv(ctx, domain.GetEnvCondition{
+		ApplicationID: optional.From(applicationID),
+		Key:           optional.From(key),
+	})
+	if err != nil {
+		return oops.Wrapf(err, "getting environment variable")
+	}
+	if lo.ContainsBy(envs, func(e *domain.Environment) bool { return e.System }) {
+		return domain.NewError(domain.ErrorTypeBadRequest, "system environment variable cannot be changed", nil)
+	}
+	return nil
 }
 
 func (s *Service) StartApplication(ctx context.Context, id string) error {
