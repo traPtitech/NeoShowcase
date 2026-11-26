@@ -167,3 +167,12 @@ export const type = (ctx: Ctx, el: HTMLInputElement | HTMLTextAreaElement, value
   el.dispatchEvent(new Event('input', { bubbles: true }))
   ctx.flush()
 }
+
+/** Moves to `url` like the browser's Back/Forward does (the router follows `popstate`). */
+export const go = (ctx: Ctx, url: string) => {
+  window.history.pushState(null, '', url)
+  window.dispatchEvent(new PopStateEvent('popstate'))
+  ctx.flush()
+}
+
+export const dialog = (ctx: Ctx) => ctx.screen.querySelector<HTMLElement>('[role=dialog]')

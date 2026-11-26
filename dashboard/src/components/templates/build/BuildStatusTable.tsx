@@ -1,6 +1,6 @@
 import { type Timestamp, timestampDate } from '@bufbuild/protobuf/wkt'
 import { useNavigate } from '@solidjs/router'
-import { type Component, For, Show } from 'solid-js'
+import { type Component, createEffect, createMemo, For, onSettled, Show } from 'solid-js'
 import {
   type Application,
   type Build,
@@ -27,17 +27,38 @@ const BuildStatusTable: Component<{
 }> = (props) => {
   const navigate = useNavigate()
 
+  // 再ビルド後の遷移は、このビルドを表示している間だけ行う (離れた後や別のビルドに移った後に引き戻さない)
+  let redirect: ReturnType<typeof setTimeout> | undefined
+  let disposed = false
+  const cancelRedirect = () => clearTimeout(redirect)
+  onSettled(() => () => {
+    disposed = true
+    cancelRedirect()
+  })
+  const buildID = createMemo(() => props.build.id)
+  createEffect(
+    buildID,
+    () => {
+      cancelRedirect()
+    },
+    { defer: true },
+  )
+
   const rebuild = async () => {
+    const applicationId = props.app.id
+    const rebuiltID = buildID()
     try {
       await client.retryCommitBuild({
-        applicationId: props.app.id,
+        applicationId,
         commit: props.build.commit,
       })
       toast.success('再ビルドを開始しました')
       // 非同期でビルドが開始されるので1秒程度待ってから遷移
-      setTimeout(() => {
+      cancelRedirect()
+      if (disposed || buildID() !== rebuiltID) return
+      redirect = setTimeout(() => {
         props.refetch()
-        navigate(`/apps/${props.app.id}`)
+        navigate(`/apps/${applicationId}`)
       }, 1000)
     } catch (e) {
       handleAPIError(e, '再ビルドに失敗しました')

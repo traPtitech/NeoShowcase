@@ -1,5 +1,5 @@
 import { Field, getInput, setInput } from '@formisch/solid/v2'
-import { type Component, createSignal, Match, Show, Switch } from 'solid-js'
+import { type Component, createEffect, createMemo, createSignal, Match, onSettled, Show, Switch } from 'solid-js'
 import type { GenerateKeyPairResponse } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { FormItem } from '/@/components/templates/FormItem'
 import { RadioGroup, type RadioOption } from '/@/components/templates/RadioGroups'
@@ -12,6 +12,8 @@ import type { CreateOrUpdateRepositoryInput, RepositoryFormStore } from '../sche
 
 type Props = {
   form: RepositoryFormStore
+  /** The repository being edited (none when creating one): a generated key belongs to that repository only. */
+  repositoryID?: string
   readonly?: boolean
 }
 
@@ -28,16 +30,39 @@ const AuthMethodField: Component<Props> = (props) => {
   const [tmpKey, setTmpKey] = createSignal<GenerateKeyPairResponse>()
   const [generating, setGenerating] = createSignal(false)
 
+  // Incremented to drop the result of a key generation still in flight: the route component is reused for
+  // another repository, so a late response must not land in that repository's form.
+  let generation = 0
+  const dropPendingGeneration = () => {
+    generation++
+    setGenerating(false)
+  }
+  const repositoryID = createMemo(() => props.repositoryID)
+  createEffect(
+    repositoryID,
+    () => {
+      dropPendingGeneration()
+      setTmpKey(undefined)
+    },
+    { defer: true },
+  )
+  createEffect(createMemo(authMethod), dropPendingGeneration, { defer: true })
+  onSettled(() => () => {
+    generation++
+  })
+
   const generateTmpKey = async () => {
+    const current = ++generation
     setGenerating(true)
     try {
       const key = await client.generateKeyPair({})
+      if (current !== generation) return
       setTmpKey(key)
       setInput(props.form, { path: ['form', 'auth', 'value', 'ssh', 'keyId'], input: key.keyId })
     } catch (e) {
-      handleAPIError(e, '専用公開鍵の生成に失敗しました')
+      if (current === generation) handleAPIError(e, '専用公開鍵の生成に失敗しました')
     } finally {
-      setGenerating(false)
+      if (current === generation) setGenerating(false)
     }
   }
 

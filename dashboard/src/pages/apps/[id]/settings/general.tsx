@@ -1,5 +1,5 @@
 import { useNavigate } from '@solidjs/router'
-import type { Component } from 'solid-js'
+import { type Component, createSignal } from 'solid-js'
 import type { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { DataTable } from '/@/components/layouts/DataTable'
 import FormBox from '/@/components/layouts/FormBox'
@@ -19,10 +19,18 @@ const DeleteApp: Component<{
 }> = (props) => {
   const { Modal, open, close } = useModal()
   const navigate = useNavigate()
+  // 確認ダイアログを開いた時点のアプリ (開いたまま別のアプリに移っても、そちらを削除しない)
+  const [target, setTarget] = createSignal<string>()
+  const openConfirm = () => {
+    setTarget(props.app.id)
+    open()
+  }
 
   const deleteApplication = async () => {
+    const id = target()
+    if (id !== props.app.id) return close()
     try {
-      await client.deleteApplication({ id: props.app.id })
+      await client.deleteApplication({ id })
       toast.success('アプリケーションを削除しました')
       close()
       navigate('/apps')
@@ -43,7 +51,7 @@ const DeleteApp: Component<{
           <Button
             variants="primaryError"
             size="small"
-            onClick={open}
+            onClick={openConfirm}
             type="button"
             disabled={!props.hasPermission}
             tooltip={{

@@ -79,6 +79,7 @@ export const ids = {
   buildOk: 'build-ok',
   buildFailed: 'build-failed',
   buildRunning: 'build-running',
+  buildRunning2: 'build-running-2',
 }
 
 export const hashes = {
@@ -255,6 +256,15 @@ const createFixtures = () => {
       startedAt: nullTs('2024-02-02T00:00:05Z'),
       retriable: false,
     }),
+    create(BuildSchema, {
+      id: ids.buildRunning2,
+      applicationId: ids.appStatic,
+      commit: hashes.b,
+      status: BuildStatus.BUILDING,
+      queuedAt: ts('2024-02-01T00:00:00Z'),
+      startedAt: nullTs('2024-02-01T00:00:05Z'),
+      retriable: false,
+    }),
   )
 
   const commits = [
@@ -341,15 +351,26 @@ export const dropOutputStream = (times = 1) => {
   outputStreamDrops = times
 }
 
-/** Unary methods whose next call waits until the returned `release()` is called. */
-const held = new Map<string, Promise<void>>()
-export const holdNext = (method: string) => {
-  let release!: () => void
-  held.set(method, new Promise<void>((resolve) => (release = resolve)))
-  return release
-}
 const failureMessages = new Map<string, string>()
 const failureCodes = new Map<string, Code>()
+
+/** Unary methods whose calls wait for a gate; `once`: only the next call waits. */
+const held = new Map<string, { gate: Promise<void>; once: boolean }>()
+const hold = (method: string, once: boolean) => {
+  let release!: () => void
+  const gate = new Promise<void>((resolve) => {
+    release = resolve
+  })
+  held.set(method, { gate, once })
+  return () => {
+    if (held.get(method)?.gate === gate) held.delete(method)
+    release()
+  }
+}
+/** Holds back the responses of the unary `method` until the returned `release()` is called. */
+export const holdMethod = (method: string) => hold(method, false)
+/** Holds back only the next call of the unary `method` until the returned `release()` is called. */
+export const holdNext = (method: string) => hold(method, true)
 
 export const resetMockBackend = () => {
   fixtures = createFixtures()
@@ -542,8 +563,8 @@ const routes = (router: ConnectRouter) => {
     cancelBuild: () => ({}),
     getBuildArtifact: () => create(ArtifactContentSchema, { filename: 'artifact.tar', content: new Uint8Array() }),
     getBuildLog: () => create(BuildLogSchema, { log: new TextEncoder().encode('step 1: build\nstep 2: done\n') }),
-    getBuildLogStream: async function* (_req, ctx) {
-      yield create(BuildLogSchema, { log: new TextEncoder().encode('streamed build line 1\n') })
+    getBuildLogStream: async function* (req, ctx) {
+      yield create(BuildLogSchema, { log: new TextEncoder().encode(`streamed build line 1 of ${req.buildId}\n`) })
       await waitUntilAborted(ctx.signal)
     },
   }
@@ -564,10 +585,10 @@ const routes = (router: ConnectRouter) => {
           )
         }
         const call = () => (fn as (req: object, ctx: unknown) => unknown)(req, ctx)
-        const gate = held.get(method)
-        if (!gate) return call()
-        held.delete(method)
-        return gate.then(call)
+        const hold = held.get(method)
+        if (!hold) return call()
+        if (hold.once) held.delete(method)
+        return hold.gate.then(call)
       },
     ]),
   )
