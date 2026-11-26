@@ -40,6 +40,16 @@ const MobileNavigation: Component = () => {
                 Apps
               </Button>
             </a>
+            <a href="/groups">
+              <Button full size="medium" variants="text" active={location.pathname.startsWith('/groups')}>
+                Groups
+              </Button>
+            </a>
+            <a href="/repos">
+              <Button full size="medium" variants="text" active={location.pathname.startsWith('/repos')}>
+                Repositories
+              </Button>
+            </a>
             <a href="/builds">
               <Button full size="medium" variants="text" active={location.pathname.startsWith('/builds')}>
                 Queue

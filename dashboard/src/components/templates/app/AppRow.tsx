@@ -1,12 +1,12 @@
 import { timestampDate } from '@bufbuild/protobuf/wkt'
 import { type Component, For, Show } from 'solid-js'
-import type { Application } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import type { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { styled } from '/@/components/styled-components'
 import Badge from '/@/components/UI/Badge'
 import Skeleton from '/@/components/UI/Skeleton'
 import { ToolTip } from '/@/components/UI/ToolTip'
 import type { CommitsMap } from '/@/libs/api'
-import { applicationState, getWebsiteURL } from '/@/libs/application'
+import { applicationState, getWebsiteURL, originToIcon, repositoryURLToOrigin } from '/@/libs/application'
 import { diffHuman, shortSha } from '/@/libs/format'
 import { AppStatusIcon } from './AppStatusIcon'
 
@@ -50,6 +50,8 @@ const AppRowSkeleton: Component<{
 
 export interface Props {
   app?: Application
+  /** The repository of the app, shown next to its branch when given. */
+  repository?: Repository
   dark?: boolean
   commits?: CommitsMap
 }
@@ -99,6 +101,14 @@ export const AppRow: Component<Props> = (props) => {
             </Show>
           </TitleContainer>
           <MetaContainer>
+            <Show when={props.repository}>
+              {(repo) => (
+                <>
+                  {originToIcon(repositoryURLToOrigin(repo().url), 16)}
+                  <div class="max-w-1/3 shrink-0 truncate">{repo().name}</div>
+                </>
+              )}
+            </Show>
             <div class="i-mdi:source-branch shrink-0 text-base" />
             <ToolTip content={commitTooltip()} style="left">
               <div class="w-fit truncate">{commitDisplay()}</div>

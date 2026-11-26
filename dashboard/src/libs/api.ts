@@ -4,6 +4,8 @@ import { query, revalidate } from '@solidjs/router'
 import {
   APIService,
   type Application,
+  type ApplicationGroup,
+  GetApplicationGroupsRequest_Scope,
   GetApplicationsRequest_Scope,
   type Repository,
   type SimpleCommit,
@@ -45,6 +47,26 @@ export const revalidateRepositoryApps = (id: string) => revalidate(getRepository
 
 export const getApplication = query((id: string) => client.getApplication({ id }), 'application')
 export const revalidateApplication = (id: string) => revalidate(getApplication.keyFor(id))
+
+export const getApplicationGroup = query(
+  (id: string) => client.getApplicationGroup({ groupId: id }),
+  'application-group',
+)
+export const revalidateApplicationGroup = (id: string) => revalidate(getApplicationGroup.keyFor(id))
+
+export const getApplicationGroupApps = query(
+  (id: string) =>
+    client.getApplications({ scope: GetApplicationsRequest_Scope.GROUP, groupId: id }).then((r) => r.applications),
+  'application-group-apps',
+)
+export const revalidateApplicationGroupApps = (id: string) => revalidate(getApplicationGroupApps.keyFor(id))
+
+/** Groups the user owns: the groups the user can create apps in or move apps into. */
+export const getMyApplicationGroups = query(
+  () => client.getApplicationGroups({ scope: GetApplicationGroupsRequest_Scope.MINE }).then((r) => r.groups),
+  'my-application-groups',
+)
+export const revalidateMyApplicationGroups = () => revalidate(getMyApplicationGroups.key)
 
 export const getBuilds = query(
   (appId: string) => client.getBuilds({ id: appId }).then((res) => res.builds),
@@ -102,5 +124,5 @@ export const getRepositoryCommits = async (hashes: string[]): Promise<CommitsMap
 
 export const isOwner = (
   me: { id: string; admin: boolean } | undefined,
-  resource: Pick<Application | Repository, 'ownerIds'> | undefined,
+  resource: Pick<Application | Repository | ApplicationGroup, 'ownerIds'> | undefined,
 ): boolean => !!me && (me.admin || (resource?.ownerIds.includes(me.id) ?? false))

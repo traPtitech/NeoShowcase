@@ -21,8 +21,12 @@ const singleItemStyle = [
 
 const multiItemStyle = [itemStyleBase, 'p-2']
 
+// Options can be names users chose, so the list of options is bounded to the width of the box it opens from.
+const boxWidthStyle = 'max-w-72'
+
 const triggerStyle = [
-  'grid h-12 w-full max-w-72 cursor-pointer grid-cols-[1fr_24px] content-center items-center gap-1 rounded-lg border-none bg-ui-primary px-4 py-2.5 text-text-black outline outline-1 outline-ui-border',
+  boxWidthStyle,
+  'grid h-12 w-full cursor-pointer grid-cols-[1fr_24px] content-center items-center gap-1 rounded-lg border-none bg-ui-primary px-4 py-2.5 text-text-black outline outline-1 outline-ui-border',
   'focus-visible:outline-2 focus-visible:outline-primary-main',
   'data-[expanded]:outline-2 data-[expanded]:outline-primary-main',
   'data-[disabled]:!bg-ui-tertiary data-[disabled]:!text-text-disabled data-[disabled]:cursor-not-allowed',
@@ -32,10 +36,12 @@ const valueStyle = ['w-full truncate text-left text-regular', 'data-[placeholder
 
 const iconStyle = 'size-6 shrink-0'
 
-const contentStyleBase =
-  'animate-duration-200 animate-ease-out animate-name-wipe-hide-up rounded-md bg-ui-primary shadow-default data-[expanded]:animate-name-wipe-show-down'
+const contentStyleBase = [
+  boxWidthStyle,
+  'animate-duration-200 animate-ease-out animate-name-wipe-hide-up rounded-md bg-ui-primary shadow-default data-[expanded]:animate-name-wipe-show-down',
+]
 const selectContentStyle = [contentStyleBase, 'origin-[--kb-select-content-transform-origin]']
-const comboBoxContentStyle = [contentStyleBase, 'max-w-72 origin-[--kb-combobox-content-transform-origin]']
+const comboBoxContentStyle = [contentStyleBase, 'origin-[--kb-combobox-content-transform-origin]']
 
 const listBoxStyle = 'max-h-100 overflow-y-auto p-1.5'
 
@@ -95,6 +101,16 @@ const FieldTitle = (props: {
   </Show>
 )
 
+/** Label of an option, cut to the width of the list with its full text in the title. */
+const ItemLabel = (props: {
+  text: string
+  Label: typeof KSelect.ItemLabel | typeof KComboBox.ItemLabel
+}): JSX.Element => (
+  <props.Label class="min-w-0 truncate" title={props.text}>
+    {props.text}
+  </props.Label>
+)
+
 const ExpandIcon = () => <div class="i-material-symbols:expand-more text-text-black shrink-0 text-2xl/6" />
 
 export const SingleSelect = <T extends string | number>(props: SingleSelectProps<T>): JSX.Element => {
@@ -119,7 +135,7 @@ export const SingleSelect = <T extends string | number>(props: SingleSelectProps
       validationState={props.error ? 'invalid' : 'valid'}
       itemComponent={(itemProps) => (
         <KSelect.Item item={itemProps.item} class={singleItemStyle}>
-          <KSelect.ItemLabel>{itemProps.item.textValue}</KSelect.ItemLabel>
+          <ItemLabel text={itemProps.item.textValue} Label={KSelect.ItemLabel} />
         </KSelect.Item>
       )}
     >
@@ -166,7 +182,7 @@ export const MultiSelect = <T extends string | number>(props: MultiSelectProps<T
           <KSelect.ItemIndicator forceMount class={iconStyle}>
             <CheckBoxIcon checked={props.value?.includes(itemProps.item.rawValue.value) ?? false} />
           </KSelect.ItemIndicator>
-          <KSelect.ItemLabel>{itemProps.item.textValue}</KSelect.ItemLabel>
+          <ItemLabel text={itemProps.item.textValue} Label={KSelect.ItemLabel} />
         </KSelect.Item>
       )}
     >
@@ -217,14 +233,14 @@ export const ComboBox = <T extends string | number>(props: ComboBoxProps<T>): JS
       validationState={props.error ? 'invalid' : 'valid'}
       itemComponent={(itemProps) => (
         <KComboBox.Item item={itemProps.item} class={singleItemStyle}>
-          <KComboBox.ItemLabel>{itemProps.item.textValue}</KComboBox.ItemLabel>
+          <ItemLabel text={itemProps.item.textValue} Label={KComboBox.ItemLabel} />
         </KComboBox.Item>
       )}
     >
       <FieldTitle label={props.label} required={props.required} info={props.info} Label={KComboBox.Label} />
       <KComboBox.HiddenSelect ref={props.ref} onInput={props.onInput} onChange={props.onChange} onBlur={props.onBlur} />
       <ToolTip {...props.tooltip} class="w-full">
-        <KComboBox.Control class="relative flex w-full max-w-72 gap-0.25">
+        <KComboBox.Control class={[boxWidthStyle, 'relative flex w-full gap-0.25']}>
           <KComboBox.Input
             class={[
               'bg-ui-primary text-regular text-text-black outline-ui-border flex h-12 w-full gap-1 rounded-lg border-none px-4 pr-11 outline outline-1',

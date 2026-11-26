@@ -8,5 +8,12 @@ export interface Props {
 }
 
 export const RepositoryNav: Component<Props> = (props) => {
-  return <Nav title={props.repository.name} icon={originToIcon(repositoryURLToOrigin(props.repository.url), 40)} />
+  return (
+    <Nav
+      title={props.repository.name}
+      icon={originToIcon(repositoryURLToOrigin(props.repository.url), 40)}
+      backTo="/repos"
+      backToTitle="Repositories"
+    />
+  )
 }

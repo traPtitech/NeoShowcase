@@ -20,3 +20,5 @@ vi.mock('chart.js', async (importOriginal) => {
 
 // jsdom does not implement scrolling (the router scrolls to top on navigation)
 window.scrollTo = () => {}
+// Kobalte scrolls the selected option of an opened select into view
+Element.prototype.scrollIntoView = () => {}

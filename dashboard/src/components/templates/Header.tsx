@@ -29,6 +29,16 @@ export const Header: Component = () => {
             Apps
           </Button>
         </a>
+        <a href="/groups">
+          <Button size="medium" variants="text" active={location.pathname.startsWith('/groups')} tabindex={-1}>
+            Groups
+          </Button>
+        </a>
+        <a href="/repos">
+          <Button size="medium" variants="text" active={location.pathname.startsWith('/repos')} tabindex={-1}>
+            Repositories
+          </Button>
+        </a>
         <a href="/builds">
           <Button size="medium" variants="text" active={location.pathname.startsWith('/builds')} tabindex={-1}>
             Queue

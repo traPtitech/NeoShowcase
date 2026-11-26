@@ -1,10 +1,20 @@
+import { create } from '@bufbuild/protobuf'
 import { Code } from '@connectrpc/connect'
 import { describe, expect, it } from 'vitest'
 import {
+  ApplicationGroupSchema,
+  GetApplicationGroupsRequest_Scope,
+  GetApplicationsRequest_Scope,
+  GetRepositoriesRequest_Scope,
+  RepositorySchema,
+} from '/@/api/neoshowcase/protobuf/gateway_pb'
+import {
   button,
   buttonContaining,
+  type Ctx,
   click,
   field,
+  find,
   idle,
   link,
   scenario,
@@ -17,35 +27,101 @@ import {
 /** User flows against the in-memory backend, where Solid 2 / Kobalte 2 / Formisch integration is most fragile. */
 
 describe('interactions', () => {
+  /** Fills the create-app form from the repository step up to the URL step, choosing github-repo. */
+  const fillCreateAppForm = async (ctx: Ctx, query: string) => {
+    await waitForText(ctx, 'github-repo')
+    click(ctx, buttonContaining(ctx, 'github-repo'))
+    await settle(ctx, () => expect(window.location.search).toBe(`?${query}repositoryID=repo-github`))
+    await waitForText(ctx, 'Create Application from')
+
+    type(ctx, field(ctx, 'Application Name'), 'new-app')
+    // branch: type to open the combobox, then pick the option
+    const branch = await settle(ctx, () => expect(ctx.screen.querySelector('[role=combobox]')).not.toBeNull()).then(
+      () => ctx.screen.querySelector<HTMLInputElement>('[role=combobox]') as HTMLInputElement,
+    )
+    type(ctx, branch, 'mai')
+    await settle(ctx, () => expect(ctx.screen.querySelector('[role=option]')?.textContent).toBe('main'))
+    const option = ctx.screen.querySelector<HTMLElement>('[role=option]') as HTMLElement
+    for (const e of ['pointerdown', 'pointerup', 'click']) {
+      option.dispatchEvent(new MouseEvent(e, { bubbles: true, button: 0 }))
+    }
+    await settle(ctx, () => expect(branch.value).toBe('main'))
+
+    const radio = (name: string, value: string) =>
+      ctx.screen.querySelector<HTMLInputElement>(`input[type=radio][name='${name}'][value='${value}']`) as HTMLElement
+    click(ctx, radio('["form","config","deployConfig","type"]', 'runtime'))
+    await settle(ctx, () => expect(ctx.screen.textContent).toContain('Build Type'))
+    click(ctx, radio('["form","config","buildConfig","type"]', 'buildpack'))
+
+    // step 2 -> 3
+    click(ctx, button(ctx, 'Next'))
+    await settle(ctx, () => expect(button(ctx, 'Create Application')).toBeTruthy())
+  }
+
+  /** Opens the filter menu next to the search box and toggles the checkbox whose label starts with `label`. */
+  /** Returns the button that opens the filter menu next to the search box. */
+  const filterTrigger = (ctx: Ctx): HTMLElement => {
+    const search = ctx.screen.querySelector<HTMLInputElement>('input[placeholder="Search"]')
+    let trigger: HTMLElement | null | undefined
+    for (let el = search?.parentElement; el && !trigger; el = el.parentElement) {
+      trigger = el.querySelector<HTMLElement>('button[aria-haspopup="true"]')
+    }
+    if (!trigger) throw new Error('no filter menu next to the search box')
+    return trigger
+  }
+
+  const toggleFilter = async (ctx: Ctx, label: string) => {
+    const trigger = filterTrigger(ctx)
+    if (trigger.getAttribute('aria-expanded') !== 'true') {
+      trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
+      ctx.flush()
+    }
+    const checkbox = await settle(ctx, () =>
+      expect(
+        [...ctx.screen.querySelectorAll('label')].find((l) => l.textContent?.trim().startsWith(label)),
+      ).toBeTruthy(),
+    ).then(() => [...ctx.screen.querySelectorAll('label')].find((l) => l.textContent?.trim().startsWith(label)))
+    click(ctx, checkbox as HTMLElement)
+  }
+
+  /** Opens the select on the page and returns it once its options are shown. */
+  const openSelect = async (ctx: Ctx): Promise<HTMLButtonElement> => {
+    const trigger = ctx.screen.querySelector<HTMLButtonElement>('button[aria-haspopup=listbox]')
+    if (!trigger) throw new Error('no select')
+    for (const e of ['pointerdown', 'pointerup', 'click']) {
+      trigger.dispatchEvent(new MouseEvent(e, { bubbles: true, button: 0 }))
+    }
+    await settle(ctx, () => expect(document.querySelector('[role=option]')).not.toBeNull())
+    return trigger
+  }
+
+  /** Chooses the option of the open select whose text contains `text`. */
+  const chooseOption = (ctx: Ctx, text: string) => {
+    const option = [...document.querySelectorAll<HTMLElement>('[role=option]')].find((o) =>
+      o.textContent?.includes(text),
+    )
+    if (!option) throw new Error(`no option containing "${text}"`)
+    for (const e of ['pointerdown', 'pointerup', 'click']) {
+      option.dispatchEvent(new MouseEvent(e, { bubbles: true, button: 0 }))
+    }
+    ctx.flush()
+  }
+
+  /** Adds empty-repo, a repository of the user without apps. */
+  const addEmptyRepository = (b: Ctx['backend']) =>
+    b.fixtures.repositories.push(
+      create(RepositorySchema, {
+        id: 'repo-empty',
+        name: 'empty-repo',
+        url: 'https://github.com/traPtitech/empty.git',
+        htmlUrl: 'https://github.com/traPtitech/empty',
+        ownerIds: [b.ids.me],
+      }),
+    )
+
   it('create app: walks the three steps and calls createApplication', async () => {
     await scenario('create app', '/apps/new', async (ctx) => {
-      await waitForText(ctx, 'github-repo')
-      click(ctx, buttonContaining(ctx, 'github-repo'))
-      await settle(ctx, () => expect(window.location.search).toBe('?repositoryID=repo-github'))
-      await waitForText(ctx, 'Create Application from')
-
-      type(ctx, field(ctx, 'Application Name'), 'new-app')
-      // branch: type to open the combobox, then pick the option
-      const branch = await settle(ctx, () => expect(ctx.screen.querySelector('[role=combobox]')).not.toBeNull()).then(
-        () => ctx.screen.querySelector<HTMLInputElement>('[role=combobox]') as HTMLInputElement,
-      )
-      type(ctx, branch, 'mai')
-      await settle(ctx, () => expect(ctx.screen.querySelector('[role=option]')?.textContent).toBe('main'))
-      const option = ctx.screen.querySelector<HTMLElement>('[role=option]') as HTMLElement
-      for (const e of ['pointerdown', 'pointerup', 'click']) {
-        option.dispatchEvent(new MouseEvent(e, { bubbles: true, button: 0 }))
-      }
-      await settle(ctx, () => expect(branch.value).toBe('main'))
-
-      const radio = (name: string, value: string) =>
-        ctx.screen.querySelector<HTMLInputElement>(`input[type=radio][name='${name}'][value='${value}']`) as HTMLElement
-      click(ctx, radio('["form","config","deployConfig","type"]', 'runtime'))
-      await settle(ctx, () => expect(ctx.screen.textContent).toContain('Build Type'))
-      click(ctx, radio('["form","config","buildConfig","type"]', 'buildpack'))
-
-      // step 2 -> 3
-      click(ctx, button(ctx, 'Next'))
-      await settle(ctx, () => expect(button(ctx, 'Create Application')).toBeTruthy())
+      await fillCreateAppForm(ctx, '')
       // the form was already submitted by "Next", yet a freshly added URL row must not start out with errors
       click(ctx, button(ctx, 'Add URL'))
       const subdomain = await settle(ctx, () =>
@@ -57,12 +133,304 @@ describe('interactions', () => {
       click(ctx, button(ctx, 'Create Application'))
       await settle(ctx, () =>
         expect(ctx.backend.requestsTo('createApplication')).toEqual([
-          expect.objectContaining({ name: 'new-app', refName: 'main', repositoryId: 'repo-github' }),
+          expect.objectContaining({
+            name: 'new-app',
+            refName: 'main',
+            repositoryId: 'repo-github',
+          }),
         ]),
       )
+      // a standalone app is sent without a group, since an empty group ID names no group
+      expect(ctx.backend.requestsTo('createApplication')[0].groupId).toBeUndefined()
       // navigates to the created app
       await settle(ctx, () => expect(window.location.pathname).toBe('/apps/app-new'))
       await waitForText(ctx, 'new-app')
+    })
+  })
+
+  it('create app: "Add New App" of a group creates the app in that group', async () => {
+    await scenario('create app in group', '/groups/group-web', async (ctx) => {
+      await waitForText(ctx, 'static-app')
+      click(ctx, button(ctx, 'Add New App'))
+      await settle(ctx, () => expect(window.location.pathname).toBe('/apps/new'))
+      await fillCreateAppForm(ctx, 'groupID=group-web&')
+      click(ctx, button(ctx, 'Create Application'))
+      await settle(ctx, () =>
+        expect(ctx.backend.requestsTo('createApplication')).toEqual([
+          expect.objectContaining({ name: 'new-app', groupId: 'group-web' }),
+        ]),
+      )
+    })
+  })
+
+  it('create app: "Add New App" of a group the admin does not own shows that group as selected', async () => {
+    await scenario(
+      'create app in a group of others',
+      '/apps/new?groupID=group-other&repositoryID=repo-github',
+      async (ctx) => {
+        await waitForText(ctx, 'Create Application from')
+        const select = () => ctx.screen.querySelector<HTMLSelectElement>(`select[name='["form","groupId"]']`)
+        await settle(ctx, () => expect(select()?.value).toBe('group-other'))
+        expect(select()?.selectedOptions[0]?.textContent).toBe('other-service')
+      },
+      {
+        setup: (b) =>
+          b.fixtures.groups.push(
+            create(ApplicationGroupSchema, { id: 'group-other', name: 'other-service', ownerIds: [b.ids.other] }),
+          ),
+      },
+    )
+  })
+
+  it('groups: creating a group opens its page', async () => {
+    await scenario('create group', '/groups', async (ctx) => {
+      await waitForText(ctx, 'web-service')
+      click(ctx, link(ctx, '/groups/new'))
+      await waitForText(ctx, 'Create Group')
+      type(ctx, field(ctx, 'Group Name'), 'new-service')
+      click(ctx, button(ctx, 'Create'))
+      await settle(ctx, () =>
+        expect(ctx.backend.requestsTo('createApplicationGroup')).toEqual([
+          expect.objectContaining({ name: 'new-service' }),
+        ]),
+      )
+      await settle(ctx, () => expect(window.location.pathname).toBe('/groups/group-new'))
+      await waitForText(ctx, 'new-service', 'No Apps')
+    })
+  })
+
+  it('groups list: clicking anywhere in the row of a group opens the group', async () => {
+    await scenario(
+      'groups row',
+      '/groups',
+      async (ctx) => {
+        await waitForText(ctx, 'web-service', 'api-service')
+        const name = [...ctx.screen.querySelectorAll<HTMLElement>('div')].findLast(
+          (el) => el.textContent?.trim() === 'web-service',
+        )
+        if (!name) throw new Error('no name of web-service')
+        // the outermost element that holds only the name of the group, i.e. the whole row
+        let row = name
+        while (row.parentElement && row.parentElement.textContent?.trim() === 'web-service') row = row.parentElement
+        // this page does not tell the number of apps of each group
+        expect(link(ctx, '/groups/group-web').textContent?.trim()).toBe('web-service')
+        click(ctx, row)
+        await settle(ctx, () => expect(window.location.pathname).toBe('/groups/group-web'))
+      },
+      {
+        setup: (b) =>
+          b.fixtures.groups.push(
+            create(ApplicationGroupSchema, { id: 'group-api', name: 'api-service', ownerIds: [b.ids.me] }),
+          ),
+      },
+    )
+  })
+
+  it('groups: adding an owner updates the group', async () => {
+    await scenario('group owners', '/groups/group-web/settings/owners', async (ctx) => {
+      await settle(ctx, () => expect(button(ctx, 'Add Owners').disabled).toBe(false))
+      click(ctx, button(ctx, 'Add Owners'))
+      await settle(ctx, () => expect(document.querySelector('[role=dialog]')).not.toBeNull())
+      await waitForText(ctx, 'other-user')
+      click(ctx, button(ctx, 'Add'))
+      await settle(ctx, () =>
+        expect(ctx.backend.requestsTo('updateApplicationGroup')).toEqual([
+          expect.objectContaining({
+            id: 'group-web',
+            ownerIds: expect.objectContaining({ ownerIds: ['user-admin', 'user-other'] }),
+          }),
+        ]),
+      )
+    })
+  })
+
+  it('groups: each owner has a button to delete it from the owners', async () => {
+    await scenario(
+      'delete group owner',
+      '/groups/group-web/settings/owners',
+      async (ctx) => {
+        await waitForText(ctx, 'admin-user', 'other-user')
+        await settle(ctx, () =>
+          expect(
+            [...ctx.screen.querySelectorAll('button')].filter((b) => b.textContent?.trim() === 'Delete'),
+          ).toHaveLength(2),
+        )
+        const otherRow = find(ctx, 'div', 'other-user').parentElement
+        click(ctx, otherRow?.querySelector('button') as HTMLElement)
+        await settle(ctx, () => expect(document.querySelector('[role=dialog]')).not.toBeNull())
+        click(ctx, button(ctx, 'Yes, Delete'))
+        await settle(ctx, () =>
+          expect(ctx.backend.requestsTo('updateApplicationGroup')).toEqual([
+            expect.objectContaining({
+              id: 'group-web',
+              ownerIds: expect.objectContaining({ ownerIds: ['user-admin'] }),
+            }),
+          ]),
+        )
+      },
+      {
+        setup: (b) => {
+          const group = b.fixtures.groups.find((g) => g.id === b.ids.groupWeb)
+          group?.ownerIds.push(b.ids.other)
+        },
+      },
+    )
+  })
+
+  it('app owners: a grouped app shows its owners without buttons to delete them', async () => {
+    await scenario('grouped app owners read only', '/apps/app-static/settings/owners', async (ctx) => {
+      await waitForText(ctx, 'admin-user', 'グループのオーナー設定から編集してください')
+      await idle(ctx)
+      expect(() => button(ctx, 'Delete')).toThrow()
+    })
+  })
+
+  it('group settings: renaming the group calls updateApplicationGroup and shows the new name', async () => {
+    await scenario('rename group', '/groups/group-web/settings', async (ctx) => {
+      await waitForText(ctx, 'Delete Group')
+      await idle(ctx)
+      await settle(ctx, () => field(ctx, 'Group Name'))
+
+      type(ctx, field(ctx, 'Group Name'), 'あ'.repeat(101))
+      await settle(ctx, () => expect(button(ctx, 'Save').disabled).toBe(false))
+      click(ctx, button(ctx, 'Save'))
+      await waitForText(ctx, 'Group Name must be 100 characters or less')
+      expect(ctx.backend.requestsTo('updateApplicationGroup')).toHaveLength(0)
+
+      type(ctx, field(ctx, 'Group Name'), 'renamed-service')
+      await settle(ctx, () => expect(button(ctx, 'Save').disabled).toBe(false))
+      click(ctx, button(ctx, 'Save'))
+      await settle(ctx, () =>
+        expect(ctx.backend.requestsTo('updateApplicationGroup')).toEqual([
+          expect.objectContaining({ id: 'group-web', name: 'renamed-service' }),
+        ]),
+      )
+      await settle(ctx, () => expect(ctx.screen.querySelector('.h1-medium')?.textContent).toBe('renamed-service'))
+    })
+  })
+
+  it('group settings: a group with apps cannot be deleted', async () => {
+    await scenario('delete group with apps', '/groups/group-web/settings', async (ctx) => {
+      await waitForText(ctx, 'Delete Group')
+      await idle(ctx)
+      expect(button(ctx, 'Delete Group').disabled).toBe(true)
+    })
+  })
+
+  it('group settings: deleting an empty group calls deleteApplicationGroup and opens the group list', async () => {
+    await scenario(
+      'delete group',
+      '/groups/group-empty/settings',
+      async (ctx) => {
+        await waitForText(ctx, 'Delete Group')
+        await settle(ctx, () => expect(button(ctx, 'Delete Group').disabled).toBe(false))
+        click(ctx, button(ctx, 'Delete Group'))
+        await settle(ctx, () => expect(document.querySelector('[role=dialog]')).not.toBeNull())
+        click(ctx, button(ctx, 'Yes, Delete'))
+        await settle(ctx, () =>
+          expect(ctx.backend.requestsTo('deleteApplicationGroup')).toEqual([
+            expect.objectContaining({ groupId: 'group-empty' }),
+          ]),
+        )
+        await settle(ctx, () => expect(window.location.pathname).toBe('/groups'))
+        await waitForNoText(ctx, 'empty-service')
+      },
+      {
+        setup: (b) =>
+          b.fixtures.groups.push(
+            create(ApplicationGroupSchema, { id: 'group-empty', name: 'empty-service', ownerIds: [b.ids.me] }),
+          ),
+      },
+    )
+  })
+
+  it('app group settings: moving an app out of its group makes it standalone', async () => {
+    await scenario('move app', '/apps/app-static/settings/group', async (ctx) => {
+      await waitForText(ctx, 'web-service')
+      await idle(ctx)
+      const trigger = await openSelect(ctx)
+      chooseOption(ctx, 'なし')
+      await settle(ctx, () => expect(button(ctx, 'Save').disabled).toBe(false))
+      expect(trigger.textContent).toContain('なし (単体のアプリ)')
+      click(ctx, button(ctx, 'Save'))
+      await settle(ctx, () => expect(ctx.backend.requestsTo('moveApplication')).toHaveLength(1))
+      const [req] = ctx.backend.requestsTo('moveApplication')
+      expect(req.applicationId).toBe('app-static')
+      expect(req.groupId).toBeUndefined()
+      // the page shows the app as moved: the link to the group it left is gone and nothing is left to save
+      await settle(ctx, () => expect(ctx.screen.querySelector('a[href="/groups/group-web"]')).toBeNull())
+      await settle(ctx, () => expect(button(ctx, 'Save').disabled).toBe(true))
+      expect(trigger.textContent).toContain('なし (単体のアプリ)')
+    })
+  })
+
+  it('app group settings: the group an app left no longer lists it', async () => {
+    await scenario('move app from group page', '/groups/group-web', async (ctx) => {
+      await waitForText(ctx, 'static-app')
+      click(ctx, link(ctx, '/apps/app-static'))
+      await settle(ctx, () => link(ctx, '/apps/app-static/settings'))
+      click(ctx, link(ctx, '/apps/app-static/settings'))
+      await settle(ctx, () => link(ctx, '/apps/app-static/settings/group'))
+      click(ctx, link(ctx, '/apps/app-static/settings/group'))
+      await settle(ctx, () => link(ctx, '/groups/group-web'))
+      await idle(ctx)
+      await openSelect(ctx)
+      chooseOption(ctx, 'なし')
+      await settle(ctx, () => expect(button(ctx, 'Save').disabled).toBe(false))
+      click(ctx, button(ctx, 'Save'))
+      await settle(ctx, () => expect(ctx.backend.requestsTo('moveApplication')).toHaveLength(1))
+
+      click(ctx, link(ctx, '/groups'))
+      await settle(ctx, () => link(ctx, '/groups/group-web'))
+      click(ctx, link(ctx, '/groups/group-web'))
+      await waitForText(ctx, 'No Apps')
+      expect(ctx.screen.textContent).not.toContain('static-app')
+    })
+  })
+
+  it('app group settings: the options of a long group name are cut to the width of the select', async () => {
+    await scenario(
+      'long group name',
+      '/apps/app-static/settings/group',
+      async (ctx) => {
+        await waitForText(ctx, 'あ'.repeat(100))
+        await idle(ctx)
+        await openSelect(ctx)
+        // jsdom does not lay out the page, so the classes that bound the width stand in for measuring it
+        const maxWidth = (el: Element | null | undefined) => el?.className.match(/\bmax-w-\S+/)?.[0]
+        const triggerWidth = maxWidth(ctx.screen.querySelector('button[aria-haspopup=listbox]'))
+        expect(triggerWidth).toMatch(/^max-w-\d+$/)
+        expect(maxWidth(document.querySelector('[role=listbox]')?.parentElement)).toBe(triggerWidth)
+        const long = [...document.querySelectorAll<HTMLElement>('[role=option]')].find((o) =>
+          o.textContent?.includes('あ'.repeat(100)),
+        )
+        expect(long?.firstElementChild?.className).toMatch(/\btruncate\b/)
+        expect(long?.firstElementChild?.getAttribute('title')).toBe('あ'.repeat(100))
+      },
+      {
+        setup: (b) => {
+          const group = b.fixtures.groups.find((g) => g.id === b.ids.groupWeb)
+          if (group) group.name = 'あ'.repeat(100)
+        },
+      },
+    )
+  })
+
+  // Kobalte treats the empty string as no selection, so "no group" once showed an empty select.
+  it('app group settings: a standalone app shows that it is in no group', async () => {
+    await scenario('standalone app group', '/apps/app-runtime/settings/group', async (ctx) => {
+      await settle(ctx, () =>
+        expect(ctx.screen.querySelector('button[aria-haspopup=listbox]')?.textContent).toContain('なし (単体のアプリ)'),
+      )
+    })
+  })
+
+  it('app owners: an app in a group sends its owner to the group settings instead of saying they are not an owner', async () => {
+    await scenario('grouped app owners', '/apps/app-static/settings/owners', async (ctx) => {
+      await waitForText(ctx, 'admin-user', 'web-service', 'グループのオーナー設定から編集してください')
+      expect(link(ctx, '/groups/group-web/settings/owners').textContent).toContain('グループのオーナー設定')
+      expect(ctx.screen.textContent).not.toContain('設定を変更するにはオーナーになる必要があります')
+      expect(() => button(ctx, 'Add Owners')).toThrow()
     })
   })
 
@@ -105,6 +473,79 @@ describe('interactions', () => {
     })
   })
 
+  it('group settings: a user who does not own the group cannot change it', async () => {
+    await scenario(
+      'group of others',
+      '/groups/group-web/settings',
+      async (ctx) => {
+        await waitForText(ctx, 'Delete Group')
+        await idle(ctx)
+        expect(button(ctx, 'Save').disabled).toBe(true)
+        expect(button(ctx, 'Delete Group').disabled).toBe(true)
+
+        click(ctx, link(ctx, '/groups/group-web/settings/owners'))
+        await settle(ctx, () => button(ctx, 'Add Owners'))
+        await idle(ctx)
+        expect(button(ctx, 'Add Owners').disabled).toBe(true)
+      },
+      {
+        setup: (b) => {
+          b.fixtures.users[0].admin = false
+          const group = b.fixtures.groups.find((g) => g.id === b.ids.groupWeb)
+          if (group) group.ownerIds = [b.ids.other]
+          // an empty group could be deleted by its owners, so only ownership keeps Delete Group disabled
+          for (const app of b.fixtures.applications) if (app.groupId === b.ids.groupWeb) app.groupId = undefined
+        },
+      },
+    )
+  })
+
+  it('app owners: adding an owner to a standalone app updates the app', async () => {
+    await scenario('standalone app owners', '/apps/app-runtime/settings/owners', async (ctx) => {
+      await settle(ctx, () => expect(button(ctx, 'Add Owners').disabled).toBe(false))
+      click(ctx, button(ctx, 'Add Owners'))
+      await settle(ctx, () => expect(document.querySelector('[role=dialog]')).not.toBeNull())
+      await waitForText(ctx, 'other-user')
+      click(ctx, button(ctx, 'Add'))
+      await settle(ctx, () =>
+        expect(ctx.backend.requestsTo('updateApplication')).toEqual([
+          expect.objectContaining({
+            id: 'app-runtime',
+            ownerIds: expect.objectContaining({ ownerIds: ['user-admin', 'user-other'] }),
+          }),
+        ]),
+      )
+    })
+  })
+
+  it('app owners: deleting an owner of a standalone app updates the app', async () => {
+    await scenario(
+      'delete standalone app owner',
+      '/apps/app-runtime/settings/owners',
+      async (ctx) => {
+        await waitForText(ctx, 'admin-user', 'other-user')
+        const otherRow = find(ctx, 'div', 'other-user').parentElement
+        click(ctx, otherRow?.querySelector('button') as HTMLElement)
+        await settle(ctx, () => expect(document.querySelector('[role=dialog]')).not.toBeNull())
+        click(ctx, button(ctx, 'Yes, Delete'))
+        await settle(ctx, () =>
+          expect(ctx.backend.requestsTo('updateApplication')).toEqual([
+            expect.objectContaining({
+              id: 'app-runtime',
+              ownerIds: expect.objectContaining({ ownerIds: ['user-admin'] }),
+            }),
+          ]),
+        )
+      },
+      {
+        setup: (b) => {
+          const app = b.fixtures.applications.find((a) => a.id === b.ids.appRuntime)
+          app?.ownerIds.push(b.ids.other)
+        },
+      },
+    )
+  })
+
   it('app general settings: rename enables Save and calls updateApplication', async () => {
     await scenario('rename app', '/apps/app-runtime/settings', async (ctx) => {
       await waitForText(ctx, 'Branch')
@@ -124,6 +565,22 @@ describe('interactions', () => {
       // refetch brings the new name into the header and resets the form (Save disabled again)
       await waitForText(ctx, 'renamed-app')
       await settle(ctx, () => expect(button(ctx, 'Save').disabled).toBe(true))
+    })
+  })
+
+  it('app general settings: renaming an app in a group succeeds', async () => {
+    await scenario('rename grouped app', '/apps/app-static/settings', async (ctx) => {
+      await waitForText(ctx, 'Branch')
+      await idle(ctx)
+      await settle(ctx, () => field(ctx, 'Application Name'))
+      type(ctx, field(ctx, 'Application Name'), 'renamed-static')
+      await settle(ctx, () => expect(button(ctx, 'Save').disabled).toBe(false))
+      click(ctx, button(ctx, 'Save'))
+
+      await settle(ctx, () => expect(ctx.backend.requestsTo('updateApplication')).toHaveLength(1))
+      // owners of an app in a group belong to the group, so settings forms must not send them
+      expect(ctx.backend.requestsTo('updateApplication')[0].ownerIds).toBeUndefined()
+      await waitForText(ctx, 'renamed-static')
     })
   })
 
@@ -164,6 +621,357 @@ describe('interactions', () => {
       type(ctx, search, '')
       await waitForText(ctx, 'runtime-app', 'static-app')
     })
+  })
+
+  it('apps list and repos list: the search box ignores the case of letters', async () => {
+    await scenario(
+      'search case',
+      '/apps',
+      async (ctx) => {
+        await waitForText(ctx, 'runtime-app', 'Static-App')
+        const search = () => {
+          const el = ctx.screen.querySelector<HTMLInputElement>('input[placeholder="Search"]')
+          if (!el) throw new Error('no search box')
+          return el
+        }
+        type(ctx, search(), 'STATIC')
+        await waitForNoText(ctx, 'runtime-app')
+        await waitForText(ctx, 'Static-App')
+
+        type(ctx, search(), 'static-app')
+        await waitForNoText(ctx, 'runtime-app')
+        await waitForText(ctx, 'Static-App')
+
+        // by the name of the group, which also has capital letters
+        type(ctx, search(), 'web-service')
+        await waitForNoText(ctx, 'runtime-app')
+        await waitForText(ctx, 'Static-App')
+
+        click(ctx, link(ctx, '/repos'))
+        await settle(ctx, () => expect(window.location.pathname).toBe('/repos'))
+        await waitForText(ctx, 'github-repo', 'Gitea-Repo')
+        type(ctx, search(), 'gitea')
+        await waitForNoText(ctx, 'github-repo')
+        await waitForText(ctx, 'Gitea-Repo')
+      },
+      {
+        setup: (b) => {
+          const app = b.fixtures.applications.find((a) => a.id === b.ids.appStatic)
+          if (app) app.name = 'Static-App'
+          const group = b.fixtures.groups.find((g) => g.id === b.ids.groupWeb)
+          if (group) group.name = 'Web-Service'
+          const repo = b.fixtures.repositories.find((r) => r.id === b.ids.repoGitea)
+          if (repo) repo.name = 'Gitea-Repo'
+        },
+      },
+    )
+  })
+
+  it('apps list: apps are listed under their group, and standalone apps without a heading', async () => {
+    await scenario('apps by group', '/apps', async (ctx) => {
+      await waitForText(ctx, 'runtime-app', 'static-app', 'broken-app')
+      const group = ctx.screen.querySelector<HTMLElement>('section[aria-label="web-service"]')
+      if (!group) throw new Error('no section of the group')
+      expect(group.querySelector('a[href="/groups/group-web"]')).not.toBeNull()
+      expect(group.querySelector('a[href="/apps/app-static"]')).not.toBeNull()
+      expect(group.querySelector('a[href="/apps/app-runtime"]')).toBeNull()
+      expect(group.textContent).toContain('1 apps')
+
+      for (const app of ['app-runtime', 'app-error']) {
+        expect(link(ctx, `/apps/${app}`).closest('section')).toBeNull()
+      }
+      // repositories are not headings any more; each app tells its repository
+      expect(ctx.screen.querySelector('a[href^="/repos/"]')).toBeNull()
+      expect(link(ctx, '/apps/app-runtime').textContent).toContain('github-repo')
+      expect(link(ctx, '/apps/app-static').textContent).toContain('github-repo')
+      expect(link(ctx, '/apps/app-error').textContent).toContain('gitea-repo')
+    })
+  })
+
+  it('apps list: searching by a group name lists the apps of the group', async () => {
+    await scenario('apps search by group', '/apps', async (ctx) => {
+      await waitForText(ctx, 'runtime-app', 'static-app')
+      const search = ctx.screen.querySelector<HTMLInputElement>('input[placeholder="Search"]')
+      if (!search) throw new Error('no search box')
+      type(ctx, search, 'web-serv')
+      await waitForNoText(ctx, 'runtime-app')
+      await waitForText(ctx, 'static-app')
+    })
+  })
+
+  it('apps list: searching by a repository name lists the apps of the repository', async () => {
+    await scenario('apps search by repo', '/apps', async (ctx) => {
+      await waitForText(ctx, 'runtime-app', 'broken-app')
+      const search = ctx.screen.querySelector<HTMLInputElement>('input[placeholder="Search"]')
+      if (!search) throw new Error('no search box')
+      type(ctx, search, 'gitea')
+      await waitForNoText(ctx, 'runtime-app')
+      await waitForText(ctx, 'broken-app')
+    })
+  })
+
+  it('apps list: the status and origin filters narrow the list', async () => {
+    await scenario('apps status filter', '/apps', async (ctx) => {
+      await waitForText(ctx, 'runtime-app', 'static-app', 'broken-app')
+      // broken-app is the only app that is not running
+      await toggleFilter(ctx, 'Idle')
+      await waitForNoText(ctx, 'broken-app')
+      await waitForText(ctx, 'runtime-app', 'static-app')
+
+      await toggleFilter(ctx, 'Idle')
+      await waitForText(ctx, 'broken-app')
+      await toggleFilter(ctx, 'GitHub')
+      await waitForNoText(ctx, 'runtime-app')
+      await waitForNoText(ctx, 'static-app')
+      await waitForText(ctx, 'broken-app')
+    })
+  })
+
+  it('apps list: choosing "Oldest" lists the apps in the reverse order', async () => {
+    await scenario('apps sort', '/apps', async (ctx) => {
+      await waitForText(ctx, 'runtime-app', 'static-app', 'broken-app')
+      const order = () =>
+        [...ctx.screen.querySelectorAll<HTMLAnchorElement>('a[href^="/apps/app-"]')].map((a) => a.getAttribute('href'))
+      // broken-app is the newest, then static-app, then runtime-app
+      expect(order()).toEqual(['/apps/app-error', '/apps/app-static', '/apps/app-runtime'])
+
+      await toggleFilter(ctx, 'Oldest')
+      await settle(ctx, () => expect(order()).toEqual(['/apps/app-runtime', '/apps/app-static', '/apps/app-error']))
+    })
+  })
+
+  it('apps list: the filter menu counts the apps left by the other filter', async () => {
+    await scenario('apps filter counts', '/apps', async (ctx) => {
+      await waitForText(ctx, 'runtime-app', 'static-app', 'broken-app')
+      const filteredMark = () => filterTrigger(ctx).querySelector('.bg-primary-main')
+      expect(filteredMark()).toBeNull()
+
+      // runtime-app (Running) and static-app (Serving) come from GitHub, broken-app (Idle) from Gitea
+      await toggleFilter(ctx, 'Idle')
+      await waitForText(ctx, 'Running (1)', 'Serving (1)', 'Idle (1)', 'GitHub (2)', 'Gitea (0)')
+      await settle(ctx, () => expect(filteredMark()).not.toBeNull())
+
+      await toggleFilter(ctx, 'Idle')
+      await waitForText(ctx, 'Gitea (1)')
+      await settle(ctx, () => expect(filteredMark()).toBeNull())
+
+      // the counts by origin follow only the status filter, so GitHub keeps its count when unchecked
+      await toggleFilter(ctx, 'GitHub')
+      await waitForText(ctx, 'Running (0)', 'Serving (0)', 'Idle (1)', 'GitHub (2)', 'Gitea (1)')
+    })
+  })
+
+  it('apps list: "All Apps" leaves out apps of repositories the user cannot see', async () => {
+    await scenario(
+      'apps public scope',
+      '/apps',
+      async (ctx) => {
+        await waitForText(ctx, 'runtime-app', 'broken-app')
+        click(ctx, buttonContaining(ctx, 'All Apps'))
+        await settle(ctx, () =>
+          expect(ctx.backend.requestsTo('getRepositories').at(-1)?.scope).toBe(GetRepositoriesRequest_Scope.PUBLIC),
+        )
+        await waitForNoText(ctx, 'broken-app')
+        await waitForText(ctx, 'runtime-app', 'static-app')
+      },
+      {
+        // the mock backend ignores the scope of getRepositories: leave the repository of broken-app out of every scope
+        setup: (b) => {
+          b.fixtures.repositories = b.fixtures.repositories.filter((r) => r.id !== b.ids.repoGitea)
+        },
+      },
+    )
+  })
+
+  it('apps list: each scope tab asks for the repositories, apps and groups it lists', async () => {
+    await scenario('apps scope requests', '/apps', async (ctx) => {
+      const lastScopes = () => ({
+        repositories: ctx.backend.requestsTo('getRepositories').at(-1)?.scope,
+        applications: ctx.backend.requestsTo('getApplications').at(-1)?.scope,
+        groups: ctx.backend.requestsTo('getApplicationGroups').at(-1)?.scope,
+      })
+      await waitForText(ctx, 'runtime-app')
+      expect(lastScopes()).toEqual({
+        repositories: GetRepositoriesRequest_Scope.PUBLIC,
+        applications: GetApplicationsRequest_Scope.MINE,
+        groups: GetApplicationGroupsRequest_Scope.ALL,
+      })
+
+      click(ctx, find(ctx, 'button', 'All Apps'))
+      await settle(ctx, () =>
+        expect(lastScopes()).toEqual({
+          repositories: GetRepositoriesRequest_Scope.PUBLIC,
+          applications: GetApplicationsRequest_Scope.ALL,
+          groups: GetApplicationGroupsRequest_Scope.ALL,
+        }),
+      )
+
+      click(ctx, buttonContaining(ctx, 'All Apps (admin)'))
+      await settle(ctx, () =>
+        expect(lastScopes()).toEqual({
+          repositories: GetRepositoriesRequest_Scope.ALL,
+          applications: GetApplicationsRequest_Scope.ALL,
+          groups: GetApplicationGroupsRequest_Scope.ALL,
+        }),
+      )
+    })
+  })
+
+  it('apps list: the scope tabs choose the apps to list', async () => {
+    await scenario('apps scope', '/apps', async (ctx) => {
+      await waitForText(ctx, 'runtime-app')
+      expect(ctx.backend.requestsTo('getApplications').at(-1)?.scope).toBe(GetApplicationsRequest_Scope.MINE)
+      click(ctx, buttonContaining(ctx, 'All Apps (admin)'))
+      await settle(ctx, () =>
+        expect(ctx.backend.requestsTo('getApplications').at(-1)?.scope).toBe(GetApplicationsRequest_Scope.ALL),
+      )
+      await waitForText(ctx, 'runtime-app', 'static-app', 'broken-app')
+    })
+  })
+
+  it('repos list: lists repositories, also those without apps, with the way to create an app from each', async () => {
+    await scenario(
+      'repos list',
+      '/apps',
+      async (ctx) => {
+        await waitForText(ctx, 'runtime-app')
+        click(ctx, link(ctx, '/repos'))
+        await settle(ctx, () => expect(window.location.pathname).toBe('/repos'))
+        await waitForText(ctx, 'github-repo', 'gitea-repo', 'empty-repo')
+        expect(link(ctx, '/repos/repo-empty').textContent).toContain('empty-repo')
+        expect(link(ctx, '/apps/new?repositoryID=repo-empty')).toBeTruthy()
+      },
+      { setup: addEmptyRepository },
+    )
+  })
+
+  it('repos list: each repository tells the number of its apps', async () => {
+    await scenario(
+      'repos app counts',
+      '/repos',
+      async (ctx) => {
+        await waitForText(ctx, 'github-repo', 'gitea-repo', 'empty-repo')
+        const row = (id: string) => link(ctx, `/repos/${id}`).parentElement?.textContent
+        await settle(ctx, () => expect(row('repo-github')).toContain('2 apps'))
+        expect(row('repo-gitea')).toContain('1 apps')
+        expect(row('repo-empty')).toContain('0 apps')
+        // apps of other users count too, not only the apps of the user
+        expect(ctx.backend.requestsTo('getApplications').map((r) => r.scope)).toEqual([
+          GetApplicationsRequest_Scope.ALL,
+        ])
+      },
+      { setup: addEmptyRepository },
+    )
+  })
+
+  // jsdom has no layout, so this test cannot see that the link of the repository covers the empty parts of the row
+  // or that "Add New App" sits above that link. Both are checked by hand in a browser.
+  it('repos list: clicking anywhere in the row of a repository opens it, and "Add New App" opens the create form', async () => {
+    await scenario('repos row', '/repos', async (ctx) => {
+      await waitForText(ctx, 'github-repo')
+      const count = await settle(ctx, () => find(ctx, 'div', '2 apps')).then(() => find(ctx, 'div', '2 apps'))
+      click(ctx, count)
+      await settle(ctx, () => expect(window.location.pathname).toBe('/repos/repo-github'))
+
+      window.history.back()
+      await settle(ctx, () => expect(window.location.pathname).toBe('/repos'))
+      await waitForText(ctx, 'github-repo')
+      const addApp = await settle(ctx, () => link(ctx, '/apps/new?repositoryID=repo-github')).then(() =>
+        link(ctx, '/apps/new?repositoryID=repo-github'),
+      )
+      click(ctx, addApp.querySelector('button') as HTMLElement)
+      await settle(ctx, () =>
+        expect(`${window.location.pathname}${window.location.search}`).toBe('/apps/new?repositoryID=repo-github'),
+      )
+    })
+  })
+
+  it('apps list: clicking anywhere in the heading of a group opens the group', async () => {
+    await scenario('apps group heading', '/apps', async (ctx) => {
+      await waitForText(ctx, 'static-app')
+      const group = ctx.screen.querySelector<HTMLElement>('section[aria-label="web-service"]')
+      const count = [...(group?.querySelectorAll<HTMLElement>('div') ?? [])].find((el) => el.textContent === '1 apps')
+      if (!count) throw new Error('no app count in the heading of web-service')
+      click(ctx, count)
+      await settle(ctx, () => expect(window.location.pathname).toBe('/groups/group-web'))
+    })
+  })
+
+  it('repos list: the search box and the origin filter narrow the list', async () => {
+    await scenario('repos filter', '/repos', async (ctx) => {
+      await waitForText(ctx, 'github-repo', 'gitea-repo')
+      const search = ctx.screen.querySelector<HTMLInputElement>('input[placeholder="Search"]')
+      if (!search) throw new Error('no search box')
+      type(ctx, search, 'gitea')
+      await waitForNoText(ctx, 'github-repo')
+      await waitForText(ctx, 'gitea-repo')
+
+      type(ctx, search, '')
+      await waitForText(ctx, 'github-repo', 'gitea-repo')
+      await toggleFilter(ctx, 'GitHub')
+      await waitForNoText(ctx, 'github-repo')
+      await waitForText(ctx, 'gitea-repo')
+    })
+  })
+
+  it('repos list: repositories are listed in name order', async () => {
+    await scenario(
+      'repos order',
+      '/repos',
+      async (ctx) => {
+        await waitForText(ctx, 'github-repo', 'gitea-repo', 'empty-repo')
+        const hrefs = [...ctx.screen.querySelectorAll<HTMLAnchorElement>('a[href^="/repos/repo-"]')].map((a) =>
+          a.getAttribute('href'),
+        )
+        // the fixtures hold github-repo, gitea-repo and then empty-repo
+        expect([...new Set(hrefs)]).toEqual(['/repos/repo-empty', '/repos/repo-gitea', '/repos/repo-github'])
+      },
+      { setup: addEmptyRepository },
+    )
+  })
+
+  it('repos list: the scope tabs choose the scope of getRepositories', async () => {
+    await scenario('repos scope', '/repos', async (ctx) => {
+      await waitForText(ctx, 'github-repo')
+      expect(ctx.backend.requestsTo('getRepositories').at(-1)?.scope).toBe(GetRepositoriesRequest_Scope.MINE)
+      click(ctx, buttonContaining(ctx, 'All Repositories'))
+      await settle(ctx, () =>
+        expect(ctx.backend.requestsTo('getRepositories').at(-1)?.scope).toBe(GetRepositoriesRequest_Scope.PUBLIC),
+      )
+    })
+  })
+
+  it('repo page: links back to the repository list', async () => {
+    await scenario('repo back link', '/repos/repo-github', async (ctx) => {
+      await waitForText(ctx, 'github-repo')
+      // the header also links to /repos: look at the back link of the Nav
+      await settle(ctx, () =>
+        expect(ctx.screen.querySelector('a:has(.i-material-symbols\\:arrow-back)')?.getAttribute('href')).toBe(
+          '/repos',
+        ),
+      )
+    })
+  })
+
+  it('repo settings: deleting a repository without apps calls deleteRepository and opens the repository list', async () => {
+    await scenario(
+      'delete repo',
+      '/repos/repo-empty/settings',
+      async (ctx) => {
+        await waitForText(ctx, 'Delete Repository')
+        await settle(ctx, () => expect(button(ctx, 'Delete Repository').disabled).toBe(false))
+        click(ctx, button(ctx, 'Delete Repository'))
+        await settle(ctx, () => expect(document.querySelector('[role=dialog]')).not.toBeNull())
+        click(ctx, button(ctx, 'Yes, Delete'))
+        await settle(ctx, () =>
+          expect(ctx.backend.requestsTo('deleteRepository')).toEqual([
+            expect.objectContaining({ repositoryId: 'repo-empty' }),
+          ]),
+        )
+        await settle(ctx, () => expect(window.location.pathname).toBe('/repos'))
+      },
+      { setup: addEmptyRepository },
+    )
   })
 
   it('tooltip: shows its content on focus of a disabled button', async () => {

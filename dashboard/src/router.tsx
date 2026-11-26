@@ -2,6 +2,8 @@ import { createRouter, intentPreload, type RoutePreloadFunc } from '@solidjs/rou
 import { lazy } from 'solid-js'
 import {
   getApplication,
+  getApplicationGroup,
+  getApplicationGroupApps,
   getBuild,
   getBuilds,
   getRepository,
@@ -23,6 +25,12 @@ const preloadRepository: RoutePreloadFunc = ({ params }) => {
   if (!params.id) return
   void getRepository(params.id)
   void getRepositoryApps(params.id).then((apps) => getRepositoryCommits(apps.map((app) => app.commit)))
+}
+
+const preloadApplicationGroup: RoutePreloadFunc = ({ params }) => {
+  if (!params.id) return
+  void getApplicationGroup(params.id)
+  void getApplicationGroupApps(params.id).then((apps) => getRepositoryCommits(apps.map((app) => app.commit)))
 }
 
 const preloadBuild: RoutePreloadFunc = ({ params }) => {
@@ -57,11 +65,13 @@ export const Router = createRouter({
             { path: '/urls', component: lazy(() => import('/@/pages/apps/[id]/settings/urls')) },
             { path: '/portForwarding', component: lazy(() => import('/@/pages/apps/[id]/settings/portForwarding')) },
             { path: '/envVars', component: lazy(() => import('/@/pages/apps/[id]/settings/envVars')) },
+            { path: '/group', component: lazy(() => import('/@/pages/apps/[id]/settings/group')) },
             { path: '/owners', component: lazy(() => import('/@/pages/apps/[id]/settings/owners')) },
           ],
         },
       ],
     },
+    { path: '/repos', component: lazy(() => import('/@/pages/repos')) },
     { path: '/repos/new', component: lazy(() => import('/@/pages/repos/new')) },
     {
       path: '/repos/:id',
@@ -76,6 +86,24 @@ export const Router = createRouter({
             { path: '/', component: lazy(() => import('/@/pages/repos/[id]/settings/general')) },
             { path: '/authorization', component: lazy(() => import('/@/pages/repos/[id]/settings/authorization')) },
             { path: '/owners', component: lazy(() => import('/@/pages/repos/[id]/settings/owners')) },
+          ],
+        },
+      ],
+    },
+    { path: '/groups', component: lazy(() => import('/@/pages/groups')) },
+    { path: '/groups/new', component: lazy(() => import('/@/pages/groups/new')) },
+    {
+      path: '/groups/:id',
+      component: lazy(() => import('/@/pages/groups/[id]')),
+      preload: preloadApplicationGroup,
+      children: [
+        { path: '/', component: lazy(() => import('/@/pages/groups/[id]/index')) },
+        {
+          path: '/settings',
+          component: lazy(() => import('/@/pages/groups/[id]/settings')),
+          children: [
+            { path: '/', component: lazy(() => import('/@/pages/groups/[id]/settings/general')) },
+            { path: '/owners', component: lazy(() => import('/@/pages/groups/[id]/settings/owners')) },
           ],
         },
       ],

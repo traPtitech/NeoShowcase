@@ -40,6 +40,12 @@ export default (props: RouteSectionProps) => {
               Environment Variables
             </SideLink>
             <SideLink
+              href={`${base()}/group`}
+              icon={<div class="i-material-symbols:folder-outline shrink-0 text-2xl/6" />}
+            >
+              Group
+            </SideLink>
+            <SideLink
               href={`${base()}/owners`}
               icon={<div class="i-material-symbols:person-outline shrink-0 text-2xl/6" />}
             >

@@ -7,14 +7,16 @@ import { isOwner } from '/@/libs/api'
 import { originToIcon, repositoryURLToOrigin } from '/@/libs/application'
 import { me } from '/@/libs/session'
 
-const Container = styled('div', 'flex h-19 w-full items-center gap-8 bg-ui-primary p-4 pl-5')
+const Container = styled('div', 'flex h-19 w-full items-center gap-8 bg-ui-primary')
+
+const containerPadding = 'p-4 pl-5'
 
 const TitleContainer = styled('div', 'flex w-full items-center gap-2 overflow-hidden')
 
 const RepositoryRowSkeleton: Component = () => {
   return (
     <Container class="pointer-events-none">
-      <TitleContainer>
+      <TitleContainer class={containerPadding}>
         <Skeleton width={24} height={24} circle />
         <Skeleton>Repository Name Placeholder</Skeleton>
       </TitleContainer>
@@ -32,17 +34,21 @@ export const RepositoryRow: Component<Props> = (props) => {
 
   return (
     <Show when={props.repository} fallback={<RepositoryRowSkeleton />}>
-      <Container>
-        <TitleContainer>
-          {originToIcon(repositoryURLToOrigin(props.repository!.url), 24)}
-          <a href={`/repos/${props.repository?.id}`} class="overflow-hidden">
+      <Container class="hover:bg-color-overlay-ui-primary-to-black-alpha-50 relative">
+        {/* "Add New App" is a link of its own and cannot sit inside this link, so the link stretches over the whole row with a pseudo-element and the button is raised above it. */}
+        <a
+          href={`/repos/${props.repository?.id}`}
+          class={['min-w-0 flex-1', containerPadding, "after:absolute after:inset-0 after:content-['']"]}
+        >
+          <TitleContainer>
+            {originToIcon(repositoryURLToOrigin(props.repository!.url), 24)}
             <div class="h4-bold text-text-black truncate">{props.repository!.name}</div>
-          </a>
-          <div class="caption-regular text-text-grey whitespace-nowrap">{`${props.appCount} apps`}</div>
-        </TitleContainer>
+            <div class="caption-regular text-text-grey whitespace-nowrap">{`${props.appCount} apps`}</div>
+          </TitleContainer>
+        </a>
         <Show when={canEdit()}>
-          <div class="shrink-0">
-            <a href={`/apps/new?repositoryID=${props.repository!.id}`}>
+          <div class="shrink-0 pr-4">
+            <a href={`/apps/new?repositoryID=${props.repository!.id}`} class="relative">
               <Button
                 variants="border"
                 size="medium"

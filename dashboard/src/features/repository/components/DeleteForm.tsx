@@ -27,7 +27,7 @@ const DeleteForm: Component<Props> = (props) => {
       await client.deleteRepository({ repositoryId: props.repo.id })
       toast.success('リポジトリを削除しました')
       close()
-      navigate('/apps')
+      navigate('/repos')
     } catch (e) {
       handleAPIError(e, 'リポジトリの削除に失敗しました')
     }

@@ -1,5 +1,6 @@
 import { RadioGroup } from '@kobalte/core/radio-group'
 import { type Component, For } from 'solid-js'
+import type { Application } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { RadioIcon } from '/@/components/UI/RadioIcon'
 import {
   type ApplicationState,
@@ -8,8 +9,6 @@ import {
   applicationState,
   originToIcon,
   type RepositoryOrigin,
-  type RepoWithApp,
-  repositoryURLToOrigin,
   sortItems,
 } from '/@/libs/application'
 import { AppStatusIcon } from './AppStatusIcon'
@@ -18,40 +17,31 @@ import { FilterCheckbox, FilterMenu, filterItemStyle, toggled } from './FilterMe
 const filterGroupStyle = 'flex flex-col gap-2 text-bold text-text-black'
 
 const AppsFilter: Component<{
-  allRepoWithApps: RepoWithApp[]
+  /** Apps to count for each choice, before filtering by status and origin. */
+  apps: Application[]
+  originOf: (app: Application) => RepositoryOrigin
   statuses: ApplicationState[]
   setStatues: (statuses: ApplicationState[]) => void
   origin: RepositoryOrigin[]
   setOrigin: (origin: RepositoryOrigin[]) => void
   sort: keyof typeof sortItems
   setSort: (sort: keyof typeof sortItems) => void
-  includeNoApp: boolean
-  setIncludeNoApp: (includeNoApp: boolean) => void
 }> = (props) => {
-  const filtered = () =>
-    props.statuses.length !== allStatuses.length || props.origin.length !== allOrigins.length || props.includeNoApp
+  const filtered = () => props.statuses.length !== allStatuses.length || props.origin.length !== allOrigins.length
 
   const appCountByStatus = (status: ApplicationState): number =>
-    props.allRepoWithApps
-      .filter((repo) => props.origin.includes(repositoryURLToOrigin(repo.repo.url)))
-      .flatMap((repo) => repo.apps.filter((app) => applicationState(app) === status)).length
+    props.apps.filter((app) => props.origin.includes(props.originOf(app)) && applicationState(app) === status).length
 
-  const repoCountByOrigin = (origin: RepositoryOrigin): number =>
-    props.allRepoWithApps
-      .filter((repo) => repositoryURLToOrigin(repo.repo.url) === origin)
-      .filter(
-        (repo) =>
-          props.includeNoApp || repo.apps.filter((app) => props.statuses.includes(applicationState(app))).length > 0,
-      ).length
+  const appCountByOrigin = (origin: RepositoryOrigin): number =>
+    props.apps.filter((app) => props.originOf(app) === origin && props.statuses.includes(applicationState(app))).length
 
   return (
     <FilterMenu
       filtered={filtered()}
-      contentClass="grid max-w-[--kb-popper-content-available-width] grid-cols-[repeat(3,auto)] grid-rows-[1fr_auto] gap-2 overflow-x-auto"
+      contentClass="grid max-w-[--kb-popper-content-available-width] grid-cols-[repeat(3,auto)] gap-2 overflow-x-auto"
       contentStyle={{
         'grid-template-areas': `
           "status provider sort"
-          "status noapp noapp"
         `,
       }}
     >
@@ -84,7 +74,7 @@ const AppsFilter: Component<{
               >
                 {originToIcon(s.value)}
                 <span>
-                  {s.label} ({repoCountByOrigin(s.value)})
+                  {s.label} ({appCountByOrigin(s.value)})
                 </span>
               </FilterCheckbox>
             )}
@@ -118,11 +108,6 @@ const AppsFilter: Component<{
           </For>
         </div>
       </RadioGroup>
-      <div class={[filterGroupStyle, 'grid-area-[noapp]']}>
-        <FilterCheckbox checked={props.includeNoApp} onChange={props.setIncludeNoApp}>
-          アプリを持たないリポジトリを表示
-        </FilterCheckbox>
-      </div>
     </FilterMenu>
   )
 }
