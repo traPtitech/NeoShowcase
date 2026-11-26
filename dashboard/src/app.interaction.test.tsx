@@ -303,6 +303,20 @@ describe('interactions', () => {
     })
   })
 
+  it('app page: an unchanged app revalidation does not refetch the metrics', async () => {
+    await scenario('metrics on app revalidation', '/apps/app-runtime', async (ctx) => {
+      await settle(ctx, () => expect(ctx.backend.requestsTo('getApplicationMetrics').length).toBeGreaterThan(0))
+      await idle(ctx, 100)
+      const metrics = ctx.backend.requestsTo('getApplicationMetrics').length
+      const apps = ctx.backend.requestsTo('getApplication').length
+      const { revalidateApplication } = await import('/@/libs/api')
+      revalidateApplication('app-runtime')
+      await settle(ctx, () => expect(ctx.backend.requestsTo('getApplication').length).toBeGreaterThan(apps))
+      await idle(ctx, 100)
+      expect(ctx.backend.requestsTo('getApplicationMetrics')).toHaveLength(metrics)
+    })
+  })
+
   describe('error boundaries', () => {
     // Settings: the key list is its own section, so its failure must not take down the page, header or nav.
     it('a failing section shows its own error and Retry, leaving the page and header usable', async () => {
