@@ -73,7 +73,9 @@ func (a *Application) Apply(args *UpdateApplicationArgs) {
 type ApplicationRepository interface {
 	GetApplications(ctx context.Context, cond GetApplicationCondition) ([]*Application, error)
 	GetApplication(ctx context.Context, id string) (*Application, error)
-	CreateApplication(ctx context.Context, app *Application) error
+	// CreateApplication stores app together with its environment variables envs
+	// in one transaction; on failure, neither is stored.
+	CreateApplication(ctx context.Context, app *Application, envs []*Environment) error
 	UpdateApplication(ctx context.Context, id string, args *UpdateApplicationArgs) error
 	BulkUpdateState(ctx context.Context, states []*Container) error
 	DeleteApplication(ctx context.Context, id string) error

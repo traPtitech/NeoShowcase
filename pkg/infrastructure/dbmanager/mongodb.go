@@ -2,6 +2,7 @@ package dbmanager
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -63,15 +64,22 @@ func (m *mongoDBManagerImpl) Delete(ctx context.Context, args domain.DeleteArgs)
 	ctx, cancel := context.WithTimeout(ctx, 20*time.Second)
 	defer cancel()
 
-	cmd := bson.D{{Key: "dropUser", Value: args.Database}}
-
-	if r := m.client.Database(args.Database).RunCommand(ctx, cmd); r.Err() != nil {
-		return r.Err()
-	}
+	// The user is dropped last: if dropping the database fails, the remaining user keeps IsExist true
+	// until a retry finishes the deletion.
 	if err := m.client.Database(args.Database).Drop(ctx); err != nil {
 		return err
 	}
+	cmd := bson.D{{Key: "dropUser", Value: args.Database}}
+	if err := m.client.Database(args.Database).RunCommand(ctx, cmd).Err(); err != nil && !isUserNotFound(err) {
+		return err
+	}
 	return nil
+}
+
+func isUserNotFound(err error) bool {
+	const userNotFoundCode = 11
+	var cmdErr mongo.CommandError
+	return errors.As(err, &cmdErr) && cmdErr.HasErrorCode(userNotFoundCode)
 }
 
 func (m *mongoDBManagerImpl) IsExist(ctx context.Context, name string) (bool, error) {

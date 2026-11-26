@@ -77,6 +77,12 @@ func WithMariaDBManagerMock(mariaDBManagerMock *mocks.MariaDBManagerMock) testhe
 	}
 }
 
+func WithMongoDBManagerMock(mongoDBManagerMock *mocks.MongoDBManagerMock) testhelper.ContainerOption {
+	return func(c *testhelper.Container) {
+		c.Decorate(func(_ domain.MongoDBManager) domain.MongoDBManager { return mongoDBManagerMock })
+	}
+}
+
 func CreateUser(c *testhelper.Container, name string) *domain.User {
 	var user *domain.User
 	if err := c.Invoke(func(repo domain.UserRepository) (err error) {
