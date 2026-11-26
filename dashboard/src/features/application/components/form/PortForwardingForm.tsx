@@ -1,10 +1,11 @@
-import { createForm, FieldArray, Form, insert, reset } from '@formisch/solid/v2'
-import { type Component, createEffect, For, untrack } from 'solid-js'
+import { createForm, FieldArray, Form, insert } from '@formisch/solid/v2'
+import { type Component, For, untrack } from 'solid-js'
 import { type Application, PortPublicationProtocol } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import FormBox from '/@/components/layouts/FormBox'
 import { Button } from '/@/components/UI/Button'
 import { client, handleAPIError } from '/@/libs/api'
 import { pickRandom, randIntN } from '/@/libs/random'
+import { syncFormWithServer } from '/@/libs/serverForm'
 import { systemInfo } from '/@/libs/session'
 import { toast } from '/@/libs/toast'
 import {
@@ -35,24 +36,22 @@ type Props = {
 }
 
 const PortForwardingForm: Component<Props> = (props) => {
+  // このパネルが編集するフィールドだけを持たせ、他のパネルの設定を検証・送信しない
+  const toInput = (app: Application) => getInitialValueOfUpdateAppForm(app, ['portPublications'] as const)
   const form = createForm({
     schema: createOrUpdateApplicationSchema,
-    initialInput: untrack(() => getInitialValueOfUpdateAppForm(props.app)),
+    initialInput: untrack(() => toInput(props.app)),
   })
-
-  // サーバー側のデータが更新されたらフォームを巻き戻す
-  createEffect(
-    () => getInitialValueOfUpdateAppForm(props.app),
-    (initialInput) => reset(form, { initialInput }),
-    { defer: true },
-  )
+  const sync = syncFormWithServer(form, { key: () => props.app.id, input: () => toInput(props.app), root: ['form'] })
 
   return (
     <Form
       of={form}
       onSubmit={async (output) => {
+        const submitted = sync.snapshot()
         try {
           await client.updateApplication(toUpdateApplicationRequest(output))
+          sync.markSaved(submitted)
           toast.success('ポート公開設定を更新しました')
           props.refetch()
         } catch (e) {

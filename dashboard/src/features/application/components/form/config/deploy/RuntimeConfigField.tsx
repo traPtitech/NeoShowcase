@@ -1,5 +1,5 @@
 import { Field, getInput, setInput } from '@formisch/solid/v2'
-import { type Component, createSignal, Show, untrack } from 'solid-js'
+import { type Component, createSignal, Show } from 'solid-js'
 import { AutoShutdownConfig_StartupBehavior } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { CheckBox } from '/@/components/templates/CheckBox'
 import { FormItem } from '/@/components/templates/FormItem'
@@ -20,17 +20,16 @@ const RuntimeConfigField: Component<Props> = (props) => {
   const buildType = () => getInput(props.form, { path: ['form', 'config', 'buildConfig', 'type'] })
   const autoShutdown = () => getInput(props.form, { path: [...runtimePath, 'autoShutdown', 'enabled'] })
 
-  // 「Use Database」はチェックボックスの値から導出できない (Yes を選んだ直後は両方 false) ため、初期値だけを導出して別途保持する
-  const [useDB, setUseDB] = createSignal(
-    untrack(
-      () =>
-        !!getInput(props.form, { path: [...runtimePath, 'useMariadb'] }) ||
-        !!getInput(props.form, { path: [...runtimePath, 'useMongodb'] }),
-    ),
-  )
+  const hasDB = () =>
+    !!getInput(props.form, { path: [...runtimePath, 'useMariadb'] }) ||
+    !!getInput(props.form, { path: [...runtimePath, 'useMongodb'] })
+  // 「Yes」を選んだ直後はどちらのチェックボックスも false なので、その状態だけを別途保持する。
+  // それ以外はフォームの現在の値から導出する (フォームが別のアプリの値でリセットされても追従する)
+  const [chosenWithoutDB, setChosenWithoutDB] = createSignal(false)
+  const useDB = () => hasDB() || chosenWithoutDB()
 
   const updateUseDB = (value: boolean) => {
-    setUseDB(value)
+    setChosenWithoutDB(value)
     if (!value) {
       setInput(props.form, { path: [...runtimePath, 'useMariadb'], input: false })
       setInput(props.form, { path: [...runtimePath, 'useMongodb'], input: false })

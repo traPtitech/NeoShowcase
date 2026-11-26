@@ -79,7 +79,11 @@ Biome's `noRestrictedImports` enforces this.
 
 - `const form = createForm({ schema, initialInput })` per form component, `<Form of={form} onSubmit={...}>`.
 - Fields: `<Field of={form} path={['form', 'name']}>{(field) => <TextField {...field.props} value={field.input} error={field.errors?.[0]} />}</Field>`.
-- Re-sync with server data: `createEffect(() => props.app, (app) => reset(form, { initialInput: toInput(app) }))`.
+- Settings forms editing server data: `syncFormWithServer(form, { key, input, root })` (`/@/libs/serverForm`), not an
+  effect that calls `reset` — every revalidation yields fresh objects and would wipe unsaved input. Capture
+  `sync.snapshot()` at submit and call `sync.markSaved(snapshot)` after the request succeeds.
+- A settings panel's initial input holds only the fields it edits (`getInitialValueOfUpdateAppForm(app, ['name'])`),
+  so it neither validates nor sends other panels' settings (update requests treat absent fields as unchanged).
 - State: `form.isSubmitting`, `form.isDirty`, `form.isValid` (reactive getters).
 
 ## Kobalte 2 (alpha) caveats

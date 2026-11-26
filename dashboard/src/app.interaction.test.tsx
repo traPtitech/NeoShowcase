@@ -1,5 +1,6 @@
 import { Code } from '@connectrpc/connect'
 import { describe, expect, it, vi } from 'vitest'
+import { Repository_AuthMethod } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import {
   button,
   buttonContaining,
@@ -558,6 +559,166 @@ describe('interactions', () => {
       await settle(ctx, () => expect(ctx.backend.requestsTo('getApplication').length).toBeGreaterThan(apps))
       await idle(ctx, 100)
       expect(ctx.backend.requestsTo('getApplicationMetrics')).toHaveLength(metrics)
+    })
+  })
+
+  describe('settings forms keep unsaved input across revalidation', () => {
+    it('app general: a name typed after saving survives the follow-up refetches', async () => {
+      await scenario('app rename twice', '/apps/app-runtime/settings', async (ctx) => {
+        await settle(ctx, () => field(ctx, 'Application Name'))
+        await idle(ctx)
+        type(ctx, field(ctx, 'Application Name'), 'first-name')
+        await settle(ctx, () => expect(button(ctx, 'Save').disabled).toBe(false))
+        click(ctx, button(ctx, 'Save'))
+        await settle(ctx, () => expect(ctx.backend.requestsTo('updateApplication')).toHaveLength(1))
+        await settle(ctx, () => expect(button(ctx, 'Save').disabled).toBe(true))
+
+        type(ctx, field(ctx, 'Application Name'), 'second-name')
+        // the save schedules a second refetch 1s later
+        await idle(ctx, 1200)
+        expect(field(ctx, 'Application Name').value).toBe('second-name')
+        expect(button(ctx, 'Save').disabled).toBe(false)
+      })
+    })
+
+    it('app urls: a newly added row survives an app revalidation', async () => {
+      await scenario('add website then revalidate', '/apps/app-runtime/settings/urls', async (ctx) => {
+        await waitForText(ctx, '8080')
+        await idle(ctx)
+        const rows = () => ctx.screen.querySelectorAll(`input[name$='"subdomain"]']`).length
+        const before = rows()
+        click(ctx, button(ctx, 'Add More'))
+        await settle(ctx, () => expect(rows()).toBe(before + 1))
+
+        const { revalidateApplication } = await import('/@/libs/api')
+        await revalidateApplication('app-runtime')
+        await idle(ctx, 200)
+        expect(rows()).toBe(before + 1)
+      })
+    })
+
+    it('app env vars: a draft survives retryAll', async () => {
+      await scenario('env var draft', '/apps/app-runtime/settings/envVars', async (ctx) => {
+        await waitForText(ctx, 'FOO', 'bar')
+        await idle(ctx)
+        const value = () => ctx.screen.querySelector<HTMLInputElement>(`input[name='["variables",0,"value"]']`)
+        await settle(ctx, () => expect(value()?.value).toBe('bar'))
+        type(ctx, value() as HTMLInputElement, 'draft')
+
+        const { retryAll } = await import('/@/libs/session')
+        await retryAll()
+        await idle(ctx, 200)
+        expect(value()?.value).toBe('draft')
+      })
+    })
+
+    it('repo general: a name draft survives a repository revalidation', async () => {
+      await scenario('repo name draft', '/repos/repo-github/settings', async (ctx) => {
+        await settle(ctx, () => field(ctx, 'Repository Name'))
+        await idle(ctx)
+        type(ctx, field(ctx, 'Repository Name'), 'draft-repo')
+
+        const { revalidateRepository } = await import('/@/libs/api')
+        await revalidateRepository('repo-github')
+        await idle(ctx, 200)
+        expect(field(ctx, 'Repository Name').value).toBe('draft-repo')
+      })
+    })
+  })
+
+  describe('settings panels send only their own fields', () => {
+    it('app general: saving a rename does not restore a website removed on the server', async () => {
+      await scenario('rename keeps websites', '/apps/app-runtime/settings', async (ctx) => {
+        await settle(ctx, () => field(ctx, 'Application Name'))
+        await idle(ctx)
+        // removed elsewhere while this panel is open
+        const app = ctx.backend.fixtures.applications.find((a) => a.id === 'app-runtime')
+        if (!app) throw new Error('no app-runtime fixture')
+        app.websites = []
+
+        type(ctx, field(ctx, 'Application Name'), 'renamed-app')
+        await settle(ctx, () => expect(button(ctx, 'Save').disabled).toBe(false))
+        click(ctx, button(ctx, 'Save'))
+        await settle(ctx, () => expect(ctx.backend.requestsTo('updateApplication')).toHaveLength(1))
+        const [req] = ctx.backend.requestsTo('updateApplication')
+        expect(req).toMatchObject({ id: 'app-runtime', name: 'renamed-app' })
+        expect(req.websites).toBeUndefined()
+        expect(req.portPublications).toBeUndefined()
+        expect(req.config).toBeUndefined()
+        expect(req.ownerIds).toBeUndefined()
+        expect(app.websites).toEqual([])
+      })
+    })
+
+    it('repo general: renaming an SSH repository sends only its name', async () => {
+      await scenario('rename ssh repo', '/repos/repo-gitea/settings', async (ctx) => {
+        await settle(ctx, () => field(ctx, 'Repository Name'))
+        await idle(ctx)
+        type(ctx, field(ctx, 'Repository Name'), 'renamed-gitea')
+        await settle(ctx, () => expect(button(ctx, 'Save').disabled).toBe(false))
+        click(ctx, button(ctx, 'Save'))
+        await settle(ctx, () => expect(ctx.backend.requestsTo('updateRepository')).toHaveLength(1))
+        const [req] = ctx.backend.requestsTo('updateRepository')
+        expect(req).toMatchObject({ id: 'repo-gitea', name: 'renamed-gitea' })
+        expect(req.auth).toBeUndefined()
+        expect(req.url).toBeUndefined()
+      })
+    })
+
+    it('repo general: a BASIC-auth repository can be renamed', async () => {
+      await scenario(
+        'rename basic repo',
+        '/repos/repo-github/settings',
+        async (ctx) => {
+          await settle(ctx, () => field(ctx, 'Repository Name'))
+          await idle(ctx)
+          type(ctx, field(ctx, 'Repository Name'), 'renamed-basic')
+          await settle(ctx, () => expect(button(ctx, 'Save').disabled).toBe(false))
+          click(ctx, button(ctx, 'Save'))
+          // the hidden credential fields are not part of this panel, so they neither block nor join the request
+          await settle(ctx, () => expect(ctx.backend.requestsTo('updateRepository')).toHaveLength(1))
+          const [req] = ctx.backend.requestsTo('updateRepository')
+          expect(req).toMatchObject({ id: 'repo-github', name: 'renamed-basic' })
+          expect(req.auth).toBeUndefined()
+        },
+        {
+          setup: (b) => {
+            const repo = b.fixtures.repositories.find((r) => r.id === 'repo-github')
+            if (repo) repo.authMethod = Repository_AuthMethod.BASIC
+          },
+        },
+      )
+    })
+
+    it('repo authorization: changing only the URL keeps the SSH key', async () => {
+      await scenario('repo url only', '/repos/repo-gitea/settings/authorization', async (ctx) => {
+        await settle(ctx, () => field(ctx, 'Repository URL'))
+        await idle(ctx)
+        type(ctx, field(ctx, 'Repository URL'), 'git@git.trap.jp:traP/moved.git')
+        await settle(ctx, () => expect(button(ctx, 'Save').disabled).toBe(false))
+        click(ctx, button(ctx, 'Save'))
+        await settle(ctx, () => expect(ctx.backend.requestsTo('updateRepository')).toHaveLength(1))
+        const [req] = ctx.backend.requestsTo('updateRepository')
+        expect(req).toMatchObject({ id: 'repo-gitea', url: 'git@git.trap.jp:traP/moved.git' })
+        expect(req.auth).toBeUndefined()
+        expect(req.name).toBeUndefined()
+      })
+    })
+  })
+
+  it('app build settings: the database controls follow the app when moving between apps', async () => {
+    await scenario('runtime db across apps', '/apps/app-runtime/settings/build', async (ctx) => {
+      // app-runtime uses MariaDB
+      await waitForText(ctx, 'MariaDB')
+      await idle(ctx)
+      // broken-app is a runtime app without a database; navigate client-side so the form is reused
+      const a = document.createElement('a')
+      a.href = '/apps/app-error/settings/build'
+      ctx.screen.append(a)
+      click(ctx, a)
+      await settle(ctx, () => expect(window.location.pathname).toBe('/apps/app-error/settings/build'))
+      await waitForText(ctx, 'broken-app')
+      await waitForNoText(ctx, 'MariaDB')
     })
   })
 

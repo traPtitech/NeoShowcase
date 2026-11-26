@@ -1,9 +1,10 @@
-import { createForm, Form, reset } from '@formisch/solid/v2'
-import { type Component, createEffect, Show, untrack } from 'solid-js'
+import { createForm, Form } from '@formisch/solid/v2'
+import { type Component, Show, untrack } from 'solid-js'
 import type { ApplicationEnvVars } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import FormBox from '/@/components/layouts/FormBox'
 import { Button } from '/@/components/UI/Button'
 import { client, handleAPIError } from '/@/libs/api'
+import { syncFormWithServer } from '/@/libs/serverForm'
 import { toast } from '/@/libs/toast'
 import { envVarSchema, envVarsMessageToSchema } from '../../schema/envVarSchema'
 import EnvVarConfigField from './config/EnvVarConfigField'
@@ -20,19 +21,13 @@ const EnvVarConfigForm: Component<Props> = (props) => {
     initialInput: untrack(() => envVarsMessageToSchema(props.envVars)),
   })
 
-  const discardChanges = () => reset(form, { initialInput: envVarsMessageToSchema(props.envVars) })
-
-  // サーバー側のデータが更新されたらフォームを巻き戻す
-  createEffect(
-    () => props.envVars,
-    (envVars) => reset(form, { initialInput: envVarsMessageToSchema(envVars) }),
-    { defer: true },
-  )
+  const sync = syncFormWithServer(form, { key: () => props.appId, input: () => envVarsMessageToSchema(props.envVars) })
 
   return (
     <Form
       of={form}
       onSubmit={async (output) => {
+        const submitted = sync.snapshot()
         const oldVars = new Map(
           props.envVars.variables.filter((envVar) => !envVar.system).map((envVar) => [envVar.key, envVar.value]),
         )
@@ -54,6 +49,7 @@ const EnvVarConfigForm: Component<Props> = (props) => {
             ),
             ...deletedKeys.map((key) => client.deleteEnvVar({ applicationId: props.appId, key })),
           ])
+          sync.markSaved(submitted)
           toast.success('環境変数を更新しました')
           props.refetch()
           // 非同期でビルドが開始されるので1秒程度待ってから再度リロード
@@ -69,7 +65,7 @@ const EnvVarConfigForm: Component<Props> = (props) => {
         </FormBox.Forms>
         <FormBox.Actions>
           <Show when={form.isDirty && !form.isSubmitting}>
-            <Button variants="ghost" size="small" type="button" onClick={discardChanges}>
+            <Button variants="ghost" size="small" type="button" onClick={sync.discard}>
               Discard Changes
             </Button>
           </Show>
