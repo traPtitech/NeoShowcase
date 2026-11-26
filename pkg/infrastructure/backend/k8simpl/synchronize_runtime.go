@@ -204,6 +204,9 @@ func (b *Backend) runtimePortService(app *domain.Application) *v1.Service {
 			IPFamilies:     b.config.serviceIPFamilies(),
 			IPFamilyPolicy: b.config.serviceIPFamilyPolicy(),
 			Selector:       appSelector(app.ID),
+			// The readiness probe checks only the website's HTTP port, so it says nothing about
+			// the published ports. An app serving only its published ports never becomes Ready.
+			PublishNotReadyAddresses: true,
 			Ports: ds.Map(app.PortPublications, func(port *domain.PortPublication) v1.ServicePort {
 				protocol := protocolMapper.IntoMust(port.Protocol)
 				return v1.ServicePort{
