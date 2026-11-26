@@ -1,5 +1,5 @@
 import { Code } from '@connectrpc/connect'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import {
   button,
   buttonContaining,
@@ -249,6 +249,36 @@ describe('interactions', () => {
       expect(ctx.screen.textContent).not.toContain('older log line 1')
       expect(button(ctx, 'Load more').disabled).toBe(false)
     })
+  })
+
+  it('app page: the container log stream reconnects after it breaks, without repeating lines', async () => {
+    await scenario(
+      'container log reconnect',
+      '/apps/app-runtime',
+      async (ctx) => {
+        vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+        try {
+          ctx.backend.dropOutputStream(1)
+          await waitForText(ctx, 'previous log line', 'streamed line 2')
+          await settle(ctx, () => expect(ctx.backend.requestsTo('getOutputStream')).toHaveLength(1))
+          await vi.advanceTimersByTimeAsync(3000)
+          await settle(ctx, () => expect(ctx.backend.requestsTo('getOutputStream')).toHaveLength(2))
+          await vi.advanceTimersByTimeAsync(0)
+          ctx.flush()
+        } finally {
+          vi.useRealTimers()
+        }
+        await idle(ctx, 100)
+        // the second connection resends both lines (the mock ignores `begin`): each is shown once
+        const count = (text: string) => (ctx.screen.textContent ?? '').split(text).length - 1
+        expect(count('streamed line 1')).toBe(1)
+        expect(count('streamed line 2')).toBe(1)
+        // it resumes from the last line received
+        const second = ctx.backend.requestsTo('getOutputStream')[1] as { begin: { seconds: bigint } }
+        expect(second.begin.seconds).toBe(BigInt(Date.parse('2024-01-02T00:00:02Z') / 1000))
+      },
+      { expectedErrors: ['stream broke'] },
+    )
   })
 
   it('build page: a running build streams its log', async () => {

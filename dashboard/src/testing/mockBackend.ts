@@ -335,6 +335,12 @@ export const failMethod = (
 }
 export const recover = (method: string) => failing.delete(method)
 
+/** Number of upcoming `getOutputStream` connections that break after sending their lines. */
+let outputStreamDrops = 0
+export const dropOutputStream = (times = 1) => {
+  outputStreamDrops = times
+}
+
 /** Unary methods whose next call waits until the returned `release()` is called. */
 const held = new Map<string, Promise<void>>()
 export const holdNext = (method: string) => {
@@ -352,6 +358,7 @@ export const resetMockBackend = () => {
   failureMessages.clear()
   failureCodes.clear()
   held.clear()
+  outputStreamDrops = 0
 }
 
 // --- Service implementation
@@ -500,6 +507,10 @@ const routes = (router: ConnectRouter) => {
     getOutputStream: async function* (_req, ctx) {
       yield create(ApplicationOutputSchema, { time: ts('2024-01-02T00:00:01Z'), log: 'streamed line 1' })
       yield create(ApplicationOutputSchema, { time: ts('2024-01-02T00:00:02Z'), log: 'streamed line 2' })
+      if (outputStreamDrops > 0) {
+        outputStreamDrops--
+        throw new ConnectError('stream broke', Code.Unavailable)
+      }
       await waitUntilAborted(ctx.signal)
     },
 

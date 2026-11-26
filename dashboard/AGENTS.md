@@ -96,6 +96,7 @@ Biome's `noRestrictedImports` enforces this.
 - The harness calls `vi.resetModules()` per scenario: import app modules a scenario drives directly (e.g.
   `revalidateApplication`) with `await import(...)` after mount — a top-level import targets a stale instance.
 - `backend.holdNext(method)` delays the next unary call until the returned `release()`, for race scenarios.
+- `backend.dropOutputStream(n)` makes the next `n` container log streams break after their lines.
 
 ## Commands
 

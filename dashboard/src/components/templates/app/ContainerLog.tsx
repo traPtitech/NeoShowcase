@@ -36,6 +36,56 @@ const oldestTimestamp = (ts: ApplicationOutput[]): Timestamp =>
 const sortByTimestamp = (ts: ApplicationOutput[]) =>
   ts.sort((a, b) => (a.time && b.time ? (lessTimestamp(a.time, b.time) ? -1 : 1) : 0))
 
+const streamRetryMs = 3000
+
+const sleep = (ms: number, signal: AbortSignal) =>
+  new Promise<void>((resolve) => {
+    const timer = setTimeout(resolve, ms)
+    signal.addEventListener(
+      'abort',
+      () => {
+        clearTimeout(timer)
+        resolve()
+      },
+      { once: true },
+    )
+  })
+
+/**
+ * Streams the logs of `appID` from `begin` into `onLog` until `signal` is aborted, reconnecting after the stream
+ * ends or fails. A reconnect resumes from the last line received; the server's `begin` is inclusive and only
+ * second-precise, so lines it sends again are skipped. Lines are compared only with received ones (server time),
+ * never with `begin` (client time), so clock skew cannot drop lines.
+ */
+const streamLogs = async (
+  appID: string,
+  begin: Timestamp,
+  signal: AbortSignal,
+  onLog: (log: ApplicationOutput) => void,
+) => {
+  const key = (l: ApplicationOutput) => `${l.time?.seconds}.${l.time?.nanos} ${l.log}`
+  let last: Timestamp | undefined
+  let seenInLatestSecond = new Set<string>()
+  while (!signal.aborted) {
+    try {
+      for await (const log of client.getOutputStream({ applicationId: appID, begin: last ?? begin }, { signal })) {
+        if (log.time) {
+          if (last && (lessTimestamp(log.time, last) || seenInLatestSecond.has(key(log)))) continue
+          if (!last || log.time.seconds > last.seconds) seenInLatestSecond = new Set()
+          last = log.time
+          seenInLatestSecond.add(key(log))
+        }
+        onLog(log)
+      }
+    } catch (err) {
+      const isAbortErr = err instanceof ConnectError && err.code === Code.Canceled
+      if (signal.aborted || isAbortErr) return
+      console.trace(err)
+    }
+    await sleep(streamRetryMs, signal)
+  }
+}
+
 export interface ContainerLogProps {
   appID: string
 }
@@ -88,16 +138,7 @@ export const ContainerLog: Component<ContainerLogProps> = (props) => {
     setLoading(false)
     void load(appID, begin, abort.signal)
 
-    void (async () => {
-      try {
-        for await (const log of client.getOutputStream({ applicationId: appID, begin }, { signal: abort.signal })) {
-          setLogs((prev) => stripLogLines(prev.concat(log)))
-        }
-      } catch (err) {
-        const isAbortErr = err instanceof ConnectError && err.code === Code.Canceled
-        if (!isAbortErr) console.trace(err)
-      }
-    })()
+    void streamLogs(appID, begin, abort.signal, (log) => setLogs((prev) => stripLogLines(prev.concat(log))))
     return () => abort.abort()
   })
 
