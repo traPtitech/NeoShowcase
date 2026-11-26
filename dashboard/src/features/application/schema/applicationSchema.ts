@@ -100,18 +100,29 @@ export const getInitialValueOfCreateAppForm = (): CreateOrUpdateApplicationInput
   },
 })
 
-export const getInitialValueOfUpdateAppForm = (input: Application): CreateOrUpdateApplicationInput => ({
-  type: 'update',
-  form: {
-    id: input.id,
-    name: input.name,
-    refName: input.refName,
-    config: input.config ? configMessageToSchema(input.config) : undefined,
-    websites: input.websites.map((w) => websiteMessageToSchema(w)),
-    portPublications: input.portPublications.map((p) => portPublicationMessageToSchema(p)),
-    ownerIds: input.ownerIds,
-  },
-})
+/** The fields of an application that a settings panel can edit. */
+export type UpdateAppField = 'name' | 'refName' | 'config' | 'websites' | 'portPublications'
+
+/**
+ * Initial input of a settings panel that edits only `fields` of the application. The other fields are left out,
+ * so that the panel neither validates nor sends them (they are optional in the update request).
+ */
+export const getInitialValueOfUpdateAppForm = (
+  input: Application,
+  fields: readonly UpdateAppField[],
+): CreateOrUpdateApplicationInput => {
+  const values = {
+    name: () => input.name,
+    refName: () => input.refName,
+    config: () => (input.config ? configMessageToSchema(input.config) : undefined),
+    websites: () => input.websites.map((w) => websiteMessageToSchema(w)),
+    portPublications: () => input.portPublications.map((p) => portPublicationMessageToSchema(p)),
+  } satisfies Record<UpdateAppField, () => unknown>
+  return {
+    type: 'update',
+    form: { id: input.id, ...Object.fromEntries(fields.map((field) => [field, values[field]()])) },
+  }
+}
 
 export const createOrUpdateApplicationSchema = v.variant('type', [
   v.object({

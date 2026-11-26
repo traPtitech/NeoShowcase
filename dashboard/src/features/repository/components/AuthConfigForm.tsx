@@ -1,10 +1,11 @@
-import { createForm, Field, Form, reset } from '@formisch/solid/v2'
-import { type Component, createEffect, untrack } from 'solid-js'
+import { createForm, Field, Form, isDirty } from '@formisch/solid/v2'
+import { type Component, untrack } from 'solid-js'
 import type { Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import FormBox from '/@/components/layouts/FormBox'
 import { Button } from '/@/components/UI/Button'
 import { TextField } from '/@/components/UI/TextField'
 import { client, handleAPIError } from '/@/libs/api'
+import { syncFormWithServer } from '/@/libs/serverForm'
 import { toast } from '/@/libs/toast'
 import {
   createOrUpdateRepositorySchema,
@@ -20,24 +21,25 @@ type Props = {
 }
 
 const AuthConfigForm: Component<Props> = (props) => {
+  // このパネルが編集するフィールドだけを持たせ、他のパネルの設定を検証・送信しない
+  const toInput = (repo: Repository) => getInitialValueOfUpdateRepoForm(repo, ['url', 'auth'] as const)
   const form = createForm({
     schema: createOrUpdateRepositorySchema,
-    initialInput: untrack(() => getInitialValueOfUpdateRepoForm(props.repo)),
+    initialInput: untrack(() => toInput(props.repo)),
   })
-
-  // サーバー側のデータが更新されたらフォームを巻き戻す
-  createEffect(
-    () => props.repo,
-    (repo) => reset(form, { initialInput: getInitialValueOfUpdateRepoForm(repo) }),
-    { defer: true },
-  )
+  const sync = syncFormWithServer(form, { key: () => props.repo.id, input: () => toInput(props.repo), root: ['form'] })
 
   return (
     <Form
       of={form}
       onSubmit={async (output) => {
+        const submitted = sync.snapshot()
+        const request = toUpdateRepositoryRequest(output)
+        // 認証設定に触れていなければ送らない (SSH の場合、送ると専用鍵が共通鍵に置き換わってしまう)
+        if (!isDirty(form, { path: ['form', 'auth'] })) request.auth = undefined
         try {
-          await client.updateRepository(toUpdateRepositoryRequest(output))
+          await client.updateRepository(request)
+          sync.markSaved(submitted)
           toast.success('リポジトリの設定を更新しました')
           props.refetch()
         } catch (e) {

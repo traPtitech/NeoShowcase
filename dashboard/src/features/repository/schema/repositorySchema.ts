@@ -202,16 +202,25 @@ const authMethodToAuthConfig = (method: Repository_AuthMethod): v.InferInput<typ
   }
 }
 
-export const getInitialValueOfUpdateRepoForm = (input: Repository): CreateOrUpdateRepositoryInput => {
+/** The fields of a repository that a settings panel can edit. */
+export type UpdateRepoField = 'name' | 'url' | 'auth'
+
+/**
+ * Initial input of a settings panel that edits only `fields` of the repository. The other fields are left out,
+ * so that the panel neither validates nor sends them (they are optional in the update request).
+ */
+export const getInitialValueOfUpdateRepoForm = (
+  input: Repository,
+  fields: readonly UpdateRepoField[],
+): CreateOrUpdateRepositoryInput => {
+  const values = {
+    name: () => input.name,
+    url: () => input.url,
+    auth: () => authMethodToAuthConfig(input.authMethod),
+  } satisfies Record<UpdateRepoField, () => unknown>
   return {
     type: 'update',
-    form: {
-      id: input.id,
-      name: input.name,
-      url: input.url,
-      auth: authMethodToAuthConfig(input.authMethod),
-      ownerIds: input.ownerIds,
-    },
+    form: { id: input.id, ...Object.fromEntries(fields.map((field) => [field, values[field]()])) },
   }
 }
 
