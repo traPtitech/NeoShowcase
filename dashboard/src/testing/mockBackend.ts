@@ -344,26 +344,33 @@ export const failMethod = (
   failureCodes.set(method, code)
 }
 export const recover = (method: string) => failing.delete(method)
+
+/** Number of upcoming `getOutputStream` connections that break after sending their lines. */
+let outputStreamDrops = 0
+export const dropOutputStream = (times = 1) => {
+  outputStreamDrops = times
+}
+
 const failureMessages = new Map<string, string>()
 const failureCodes = new Map<string, Code>()
 
-/** Unary methods whose responses are held back until released. */
-const held = new Map<string, Promise<void>>()
-
-/** Holds back the responses of the unary `method` until the returned `release()` is called. */
-export const holdMethod = (method: string) => {
+/** Unary methods whose calls wait for a gate; `once`: only the next call waits. */
+const held = new Map<string, { gate: Promise<void>; once: boolean }>()
+const hold = (method: string, once: boolean) => {
   let release!: () => void
-  held.set(
-    method,
-    new Promise<void>((resolve) => {
-      release = resolve
-    }),
-  )
+  const gate = new Promise<void>((resolve) => {
+    release = resolve
+  })
+  held.set(method, { gate, once })
   return () => {
-    held.delete(method)
+    if (held.get(method)?.gate === gate) held.delete(method)
     release()
   }
 }
+/** Holds back the responses of the unary `method` until the returned `release()` is called. */
+export const holdMethod = (method: string) => hold(method, false)
+/** Holds back only the next call of the unary `method` until the returned `release()` is called. */
+export const holdNext = (method: string) => hold(method, true)
 
 export const resetMockBackend = () => {
   fixtures = createFixtures()
@@ -372,6 +379,7 @@ export const resetMockBackend = () => {
   failureMessages.clear()
   failureCodes.clear()
   held.clear()
+  outputStreamDrops = 0
 }
 
 // --- Service implementation
@@ -503,14 +511,27 @@ const routes = (router: ConnectRouter) => {
         ),
       })
     },
-    getOutput: () =>
-      create(ApplicationOutputsSchema, {
-        outputs: [create(ApplicationOutputSchema, { time: ts('2024-01-02T00:00:00Z'), log: 'previous log line' })],
-      }),
+    // one line a minute older than `before` per call: 'previous log line', then 'older log line 1', 2, ...
+    getOutput: (req) => {
+      const n = requestsTo('getOutput').indexOf(req as unknown as Record<string, unknown>) // by arrival, even if held
+      const before = req.before?.seconds ?? BigInt(Math.floor(Date.now() / 1000))
+      return create(ApplicationOutputsSchema, {
+        outputs: [
+          create(ApplicationOutputSchema, {
+            time: create(TimestampSchema, { seconds: before - 60n }),
+            log: n === 0 ? 'previous log line' : `older log line ${n}`,
+          }),
+        ],
+      })
+    },
     // yields a couple of lines, then keeps the stream open until the client aborts
     getOutputStream: async function* (_req, ctx) {
       yield create(ApplicationOutputSchema, { time: ts('2024-01-02T00:00:01Z'), log: 'streamed line 1' })
       yield create(ApplicationOutputSchema, { time: ts('2024-01-02T00:00:02Z'), log: 'streamed line 2' })
+      if (outputStreamDrops > 0) {
+        outputStreamDrops--
+        throw new ConnectError('stream broke', Code.Unavailable)
+      }
       await waitUntilAborted(ctx.signal)
     },
 
@@ -564,8 +585,10 @@ const routes = (router: ConnectRouter) => {
           )
         }
         const call = () => (fn as (req: object, ctx: unknown) => unknown)(req, ctx)
-        const gate = held.get(method)
-        return gate ? gate.then(call) : call()
+        const hold = held.get(method)
+        if (!hold) return call()
+        if (hold.once) held.delete(method)
+        return hold.gate.then(call)
       },
     ]),
   )
