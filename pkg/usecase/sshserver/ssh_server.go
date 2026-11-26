@@ -45,11 +45,12 @@ type SSHServer interface {
 }
 
 type sshServer struct {
-	config   domain.SSHConfig
-	sshKey   *ssh2.PublicKeys
-	backend  domain.Backend
-	appRepo  domain.ApplicationRepository
-	userRepo domain.UserRepository
+	config    domain.SSHConfig
+	sshKey    *ssh2.PublicKeys
+	backend   domain.Backend
+	appRepo   domain.ApplicationRepository
+	groupRepo domain.ApplicationGroupRepository
+	userRepo  domain.UserRepository
 
 	server *ssh.Server
 }
@@ -59,14 +60,16 @@ func NewSSHServer(
 	sshKey *ssh2.PublicKeys,
 	backend domain.Backend,
 	appRepo domain.ApplicationRepository,
+	groupRepo domain.ApplicationGroupRepository,
 	userRepo domain.UserRepository,
 ) SSHServer {
 	s := &sshServer{
-		config:   config,
-		sshKey:   sshKey,
-		backend:  backend,
-		appRepo:  appRepo,
-		userRepo: userRepo,
+		config:    config,
+		sshKey:    sshKey,
+		backend:   backend,
+		appRepo:   appRepo,
+		groupRepo: groupRepo,
+		userRepo:  userRepo,
 	}
 	s.server = &ssh.Server{
 		Addr:             fmt.Sprintf(":%d", config.Port),
@@ -98,6 +101,11 @@ func (s *sshServer) publicKeyHandler(ctx ssh.Context, key ssh.PublicKey) bool {
 		slog.Error("failed to retrieve app", "app_id", appID, "error", err)
 		return false
 	}
+	group, err := s.groupRepo.GetApplicationGroup(ctx, app.GroupID)
+	if err != nil {
+		slog.Error("failed to retrieve app group", "app_id", appID, "group_id", app.GroupID, "error", err)
+		return false
+	}
 	admins, err := s.userRepo.GetUsers(ctx, domain.GetUserCondition{Admin: optional.From(true)})
 	if err != nil {
 		slog.Error("failed to retrieve admin list", "error", err)
@@ -105,7 +113,7 @@ func (s *sshServer) publicKeyHandler(ctx ssh.Context, key ssh.PublicKey) bool {
 	}
 
 	var eligibleUsers []string
-	eligibleUsers = append(eligibleUsers, app.OwnerIDs...)
+	eligibleUsers = append(eligibleUsers, group.OwnerIDs...)
 	eligibleUsers = append(eligibleUsers, ds.Map(admins, func(u *domain.User) string { return u.ID })...)
 	keys, err := s.userRepo.GetUserKeys(ctx, domain.GetUserKeyCondition{UserIDs: optional.From(eligibleUsers)})
 	if err != nil {

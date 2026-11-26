@@ -10,9 +10,11 @@ import (
 type GetApplicationCondition struct {
 	IDIn         optional.Of[[]string]
 	RepositoryID optional.Of[string]
-	UserID       optional.Of[string]
-	DeployType   optional.Of[DeployType]
-	Running      optional.Of[bool]
+	GroupID      optional.Of[string]
+	// UserID matches applications in the groups the user owns.
+	UserID     optional.Of[string]
+	DeployType optional.Of[DeployType]
+	Running    optional.Of[bool]
 }
 
 type UpdateApplicationArgs struct {
@@ -27,7 +29,6 @@ type UpdateApplicationArgs struct {
 	Config           optional.Of[ApplicationConfig]
 	Websites         optional.Of[[]*Website]
 	PortPublications optional.Of[[]*PortPublication]
-	OwnerIDs         optional.Of[[]string]
 }
 
 func (a *Application) Apply(args *UpdateApplicationArgs) {
@@ -65,18 +66,63 @@ func (a *Application) Apply(args *UpdateApplicationArgs) {
 	if args.PortPublications.Valid {
 		a.PortPublications = args.PortPublications.V
 	}
-	if args.OwnerIDs.Valid {
-		a.OwnerIDs = args.OwnerIDs.V
-	}
 }
 
 type ApplicationRepository interface {
 	GetApplications(ctx context.Context, cond GetApplicationCondition) ([]*Application, error)
 	GetApplication(ctx context.Context, id string) (*Application, error)
-	CreateApplication(ctx context.Context, app *Application) error
-	UpdateApplication(ctx context.Context, id string, args *UpdateApplicationArgs) error
+	// CreateApplication creates app in one transaction.
+	// When implicitGroup is given, the app is standalone: implicitGroup, which has to be implicit and have the ID app.GroupID, is created with it.
+	// Otherwise the group of app.GroupID has to be an existing group a user created.
+	CreateApplication(ctx context.Context, app *Application, implicitGroup optional.Of[*ApplicationGroup]) error
+	// UpdateApplication applies args to the application, and owners, when given, to its implicit group, in one transaction.
+	// When the application is no longer in owners.GroupID, it fails with ErrorTypeFailedPrecondition and changes nothing.
+	UpdateApplication(ctx context.Context, id string, args *UpdateApplicationArgs, owners optional.Of[ImplicitGroupOwners]) error
+	// SetApplicationGroup moves the application from the group of fromGroupID to the group of toGroupID in one transaction.
+	// When implicitGroup is given, the app becomes standalone: implicitGroup, which has to be implicit and have the ID toGroupID, is created.
+	// Otherwise toGroupID has to be an existing group a user created.
+	// The previous group is deleted when it is implicit.
+	// When the application is no longer in fromGroupID, it fails with ErrorTypeFailedPrecondition and changes nothing.
+	SetApplicationGroup(ctx context.Context, id, fromGroupID, toGroupID string, implicitGroup optional.Of[*ApplicationGroup]) error
 	BulkUpdateState(ctx context.Context, states []*Container) error
+	// DeleteApplication deletes the application, and its group when the group is implicit, in one transaction.
 	DeleteApplication(ctx context.Context, id string) error
+}
+
+type GetApplicationGroupCondition struct {
+	IDIn     optional.Of[[]string]
+	UserID   optional.Of[string]
+	Implicit optional.Of[bool]
+}
+
+type UpdateApplicationGroupArgs struct {
+	Name     optional.Of[string]
+	OwnerIDs optional.Of[[]string]
+}
+
+func (g *ApplicationGroup) Apply(args *UpdateApplicationGroupArgs) {
+	if args.Name.Valid {
+		g.Name = args.Name.V
+	}
+	if args.OwnerIDs.Valid {
+		g.OwnerIDs = args.OwnerIDs.V
+	}
+}
+
+// ImplicitGroupOwners replaces the owners of the implicit group of a standalone application.
+type ImplicitGroupOwners struct {
+	// GroupID is the implicit group the caller checked the application in.
+	GroupID  string
+	OwnerIDs []string
+}
+
+type ApplicationGroupRepository interface {
+	GetApplicationGroups(ctx context.Context, cond GetApplicationGroupCondition) ([]*ApplicationGroup, error)
+	GetApplicationGroup(ctx context.Context, id string) (*ApplicationGroup, error)
+	CreateApplicationGroup(ctx context.Context, group *ApplicationGroup) error
+	UpdateApplicationGroup(ctx context.Context, id string, args *UpdateApplicationGroupArgs) error
+	// DeleteApplicationGroup deletes the group. The group must have no applications.
+	DeleteApplicationGroup(ctx context.Context, id string) error
 }
 
 type WebsiteRepository interface {

@@ -1,6 +1,8 @@
 package pbconvert
 
 import (
+	"time"
+
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -8,12 +10,14 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/usecase/apiserver"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/mapper"
+	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
 var AppScopeMapper = mapper.MustNewValueMapper(map[pb.GetApplicationsRequest_Scope]apiserver.GetAppScopeType{
 	pb.GetApplicationsRequest_MINE:       apiserver.GetAppScopeMine,
 	pb.GetApplicationsRequest_ALL:        apiserver.GetAppScopeAll,
 	pb.GetApplicationsRequest_REPOSITORY: apiserver.GetAppScopeRepository,
+	pb.GetApplicationsRequest_GROUP:      apiserver.GetAppScopeGroup,
 })
 
 var DeployTypeMapper = mapper.MustNewValueMapper(map[domain.DeployType]pb.DeployType{
@@ -31,7 +35,8 @@ var ContainerStateMapper = mapper.MustNewValueMapper(map[domain.ContainerState]p
 	domain.ContainerStateUnknown:    pb.Application_UNKNOWN,
 })
 
-func ToPBApplication(app *domain.Application, latestBuild *domain.Build) *pb.Application {
+// ToPBApplication converts app. Owners are taken from group, which may be nil when the receiver does not need them.
+func ToPBApplication(app *domain.Application, group *domain.ApplicationGroup, latestBuild *domain.Build) *pb.Application {
 	pbApp := &pb.Application{
 		Id:               app.ID,
 		Name:             app.Name,
@@ -48,7 +53,12 @@ func ToPBApplication(app *domain.Application, latestBuild *domain.Build) *pb.App
 		Config:           ToPBApplicationConfig(app.Config),
 		Websites:         ds.Map(app.Websites, ToPBWebsite),
 		PortPublications: ds.Map(app.PortPublications, ToPBPortPublication),
-		OwnerIds:         app.OwnerIDs,
+	}
+	if group != nil {
+		pbApp.OwnerIds = group.OwnerIDs
+		if id := group.VisibleID(); id.Valid {
+			pbApp.GroupId = &id.V
+		}
 	}
 	if latestBuild != nil {
 		status := BuildStatusMapper.IntoMust(latestBuild.Status)
@@ -74,10 +84,20 @@ func FromPBApplication(app *pb.Application) *domain.Application {
 		Config:           FromPBApplicationConfig(app.Config),
 		Websites:         ds.Map(app.Websites, FromPBWebsite),
 		PortPublications: ds.Map(app.PortPublications, FromPBPortPublication),
-		OwnerIDs:         app.OwnerIds,
 	}
 }
 
-func FromPBUpdateOwners(req *pb.UpdateApplicationRequest_UpdateOwners) []string {
-	return req.OwnerIds
+// FromPBUpdateApplicationRequest returns the changes req makes to the application, updated at now,
+// and the owners that replace those of the application, if req gives them.
+func FromPBUpdateApplicationRequest(req *pb.UpdateApplicationRequest, now time.Time) (*domain.UpdateApplicationArgs, optional.Of[[]string]) {
+	args := &domain.UpdateApplicationArgs{
+		Name:             optional.FromPtr(req.Name),
+		RefName:          optional.FromPtr(req.RefName),
+		UpdatedAt:        optional.From(now),
+		Config:           optional.FromNonZero(req.Config).Map(FromPBApplicationConfig),
+		Websites:         optional.FromNonZero(req.Websites).Map(FromPBUpdateWebsites),
+		PortPublications: optional.FromNonZero(req.PortPublications).Map(FromPBUpdatePorts),
+	}
+	ownerIDs := optional.FromNonZero(req.OwnerIds).Map(func(o *pb.UpdateApplicationRequest_UpdateOwners) []string { return o.OwnerIds })
+	return args, ownerIDs
 }

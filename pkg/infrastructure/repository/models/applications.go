@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/aarondl/null/v8"
 	"github.com/aarondl/sqlboiler/v4/boil"
 	"github.com/aarondl/sqlboiler/v4/queries"
 	"github.com/aarondl/sqlboiler/v4/queries/qm"
@@ -27,6 +28,8 @@ type Application struct {
 	ID string `boil:"id" json:"id" toml:"id" yaml:"id"`
 	// アプリケーション名
 	Name string `boil:"name" json:"name" toml:"name" yaml:"name"`
+	// グループID(既存データの移行が済むまでNULLがありうる)
+	GroupID null.String `boil:"group_id" json:"group_id,omitempty" toml:"group_id" yaml:"group_id,omitempty"`
 	// リポジトリID
 	RepositoryID string `boil:"repository_id" json:"repository_id" toml:"repository_id" yaml:"repository_id"`
 	// Gitブランチ・タグ名
@@ -55,6 +58,7 @@ type Application struct {
 var ApplicationColumns = struct {
 	ID               string
 	Name             string
+	GroupID          string
 	RepositoryID     string
 	RefName          string
 	Commit           string
@@ -68,6 +72,7 @@ var ApplicationColumns = struct {
 }{
 	ID:               "id",
 	Name:             "name",
+	GroupID:          "group_id",
 	RepositoryID:     "repository_id",
 	RefName:          "ref_name",
 	Commit:           "commit",
@@ -83,6 +88,7 @@ var ApplicationColumns = struct {
 var ApplicationTableColumns = struct {
 	ID               string
 	Name             string
+	GroupID          string
 	RepositoryID     string
 	RefName          string
 	Commit           string
@@ -96,6 +102,7 @@ var ApplicationTableColumns = struct {
 }{
 	ID:               "applications.id",
 	Name:             "applications.name",
+	GroupID:          "applications.group_id",
 	RepositoryID:     "applications.repository_id",
 	RefName:          "applications.ref_name",
 	Commit:           "applications.commit",
@@ -109,6 +116,50 @@ var ApplicationTableColumns = struct {
 }
 
 // Generated where
+
+type whereHelpernull_String struct{ field string }
+
+func (w whereHelpernull_String) EQ(x null.String) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, false, x)
+}
+func (w whereHelpernull_String) NEQ(x null.String) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, true, x)
+}
+func (w whereHelpernull_String) LT(x null.String) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LT, x)
+}
+func (w whereHelpernull_String) LTE(x null.String) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LTE, x)
+}
+func (w whereHelpernull_String) GT(x null.String) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GT, x)
+}
+func (w whereHelpernull_String) GTE(x null.String) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GTE, x)
+}
+func (w whereHelpernull_String) LIKE(x null.String) qm.QueryMod {
+	return qm.Where(w.field+" LIKE ?", x)
+}
+func (w whereHelpernull_String) NLIKE(x null.String) qm.QueryMod {
+	return qm.Where(w.field+" NOT LIKE ?", x)
+}
+func (w whereHelpernull_String) IN(slice []string) qm.QueryMod {
+	values := make([]any, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
+}
+func (w whereHelpernull_String) NIN(slice []string) qm.QueryMod {
+	values := make([]any, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
+}
+
+func (w whereHelpernull_String) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
+func (w whereHelpernull_String) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
 
 type whereHelpertime_Time struct{ field string }
 
@@ -134,6 +185,7 @@ func (w whereHelpertime_Time) GTE(x time.Time) qm.QueryMod {
 var ApplicationWhere = struct {
 	ID               whereHelperstring
 	Name             whereHelperstring
+	GroupID          whereHelpernull_String
 	RepositoryID     whereHelperstring
 	RefName          whereHelperstring
 	Commit           whereHelperstring
@@ -147,6 +199,7 @@ var ApplicationWhere = struct {
 }{
 	ID:               whereHelperstring{field: "`applications`.`id`"},
 	Name:             whereHelperstring{field: "`applications`.`name`"},
+	GroupID:          whereHelpernull_String{field: "`applications`.`group_id`"},
 	RepositoryID:     whereHelperstring{field: "`applications`.`repository_id`"},
 	RefName:          whereHelperstring{field: "`applications`.`ref_name`"},
 	Commit:           whereHelperstring{field: "`applications`.`commit`"},
@@ -161,6 +214,7 @@ var ApplicationWhere = struct {
 
 // ApplicationRels is where relationship names are stored.
 var ApplicationRels = struct {
+	Group             string
 	Repository        string
 	ApplicationConfig string
 	Users             string
@@ -169,6 +223,7 @@ var ApplicationRels = struct {
 	PortPublications  string
 	Websites          string
 }{
+	Group:             "Group",
 	Repository:        "Repository",
 	ApplicationConfig: "ApplicationConfig",
 	Users:             "Users",
@@ -180,6 +235,7 @@ var ApplicationRels = struct {
 
 // applicationR is where relationships are stored.
 type applicationR struct {
+	Group             *ApplicationGroup    `boil:"Group" json:"Group" toml:"Group" yaml:"Group"`
 	Repository        *Repository          `boil:"Repository" json:"Repository" toml:"Repository" yaml:"Repository"`
 	ApplicationConfig *ApplicationConfig   `boil:"ApplicationConfig" json:"ApplicationConfig" toml:"ApplicationConfig" yaml:"ApplicationConfig"`
 	Users             UserSlice            `boil:"Users" json:"Users" toml:"Users" yaml:"Users"`
@@ -192,6 +248,22 @@ type applicationR struct {
 // NewStruct creates a new relationship struct
 func (*applicationR) NewStruct() *applicationR {
 	return &applicationR{}
+}
+
+func (o *Application) GetGroup() *ApplicationGroup {
+	if o == nil {
+		return nil
+	}
+
+	return o.R.GetGroup()
+}
+
+func (r *applicationR) GetGroup() *ApplicationGroup {
+	if r == nil {
+		return nil
+	}
+
+	return r.Group
 }
 
 func (o *Application) GetRepository() *Repository {
@@ -310,8 +382,8 @@ func (r *applicationR) GetWebsites() WebsiteSlice {
 type applicationL struct{}
 
 var (
-	applicationAllColumns            = []string{"id", "name", "repository_id", "ref_name", "commit", "deploy_type", "running", "container", "container_message", "current_build", "created_at", "updated_at"}
-	applicationColumnsWithoutDefault = []string{"id", "name", "repository_id", "ref_name", "commit", "deploy_type", "running", "container", "container_message", "current_build", "created_at", "updated_at"}
+	applicationAllColumns            = []string{"id", "name", "group_id", "repository_id", "ref_name", "commit", "deploy_type", "running", "container", "container_message", "current_build", "created_at", "updated_at"}
+	applicationColumnsWithoutDefault = []string{"id", "name", "group_id", "repository_id", "ref_name", "commit", "deploy_type", "running", "container", "container_message", "current_build", "created_at", "updated_at"}
 	applicationColumnsWithDefault    = []string{}
 	applicationPrimaryKeyColumns     = []string{"id"}
 	applicationGeneratedColumns      = []string{}
@@ -622,6 +694,17 @@ func (q applicationQuery) Exists(ctx context.Context, exec boil.ContextExecutor)
 	return count > 0, nil
 }
 
+// Group pointed to by the foreign key.
+func (o *Application) Group(mods ...qm.QueryMod) applicationGroupQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("`id` = ?", o.GroupID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return ApplicationGroups(queryMods...)
+}
+
 // Repository pointed to by the foreign key.
 func (o *Application) Repository(mods ...qm.QueryMod) repositoryQuery {
 	queryMods := []qm.QueryMod{
@@ -713,6 +796,130 @@ func (o *Application) Websites(mods ...qm.QueryMod) websiteQuery {
 	)
 
 	return Websites(queryMods...)
+}
+
+// LoadGroup allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (applicationL) LoadGroup(ctx context.Context, e boil.ContextExecutor, singular bool, maybeApplication any, mods queries.Applicator) error {
+	var slice []*Application
+	var object *Application
+
+	if singular {
+		var ok bool
+		object, ok = maybeApplication.(*Application)
+		if !ok {
+			object = new(Application)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeApplication)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeApplication))
+			}
+		}
+	} else {
+		s, ok := maybeApplication.(*[]*Application)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeApplication)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeApplication))
+			}
+		}
+	}
+
+	args := make(map[any]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &applicationR{}
+		}
+		if !queries.IsNil(object.GroupID) {
+			args[object.GroupID] = struct{}{}
+		}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &applicationR{}
+			}
+
+			if !queries.IsNil(obj.GroupID) {
+				args[obj.GroupID] = struct{}{}
+			}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]any, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`application_groups`),
+		qm.WhereIn(`application_groups.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load ApplicationGroup")
+	}
+
+	var resultSlice []*ApplicationGroup
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice ApplicationGroup")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for application_groups")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for application_groups")
+	}
+
+	if len(applicationGroupAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Group = foreign
+		if foreign.R == nil {
+			foreign.R = &applicationGroupR{}
+		}
+		foreign.R.GroupApplications = append(foreign.R.GroupApplications, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if queries.Equal(local.GroupID, foreign.ID) {
+				local.R.Group = foreign
+				if foreign.R == nil {
+					foreign.R = &applicationGroupR{}
+				}
+				foreign.R.GroupApplications = append(foreign.R.GroupApplications, local)
+				break
+			}
+		}
+	}
+
+	return nil
 }
 
 // LoadRepository allows an eager lookup of values, cached into the
@@ -1531,6 +1738,86 @@ func (applicationL) LoadWebsites(ctx context.Context, e boil.ContextExecutor, si
 		}
 	}
 
+	return nil
+}
+
+// SetGroup of the application to the related item.
+// Sets o.R.Group to related.
+// Adds o to related.R.GroupApplications.
+func (o *Application) SetGroup(ctx context.Context, exec boil.ContextExecutor, insert bool, related *ApplicationGroup) error {
+	var err error
+	if insert {
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE `applications` SET %s WHERE %s",
+		strmangle.SetParamNames("`", "`", 0, []string{"group_id"}),
+		strmangle.WhereClause("`", "`", 0, applicationPrimaryKeyColumns),
+	)
+	values := []any{related.ID, o.ID}
+
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, updateQuery)
+		fmt.Fprintln(writer, values)
+	}
+	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	queries.Assign(&o.GroupID, related.ID)
+	if o.R == nil {
+		o.R = &applicationR{
+			Group: related,
+		}
+	} else {
+		o.R.Group = related
+	}
+
+	if related.R == nil {
+		related.R = &applicationGroupR{
+			GroupApplications: ApplicationSlice{o},
+		}
+	} else {
+		related.R.GroupApplications = append(related.R.GroupApplications, o)
+	}
+
+	return nil
+}
+
+// RemoveGroup relationship.
+// Sets o.R.Group to nil.
+// Removes o from all passed in related items' relationships struct.
+func (o *Application) RemoveGroup(ctx context.Context, exec boil.ContextExecutor, related *ApplicationGroup) error {
+	var err error
+
+	queries.SetScanner(&o.GroupID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("group_id")); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	if o.R != nil {
+		o.R.Group = nil
+	}
+	if related == nil || related.R == nil {
+		return nil
+	}
+
+	for i, ri := range related.R.GroupApplications {
+		if queries.Equal(o.GroupID, ri.GroupID) {
+			continue
+		}
+
+		ln := len(related.R.GroupApplications)
+		if ln > 1 && i < ln-1 {
+			related.R.GroupApplications[i] = related.R.GroupApplications[ln-1]
+		}
+		related.R.GroupApplications = related.R.GroupApplications[:ln-1]
+		break
+	}
 	return nil
 }
 

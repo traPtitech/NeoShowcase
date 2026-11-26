@@ -72,10 +72,33 @@ CREATE TABLE `repository_commits`
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci COMMENT = 'コミットメタ情報テーブル';
 
+CREATE TABLE `application_groups`
+(
+    `id`       CHAR(22)     NOT NULL COMMENT 'グループID',
+    `name`     VARCHAR(100) NOT NULL COMMENT 'グループ名(暗黙のグループでは空)',
+    `implicit` TINYINT(1)   NOT NULL COMMENT '1アプリのためにシステムが作った、利用者に見せないグループかどうか',
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_general_ci COMMENT ='アプリケーショングループテーブル';
+
+CREATE TABLE `application_group_owners`
+(
+    `user_id`  CHAR(22) NOT NULL COMMENT 'ユーザーID',
+    `group_id` CHAR(22) NOT NULL COMMENT 'グループID',
+    PRIMARY KEY (`user_id`, `group_id`),
+    KEY `fk_application_group_owners_group_id` (`group_id`),
+    CONSTRAINT `fk_application_group_owners_group_id` FOREIGN KEY (`group_id`) REFERENCES `application_groups` (`id`),
+    CONSTRAINT `fk_application_group_owners_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_general_ci COMMENT ='アプリケーショングループ所有者テーブル';
+
 CREATE TABLE `applications`
 (
     `id`                CHAR(22)                   NOT NULL COMMENT 'アプリケーションID',
     `name`              VARCHAR(100)               NOT NULL COMMENT 'アプリケーション名',
+    `group_id`          CHAR(22)                   NULL COMMENT 'グループID(既存データの移行が済むまでNULLがありうる)',
     `repository_id`     VARCHAR(22)                NOT NULL COMMENT 'リポジトリID',
     `ref_name`          VARCHAR(100)               NOT NULL COMMENT 'Gitブランチ・タグ名',
     `commit`            CHAR(40)                   NOT NULL COMMENT '解決されたコミット',
@@ -96,7 +119,9 @@ CREATE TABLE `applications`
     `updated_at`        DATETIME(6)                NOT NULL COMMENT '更新日時',
     PRIMARY KEY (`id`),
     KEY `fk_applications_repository_id` (`repository_id`),
-    CONSTRAINT `fk_applications_repository_id` FOREIGN KEY (`repository_id`) REFERENCES `repositories` (`id`)
+    KEY `fk_applications_group_id` (`group_id`),
+    CONSTRAINT `fk_applications_repository_id` FOREIGN KEY (`repository_id`) REFERENCES `repositories` (`id`),
+    CONSTRAINT `fk_applications_group_id` FOREIGN KEY (`group_id`) REFERENCES `application_groups` (`id`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci COMMENT ='アプリケーションテーブル';
@@ -173,7 +198,7 @@ CREATE TABLE `application_owners`
     CONSTRAINT `fk_application_owners_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_general_ci COMMENT ='アプリケーション所有者テーブル';
+  COLLATE = utf8mb4_general_ci COMMENT ='アプリケーション所有者テーブル(廃止予定。グループへの移行元としてのみ残す)';
 
 CREATE TABLE `builds`
 (

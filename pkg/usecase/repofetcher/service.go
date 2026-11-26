@@ -208,7 +208,7 @@ func (r *service) updateApps(ctx context.Context, repo *domain.Repository, apps 
 			commit = domain.EmptyCommit // Mark as empty commit to signal error
 		}
 
-		err = r.appRepo.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{Commit: optional.From(commit)})
+		err = r.appRepo.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{Commit: optional.From(commit)}, optional.None[domain.ImplicitGroupOwners]())
 		if err != nil {
 			return oops.With("app_id", app.ID).Wrapf(err, "updating application")
 		}

@@ -140,13 +140,25 @@ func (i *Integration) syncRepository(ctx context.Context, username string, gitea
 		}
 	}
 
-	// Sync owners of generated applications
+	// Sync owners of the standalone applications generated from the repository.
+	// A group users created may hold applications from other repositories, so its owners are left to the group owners.
 	apps, err := i.appRepo.GetApplications(ctx, domain.GetApplicationCondition{RepositoryID: optional.From(repo.ID)})
 	if err != nil {
 		return oops.With("repo_id", repo.ID).Wrapf(err, "getting applications")
 	}
-	for _, app := range apps {
-		err = i.syncApplication(ctx, app, giteaOwnerIDs)
+	groupIDs := lo.Uniq(ds.Map(apps, func(app *domain.Application) string { return app.GroupID }))
+	if len(groupIDs) == 0 {
+		return nil
+	}
+	groups, err := i.groupRepo.GetApplicationGroups(ctx, domain.GetApplicationGroupCondition{
+		IDIn:     optional.From(groupIDs),
+		Implicit: optional.From(true),
+	})
+	if err != nil {
+		return oops.With("repo_id", repo.ID).Wrapf(err, "getting application groups")
+	}
+	for _, group := range groups {
+		err = i.syncApplicationGroup(ctx, group, giteaOwnerIDs)
 		if err != nil {
 			return err
 		}
@@ -155,15 +167,15 @@ func (i *Integration) syncRepository(ctx context.Context, username string, gitea
 	return nil
 }
 
-func (i *Integration) syncApplication(ctx context.Context, app *domain.Application, giteaOwnerIDs []string) error {
-	// Are all repository owners on Gitea also an owner of generated application on NeoShowcase?
-	allOwnersAdded := lo.EveryBy(giteaOwnerIDs, func(ownerID string) bool { return slices.Contains(app.OwnerIDs, ownerID) })
+func (i *Integration) syncApplicationGroup(ctx context.Context, group *domain.ApplicationGroup, giteaOwnerIDs []string) error {
+	// Are all repository owners on Gitea also an owner of the generated application on NeoShowcase?
+	allOwnersAdded := lo.EveryBy(giteaOwnerIDs, func(ownerID string) bool { return slices.Contains(group.OwnerIDs, ownerID) })
 	if !allOwnersAdded {
-		newOwners := ds.UniqMergeSlice(app.OwnerIDs, giteaOwnerIDs)
-		slog.InfoContext(ctx, "Syncing application owners", "app_name", app.Name, "app_id", app.ID, "old_count", len(app.OwnerIDs), "new_count", len(newOwners))
-		err := i.appRepo.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{OwnerIDs: optional.From(newOwners)})
+		newOwners := ds.UniqMergeSlice(group.OwnerIDs, giteaOwnerIDs)
+		slog.InfoContext(ctx, "Syncing application group owners", "group_name", group.Name, "group_id", group.ID, "old_count", len(group.OwnerIDs), "new_count", len(newOwners))
+		err := i.groupRepo.UpdateApplicationGroup(ctx, group.ID, &domain.UpdateApplicationGroupArgs{OwnerIDs: optional.From(newOwners)})
 		if err != nil {
-			return oops.With("app_id", app.ID).Wrapf(err, "updating application owners")
+			return oops.With("group_id", group.ID).Wrapf(err, "updating application group owners")
 		}
 	}
 	return nil

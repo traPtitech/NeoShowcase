@@ -316,17 +316,16 @@ func TestWebsite_ovrlapssWith(t *testing.T) {
 }
 
 func TestApplication_WebsiteConflicts(t *testing.T) {
-	u1 := &User{ID: "user1"}
-	u2 := &User{ID: "user2"}
-	u3 := &User{ID: "user3"}
+	const groupA = "group-a"
+	const groupB = "group-b"
 	existing := &Application{
-		ID: NewID(),
+		ID:      NewID(),
+		GroupID: groupA,
 		Websites: []*Website{{
 			ID:         NewID(),
 			FQDN:       "bar.trap.games",
 			PathPrefix: "/",
 		}},
-		OwnerIDs: []string{u2.ID, u3.ID},
 	}
 	tests := []struct {
 		name     string
@@ -335,93 +334,66 @@ func TestApplication_WebsiteConflicts(t *testing.T) {
 		want     bool
 	}{
 		{
-			name: "ok (different fqdn, no conflict)",
+			name: "ok (different fqdn, different group)",
 			target: &Application{
-				ID: NewID(),
+				ID:      NewID(),
+				GroupID: groupB,
 				Websites: []*Website{{
 					ID:         NewID(),
 					FQDN:       "foo.trap.games",
 					PathPrefix: "/api",
 				}},
-				OwnerIDs: []string{u1.ID, u3.ID},
 			},
 			existing: existing,
 			want:     false,
 		},
 		{
-			name: "ng (conflict, no ownership of the other)",
+			name: "ng (nested in an app of another group)",
 			target: &Application{
-				ID: NewID(),
+				ID:      NewID(),
+				GroupID: groupB,
 				Websites: []*Website{{
 					ID:         NewID(),
 					FQDN:       "bar.trap.games",
 					PathPrefix: "/api",
 				}},
-				OwnerIDs: []string{},
 			},
 			existing: existing,
 			want:     true,
 		},
 		{
-			name: "ng (conflict, owner of the other, but same website)",
+			name: "ok (nested in an app of the same group)",
 			target: &Application{
-				ID: NewID(),
+				ID:      NewID(),
+				GroupID: groupA,
+				Websites: []*Website{{
+					ID:         NewID(),
+					FQDN:       "bar.trap.games",
+					PathPrefix: "/api",
+				}},
+			},
+			existing: existing,
+			want:     false,
+		},
+		{
+			name: "ng (same website in the same group)",
+			target: &Application{
+				ID:      NewID(),
+				GroupID: groupA,
 				Websites: []*Website{{
 					ID:         NewID(),
 					FQDN:       "bar.trap.games",
 					PathPrefix: "/",
 				}},
-				OwnerIDs: []string{u1.ID, u3.ID},
 			},
 			existing: existing,
 			want:     true,
-		},
-		{
-			name: "ng (conflict, actor is admin, but same website)",
-			target: &Application{
-				ID: NewID(),
-				Websites: []*Website{{
-					ID:         NewID(),
-					FQDN:       "bar.trap.games",
-					PathPrefix: "/",
-				}},
-				OwnerIDs: []string{u1.ID, u3.ID},
-			},
-			existing: existing,
-			want:     true,
-		},
-		{
-			name: "ok (conflict, but owner of the other)",
-			target: &Application{
-				ID: NewID(),
-				Websites: []*Website{{
-					ID:         NewID(),
-					FQDN:       "bar.trap.games",
-					PathPrefix: "/api",
-				}},
-				OwnerIDs: []string{u1.ID, u3.ID},
-			},
-			existing: existing,
-			want:     false,
-		},
-		{
-			name: "ok (conflict, but actor is admin)",
-			target: &Application{
-				ID: NewID(),
-				Websites: []*Website{{
-					ID:         NewID(),
-					FQDN:       "bar.trap.games",
-					PathPrefix: "/api",
-				}},
-				OwnerIDs: []string{u1.ID, u3.ID},
-			},
-			existing: existing,
-			want:     false,
 		},
 		{
 			name: "ng (self conflict)",
 			target: &Application{
-				ID: NewID(),
+				ID:      NewID(),
+				GroupID: groupB,
 				Websites: []*Website{
 					{
 						ID:         NewID(),
@@ -434,7 +406,6 @@ func TestApplication_WebsiteConflicts(t *testing.T) {
 						PathPrefix: "/api",
 					},
 				},
-				OwnerIDs: []string{u1.ID, u3.ID},
 			},
 			existing: existing,
 			want:     true,
@@ -444,6 +415,46 @@ func TestApplication_WebsiteConflicts(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.target.WebsiteConflicts([]*Application{tt.existing})
 			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestGroupByNestedWebsites(t *testing.T) {
+	t.Parallel()
+	app := func(id, fqdn, path string) *Application {
+		return &Application{ID: id, Websites: []*Website{{ID: id + "-w", FQDN: fqdn, PathPrefix: path}}}
+	}
+	ids := func(sets [][]*Application) [][]string {
+		var out [][]string
+		for _, s := range sets {
+			var ss []string
+			for _, a := range s {
+				ss = append(ss, a.ID)
+			}
+			out = append(out, ss)
+		}
+		return out
+	}
+	tests := []struct {
+		name string
+		apps []*Application
+		want [][]string
+	}{
+		{
+			name: "apps joined only through a later app form one set",
+			apps: []*Application{app("a", "x.com", "/a"), app("c", "x.com", "/c"), app("b", "x.com", "/")},
+			want: [][]string{{"a", "c", "b"}},
+		},
+		{
+			name: "apps that do not overlap form separate sets in input order",
+			apps: []*Application{app("p", "p.com", "/"), app("q", "q.com", "/"), app("p2", "p.com", "/v2")},
+			want: [][]string{{"p", "p2"}, {"q"}},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			assert.Equal(t, tt.want, ids(GroupByNestedWebsites(tt.apps)))
 		})
 	}
 }

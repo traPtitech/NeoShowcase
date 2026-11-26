@@ -6,9 +6,7 @@ import (
 
 	"google.golang.org/protobuf/types/known/emptypb"
 
-	"github.com/samber/lo"
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pbconvert"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/apiserver"
@@ -17,15 +15,8 @@ import (
 )
 
 func (s *APIService) CreateApplication(ctx context.Context, req *pb.CreateApplicationRequest) (*pb.Application, error) {
-	user := web.GetUser(ctx)
 	now := time.Now()
 	config := pbconvert.FromPBApplicationConfig(req.Config)
-
-	repo, err := s.svc.GetRepository(ctx, req.RepositoryId)
-	if err != nil {
-		return nil, handleUseCaseError(err)
-	}
-	ownerIDs := lo.Uniq(append(repo.OwnerIDs, user.ID))
 
 	app := &domain.Application{
 		ID:               domain.NewID(),
@@ -42,19 +33,19 @@ func (s *APIService) CreateApplication(ctx context.Context, req *pb.CreateApplic
 		Config:           config,
 		Websites:         ds.Map(req.Websites, pbconvert.FromPBCreateWebsiteRequest),
 		PortPublications: ds.Map(req.PortPublications, pbconvert.FromPBPortPublication),
-		OwnerIDs:         ownerIDs,
 	}
-	app, err = s.svc.CreateApplication(ctx, app)
+	created, err := s.svc.CreateApplication(ctx, app, optional.FromPtr(req.GroupId))
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	return pbconvert.ToPBApplication(app, nil), nil
+	return pbconvert.ToPBApplication(created.App, created.Group, created.LatestBuild), nil
 }
 
 func (s *APIService) GetApplications(ctx context.Context, req *pb.GetApplicationsRequest) (*pb.GetApplicationsResponse, error) {
 	scope := apiserver.GetAppScope{
 		Scope:        pbconvert.AppScopeMapper.IntoMust(req.Scope),
 		RepositoryID: optional.FromPtr(req.RepositoryId),
+		GroupID:      optional.FromPtr(req.GroupId),
 	}
 	apps, err := s.svc.GetApplications(ctx, scope)
 	if err != nil {
@@ -62,7 +53,7 @@ func (s *APIService) GetApplications(ctx context.Context, req *pb.GetApplication
 	}
 	return &pb.GetApplicationsResponse{
 		Applications: ds.Map(apps, func(app *apiserver.TopAppInfo) *pb.Application {
-			return pbconvert.ToPBApplication(app.App, app.LatestBuild)
+			return pbconvert.ToPBApplication(app.App, app.Group, app.LatestBuild)
 		}),
 	}, nil
 }
@@ -72,19 +63,12 @@ func (s *APIService) GetApplication(ctx context.Context, req *pb.ApplicationIdRe
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	return pbconvert.ToPBApplication(app.App, app.LatestBuild), nil
+	return pbconvert.ToPBApplication(app.App, app.Group, app.LatestBuild), nil
 }
 
 func (s *APIService) UpdateApplication(ctx context.Context, req *pb.UpdateApplicationRequest) (*emptypb.Empty, error) {
-	err := s.svc.UpdateApplication(ctx, req.Id, &domain.UpdateApplicationArgs{
-		Name:             optional.FromPtr(req.Name),
-		RefName:          optional.FromPtr(req.RefName),
-		UpdatedAt:        optional.From(time.Now()),
-		Config:           optional.FromNonZero(req.Config).Map(pbconvert.FromPBApplicationConfig),
-		Websites:         optional.FromNonZero(req.Websites).Map(pbconvert.FromPBUpdateWebsites),
-		PortPublications: optional.FromNonZero(req.PortPublications).Map(pbconvert.FromPBUpdatePorts),
-		OwnerIDs:         optional.FromNonZero(req.OwnerIds).Map(pbconvert.FromPBUpdateOwners),
-	})
+	args, ownerIDs := pbconvert.FromPBUpdateApplicationRequest(req, time.Now())
+	err := s.svc.UpdateApplication(ctx, req.Id, args, ownerIDs)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
@@ -93,6 +77,14 @@ func (s *APIService) UpdateApplication(ctx context.Context, req *pb.UpdateApplic
 
 func (s *APIService) DeleteApplication(ctx context.Context, req *pb.ApplicationIdRequest) (*emptypb.Empty, error) {
 	err := s.svc.DeleteApplication(ctx, req.Id)
+	if err != nil {
+		return nil, handleUseCaseError(err)
+	}
+	return &emptypb.Empty{}, nil
+}
+
+func (s *APIService) MoveApplication(ctx context.Context, req *pb.MoveApplicationRequest) (*emptypb.Empty, error) {
+	err := s.svc.MoveApplication(ctx, req.ApplicationId, optional.FromPtr(req.GroupId))
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}

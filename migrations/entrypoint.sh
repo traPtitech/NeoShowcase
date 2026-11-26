@@ -2,7 +2,10 @@
 
 set -eu
 
+# Usage: entrypoint.sh <schema.sql> [data migration command...]
+# The data migration command runs after the schema is applied.
 SQL_FILE=$1
+shift
 
 APP_VERSION=${APP_VERSION:-unknown}
 APP_REVISION=${APP_REVISION:-unknown}
@@ -16,3 +19,7 @@ DB_NAME=${DB_NAME:-neoshowcase}
 echo "ns-migrate $APP_VERSION@$APP_REVISION"
 
 mysqldef --host="$DB_HOST" --port="$DB_PORT" --user="$DB_USER" --password="$DB_PASS" "$DB_NAME" < "$SQL_FILE"
+
+if [ "$#" -gt 0 ]; then
+  "$@"
+fi

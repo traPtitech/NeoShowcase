@@ -9,6 +9,8 @@ import {
   ApplicationConfigSchema,
   ApplicationEnvVarSchema,
   ApplicationEnvVarsSchema,
+  type ApplicationGroup,
+  ApplicationGroupSchema,
   ApplicationMetricSchema,
   ApplicationMetricsSchema,
   ApplicationOutputSchema,
@@ -29,6 +31,8 @@ import {
   BuildStatus,
   DeployType,
   GenerateKeyPairResponseSchema,
+  GetApplicationGroupsRequest_Scope,
+  GetApplicationGroupsResponseSchema,
   GetApplicationsRequest_Scope,
   GetApplicationsResponseSchema,
   GetBuildsResponseSchema,
@@ -76,6 +80,7 @@ export const ids = {
   appRuntime: 'app-runtime',
   appStatic: 'app-static',
   appError: 'app-error',
+  groupWeb: 'group-web',
   buildOk: 'build-ok',
   buildFailed: 'build-failed',
   buildRunning: 'build-running',
@@ -110,6 +115,10 @@ const createFixtures = () => {
       authMethod: Repository_AuthMethod.SSH,
       ownerIds: [ids.me, ids.other],
     }),
+  ]
+
+  const groups: ApplicationGroup[] = [
+    create(ApplicationGroupSchema, { id: ids.groupWeb, name: 'web-service', ownerIds: [ids.me] }),
   ]
 
   const applications: Application[] = [
@@ -190,6 +199,7 @@ const createFixtures = () => {
       portPublications: [],
       ownerIds: [ids.me],
       latestBuildStatus: BuildStatus.SUCCEEDED,
+      groupId: ids.groupWeb,
     }),
     create(ApplicationSchema, {
       id: ids.appError,
@@ -306,7 +316,7 @@ const createFixtures = () => {
     revision: 'abcdef0',
   })
 
-  return { users, repositories, applications, builds, commits, userKeys, envVars, systemInfo }
+  return { users, repositories, groups, applications, builds, commits, userKeys, envVars, systemInfo }
 }
 
 export let fixtures = createFixtures()
@@ -426,7 +436,9 @@ const routes = (router: ConnectRouter) => {
       app.name = req.name
       app.repositoryId = req.repositoryId
       app.refName = req.refName
-      app.ownerIds = [ids.me]
+      app.groupId = req.groupId
+      // like the server, a given group ID has to name a group, even when it is empty
+      app.ownerIds = req.groupId !== undefined ? findOrThrow(fixtures.groups, req.groupId, 'group').ownerIds : [ids.me]
       fixtures.applications.push(app)
       return app
     },
@@ -434,12 +446,17 @@ const routes = (router: ConnectRouter) => {
       const apps =
         req.scope === GetApplicationsRequest_Scope.REPOSITORY
           ? fixtures.applications.filter((a) => a.repositoryId === req.repositoryId)
-          : fixtures.applications
+          : req.scope === GetApplicationsRequest_Scope.GROUP
+            ? fixtures.applications.filter((a) => a.groupId === req.groupId)
+            : fixtures.applications
       return create(GetApplicationsResponseSchema, { applications: apps })
     },
     getApplication: (req) => findOrThrow(fixtures.applications, req.id, 'application'),
     updateApplication: (req) => {
       const app = findOrThrow(fixtures.applications, req.id, 'application')
+      if (req.ownerIds && app.groupId) {
+        throw new ConnectError('owners of an application in a group are managed by the group', Code.InvalidArgument)
+      }
       if (req.name !== undefined) app.name = req.name
       if (req.refName !== undefined) app.refName = req.refName
       if (req.config) app.config = req.config
@@ -453,6 +470,39 @@ const routes = (router: ConnectRouter) => {
       return {}
     },
     deleteApplication: () => ({}),
+    moveApplication: (req) => {
+      const app = findOrThrow(fixtures.applications, req.applicationId, 'application')
+      app.groupId = req.groupId
+      if (req.groupId) app.ownerIds = findOrThrow(fixtures.groups, req.groupId, 'group').ownerIds
+      return {}
+    },
+
+    createApplicationGroup: (req) => {
+      const group = create(ApplicationGroupSchema, { id: 'group-new', name: req.name, ownerIds: [ids.me] })
+      fixtures.groups.push(group)
+      return group
+    },
+    getApplicationGroups: (req) =>
+      create(GetApplicationGroupsResponseSchema, {
+        groups:
+          req.scope === GetApplicationGroupsRequest_Scope.MINE
+            ? fixtures.groups.filter((g) => g.ownerIds.includes(ids.me))
+            : fixtures.groups,
+      }),
+    getApplicationGroup: (req) => findOrThrow(fixtures.groups, req.groupId, 'group'),
+    updateApplicationGroup: (req) => {
+      const group = findOrThrow(fixtures.groups, req.id, 'group')
+      if (req.name !== undefined) group.name = req.name
+      if (req.ownerIds) {
+        group.ownerIds = req.ownerIds.ownerIds
+        for (const app of fixtures.applications.filter((a) => a.groupId === group.id)) app.ownerIds = group.ownerIds
+      }
+      return {}
+    },
+    deleteApplicationGroup: (req) => {
+      fixtures.groups = fixtures.groups.filter((g) => g.id !== req.groupId)
+      return {}
+    },
     startApplication: (req) => {
       findOrThrow(fixtures.applications, req.id, 'application').running = true
       return {}

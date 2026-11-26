@@ -1,6 +1,8 @@
 package repoconvert
 
 import (
+	"github.com/aarondl/null/v8"
+
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository/models"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
@@ -26,6 +28,7 @@ func FromDomainApplication(app *domain.Application) *models.Application {
 	return &models.Application{
 		ID:               app.ID,
 		Name:             app.Name,
+		GroupID:          null.StringFrom(app.GroupID),
 		RepositoryID:     app.RepositoryID,
 		RefName:          app.RefName,
 		Commit:           app.Commit,
@@ -43,6 +46,7 @@ func ToDomainApplication(app *models.Application) *domain.Application {
 	return &domain.Application{
 		ID:               app.ID,
 		Name:             app.Name,
+		GroupID:          app.GroupID.String,
 		RepositoryID:     app.RepositoryID,
 		RefName:          app.RefName,
 		Commit:           app.Commit,
@@ -57,6 +61,5 @@ func ToDomainApplication(app *models.Application) *domain.Application {
 		Config:           ToDomainApplicationConfig(app.R.ApplicationConfig),
 		Websites:         ds.Map(app.R.Websites, ToDomainWebsite),
 		PortPublications: ds.Map(app.R.PortPublications, ToDomainPortPublication),
-		OwnerIDs:         ds.Map(app.R.Users, func(user *models.User) string { return user.ID }),
 	}
 }

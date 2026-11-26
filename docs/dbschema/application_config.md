@@ -88,6 +88,7 @@ erDiagram
 "applications" {
   char_22_ id PK
   varchar_100_ name
+  char_22_ group_id FK
   varchar_22_ repository_id FK
   varchar_100_ ref_name
   char_40_ commit

@@ -88,6 +88,7 @@ var EmptyCommit = strings.Repeat("0", 40)
 type Application struct {
 	ID               string
 	Name             string
+	GroupID          string
 	RepositoryID     string
 	RefName          string
 	Commit           string
@@ -102,12 +103,14 @@ type Application struct {
 	Config           ApplicationConfig
 	Websites         []*Website
 	PortPublications []*PortPublication
-	OwnerIDs         []string
 }
 
 func (a *Application) SelfValidate() error {
 	if a.Name == "" {
 		return oops.New("name is required")
+	}
+	if a.GroupID == "" {
+		return oops.New("group_id is required")
 	}
 	if a.RepositoryID == "" {
 		return oops.New("repository_id is required")
@@ -127,9 +130,6 @@ func (a *Application) SelfValidate() error {
 		if err := p.Validate(); err != nil {
 			return oops.Wrapf(err, "invalid port publication")
 		}
-	}
-	if len(a.OwnerIDs) == 0 {
-		return oops.New("owner_ids cannot be empty")
 	}
 	return nil
 }
@@ -171,8 +171,4 @@ func (a *Application) Validate(
 	}
 
 	return nil
-}
-
-func (a *Application) IsOwner(user *User) bool {
-	return user.Admin || lo.Contains(a.OwnerIDs, user.ID)
 }

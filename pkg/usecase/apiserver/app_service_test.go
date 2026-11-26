@@ -104,19 +104,18 @@ func TestCreateApplication(t *testing.T) {
 					},
 				},
 				PortPublications: []*domain.PortPublication{},
-				OwnerIDs:         []string{user.ID},
 				CreatedAt:        time.Now(),
 				UpdatedAt:        time.Now(),
 			}
 
 			// Act
-			createdApp, err := svc.CreateApplication(ctx, app)
+			createdApp, err := svc.CreateApplication(ctx, app, optional.None[string]())
 			if err != nil {
 				t.Fatal(err)
 			}
 
 			// Assert
-			diff := cmp.Diff(app, createdApp, cmpopts.EquateApproxTime(time.Second), cmpopts.IgnoreUnexported(domain.BuildConfigRuntimeBuildpack{}))
+			diff := cmp.Diff(app, createdApp.App, cmpopts.EquateApproxTime(time.Second), cmpopts.IgnoreUnexported(domain.BuildConfigRuntimeBuildpack{}))
 			if diff != "" {
 				t.Errorf("created application should be equal to the input (-want +got):\n%s", diff)
 			}
@@ -228,12 +227,11 @@ func TestCreateApplication_DuplicateURL(t *testing.T) {
 					},
 				},
 				PortPublications: []*domain.PortPublication{},
-				OwnerIDs:         []string{user.ID},
 				CreatedAt:        time.Now(),
 				UpdatedAt:        time.Now(),
 			}
 
-			_, err = svc.CreateApplication(ctx, firstApp)
+			_, err = svc.CreateApplication(ctx, firstApp, optional.None[string]())
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -262,13 +260,12 @@ func TestCreateApplication_DuplicateURL(t *testing.T) {
 					},
 				},
 				PortPublications: []*domain.PortPublication{},
-				OwnerIDs:         []string{user.ID},
 				CreatedAt:        time.Now(),
 				UpdatedAt:        time.Now(),
 			}
 
 			// Act
-			_, err = svc.CreateApplication(ctx, secondApp)
+			_, err = svc.CreateApplication(ctx, secondApp, optional.None[string]())
 
 			// Assert
 			if tt.expectError {
@@ -378,12 +375,12 @@ func TestDeleteApplication(t *testing.T) {
 						Authentication: domain.AuthenticationTypeOff,
 					},
 				},
-				OwnerIDs: []string{user.ID},
 			}
-			app, err = svc.CreateApplication(ctx, app)
+			created, err := svc.CreateApplication(ctx, app, optional.None[string]())
 			if err != nil {
 				t.Fatal(err)
 			}
+			app = created.App
 
 			// Act
 			err = svc.DeleteApplication(ctx, app.ID)
@@ -478,18 +475,18 @@ func TestUpdateApplication(t *testing.T) {
 						Authentication: domain.AuthenticationTypeOff,
 					},
 				},
-				OwnerIDs: []string{user.ID},
 			}
-			app, err = svc.CreateApplication(ctx, app)
+			created, err := svc.CreateApplication(ctx, app, optional.None[string]())
 			if err != nil {
 				t.Fatal(err)
 			}
+			app = created.App
 
 			// Act
 			app.Name = tt.updatedName
 			err = svc.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{
 				Name: optional.From(app.Name),
-			})
+			}, optional.None[[]string]())
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -507,30 +504,19 @@ func TestUpdateApplication(t *testing.T) {
 	}
 }
 
-func TestUpdateApplication_UpdateMariaDBConfigIsNotAllowed(t *testing.T) {
+func TestUpdateApplication_UpdateDBConfigIsNotAllowed(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name              string
-		initialUseMariaDB bool
-		updatedUseMariaDB bool
-		expectError       bool
-		errorMessage      string
+		name    string
+		initial domain.BuildConfigRuntimeBuildpack
+		updated domain.BuildConfigRuntimeBuildpack
+		wantErr string
 	}{
-		{
-			name:              "disable MariaDB should fail",
-			initialUseMariaDB: true,
-			updatedUseMariaDB: false,
-			expectError:       true,
-			errorMessage:      "should fail to disable mariadb",
-		},
-		{
-			name:              "enable MariaDB should fail",
-			initialUseMariaDB: false,
-			updatedUseMariaDB: true,
-			expectError:       true,
-			errorMessage:      "should fail to enable mariadb",
-		},
+		{name: "disable MariaDB should fail", initial: domain.BuildConfigRuntimeBuildpack{UseMariaDB: true}, wantErr: "use_mariadb is immutable"},
+		{name: "enable MariaDB should fail", updated: domain.BuildConfigRuntimeBuildpack{UseMariaDB: true}, wantErr: "use_mariadb is immutable"},
+		{name: "disable MongoDB should fail", initial: domain.BuildConfigRuntimeBuildpack{UseMongoDB: true}, wantErr: "use_mongodb is immutable"},
+		{name: "enable MongoDB should fail", updated: domain.BuildConfigRuntimeBuildpack{UseMongoDB: true}, wantErr: "use_mongodb is immutable"},
 	}
 
 	for _, tt := range tests {
@@ -578,7 +564,8 @@ func TestUpdateApplication_UpdateMariaDBConfigIsNotAllowed(t *testing.T) {
 				Commit:       domain.EmptyCommit,
 				Config: domain.ApplicationConfig{
 					BuildConfig: &domain.BuildConfigRuntimeBuildpack{
-						UseMariaDB: tt.initialUseMariaDB,
+						UseMariaDB: tt.initial.UseMariaDB,
+						UseMongoDB: tt.initial.UseMongoDB,
 						Context:    ".",
 					},
 				},
@@ -592,28 +579,22 @@ func TestUpdateApplication_UpdateMariaDBConfigIsNotAllowed(t *testing.T) {
 					},
 				},
 				PortPublications: []*domain.PortPublication{},
-				OwnerIDs:         []string{user.ID},
 			}
-			app, err = svc.CreateApplication(ctx, app)
+			created, err := svc.CreateApplication(ctx, app, optional.None[string]())
 			if err != nil {
 				t.Fatal(err)
 			}
+			app = created.App
 
 			// Act
 			err = svc.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{
 				Config: optional.From(domain.ApplicationConfig{
-					BuildConfig: &domain.BuildConfigRuntimeBuildpack{
-						UseMariaDB: tt.updatedUseMariaDB,
-					},
+					BuildConfig: &tt.updated,
 				}),
-			})
+			}, optional.None[[]string]())
 
 			// Assert
-			if tt.expectError {
-				assert.Error(t, err, tt.errorMessage)
-			} else {
-				assert.NoError(t, err, "should not fail")
-			}
+			assert.ErrorContains(t, err, tt.wantErr)
 		})
 	}
 }

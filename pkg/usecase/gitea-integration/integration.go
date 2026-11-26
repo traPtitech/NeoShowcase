@@ -38,9 +38,10 @@ type Integration struct {
 	interval    time.Duration
 	concurrency int
 
-	gitRepo  domain.GitRepositoryRepository
-	appRepo  domain.ApplicationRepository
-	userRepo domain.UserRepository
+	gitRepo   domain.GitRepositoryRepository
+	appRepo   domain.ApplicationRepository
+	groupRepo domain.ApplicationGroupRepository
+	userRepo  domain.UserRepository
 
 	cancel func()
 	syncer *scutil.Coalescer
@@ -50,6 +51,7 @@ func NewIntegration(
 	c Config,
 	gitRepo domain.GitRepositoryRepository,
 	appRepo domain.ApplicationRepository,
+	groupRepo domain.ApplicationGroupRepository,
 	userRepo domain.UserRepository,
 ) (*Integration, error) {
 	// Validate config
@@ -73,9 +75,10 @@ func NewIntegration(
 		interval:    time.Duration(c.IntervalSeconds) * time.Second,
 		concurrency: c.Concurrency,
 
-		gitRepo:  gitRepo,
-		appRepo:  appRepo,
-		userRepo: userRepo,
+		gitRepo:   gitRepo,
+		appRepo:   appRepo,
+		groupRepo: groupRepo,
+		userRepo:  userRepo,
 	}
 	i.syncer = scutil.NewCoalescer(i.syncAndLog)
 	return i, nil
