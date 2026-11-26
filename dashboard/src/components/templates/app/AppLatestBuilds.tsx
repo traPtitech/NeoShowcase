@@ -30,6 +30,7 @@ const AppLatestBuilds: Component<{
     <List.Container>
       <For
         each={latestBuilds()}
+        keyed={(build) => build.id}
         fallback={
           <List.PlaceHolder>
             <div class="i-material-symbols:deployed-code-outline text-20/20 shrink-0" />
@@ -46,7 +47,7 @@ const AppLatestBuilds: Component<{
           </List.PlaceHolder>
         }
       >
-        {(build) => <BuildRow build={build} commits={commits()} isCurrent={build.id === props.app.currentBuild} />}
+        {(build) => <BuildRow build={build()} commits={commits()} isCurrent={build().id === props.app.currentBuild} />}
       </For>
     </List.Container>
   )

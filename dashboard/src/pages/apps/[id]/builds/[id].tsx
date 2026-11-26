@@ -43,7 +43,9 @@ export default () => {
           <DataTable.Container>
             <DataTable.Title>Artifacts</DataTable.Title>
             <List.Container>
-              <For each={build().artifacts}>{(artifact) => <ArtifactRow artifact={artifact} />}</For>
+              <For each={build().artifacts} keyed={(artifact) => artifact.id}>
+                {(artifact) => <ArtifactRow artifact={artifact()} />}
+              </For>
             </List.Container>
           </DataTable.Container>
         </Show>
