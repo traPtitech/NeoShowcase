@@ -1,6 +1,6 @@
 import { type Timestamp, timestampDate, timestampNow } from '@bufbuild/protobuf/wkt'
 import { Code, ConnectError } from '@connectrpc/connect'
-import { type Component, createEffect, createSignal, For, Show } from 'solid-js'
+import { type Component, createEffect, createMemo, createSignal, For, Show } from 'solid-js'
 import type { ApplicationOutput } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { ContainerLogExport } from '/@/components/templates/app/ContainerLogExport'
 import { Button } from '/@/components/UI/Button'
@@ -69,28 +69,29 @@ export const ContainerLog: Component<ContainerLogProps> = (props) => {
   }
 
   // (Re)start for each app: load logs before now, and stream logs from now on.
-  createEffect(
-    () => props.appID,
-    (appID) => {
-      const begin = timestampNow()
-      setLogs([])
-      setLoadedUntil(begin)
-      void load(appID, begin)
+  // `props.appID` comes from the app query, which goes pending on every revalidation (the page polls it). An effect
+  // whose compute reads that directly re-runs when it settles even with the same id, which would wipe the loaded logs
+  // and restart the stream; the memo only propagates an actual change of id.
+  const appID = createMemo(() => props.appID)
+  createEffect(appID, (appID) => {
+    const begin = timestampNow()
+    setLogs([])
+    setLoadedUntil(begin)
+    void load(appID, begin)
 
-      const abort = new AbortController()
-      void (async () => {
-        try {
-          for await (const log of client.getOutputStream({ applicationId: appID, begin }, { signal: abort.signal })) {
-            setLogs((prev) => stripLogLines(prev.concat(log)))
-          }
-        } catch (err) {
-          const isAbortErr = err instanceof ConnectError && err.code === Code.Canceled
-          if (!isAbortErr) console.trace(err)
+    const abort = new AbortController()
+    void (async () => {
+      try {
+        for await (const log of client.getOutputStream({ applicationId: appID, begin }, { signal: abort.signal })) {
+          setLogs((prev) => stripLogLines(prev.concat(log)))
         }
-      })()
-      return () => abort.abort()
-    },
-  )
+      } catch (err) {
+        const isAbortErr = err instanceof ConnectError && err.code === Code.Canceled
+        if (!isAbortErr) console.trace(err)
+      }
+    })()
+    return () => abort.abort()
+  })
 
   let logRef!: HTMLElement
   let atBottom = true

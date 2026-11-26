@@ -474,10 +474,19 @@ const routes = (router: ConnectRouter) => {
         ),
       })
     },
-    getOutput: () =>
-      create(ApplicationOutputsSchema, {
-        outputs: [create(ApplicationOutputSchema, { time: ts('2024-01-02T00:00:00Z'), log: 'previous log line' })],
-      }),
+    // one line a minute older than `before` per call: 'previous log line', then 'older log line 1', 2, ...
+    getOutput: (req) => {
+      const n = requestsTo('getOutput').length - 1
+      const before = req.before?.seconds ?? BigInt(Math.floor(Date.now() / 1000))
+      return create(ApplicationOutputsSchema, {
+        outputs: [
+          create(ApplicationOutputSchema, {
+            time: create(TimestampSchema, { seconds: before - 60n }),
+            log: n === 0 ? 'previous log line' : `older log line ${n}`,
+          }),
+        ],
+      })
+    },
     // yields a couple of lines, then keeps the stream open until the client aborts
     getOutputStream: async function* (_req, ctx) {
       yield create(ApplicationOutputSchema, { time: ts('2024-01-02T00:00:01Z'), log: 'streamed line 1' })

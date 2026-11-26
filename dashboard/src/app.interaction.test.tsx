@@ -1,5 +1,6 @@
 import { Code } from '@connectrpc/connect'
 import { describe, expect, it } from 'vitest'
+import { revalidateApplication } from '/@/libs/api'
 import {
   button,
   buttonContaining,
@@ -198,6 +199,29 @@ describe('interactions', () => {
       click(ctx, link(ctx, '/apps'))
       await settle(ctx, () => expect(window.location.pathname).toBe('/apps'))
       await waitForText(ctx, 'static-app')
+    })
+  })
+
+  it('app page: "Load more" prepends older container logs and keeps the loaded ones', async () => {
+    await scenario('container log load more', '/apps/app-runtime', async (ctx) => {
+      await waitForText(ctx, 'previous log line', 'streamed line 1', 'streamed line 2')
+      click(ctx, button(ctx, 'Load more'))
+      await waitForText(ctx, 'older log line 1', 'previous log line', 'streamed line 1', 'streamed line 2')
+      click(ctx, button(ctx, 'Load more'))
+      await waitForText(ctx, 'older log line 2', 'older log line 1', 'previous log line', 'streamed line 2')
+      // the page revalidates the app every 10s; the loaded logs must survive it
+      const fetched = ctx.backend.requestsTo('getApplication').length
+      revalidateApplication('app-runtime')
+      await settle(ctx, () => expect(ctx.backend.requestsTo('getApplication').length).toBeGreaterThan(fetched))
+      await idle(ctx, 200)
+      for (const t of ['older log line 2', 'older log line 1', 'previous log line', 'streamed line 1']) {
+        expect(ctx.screen.textContent).toContain(t)
+      }
+      // each request continues from the oldest line loaded so far
+      const befores = ctx.backend.requestsTo('getOutput').map((r) => (r.before as { seconds: bigint }).seconds)
+      expect(befores).toHaveLength(3)
+      expect(befores[1]).toBe(befores[0] - 60n)
+      expect(befores[2]).toBe(befores[1] - 60n)
     })
   })
 
