@@ -72,7 +72,7 @@ jobs:
       DOCKER_API_VERSION: '1.43'
     services:
       mysql:
-        image: mysql:8
+        image: mysql:26
         options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=3s --health-retries=10
         env:
           MYSQL_ROOT_PASSWORD: password
