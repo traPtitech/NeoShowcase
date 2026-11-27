@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/aarondl/sqlboiler/v4/boil"
 	"github.com/aarondl/sqlboiler/v4/queries/qm"
@@ -230,25 +231,21 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 }
 
 func (r *applicationRepository) BulkUpdateState(ctx context.Context, states []*domain.Container) error {
-	// NOTE: sqlboiler does not support bulk insert/update by default, could use custom templating
-	// Run all updates in one transaction: with autocommit, every UPDATE pays a commit and the total grows with the number of apps.
+	if len(states) == 0 {
+		return nil
+	}
+
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return oops.Wrapf(err, "starting transaction")
 	}
 	defer tx.Rollback()
 
-	for _, state := range states {
-		ma := models.Application{
-			ID:               state.ApplicationID,
-			Container:        repoconvert.ContainerStateMapper.FromMust(state.State),
-			ContainerMessage: state.Message,
-		}
-		_, err := ma.Update(ctx, tx, boil.Whitelist(
-			models.ApplicationColumns.Container,
-			models.ApplicationColumns.ContainerMessage,
-		))
-		if err != nil {
+	// Each statement costs a round trip to the DB, so update many apps per statement.
+	// UPDATE is used instead of INSERT ... ON DUPLICATE KEY UPDATE so that apps deleted meanwhile are not re-created.
+	for _, chunk := range lo.Chunk(states, bulkUpdateStateChunkSize) {
+		query, args := bulkUpdateStateQuery(chunk)
+		if _, err = tx.ExecContext(ctx, query, args...); err != nil {
 			return oops.Wrapf(err, "updating container state")
 		}
 	}
@@ -257,6 +254,42 @@ func (r *applicationRepository) BulkUpdateState(ctx context.Context, states []*d
 		return oops.Wrapf(err, "committing transaction")
 	}
 	return nil
+}
+
+// bulkUpdateStateChunkSize keeps each statement at 5 placeholders per row, well under MySQL's limit of 65535.
+const bulkUpdateStateChunkSize = 500
+
+// bulkUpdateStateQuery builds one UPDATE that sets container and container_message of each given app.
+// IDs without a row are ignored; no row is inserted.
+func bulkUpdateStateQuery(states []*domain.Container) (string, []any) {
+	var containerCase, messageCase, inList strings.Builder
+	args := make([]any, 0, len(states)*5)
+	containerArgs := make([]any, 0, len(states)*2)
+	messageArgs := make([]any, 0, len(states)*2)
+	idArgs := make([]any, 0, len(states))
+	for i, state := range states {
+		containerCase.WriteString(" WHEN ? THEN ?")
+		containerArgs = append(containerArgs, state.ApplicationID, repoconvert.ContainerStateMapper.FromMust(state.State))
+		messageCase.WriteString(" WHEN ? THEN ?")
+		messageArgs = append(messageArgs, state.ApplicationID, state.Message)
+		if i > 0 {
+			inList.WriteString(", ")
+		}
+		inList.WriteString("?")
+		idArgs = append(idArgs, state.ApplicationID)
+	}
+	args = append(args, containerArgs...)
+	args = append(args, messageArgs...)
+	args = append(args, idArgs...)
+
+	query := fmt.Sprintf(
+		"UPDATE `%s` SET `%s` = CASE `%s`%s END, `%s` = CASE `%s`%s END WHERE `%s` IN (%s)",
+		models.TableNames.Applications,
+		models.ApplicationColumns.Container, models.ApplicationColumns.ID, containerCase.String(),
+		models.ApplicationColumns.ContainerMessage, models.ApplicationColumns.ID, messageCase.String(),
+		models.ApplicationColumns.ID, inList.String(),
+	)
+	return query, args
 }
 
 func (r *applicationRepository) DeleteApplication(ctx context.Context, id string) error {
