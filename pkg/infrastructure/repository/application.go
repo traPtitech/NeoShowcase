@@ -5,15 +5,16 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/aarondl/null/v8"
 	"github.com/aarondl/sqlboiler/v4/boil"
 	"github.com/aarondl/sqlboiler/v4/queries/qm"
-	"github.com/samber/lo"
 	"github.com/samber/oops"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository/models"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository/repoconvert"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
+	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
 type applicationRepository struct {
@@ -32,7 +33,6 @@ func (r *applicationRepository) GetApplications(ctx context.Context, cond domain
 		qm.Load(models.ApplicationRels.Repository),
 		qm.Load(models.ApplicationRels.Websites),
 		qm.Load(models.ApplicationRels.PortPublications),
-		qm.Load(models.ApplicationRels.Users),
 	}
 
 	if cond.IDIn.Valid {
@@ -41,15 +41,18 @@ func (r *applicationRepository) GetApplications(ctx context.Context, cond domain
 	if cond.RepositoryID.Valid {
 		mods = append(mods, models.ApplicationWhere.RepositoryID.EQ(cond.RepositoryID.V))
 	}
+	if cond.GroupID.Valid {
+		mods = append(mods, models.ApplicationWhere.GroupID.EQ(null.StringFrom(cond.GroupID.V)))
+	}
 	if cond.UserID.Valid {
 		mods = append(mods,
 			qm.InnerJoin(fmt.Sprintf(
-				"%s ON %s.application_id = %s",
-				models.TableNames.ApplicationOwners,
-				models.TableNames.ApplicationOwners,
-				models.ApplicationTableColumns.ID,
+				"%s ON %s.group_id = %s",
+				models.TableNames.ApplicationGroupOwners,
+				models.TableNames.ApplicationGroupOwners,
+				models.ApplicationTableColumns.GroupID,
 			)),
-			qm.Where(fmt.Sprintf("%s.user_id = ?", models.TableNames.ApplicationOwners), cond.UserID.V),
+			qm.Where(fmt.Sprintf("%s.user_id = ?", models.TableNames.ApplicationGroupOwners), cond.UserID.V),
 		)
 	}
 	if cond.DeployType.Valid {
@@ -73,7 +76,6 @@ func (r *applicationRepository) getApplication(ctx context.Context, id string, f
 		qm.Load(models.ApplicationRels.Repository),
 		qm.Load(models.ApplicationRels.Websites),
 		qm.Load(models.ApplicationRels.PortPublications),
-		qm.Load(models.ApplicationRels.Users),
 	}
 	if forUpdate {
 		mods = append(mods, qm.For("UPDATE"))
@@ -96,13 +98,16 @@ func (r *applicationRepository) GetApplication(ctx context.Context, id string) (
 	return repoconvert.ToDomainApplication(app), nil
 }
 
-func (r *applicationRepository) CreateApplication(ctx context.Context, app *domain.Application) error {
+func (r *applicationRepository) CreateApplication(ctx context.Context, app *domain.Application, implicitGroup optional.Of[*domain.ApplicationGroup]) error {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return oops.Wrapf(err, "starting transaction")
 	}
 	defer tx.Rollback()
 
+	if err = joinApplicationGroup(ctx, tx, app.GroupID, implicitGroup); err != nil {
+		return err
+	}
 	ma := repoconvert.FromDomainApplication(app)
 	if err = ma.Insert(ctx, tx, boil.Blacklist()); err != nil {
 		return oops.Wrapf(err, "creating application")
@@ -124,11 +129,6 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, app *doma
 		return err
 	}
 
-	err = r.setOwners(ctx, tx, ma, app.OwnerIDs)
-	if err != nil {
-		return err
-	}
-
 	if err = tx.Commit(); err != nil {
 		return oops.Wrapf(err, "committing transaction")
 	}
@@ -136,7 +136,7 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, app *doma
 	return nil
 }
 
-func (r *applicationRepository) UpdateApplication(ctx context.Context, id string, args *domain.UpdateApplicationArgs) error {
+func (r *applicationRepository) UpdateApplication(ctx context.Context, id string, args *domain.UpdateApplicationArgs, owners optional.Of[domain.ImplicitGroupOwners]) error {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return oops.Wrapf(err, "starting transaction")
@@ -146,6 +146,22 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 	app, err := r.getApplication(ctx, id, true, tx)
 	if err != nil {
 		return err
+	}
+
+	if owners.Valid {
+		if err = checkApplicationStillIn(app, owners.V.GroupID); err != nil {
+			return err
+		}
+		group, err := getApplicationGroup(ctx, tx, owners.V.GroupID)
+		if err != nil {
+			return err
+		}
+		if !group.Implicit {
+			return oops.Errorf("group %v is not implicit", group.ID)
+		}
+		if err = setApplicationGroupOwners(ctx, tx, group, owners.V.OwnerIDs); err != nil {
+			return err
+		}
 	}
 
 	var cols []string
@@ -214,19 +230,90 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 			return err
 		}
 	}
-	if args.OwnerIDs.Valid {
-		err = r.setOwners(ctx, tx, app, args.OwnerIDs.V)
-		if err != nil {
-			return err
-		}
-	}
-
 	err = tx.Commit()
 	if err != nil {
 		return oops.Wrapf(err, "committing transaction")
 	}
 
 	return err
+}
+
+func (r *applicationRepository) SetApplicationGroup(ctx context.Context, id, fromGroupID, toGroupID string, implicitGroup optional.Of[*domain.ApplicationGroup]) error {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return oops.Wrapf(err, "starting transaction")
+	}
+	defer tx.Rollback()
+
+	app, err := r.getApplication(ctx, id, true, tx)
+	if err != nil {
+		return err
+	}
+	if err = checkApplicationStillIn(app, fromGroupID); err != nil {
+		return err
+	}
+	if err = joinApplicationGroup(ctx, tx, toGroupID, implicitGroup); err != nil {
+		return err
+	}
+	app.GroupID = null.StringFrom(toGroupID)
+	if _, err = app.Update(ctx, tx, boil.Whitelist(models.ApplicationColumns.GroupID)); err != nil {
+		return oops.Wrapf(err, "updating application group")
+	}
+	if err = deleteImplicitApplicationGroup(ctx, tx, null.StringFrom(fromGroupID)); err != nil {
+		return err
+	}
+
+	if err = tx.Commit(); err != nil {
+		return oops.Wrapf(err, "committing transaction")
+	}
+	return nil
+}
+
+// checkApplicationStillIn fails when app has left the group the caller checked it in.
+func checkApplicationStillIn(app *models.Application, groupID string) error {
+	if app.GroupID.String != groupID {
+		return domain.NewError(domain.ErrorTypeFailedPrecondition, "the application has moved to another group", nil)
+	}
+	return nil
+}
+
+// joinApplicationGroup prepares the group of groupID for an application to join.
+// With implicitGroup, it creates implicitGroup as the group of the application; an implicit group holds only one application.
+// Without it, the group has to be an existing group a user created.
+func joinApplicationGroup(ctx context.Context, ex boil.ContextExecutor, groupID string, implicitGroup optional.Of[*domain.ApplicationGroup]) error {
+	if implicitGroup.Valid {
+		if !implicitGroup.V.Implicit || implicitGroup.V.ID != groupID {
+			return oops.Errorf("group %v is not an implicit group of id %v", implicitGroup.V.ID, groupID)
+		}
+		return insertApplicationGroup(ctx, ex, implicitGroup.V)
+	}
+	group, err := getApplicationGroup(ctx, ex, groupID)
+	if err != nil {
+		return err
+	}
+	if group.Implicit {
+		return oops.Errorf("group %v is implicit and holds another application", groupID)
+	}
+	return nil
+}
+
+// deleteImplicitApplicationGroup deletes the group of groupID if it is implicit.
+// Call it after the application in the group has left it.
+func deleteImplicitApplicationGroup(ctx context.Context, ex boil.ContextExecutor, groupID null.String) error {
+	if !groupID.Valid {
+		return nil
+	}
+	group, err := models.ApplicationGroups(
+		models.ApplicationGroupWhere.ID.EQ(groupID.String),
+		models.ApplicationGroupWhere.Implicit.EQ(true),
+	).One(ctx, ex)
+	if err != nil {
+		if isNoRowsErr(err) {
+			return nil
+		}
+		return oops.Wrapf(err, "getting application group")
+	}
+	return deleteApplicationGroup(ctx, ex, group)
 }
 
 func (r *applicationRepository) BulkUpdateState(ctx context.Context, states []*domain.Container) error {
@@ -260,29 +347,44 @@ func (r *applicationRepository) BulkUpdateState(ctx context.Context, states []*d
 }
 
 func (r *applicationRepository) DeleteApplication(ctx context.Context, id string) error {
-	app, err := r.getApplication(ctx, id, false, r.db)
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return oops.Wrapf(err, "starting transaction")
+	}
+	defer tx.Rollback()
+
+	app, err := r.getApplication(ctx, id, true, tx)
 	if err != nil {
 		return err
 	}
-	err = app.SetUsers(ctx, r.db, false)
+	// application_owners keeps the owners before groups as the source of the group migration.
+	// Its rows reference the application, so they have to go first.
+	err = app.SetUsers(ctx, tx, false)
 	if err != nil {
-		return oops.Wrapf(err, "deleting application owners")
+		return oops.Wrapf(err, "deleting legacy application owners")
 	}
-	_, err = app.R.PortPublications.DeleteAll(ctx, r.db)
+	_, err = app.R.PortPublications.DeleteAll(ctx, tx)
 	if err != nil {
 		return oops.Wrapf(err, "deleting port publications")
 	}
-	_, err = app.R.Websites.DeleteAll(ctx, r.db)
+	_, err = app.R.Websites.DeleteAll(ctx, tx)
 	if err != nil {
 		return oops.Wrapf(err, "deleting websites")
 	}
-	_, err = app.R.ApplicationConfig.Delete(ctx, r.db)
+	_, err = app.R.ApplicationConfig.Delete(ctx, tx)
 	if err != nil {
 		return oops.Wrapf(err, "deleting application config")
 	}
-	_, err = app.Delete(ctx, r.db)
+	_, err = app.Delete(ctx, tx)
 	if err != nil {
 		return oops.Wrapf(err, "deleting application")
+	}
+	if err = deleteImplicitApplicationGroup(ctx, tx, app.GroupID); err != nil {
+		return err
+	}
+
+	if err = tx.Commit(); err != nil {
+		return oops.Wrapf(err, "committing transaction")
 	}
 	return nil
 }
@@ -317,22 +419,6 @@ func (r *applicationRepository) setPortPublications(ctx context.Context, ex boil
 		if err != nil {
 			return oops.Wrapf(err, "inserting port publication")
 		}
-	}
-	return nil
-}
-
-func (r *applicationRepository) setOwners(ctx context.Context, ex boil.ContextExecutor, app *models.Application, ownerIDs []string) error {
-	ownerIDs = lo.Uniq(ownerIDs)
-	users, err := models.Users(models.UserWhere.ID.IN(ownerIDs)).All(ctx, ex)
-	if err != nil {
-		return oops.Wrapf(err, "getting owners")
-	}
-	if len(users) < len(ownerIDs) {
-		return notFound("user")
-	}
-	err = app.SetUsers(ctx, ex, false, users...)
-	if err != nil {
-		return oops.Wrapf(err, "adding owners")
 	}
 	return nil
 }

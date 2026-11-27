@@ -18,6 +18,7 @@ type Service struct {
 	artifactRepo     domain.ArtifactRepository
 	runtimeImageRepo domain.RuntimeImageRepository
 	appRepo          domain.ApplicationRepository
+	groupRepo        domain.ApplicationGroupRepository
 	buildRepo        domain.BuildRepository
 	envRepo          domain.EnvironmentRepository
 	gitRepo          domain.GitRepositoryRepository
@@ -41,6 +42,7 @@ func NewService(
 	artifactRepo domain.ArtifactRepository,
 	runtimeImageRepo domain.RuntimeImageRepository,
 	appRepo domain.ApplicationRepository,
+	groupRepo domain.ApplicationGroupRepository,
 	buildRepo domain.BuildRepository,
 	envRepo domain.EnvironmentRepository,
 	gitRepo domain.GitRepositoryRepository,
@@ -60,6 +62,7 @@ func NewService(
 		artifactRepo:     artifactRepo,
 		runtimeImageRepo: runtimeImageRepo,
 		appRepo:          appRepo,
+		groupRepo:        groupRepo,
 		buildRepo:        buildRepo,
 		envRepo:          envRepo,
 		gitRepo:          gitRepo,
@@ -93,31 +96,41 @@ func (s *Service) isRepositoryOwner(ctx context.Context, repoID string) error {
 }
 
 func (s *Service) isApplicationOwner(ctx context.Context, appID string) error {
-	user := web.GetUser(ctx)
+	_, _, err := s.getOwnedApplication(ctx, appID)
+	return err
+}
+
+// getOwnedApplication returns the application and its group when the user may operate the application.
+func (s *Service) getOwnedApplication(ctx context.Context, appID string) (*domain.Application, *domain.ApplicationGroup, error) {
 	app, err := s.appRepo.GetApplication(ctx, appID)
 	if err != nil {
-		return oops.Wrapf(err, "getting application")
+		return nil, nil, oops.Wrapf(err, "getting application")
 	}
-	if !app.IsOwner(user) {
-		return domain.NewError(domain.ErrorTypeForbidden, "you do not have permission for this application", nil)
+	group, err := s.groupRepo.GetApplicationGroup(ctx, app.GroupID)
+	if err != nil {
+		return nil, nil, oops.Wrapf(err, "getting application group")
+	}
+	// A standalone application hides its group from users, so the refusal names the application.
+	if !group.IsOwner(web.GetUser(ctx)) {
+		return nil, nil, domain.NewError(domain.ErrorTypeForbidden, "you do not have permission for this application", nil)
+	}
+	return app, group, nil
+}
+
+// checkGroupOwner checks that the user may operate a group a user created.
+func checkGroupOwner(ctx context.Context, group *domain.ApplicationGroup) error {
+	if !group.IsOwner(web.GetUser(ctx)) {
+		return domain.NewError(domain.ErrorTypeForbidden, "you do not have permission for this application group", nil)
 	}
 	return nil
 }
 
 func (s *Service) isBuildOwner(ctx context.Context, buildID string) error {
-	user := web.GetUser(ctx)
 	build, err := s.buildRepo.GetBuild(ctx, buildID)
 	if err != nil {
 		return oops.Wrapf(err, "getting build")
 	}
-	app, err := s.appRepo.GetApplication(ctx, build.ApplicationID)
-	if err != nil {
-		return oops.Wrapf(err, "getting application")
-	}
-	if !app.IsOwner(user) {
-		return domain.NewError(domain.ErrorTypeForbidden, "you do not have permission for this application", nil)
-	}
-	return nil
+	return s.isApplicationOwner(ctx, build.ApplicationID)
 }
 
 func (s *Service) isAdmin(ctx context.Context) error {

@@ -74,6 +74,23 @@ const (
 	// APIServiceDeleteApplicationProcedure is the procedure name of the APIService's DeleteApplication
 	// RPC.
 	APIServiceDeleteApplicationProcedure = "/neoshowcase.protobuf.APIService/DeleteApplication"
+	// APIServiceMoveApplicationProcedure is the procedure name of the APIService's MoveApplication RPC.
+	APIServiceMoveApplicationProcedure = "/neoshowcase.protobuf.APIService/MoveApplication"
+	// APIServiceCreateApplicationGroupProcedure is the procedure name of the APIService's
+	// CreateApplicationGroup RPC.
+	APIServiceCreateApplicationGroupProcedure = "/neoshowcase.protobuf.APIService/CreateApplicationGroup"
+	// APIServiceGetApplicationGroupsProcedure is the procedure name of the APIService's
+	// GetApplicationGroups RPC.
+	APIServiceGetApplicationGroupsProcedure = "/neoshowcase.protobuf.APIService/GetApplicationGroups"
+	// APIServiceGetApplicationGroupProcedure is the procedure name of the APIService's
+	// GetApplicationGroup RPC.
+	APIServiceGetApplicationGroupProcedure = "/neoshowcase.protobuf.APIService/GetApplicationGroup"
+	// APIServiceUpdateApplicationGroupProcedure is the procedure name of the APIService's
+	// UpdateApplicationGroup RPC.
+	APIServiceUpdateApplicationGroupProcedure = "/neoshowcase.protobuf.APIService/UpdateApplicationGroup"
+	// APIServiceDeleteApplicationGroupProcedure is the procedure name of the APIService's
+	// DeleteApplicationGroup RPC.
+	APIServiceDeleteApplicationGroupProcedure = "/neoshowcase.protobuf.APIService/DeleteApplicationGroup"
 	// APIServiceGetAvailableMetricsProcedure is the procedure name of the APIService's
 	// GetAvailableMetrics RPC.
 	APIServiceGetAvailableMetricsProcedure = "/neoshowcase.protobuf.APIService/GetAvailableMetrics"
@@ -267,6 +284,50 @@ var (
 			Procedure:  APIServiceDeleteApplicationProcedure,
 		}
 	})
+	aPIServiceMoveApplicationSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     pb.File_neoshowcase_protobuf_gateway_proto.Services().ByName("APIService").Methods().ByName("MoveApplication"),
+			Procedure:  APIServiceMoveApplicationProcedure,
+		}
+	})
+	aPIServiceCreateApplicationGroupSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     pb.File_neoshowcase_protobuf_gateway_proto.Services().ByName("APIService").Methods().ByName("CreateApplicationGroup"),
+			Procedure:  APIServiceCreateApplicationGroupProcedure,
+		}
+	})
+	aPIServiceGetApplicationGroupsSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType:       connect.StreamTypeUnary,
+			Schema:           pb.File_neoshowcase_protobuf_gateway_proto.Services().ByName("APIService").Methods().ByName("GetApplicationGroups"),
+			Procedure:        APIServiceGetApplicationGroupsProcedure,
+			IdempotencyLevel: connect.IdempotencyNoSideEffects,
+		}
+	})
+	aPIServiceGetApplicationGroupSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType:       connect.StreamTypeUnary,
+			Schema:           pb.File_neoshowcase_protobuf_gateway_proto.Services().ByName("APIService").Methods().ByName("GetApplicationGroup"),
+			Procedure:        APIServiceGetApplicationGroupProcedure,
+			IdempotencyLevel: connect.IdempotencyNoSideEffects,
+		}
+	})
+	aPIServiceUpdateApplicationGroupSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     pb.File_neoshowcase_protobuf_gateway_proto.Services().ByName("APIService").Methods().ByName("UpdateApplicationGroup"),
+			Procedure:  APIServiceUpdateApplicationGroupProcedure,
+		}
+	})
+	aPIServiceDeleteApplicationGroupSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     pb.File_neoshowcase_protobuf_gateway_proto.Services().ByName("APIService").Methods().ByName("DeleteApplicationGroup"),
+			Procedure:  APIServiceDeleteApplicationGroupProcedure,
+		}
+	})
 	aPIServiceGetAvailableMetricsSpec = sync.OnceValue(func() connect.Spec {
 		return connect.Spec{
 			StreamType:       connect.StreamTypeUnary,
@@ -439,6 +500,18 @@ type APIServiceClient interface {
 	UpdateApplication(context.Context, *pb.UpdateApplicationRequest) (*emptypb.Empty, error)
 	// DeleteApplication アプリを削除します 先にアプリのシャットダウンが必要です
 	DeleteApplication(context.Context, *pb.ApplicationIdRequest) (*emptypb.Empty, error)
+	// MoveApplication アプリを別のグループへ移します 移動元と移動先の両方のオーナーである必要があります
+	MoveApplication(context.Context, *pb.MoveApplicationRequest) (*emptypb.Empty, error)
+	// CreateApplicationGroup グループを作成します
+	CreateApplicationGroup(context.Context, *pb.CreateApplicationGroupRequest) (*pb.ApplicationGroup, error)
+	// GetApplicationGroups グループ一覧を取得します
+	GetApplicationGroups(context.Context, *pb.GetApplicationGroupsRequest) (*pb.GetApplicationGroupsResponse, error)
+	// GetApplicationGroup グループを取得します
+	GetApplicationGroup(context.Context, *pb.ApplicationGroupIdRequest) (*pb.ApplicationGroup, error)
+	// UpdateApplicationGroup グループ情報を更新します
+	UpdateApplicationGroup(context.Context, *pb.UpdateApplicationGroupRequest) (*emptypb.Empty, error)
+	// DeleteApplicationGroup グループを削除します 先にグループ内の全アプリの移動か削除が必要です
+	DeleteApplicationGroup(context.Context, *pb.ApplicationGroupIdRequest) (*emptypb.Empty, error)
 	// GetAvailableMetrics 取得可能メトリクス一覧を取得します
 	GetAvailableMetrics(context.Context, *emptypb.Empty) (*pb.AvailableMetrics, error)
 	// GetApplicationMetrics アプリのメトリクスを取得します
@@ -565,6 +638,18 @@ type APIServiceHandler interface {
 	UpdateApplication(context.Context, *pb.UpdateApplicationRequest) (*emptypb.Empty, error)
 	// DeleteApplication アプリを削除します 先にアプリのシャットダウンが必要です
 	DeleteApplication(context.Context, *pb.ApplicationIdRequest) (*emptypb.Empty, error)
+	// MoveApplication アプリを別のグループへ移します 移動元と移動先の両方のオーナーである必要があります
+	MoveApplication(context.Context, *pb.MoveApplicationRequest) (*emptypb.Empty, error)
+	// CreateApplicationGroup グループを作成します
+	CreateApplicationGroup(context.Context, *pb.CreateApplicationGroupRequest) (*pb.ApplicationGroup, error)
+	// GetApplicationGroups グループ一覧を取得します
+	GetApplicationGroups(context.Context, *pb.GetApplicationGroupsRequest) (*pb.GetApplicationGroupsResponse, error)
+	// GetApplicationGroup グループを取得します
+	GetApplicationGroup(context.Context, *pb.ApplicationGroupIdRequest) (*pb.ApplicationGroup, error)
+	// UpdateApplicationGroup グループ情報を更新します
+	UpdateApplicationGroup(context.Context, *pb.UpdateApplicationGroupRequest) (*emptypb.Empty, error)
+	// DeleteApplicationGroup グループを削除します 先にグループ内の全アプリの移動か削除が必要です
+	DeleteApplicationGroup(context.Context, *pb.ApplicationGroupIdRequest) (*emptypb.Empty, error)
 	// GetAvailableMetrics 取得可能メトリクス一覧を取得します
 	GetAvailableMetrics(context.Context, *emptypb.Empty) (*pb.AvailableMetrics, error)
 	// GetApplicationMetrics アプリのメトリクスを取得します
@@ -626,6 +711,12 @@ func RegisterAPIServiceHandler(server *connect.Server, svc APIServiceHandler) {
 		connect.Method{Spec: aPIServiceGetApplicationSpec(), Handler: adapter.getApplication},
 		connect.Method{Spec: aPIServiceUpdateApplicationSpec(), Handler: adapter.updateApplication},
 		connect.Method{Spec: aPIServiceDeleteApplicationSpec(), Handler: adapter.deleteApplication},
+		connect.Method{Spec: aPIServiceMoveApplicationSpec(), Handler: adapter.moveApplication},
+		connect.Method{Spec: aPIServiceCreateApplicationGroupSpec(), Handler: adapter.createApplicationGroup},
+		connect.Method{Spec: aPIServiceGetApplicationGroupsSpec(), Handler: adapter.getApplicationGroups},
+		connect.Method{Spec: aPIServiceGetApplicationGroupSpec(), Handler: adapter.getApplicationGroup},
+		connect.Method{Spec: aPIServiceUpdateApplicationGroupSpec(), Handler: adapter.updateApplicationGroup},
+		connect.Method{Spec: aPIServiceDeleteApplicationGroupSpec(), Handler: adapter.deleteApplicationGroup},
 		connect.Method{Spec: aPIServiceGetAvailableMetricsSpec(), Handler: adapter.getAvailableMetrics},
 		connect.Method{Spec: aPIServiceGetApplicationMetricsSpec(), Handler: adapter.getApplicationMetrics},
 		connect.Method{Spec: aPIServiceGetOutputSpec(), Handler: adapter.getOutput},
@@ -759,6 +850,30 @@ func (UnimplementedAPIServiceHandler) UpdateApplication(context.Context, *pb.Upd
 
 func (UnimplementedAPIServiceHandler) DeleteApplication(context.Context, *pb.ApplicationIdRequest) (*emptypb.Empty, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, "neoshowcase.protobuf.APIService.DeleteApplication is not implemented")
+}
+
+func (UnimplementedAPIServiceHandler) MoveApplication(context.Context, *pb.MoveApplicationRequest) (*emptypb.Empty, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neoshowcase.protobuf.APIService.MoveApplication is not implemented")
+}
+
+func (UnimplementedAPIServiceHandler) CreateApplicationGroup(context.Context, *pb.CreateApplicationGroupRequest) (*pb.ApplicationGroup, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neoshowcase.protobuf.APIService.CreateApplicationGroup is not implemented")
+}
+
+func (UnimplementedAPIServiceHandler) GetApplicationGroups(context.Context, *pb.GetApplicationGroupsRequest) (*pb.GetApplicationGroupsResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neoshowcase.protobuf.APIService.GetApplicationGroups is not implemented")
+}
+
+func (UnimplementedAPIServiceHandler) GetApplicationGroup(context.Context, *pb.ApplicationGroupIdRequest) (*pb.ApplicationGroup, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neoshowcase.protobuf.APIService.GetApplicationGroup is not implemented")
+}
+
+func (UnimplementedAPIServiceHandler) UpdateApplicationGroup(context.Context, *pb.UpdateApplicationGroupRequest) (*emptypb.Empty, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neoshowcase.protobuf.APIService.UpdateApplicationGroup is not implemented")
+}
+
+func (UnimplementedAPIServiceHandler) DeleteApplicationGroup(context.Context, *pb.ApplicationGroupIdRequest) (*emptypb.Empty, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "neoshowcase.protobuf.APIService.DeleteApplicationGroup is not implemented")
 }
 
 func (UnimplementedAPIServiceHandler) GetAvailableMetrics(context.Context, *emptypb.Empty) (*pb.AvailableMetrics, error) {
@@ -988,6 +1103,54 @@ func (c *aPIServiceClient) UpdateApplication(ctx context.Context, req *pb.Update
 func (c *aPIServiceClient) DeleteApplication(ctx context.Context, req *pb.ApplicationIdRequest) (*emptypb.Empty, error) {
 	var res emptypb.Empty
 	if err := c.client.CallUnary(ctx, aPIServiceDeleteApplicationSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *aPIServiceClient) MoveApplication(ctx context.Context, req *pb.MoveApplicationRequest) (*emptypb.Empty, error) {
+	var res emptypb.Empty
+	if err := c.client.CallUnary(ctx, aPIServiceMoveApplicationSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *aPIServiceClient) CreateApplicationGroup(ctx context.Context, req *pb.CreateApplicationGroupRequest) (*pb.ApplicationGroup, error) {
+	var res pb.ApplicationGroup
+	if err := c.client.CallUnary(ctx, aPIServiceCreateApplicationGroupSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *aPIServiceClient) GetApplicationGroups(ctx context.Context, req *pb.GetApplicationGroupsRequest) (*pb.GetApplicationGroupsResponse, error) {
+	var res pb.GetApplicationGroupsResponse
+	if err := c.client.CallUnary(ctx, aPIServiceGetApplicationGroupsSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *aPIServiceClient) GetApplicationGroup(ctx context.Context, req *pb.ApplicationGroupIdRequest) (*pb.ApplicationGroup, error) {
+	var res pb.ApplicationGroup
+	if err := c.client.CallUnary(ctx, aPIServiceGetApplicationGroupSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *aPIServiceClient) UpdateApplicationGroup(ctx context.Context, req *pb.UpdateApplicationGroupRequest) (*emptypb.Empty, error) {
+	var res emptypb.Empty
+	if err := c.client.CallUnary(ctx, aPIServiceUpdateApplicationGroupSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *aPIServiceClient) DeleteApplicationGroup(ctx context.Context, req *pb.ApplicationGroupIdRequest) (*emptypb.Empty, error) {
+	var res emptypb.Empty
+	if err := c.client.CallUnary(ctx, aPIServiceDeleteApplicationGroupSpec(), req, &res); err != nil {
 		return nil, err
 	}
 	return &res, nil
@@ -1365,6 +1528,78 @@ func (h aPIServiceHandler) deleteApplication(ctx context.Context, _ connect.Spec
 		return err
 	}
 	res, err := h.svc.DeleteApplication(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h aPIServiceHandler) moveApplication(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req pb.MoveApplicationRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.MoveApplication(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h aPIServiceHandler) createApplicationGroup(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req pb.CreateApplicationGroupRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.CreateApplicationGroup(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h aPIServiceHandler) getApplicationGroups(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req pb.GetApplicationGroupsRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.GetApplicationGroups(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h aPIServiceHandler) getApplicationGroup(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req pb.ApplicationGroupIdRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.GetApplicationGroup(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h aPIServiceHandler) updateApplicationGroup(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req pb.UpdateApplicationGroupRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.UpdateApplicationGroup(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h aPIServiceHandler) deleteApplicationGroup(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req pb.ApplicationGroupIdRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.DeleteApplicationGroup(ctx, &req)
 	if err != nil {
 		return err
 	}

@@ -220,9 +220,22 @@ message Application {
   ApplicationConfig config = 13;
   repeated Website websites = 14;
   repeated PortPublication port_publications = 15;
+  // アプリを操作できるユーザー アプリが属するグループのオーナー
   repeated string owner_ids = 16;
 
   optional BuildStatus latest_build_status = 17;
+  // アプリが属するグループのID グループに属さない単体のアプリでは空
+  optional string group_id = 18;
+}
+
+// -- Application Group
+
+// ApplicationGroup 複数のアプリをまとめる単位
+// 同じグループのアプリ同士はURLを入れ子にでき、グループのオーナーはグループ内の全アプリを操作できる
+message ApplicationGroup {
+  string id = 1;
+  string name = 2;
+  repeated string owner_ids = 3;
 }
 
 message ApplicationEnvVar {
@@ -414,6 +427,8 @@ message CreateApplicationRequest {
   repeated CreateWebsiteRequest websites = 5;
   repeated PortPublication port_publications = 6;
   bool start_on_create = 7;
+  // 指定しない場合はグループに属さない単体のアプリとして作成する
+  optional string group_id = 8;
 }
 
 message GetApplicationsRequest {
@@ -421,9 +436,11 @@ message GetApplicationsRequest {
     MINE = 0;
     ALL = 1;
     REPOSITORY = 2;
+    GROUP = 3;
   }
   Scope scope = 1;
   optional string repository_id = 2;
+  optional string group_id = 3;
 }
 
 message UpdateApplicationRequest {
@@ -445,7 +462,43 @@ message UpdateApplicationRequest {
   message UpdateOwners {
     repeated string owner_ids = 1;
   }
+  // グループに属さない単体のアプリでのみ指定できる グループに属するアプリのオーナーはグループで編集する
   optional UpdateOwners owner_ids = 8;
+}
+
+message CreateApplicationGroupRequest {
+  string name = 1;
+}
+
+message GetApplicationGroupsRequest {
+  enum Scope {
+    MINE = 0;
+    ALL = 1;
+  }
+  Scope scope = 1;
+}
+
+message GetApplicationGroupsResponse {
+  repeated ApplicationGroup groups = 1;
+}
+
+message ApplicationGroupIdRequest {
+  string group_id = 1;
+}
+
+message UpdateApplicationGroupRequest {
+  string id = 1;
+  optional string name = 2;
+  message UpdateOwners {
+    repeated string owner_ids = 1;
+  }
+  optional UpdateOwners owner_ids = 3;
+}
+
+message MoveApplicationRequest {
+  string application_id = 1;
+  // 指定しない場合はグループから外し、単体のアプリにする
+  optional string group_id = 2;
 }
 
 message GetRepositoriesResponse {
@@ -588,6 +641,25 @@ service APIService {
   rpc UpdateApplication(UpdateApplicationRequest) returns (google.protobuf.Empty);
   // DeleteApplication アプリを削除します 先にアプリのシャットダウンが必要です
   rpc DeleteApplication(ApplicationIdRequest) returns (google.protobuf.Empty);
+  // MoveApplication アプリを別のグループへ移します 移動元と移動先の両方のオーナーである必要があります
+  rpc MoveApplication(MoveApplicationRequest) returns (google.protobuf.Empty);
+
+  // Application Group CRUD
+
+  // CreateApplicationGroup グループを作成します
+  rpc CreateApplicationGroup(CreateApplicationGroupRequest) returns (ApplicationGroup);
+  // GetApplicationGroups グループ一覧を取得します
+  rpc GetApplicationGroups(GetApplicationGroupsRequest) returns (GetApplicationGroupsResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+  // GetApplicationGroup グループを取得します
+  rpc GetApplicationGroup(ApplicationGroupIdRequest) returns (ApplicationGroup) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+  // UpdateApplicationGroup グループ情報を更新します
+  rpc UpdateApplicationGroup(UpdateApplicationGroupRequest) returns (google.protobuf.Empty);
+  // DeleteApplicationGroup グループを削除します 先にグループ内の全アプリの移動か削除が必要です
+  rpc DeleteApplicationGroup(ApplicationGroupIdRequest) returns (google.protobuf.Empty);
 
   // Application info
 

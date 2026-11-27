@@ -59,7 +59,7 @@ func FromPBRepositoryPrivate(repo *pb.RepositoryPrivate) *domain.Repository {
 func ToPBStartBuildRequest(req *domain.StartBuildRequest) *pb.StartBuildRequest {
 	return &pb.StartBuildRequest{
 		Repo: ToPBRepositoryPrivate(req.Repo),
-		App:  ToPBApplication(req.App, nil /* builder does not use this field */),
+		App:  ToPBApplication(req.App, nil, nil /* builder does not use these fields */),
 		AppEnvs: &pb.ApplicationEnvVars{
 			Variables: ds.Map(req.Envs, ToPBEnvironment),
 		},
