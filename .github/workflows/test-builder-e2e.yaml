@@ -34,7 +34,7 @@ jobs:
         include:
           - name: Buildpack
             run: TestBuild_(Runtime|Static)Buildpack
-            services: buildkitd registry buildpack
+            services: buildkitd registry
           - name: Dockerfile
             run: TestBuild_(Runtime|Static)Dockerfile
             services: buildkitd registry

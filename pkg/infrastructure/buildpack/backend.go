@@ -1,145 +1,138 @@
 package buildpack
 
 import (
+	"archive/tar"
 	"context"
+	"encoding/base64"
 	"encoding/json"
-	"fmt"
 	"io"
-	"log/slog"
-	"os"
-	"path/filepath"
+	"path"
 	"strings"
 
-	"github.com/docker/cli/cli/config/configfile"
-	types2 "github.com/docker/cli/cli/config/types"
 	"github.com/samber/oops"
 
-	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/util/tarfs"
 )
 
+const (
+	workspaceDir = "/workspace"
+	layersDir    = "/layers"
+	platformDir  = "/platform"
+	// appDir is also the working directory of the built image, which existing apps may refer to by absolute path.
+	appDir = workspaceDir + "/ns-repo"
+	// exportAnalyzedPath is outside the shared directories, so that the export step never reads analyzed.toml
+	// written by the user code of earlier steps.
+	exportAnalyzedPath = "/tmp/analyzed.toml"
+)
+
 type backend struct {
 	config Config
-	client domain.BuildpackHelperServiceClient
+	runner builder.IsolatedRunner
 }
 
 func NewBuildpackBackend(
 	config Config,
-	client domain.BuildpackHelperServiceClient,
+	runner builder.IsolatedRunner,
 ) builder.BuildpackBackend {
 	return &backend{
 		config: config,
-		client: client,
+		runner: runner,
 	}
 }
 
-func (b *backend) dockerAuth(imageConfig builder.ImageConfig) (s string, ok bool) {
-	if imageConfig.Registry.Username == "" && imageConfig.Registry.Password == "" {
+// registryAuth returns the value of CNB_REGISTRY_AUTH for the registry, or false if no credentials are configured.
+func registryAuth(registry builder.RegistryConfig) (string, bool) {
+	if registry.Username == "" && registry.Password == "" {
 		return "", false
 	}
-	c := configfile.ConfigFile{
-		AuthConfigs: map[string]types2.AuthConfig{
-			imageConfig.Registry.Addr: {
-				Username: imageConfig.Registry.Username,
-				Password: imageConfig.Registry.Password,
-			},
-		},
+	basic := base64.StdEncoding.EncodeToString([]byte(registry.Username + ":" + registry.Password))
+	b, _ := json.Marshal(map[string]string{registry.Addr: "Basic " + basic})
+	return string(b), true
+}
+
+// inputStream is a tar stream written by a goroutine while it is read.
+type inputStream struct {
+	*io.PipeReader
+	done chan struct{}
+}
+
+// Close stops writing the stream and waits for the goroutine writing it to exit.
+func (s *inputStream) Close() error {
+	_ = s.PipeReader.Close()
+	<-s.done
+	return nil
+}
+
+// input returns a tar stream holding the source under appDir and the app environment variables under platformDir/env.
+// The caller must close it.
+func input(repoDir string, env map[string]string) (*inputStream, error) {
+	for k := range env {
+		if k == "" || k == "." || k == ".." || strings.Contains(k, "/") {
+			return nil, oops.Errorf("invalid environment variable name %q", k)
+		}
 	}
-	bytes, _ := json.Marshal(&c)
-	return string(bytes), true
+
+	pr, pw := io.Pipe()
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		tw := tar.NewWriter(pw)
+		err := tarfs.AddDir(tw, repoDir, strings.TrimPrefix(appDir, "/"), setAppMode)
+		if err == nil {
+			err = writeEnvFiles(tw, env)
+		}
+		if err == nil {
+			err = tw.Close()
+		}
+		_ = pw.CloseWithError(err)
+	}()
+	return &inputStream{PipeReader: pr, done: done}, nil
 }
 
-func escapeSingleQuote(s string) string {
-	return strings.ReplaceAll(s, "'", "\\'")
+// setAppMode makes an entry of the app directory accessible to any user, keeping only whether a file is executable,
+// as git does. The built image runs as a user other than the one owning the app directory.
+func setAppMode(h *tar.Header) {
+	switch {
+	case h.Typeflag == tar.TypeSymlink:
+	case h.Typeflag == tar.TypeDir || h.Mode&0o111 != 0:
+		h.Mode = 0o755
+	default:
+		h.Mode = 0o644
+	}
 }
 
-func (b *backend) exec(ctx context.Context, workDir string, cmd []string, env map[string]string, logWriter io.Writer) error {
-	code, err := b.client.Exec(ctx, workDir, cmd, env, logWriter)
-	if err != nil {
+func writeEnvFiles(tw *tar.Writer, env map[string]string) error {
+	envDir := path.Join(strings.TrimPrefix(platformDir, "/"), "env")
+	if err := tw.WriteHeader(&tar.Header{Name: envDir + "/", Mode: 0o700, Typeflag: tar.TypeDir}); err != nil {
 		return err
 	}
-	if code != 0 {
-		return oops.Errorf("command exited with code %d", code)
-	}
-	return nil
-}
-
-func (b *backend) prepareAuth(imageConfig builder.ImageConfig) error {
-	auth, ok := b.dockerAuth(imageConfig)
-	if ok {
-		err := b.exec(context.Background(), "/", []string{"sh", "-c", "mkdir -p ~/.docker"}, nil, io.Discard)
+	for k, v := range env {
+		err := tw.WriteHeader(&tar.Header{Name: path.Join(envDir, k), Mode: 0o600, Size: int64(len(v)), Typeflag: tar.TypeReg})
 		if err != nil {
-			return oops.Wrapf(err, "making ~/.docker directory")
+			return err
 		}
-		err = b.exec(context.Background(), "/", []string{"sh", "-c", fmt.Sprintf(`echo '%s' > ~/.docker/config.json`, escapeSingleQuote(auth))}, nil, io.Discard)
-		if err != nil {
-			return oops.Wrapf(err, "writing ~/.docker/config.json to builder")
+		if _, err := tw.Write([]byte(v)); err != nil {
+			return err
 		}
 	}
 	return nil
-}
-
-func (b *backend) prepareDir(ctx context.Context, localName, remoteName string) (remotePath string, cleanup func(), err error) {
-	remotePath = filepath.Join(b.config.RemoteDir, remoteName)
-	err = b.exec(ctx, b.config.RemoteDir, []string{"mkdir", remotePath}, nil, io.Discard)
-	if err != nil {
-		return "", nil, oops.Wrapf(err, "making remote tmp dir")
-	}
-	cleanup = func() {
-		err := b.exec(context.Background(), b.config.RemoteDir, []string{"rm", "-r", remotePath}, nil, io.Discard)
-		if err != nil {
-			slog.WarnContext(ctx, "failed to remove tmp repo dir", "error", err)
-		}
-	}
-
-	err = b.client.CopyFileTree(ctx, remotePath, tarfs.Compress(localName))
-	if err != nil {
-		cleanup()
-		return "", nil, oops.Wrapf(err, "copying files to container")
-	}
-	return remotePath, cleanup, nil
 }
 
 func (b *backend) Pack(
 	ctx context.Context,
+	buildID string,
 	repoDir string,
 	imageDest string,
 	imageConfig builder.ImageConfig,
 	env map[string]string,
 	logWriter io.Writer,
 ) (path string, err error) {
-	err = b.prepareAuth(imageConfig)
+	in, err := input(repoDir, env)
 	if err != nil {
 		return "", err
 	}
-
-	remoteRepoPath, cleanupRepoDir, err := b.prepareDir(ctx, repoDir, "ns-repo")
-	if err != nil {
-		return "", err
-	}
-	defer cleanupRepoDir()
-
-	localEnvTmp, err := os.MkdirTemp("", "env-")
-	if err != nil {
-		return "", oops.Wrapf(err, "creating env temp dir")
-	}
-	defer os.RemoveAll(localEnvTmp)
-	err = os.Mkdir(filepath.Join(localEnvTmp, "env"), 0700)
-	if err != nil {
-		return "", oops.Wrapf(err, "creating platform env dir")
-	}
-	for k, v := range env {
-		err = os.WriteFile(filepath.Join(localEnvTmp, "env", k), []byte(v), 0600)
-		if err != nil {
-			return "", oops.Wrapf(err, "creating env file")
-		}
-	}
-	remoteEnvPath, cleanupEnvDir, err := b.prepareDir(ctx, localEnvTmp, "ns-env")
-	if err != nil {
-		return "", err
-	}
-	defer cleanupEnvDir()
+	defer in.Close()
 
 	lifecycleEnv := map[string]string{"CNB_PLATFORM_API": b.config.PlatformAPI}
 	// Allow pushing to insecure (http) registry for local development
@@ -148,13 +141,33 @@ func (b *backend) Pack(
 	if imageConfig.Registry.Scheme == "http" {
 		lifecycleEnv["CNB_INSECURE_REGISTRIES"] = imageConfig.Registry.Addr
 	}
-	err = b.exec(ctx,
-		remoteRepoPath,
-		[]string{"/cnb/lifecycle/creator", "-skip-restore", "-platform=" + remoteEnvPath, "-app=.", imageDest},
-		lifecycleEnv,
-		logWriter)
-	if err != nil {
+	exportSecretEnv := map[string]string{}
+	if auth, ok := registryAuth(imageConfig.Registry); ok {
+		exportSecretEnv["CNB_REGISTRY_AUTH"] = auth
+	}
+
+	dirArgs := []string{"-app=" + appDir, "-layers=" + layersDir, "-platform=" + platformDir}
+	// The analyzer runs only in the export step, which runs no user code and is the only step given the credentials.
+	// The image references it resolves (the run image and the previous image) are written outside the shared directories
+	// and handed to the exporter, so user code cannot make the exporter pull other images with the credentials.
+	// The image name is passed as $0 so that it is not interpreted by the shell.
+	exportScript := `/cnb/lifecycle/analyzer -layers=` + layersDir + ` -analyzed=` + exportAnalyzedPath + ` -skip-layers "$0" && ` +
+		`exec /cnb/lifecycle/exporter -app=` + appDir + ` -layers=` + layersDir + ` -analyzed=` + exportAnalyzedPath + ` "$0"`
+
+	job := builder.IsolatedJob{
+		ID:     buildID,
+		Image:  b.config.Image,
+		RunAs:  b.config.RunAs,
+		Shared: []string{workspaceDir, layersDir, platformDir},
+		Input:  in,
+		Steps: []builder.IsolatedStep{
+			{Name: "detect", Cmd: append([]string{"/cnb/lifecycle/detector"}, dirArgs...), WorkDir: appDir, Env: lifecycleEnv},
+			{Name: "build", Cmd: append([]string{"/cnb/lifecycle/builder"}, dirArgs...), WorkDir: appDir, Env: lifecycleEnv},
+			{Name: "export", Cmd: []string{"sh", "-c", exportScript, imageDest}, WorkDir: appDir, Env: lifecycleEnv, SecretEnv: exportSecretEnv},
+		},
+	}
+	if err := b.runner.Run(ctx, job, logWriter); err != nil {
 		return "", err
 	}
-	return remoteRepoPath, nil
+	return appDir, nil
 }

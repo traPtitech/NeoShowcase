@@ -11,17 +11,23 @@ import (
 	"connectrpc.com/connect/v2/connecthttp"
 	"connectrpc.com/otelconnect"
 	buildkit "github.com/moby/buildkit/client"
+	dockerclient "github.com/moby/moby/client"
 	"github.com/samber/oops"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 
 	authdev "github.com/traPtitech/neoshowcase/cmd/auth-dev"
-	buildpackhelper "github.com/traPtitech/neoshowcase/cmd/buildpack-helper"
 	"github.com/traPtitech/neoshowcase/cmd/controller"
 	"github.com/traPtitech/neoshowcase/cmd/gateway"
 	cmdgiteaintegration "github.com/traPtitech/neoshowcase/cmd/gitea-integration"
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/buildpack"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb/pbconnect"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/isolatedrunner"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/isolatedrunner/dockerrunner"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/isolatedrunner/k8srunner"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/log/loki"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/log/victorialogs"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/metrics/prometheus"
@@ -77,23 +83,65 @@ func provideControllerBuilderServiceClient(c Config, auth *grpc.TokenAuthInterce
 	)
 }
 
-func provideBuildpackHelperClient(c Config) domain.BuildpackHelperServiceClient {
-	return grpc.NewBuildpackHelperServiceClient(c.Components.Builder.Buildpack.Helper.Address)
+func provideBuildpackConfig(c Config) buildpack.Config {
+	cc := c.Components.Builder.Buildpack
+	return buildpack.Config{
+		Image:       cc.Image,
+		RunAs:       cc.RunAs,
+		PlatformAPI: cc.PlatformAPI,
+	}
 }
 
-func provideBuildpackHelperServer(
-	c Config,
-	helperServiceHandler pbconnect.BuildpackHelperServiceHandler,
-) *buildpackhelper.APIServer {
-	wc := web.H2CConfig{
-		Port: c.Components.Builder.Buildpack.Helper.ListenPort,
-		SetupRoute: func(mux *http.ServeMux) {
-			server := connect.NewServer()
-			pbconnect.RegisterBuildpackHelperServiceHandler(server, helperServiceHandler)
-			connecthttp.Mount(mux, server, connecthttp.WithReadMaxBytes(0))
-		},
+// builderHostname returns the hostname that runners label their resources with, to reclaim them after the builder restarts.
+func builderHostname() (string, error) {
+	hostname, err := os.Hostname()
+	if err != nil {
+		return "", oops.Wrapf(err, "getting hostname")
 	}
-	return &buildpackhelper.APIServer{H2CServer: web.NewH2CServer(wc)}
+	return hostname, nil
+}
+
+func provideK8sRunnerOptions(c Config, builderConfig *ubuilder.Config) (k8srunner.Options, error) {
+	hostname, err := builderHostname()
+	if err != nil {
+		return k8srunner.Options{}, err
+	}
+	cc := c.Components.Builder.Buildpack
+	return k8srunner.Options{
+		Config:         cc.K8s,
+		Hostname:       hostname,
+		PullPolicy:     isolatedrunner.PullPolicy(cc.ImagePullPolicy),
+		ActiveDeadline: builderConfig.StepTimeout,
+	}, nil
+}
+
+func provideK8sRunner(restConfig *rest.Config, client *kubernetes.Clientset, opts k8srunner.Options) (*k8srunner.Runner, error) {
+	runner, err := k8srunner.NewRunner(restConfig, client, opts)
+	if err != nil {
+		return nil, oops.Wrapf(err, "components.builder.buildpack")
+	}
+	return runner, nil
+}
+
+func provideDockerRunnerOptions(c Config) (dockerrunner.Options, error) {
+	hostname, err := builderHostname()
+	if err != nil {
+		return dockerrunner.Options{}, err
+	}
+	cc := c.Components.Builder.Buildpack
+	return dockerrunner.Options{
+		Config:     cc.Docker,
+		Hostname:   hostname,
+		PullPolicy: isolatedrunner.PullPolicy(cc.ImagePullPolicy),
+	}, nil
+}
+
+func provideDockerRunner(client *dockerclient.Client, opts dockerrunner.Options) (*dockerrunner.Runner, error) {
+	runner, err := dockerrunner.NewRunner(client, opts)
+	if err != nil {
+		return nil, oops.Wrapf(err, "components.builder.buildpack")
+	}
+	return runner, nil
 }
 
 func provideDiscoverer(c Config) (discovery.Discoverer, error) {

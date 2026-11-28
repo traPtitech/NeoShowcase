@@ -64,16 +64,27 @@ func NewService(
 		return nil, oops.Wrapf(err, "converting into public key")
 	}
 	gitsvc := git.NewService(pubKey)
+	return newService(config, client, buildkit, buildpack, gitsvc, systemInfo.ImageConfig), nil
+}
+
+func newService(
+	config *Config,
+	client domain.ControllerBuilderServiceClient,
+	buildkit *buildkit.Client,
+	buildpack builder.BuildpackBackend,
+	gitsvc domain.GitService,
+	imageConfig builder.ImageConfig,
+) *ServiceImpl {
 	return &ServiceImpl{
 		config:    config,
 		client:    client,
 		buildkit:  buildkit,
 		buildpack: buildpack,
-		regclient: registry.NewClient(systemInfo.ImageConfig),
+		regclient: registry.NewClient(imageConfig),
 		gitsvc:    gitsvc,
 
-		imageConfig: systemInfo.ImageConfig,
-	}, nil
+		imageConfig: imageConfig,
+	}
 }
 
 func (s *ServiceImpl) destImage(app *domain.Application, build *domain.Build) string {

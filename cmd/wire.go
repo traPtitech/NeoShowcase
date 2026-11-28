@@ -12,18 +12,20 @@ import (
 
 	authdev "github.com/traPtitech/neoshowcase/cmd/auth-dev"
 	"github.com/traPtitech/neoshowcase/cmd/builder"
-	buildpackhelper "github.com/traPtitech/neoshowcase/cmd/buildpack-helper"
 	"github.com/traPtitech/neoshowcase/cmd/controller"
 	"github.com/traPtitech/neoshowcase/cmd/gateway"
 	giteaintegration "github.com/traPtitech/neoshowcase/cmd/gitea-integration"
 	"github.com/traPtitech/neoshowcase/cmd/ssgen"
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	domainbuilder "github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/dockerimpl"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/k8simpl"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/buildpack"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/dbmanager"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/git"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/isolatedrunner/dockerrunner"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/isolatedrunner/k8srunner"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/observability"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/registry"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
@@ -60,8 +62,6 @@ var providers = wire.NewSet(
 	grpc.NewAPIServiceServer,
 	grpc.NewAuthInterceptor,
 	grpc.NewLogInterceptor,
-	grpc.NewBuildpackHelperService,
-	provideBuildpackHelperClient,
 	grpc.NewCacheInterceptor,
 	grpc.NewControllerService,
 	grpc.NewControllerServiceClient,
@@ -101,7 +101,11 @@ var providers = wire.NewSet(
 	observability.NewControllerMetrics,
 	provideStorage,
 	provideAuthDevServer,
-	provideBuildpackHelperServer,
+	provideBuildpackConfig,
+	provideK8sRunnerOptions,
+	provideK8sRunner,
+	provideDockerRunnerOptions,
+	provideDockerRunner,
 	buildpack.NewBuildpackBackend,
 	provideDiscoverer,
 	discovery.NewCluster,
@@ -133,15 +137,35 @@ func NewAuthDev(c Config) (component, error) {
 func NewBuilder(c Config) (component, error) {
 	if c.Components.Builder.Mock {
 		return newMockBuilder(c)
-	} else {
-		return newBuilder(c)
+	}
+	switch runtime := c.Components.Builder.Buildpack.Runtime; runtime {
+	case "":
+		return nil, oops.New("components.builder.buildpack.runtime is required: set it to k8s to run builds as pods, " +
+			"or to docker to run them as containers (which needs the Docker socket in the builder)")
+	case "k8s", "kubernetes":
+		return newBuilderK8s(c)
+	case "docker":
+		return newBuilderDocker(c)
+	default:
+		return nil, oops.Errorf("invalid components.builder.buildpack.runtime: %q (supported values: k8s, docker)", runtime)
 	}
 }
 
-func newBuilder(c Config) (component, error) {
+func newBuilderK8s(c Config) (component, error) {
 	wire.Build(
 		providers,
-		wire.FieldsOf(new(BuilderConfig), "Buildpack"),
+		wire.Bind(new(domainbuilder.IsolatedRunner), new(*k8srunner.Runner)),
+		wire.Bind(new(ubuilder.Service), new(*ubuilder.ServiceImpl)),
+		wire.Bind(new(component), new(*builder.Server)),
+		wire.Struct(new(builder.Server), "*"),
+	)
+	return nil, nil
+}
+
+func newBuilderDocker(c Config) (component, error) {
+	wire.Build(
+		providers,
+		wire.Bind(new(domainbuilder.IsolatedRunner), new(*dockerrunner.Runner)),
 		wire.Bind(new(ubuilder.Service), new(*ubuilder.ServiceImpl)),
 		wire.Bind(new(component), new(*builder.Server)),
 		wire.Struct(new(builder.Server), "*"),
@@ -156,15 +180,6 @@ func newMockBuilder(c Config) (component, error) {
 		wire.Bind(new(ubuilder.Service), new(*buildermock.BuilderServiceMock)),
 		wire.Bind(new(component), new(*builder.Server)),
 		wire.Struct(new(builder.Server), "*"),
-	)
-	return nil, nil
-}
-
-func NewBuildpackHelper(c Config) (component, error) {
-	wire.Build(
-		providers,
-		wire.Bind(new(component), new(*buildpackhelper.Server)),
-		wire.Struct(new(buildpackhelper.Server), "*"),
 	)
 	return nil, nil
 }

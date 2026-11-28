@@ -2,7 +2,6 @@ package domain
 
 import (
 	"context"
-	"io"
 
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 
@@ -57,17 +56,6 @@ type ControllerBuilderServiceClient interface {
 	SaveBuildLog(ctx context.Context, buildID string, body []byte) error
 	SaveRuntimeImage(ctx context.Context, buildId string, size int64) error
 	ConnectBuilder(ctx context.Context, onRequest func(req *pb.BuilderRequest), response <-chan *pb.BuilderResponse) error
-}
-
-type BuildpackHelperServiceClient interface {
-	CopyFileTree(ctx context.Context, destination string, tarStream io.Reader) error
-	Exec(
-		ctx context.Context,
-		workDir string,
-		cmd []string,
-		envs map[string]string,
-		logWriter io.Writer,
-	) (code int, err error)
 }
 
 type ControllerSSGenService interface {

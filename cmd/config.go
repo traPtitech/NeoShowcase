@@ -9,6 +9,8 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/buildpack"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/dbmanager"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/isolatedrunner/dockerrunner"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/isolatedrunner/k8srunner"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/log/loki"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/log/victorialogs"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/metrics/prometheus"
@@ -53,11 +55,22 @@ type BuilderConfig struct {
 	Buildkit struct {
 		Address string `mapstructure:"address" yaml:"address"`
 	} `mapstructure:"buildkit" yaml:"buildkit"`
-	Buildpack   buildpack.Config                   `mapstructure:"buildpack" yaml:"buildpack"`
+	Buildpack   BuildpackConfig                    `mapstructure:"buildpack" yaml:"buildpack"`
 	Controller  grpc.ControllerServiceClientConfig `mapstructure:"controller" yaml:"controller"`
 	Priority    int                                `mapstructure:"priority" yaml:"priority"`
 	StepTimeout string                             `mapstructure:"stepTimeout" yaml:"stepTimeout"`
 	Mock        bool                               `mapstructure:"mock" yaml:"mock"`
+}
+
+type BuildpackConfig struct {
+	// Runtime selects where each build runs: "k8s" (a pod per build) or "docker" (containers per build). It is required.
+	Runtime         string              `mapstructure:"runtime" yaml:"runtime"`
+	Image           string              `mapstructure:"image" yaml:"image"`
+	ImagePullPolicy string              `mapstructure:"imagePullPolicy" yaml:"imagePullPolicy"`
+	RunAs           builder.UIDGID      `mapstructure:"runAs" yaml:"runAs"`
+	PlatformAPI     string              `mapstructure:"platformAPI" yaml:"platformAPI"`
+	K8s             k8srunner.Config    `mapstructure:"k8s" yaml:"k8s"`
+	Docker          dockerrunner.Config `mapstructure:"docker" yaml:"docker"`
 }
 
 type ControllerConfig struct {
@@ -156,10 +169,12 @@ func init() {
 
 	viper.SetDefault("components.builder.buildkit.address", appdefaults.Address)
 
-	viper.SetDefault("components.builder.buildpack.helper.address", "http://localhost:1235")
-	viper.SetDefault("components.builder.buildpack.helper.listenPort", 1235)
-	viper.SetDefault("components.builder.buildpack.remoteDir", "/workspace")
+	viper.SetDefault("components.builder.buildpack.image", buildpack.DefaultImage)
+	viper.SetDefault("components.builder.buildpack.imagePullPolicy", "IfNotPresent")
+	viper.SetDefault("components.builder.buildpack.runAs.uid", buildpack.DefaultRunAs.UID)
+	viper.SetDefault("components.builder.buildpack.runAs.gid", buildpack.DefaultRunAs.GID)
 	viper.SetDefault("components.builder.buildpack.platformAPI", "0.11")
+	viper.SetDefault("components.builder.buildpack.docker.network", "")
 
 	viper.SetDefault("components.builder.controller.url", "http://ns-controller:10000")
 
