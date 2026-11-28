@@ -73,6 +73,17 @@
         "--experimental\\.plugins\\.sablier\\.modulename=(?<depName>\\S+)[\\s\\S]*?--experimental\\.plugins\\.sablier\\.version=(?<currentValue>v\\S+)"
       ],
       "datasourceTemplate": "go"
+    },
+    {
+      "customType": "regex",
+      "description": "The default buildpack builder image is pinned in a Go constant, which no built-in manager detects.",
+      "managerFilePatterns": [
+        "pkg/infrastructure/buildpack/config.go"
+      ],
+      "matchStrings": [
+        "const DefaultImage = \"(?<depName>[^\":]+):(?<currentValue>[^\"]+)\""
+      ],
+      "datasourceTemplate": "docker"
     }
   ],
   "prHourlyLimit": 0,
