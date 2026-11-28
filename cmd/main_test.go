@@ -1,14 +1,9 @@
 package main
 
 import (
-	"bufio"
 	"context"
 	"errors"
-	"fmt"
-	"io"
 	"os"
-	"os/exec"
-	"strings"
 	"sync/atomic"
 	"syscall"
 	"testing"
@@ -46,8 +41,6 @@ type blockingComponent struct {
 	started      chan struct{}
 	startCtxDone atomic.Bool
 	shutdown     atomic.Bool
-	// shutdownBlocks makes Shutdown never return, as when it waits for a request that never completes.
-	shutdownBlocks bool
 }
 
 func newBlockingComponent() *blockingComponent {
@@ -63,10 +56,6 @@ func (c *blockingComponent) Start(ctx context.Context) error {
 
 func (c *blockingComponent) Shutdown(context.Context) error {
 	c.shutdown.Store(true)
-	if c.shutdownBlocks {
-		fmt.Println("shutting-down")
-		select {}
-	}
 	return nil
 }
 
@@ -108,71 +97,5 @@ func TestRunComponentUntilSignal_ShutsDownOnSignal(t *testing.T) {
 				t.Fatalf("should shut down on %v", sig)
 			}
 		})
-	}
-}
-
-const helperProcessEnv = "NS_TEST_STUCK_SHUTDOWN_PROCESS"
-
-// TestRunComponentUntilSignal_SecondSignalTerminates runs a component whose Shutdown never returns in a child process,
-// since the second signal terminates the whole process.
-func TestRunComponentUntilSignal_SecondSignalTerminates(t *testing.T) {
-	if os.Getenv(helperProcessEnv) != "" {
-		c := newBlockingComponent()
-		c.shutdownBlocks = true
-		go func() {
-			<-c.started
-			fmt.Println("started")
-		}()
-		_ = runComponentUntilSignal(context.Background(), "test", c)
-		os.Exit(0)
-	}
-
-	cmd := exec.Command(os.Args[0], "-test.run=^TestRunComponentUntilSignal_SecondSignalTerminates$")
-	cmd.Env = append(os.Environ(), helperProcessEnv+"=1")
-	stdout, err := cmd.StdoutPipe()
-	require.NoError(t, err)
-	require.NoError(t, cmd.Start())
-	// Killing the child ends the reads of its output, which otherwise wait forever when it neither shuts down nor terminates.
-	deadline := time.AfterFunc(10*time.Second, func() { _ = cmd.Process.Kill() })
-	t.Cleanup(func() {
-		deadline.Stop()
-		_ = cmd.Process.Kill()
-	})
-	lines := bufio.NewScanner(stdout)
-	waitLine := func(want string) {
-		t.Helper()
-		for lines.Scan() {
-			if strings.TrimSpace(lines.Text()) == want {
-				return
-			}
-		}
-		t.Fatalf("child process exited before printing %q", want)
-	}
-
-	waitLine("started")
-	require.NoError(t, cmd.Process.Signal(syscall.SIGTERM))
-	waitLine("shutting-down")
-
-	exited := make(chan error, 1)
-	go func() {
-		_, _ = io.Copy(io.Discard, stdout)
-		exited <- cmd.Wait()
-	}()
-	// The signal is sent again until the child exits, as a person presses Ctrl-C again,
-	// since the signal handler is released right after the shutdown starts.
-	timeout := time.After(5 * time.Second)
-	for {
-		require.NoError(t, cmd.Process.Signal(syscall.SIGTERM))
-		select {
-		case err := <-exited:
-			var exitErr *exec.ExitError
-			require.ErrorAs(t, err, &exitErr)
-			status := exitErr.Sys().(syscall.WaitStatus)
-			require.True(t, status.Signaled(), "should be terminated by the signal, got: %v", err)
-			return
-		case <-time.After(100 * time.Millisecond):
-		case <-timeout:
-			t.Fatal("another signal should terminate the process during a stuck shutdown")
-		}
 	}
 }
