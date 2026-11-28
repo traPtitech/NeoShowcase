@@ -41,6 +41,14 @@ func NewBuildpackBackend(
 	}
 }
 
+func (b *backend) ReclaimOrphans(ctx context.Context) error {
+	return b.runner.ReclaimOrphans(ctx)
+}
+
+func (b *backend) ReclaimEnded(ctx context.Context) error {
+	return b.runner.ReclaimEnded(ctx)
+}
+
 // registryAuth returns the value of CNB_REGISTRY_AUTH for the registry, or false if no credentials are configured.
 func registryAuth(registry builder.RegistryConfig) (string, bool) {
 	if registry.Username == "" && registry.Password == "" {

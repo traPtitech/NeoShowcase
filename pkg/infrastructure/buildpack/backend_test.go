@@ -240,3 +240,16 @@ func TestPack_FailsWhenTheRepositoryCannotBeRead(t *testing.T) {
 		})
 	}
 }
+
+// reclaimFailingRunner fails to reclaim with errors that tell the reclaims apart.
+type reclaimFailingRunner struct{ failingRunner }
+
+func (reclaimFailingRunner) ReclaimOrphans(context.Context) error { return errors.New("orphans-3f2a") }
+
+func (reclaimFailingRunner) ReclaimEnded(context.Context) error { return errors.New("ended-9c1d") }
+
+func TestBackend_ReclaimsOnTheRunnerOfItsBuilds(t *testing.T) {
+	b := NewBuildpackBackend(Config{Image: "builder-image:1", PlatformAPI: "0.11"}, reclaimFailingRunner{})
+	require.ErrorContains(t, b.ReclaimOrphans(context.Background()), "orphans-3f2a")
+	require.ErrorContains(t, b.ReclaimEnded(context.Background()), "ended-9c1d")
+}

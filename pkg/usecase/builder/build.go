@@ -20,6 +20,9 @@ func (s *ServiceImpl) startBuild(req *domain.StartBuildRequest) error {
 	s.statusLock.Lock()
 	defer s.statusLock.Unlock()
 
+	if s.lifetime.Err() != nil {
+		return oops.With("build_id", req.Build.ID).New("builder is shut down")
+	}
 	if s.state != nil {
 		slog.WarnContext(context.Background(), "Skipping build request, builder busy - builder scheduling may be malfunctioning?", "build_id", req.Build.ID)
 		return nil // Builder busy - skip
@@ -31,7 +34,7 @@ func (s *ServiceImpl) startBuild(req *domain.StartBuildRequest) error {
 	if err != nil {
 		return err
 	}
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(s.lifetime)
 	s.state = st
 	s.stateCancel = func() {
 		cancel()

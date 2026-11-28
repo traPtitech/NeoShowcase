@@ -43,7 +43,10 @@ type ServiceImpl struct {
 	stateCancel func()
 	statusLock  sync.Mutex
 	response    chan<- *pb.BuilderResponse
-	cancel      func()
+
+	// lifetime is done once the service is shut down, which may happen before Start is called.
+	lifetime    context.Context
+	endLifetime func()
 }
 
 func NewService(
@@ -75,6 +78,7 @@ func newService(
 	gitsvc domain.GitService,
 	imageConfig builder.ImageConfig,
 ) *ServiceImpl {
+	lifetime, endLifetime := context.WithCancel(context.Background())
 	return &ServiceImpl{
 		config:    config,
 		client:    client,
@@ -84,6 +88,9 @@ func newService(
 		gitsvc:    gitsvc,
 
 		imageConfig: imageConfig,
+
+		lifetime:    lifetime,
+		endLifetime: endLifetime,
 	}
 }
 
@@ -100,8 +107,17 @@ func (s *ServiceImpl) imageTag(build *domain.Build) string {
 }
 
 func (s *ServiceImpl) Start(_ context.Context) error {
-	ctx, cancel := context.WithCancel(context.Background())
-	s.cancel = cancel
+	ctx := s.lifetime
+	// Resources of builds of the previous process are reclaimed before taking builds, since the reclaim deletes every one of them.
+	if err := s.buildpack.ReclaimOrphans(ctx); err != nil {
+		return oops.Wrapf(err, "reclaiming resources of interrupted builds")
+	}
+
+	s.statusLock.Lock()
+	defer s.statusLock.Unlock()
+	if ctx.Err() != nil {
+		return nil // Shut down while reclaiming.
+	}
 
 	response := make(chan *pb.BuilderResponse, 100)
 	s.response = response
@@ -110,14 +126,15 @@ func (s *ServiceImpl) Start(_ context.Context) error {
 		return s.client.ConnectBuilder(ctx, s.onRequest, response)
 	}, "connect to controller")
 	go loop.Loop(ctx, s.prune, 1*time.Hour, false)
+	go loop.Loop(ctx, s.reclaimEnded, 10*time.Minute, true)
 
 	return nil
 }
 
 func (s *ServiceImpl) Shutdown(_ context.Context) error {
-	s.cancel()
 	s.statusLock.Lock()
 	defer s.statusLock.Unlock()
+	s.endLifetime()
 	if s.stateCancel != nil {
 		s.stateCancel()
 	}
@@ -128,6 +145,12 @@ func (s *ServiceImpl) prune(ctx context.Context) {
 	err := s.buildkit.Prune(ctx, nil, buildkit.PruneAll)
 	if err != nil {
 		slog.ErrorContext(ctx, "failed to prune buildkit", "error", err)
+	}
+}
+
+func (s *ServiceImpl) reclaimEnded(ctx context.Context) {
+	if err := s.buildpack.ReclaimEnded(ctx); err != nil {
+		slog.ErrorContext(ctx, "failed to reclaim resources of ended builds", "error", err)
 	}
 }
 

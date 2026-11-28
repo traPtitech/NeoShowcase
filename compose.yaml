@@ -138,6 +138,9 @@ services:
       target: ns-builder
     command: --debug --loglevel=trace --config=/config.yaml
     restart: always
+    # Build containers are labeled with the hostname, and are reclaimed by a builder with the same hostname
+    # after the builder is recreated in the middle of a build.
+    hostname: ns-builder
     volumes:
       # Buildpack builds run in containers created for each build.
       - /var/run/docker.sock:/var/run/docker.sock
