@@ -7,6 +7,8 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -58,26 +60,44 @@ func componentCommand(name string, gen componentGenF, longDesc string) *cobra.Co
 			if err != nil {
 				return err
 			}
-
-			ctx := cmd.Context()
-			ctx, cancel := context.WithCancel(ctx)
-			go func() {
-				err := service.Start(ctx)
-				if err != nil && !errors.Is(err, http.ErrServerClosed) {
-					slog.Error("failed to start service", "error", err)
-					cancel()
-				}
-			}()
-			slog.Info("NeoShowcase service started", "service", name)
-
-			cli.WaitSIGINT()
-			cancel()
-
-			shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-			defer cancel()
-			return service.Shutdown(shutdownCtx)
+			return runComponentUntilSignal(cmd.Context(), name, service)
 		},
 	}
+}
+
+// runComponentUntilSignal runs the service until the process receives SIGINT or SIGTERM.
+// Another signal during the shutdown terminates the process.
+func runComponentUntilSignal(ctx context.Context, name string, service component) error {
+	ctx, stop := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+	context.AfterFunc(ctx, stop)
+	return runComponent(ctx, name, service)
+}
+
+// runComponent starts the service and shuts it down when ctx is done or the service fails to start.
+func runComponent(ctx context.Context, name string, service component) error {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	startErr := make(chan error, 1)
+	go func() {
+		err := service.Start(ctx)
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
+			startErr <- err
+		}
+	}()
+	slog.InfoContext(ctx, "NeoShowcase service started", "service", name)
+
+	var failed error
+	select {
+	case <-ctx.Done():
+	case failed = <-startErr:
+		slog.ErrorContext(ctx, "failed to start service", "error", failed)
+	}
+	cancel()
+
+	shutdownCtx, cancelShutdown := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancelShutdown()
+	return errors.Join(failed, service.Shutdown(shutdownCtx))
 }
 
 func main() {
