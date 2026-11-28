@@ -3,11 +3,17 @@ components:
     buildkit:
       address: unix:///run/buildkit/buildkitd.sock
     buildpack:
-      helper:
-        address: http://localhost:1235
-        listenPort: 1235
-      remoteDir: /workspace
+      runtime: k8s
       platformAPI: "0.11"
+      k8s:
+        namespace: ns-build
+        resources:
+          requests:
+            cpu: 10m
+            memory: 250Mi
+          limits:
+            cpu: "2"
+            memory: 1Gi
     # controller:
       # url: <from env> # e.g. http://host.k3d.internal:10000
     priority: 10

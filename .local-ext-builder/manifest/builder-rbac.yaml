@@ -1,0 +1,45 @@
+# Buildpack builds run in a pod per build, created in the namespace dedicated to builds (components.builder.buildpack.k8s.namespace).
+# Never bind these rules in a namespace with other secrets: creating a pod there lets the builder read them through the pod spec.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ns-builder
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ns-build
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: ns-builder
+  namespace: ns-build
+rules:
+  - apiGroups: [""]
+    resources: [pods]
+    verbs: [create, get, list, watch, delete, deletecollection]
+  - apiGroups: [""]
+    resources: [pods/log]
+    verbs: [get]
+  - apiGroups: [""]
+    resources: [pods/exec]
+    verbs: [create, get]
+  # Never grant get, list or deletecollection on secrets: list and deletecollection return the contents of every secret in the namespace.
+  - apiGroups: [""]
+    resources: [secrets]
+    verbs: [create, delete]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: ns-builder
+  namespace: ns-build
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: ns-builder
+subjects:
+  - kind: ServiceAccount
+    name: ns-builder
+    namespace: default

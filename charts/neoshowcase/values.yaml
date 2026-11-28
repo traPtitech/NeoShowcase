@@ -213,17 +213,34 @@ app:
 # ns-builder component
 builder:
   replicas: 1
+  # nodeSelector and tolerations also apply to the pods of buildpack builds.
   nodeSelector: {}
   tolerations: []
   topologySpreadConstraints: []
   resources: {}
   # imagePullPolicy for builder component
   imagePullPolicy: ""
+  # Buildpack builds run in a pod created for each build.
   buildpack:
-    image: paketobuildpacks/builder:full
-    resources: {}
-    # imagePullPolicy for buildpack image (defaults to Always for build images)
-    imagePullPolicy: Always
+    # Namespace for build pods and their secrets, created by this chart (defaults to "<release namespace>-build").
+    # Put nothing else in it: the builder can read every secret in it through the spec of the pods it creates.
+    namespace: ""
+    # Builder image of Cloud Native Buildpacks (defaults to the image built into the builder, with a fixed tag).
+    # Keep the tag fixed when setting one: with IfNotPresent, a node keeps using the image it pulled first for a tag.
+    image: ""
+    # imagePullPolicy for buildpack image, used by every step of a build (defaults to the default of the builder).
+    imagePullPolicy: ""
+    # Build user of the image, as {uid, gid} (defaults to the build user of the default image).
+    # Set it together with image when the image has another build user.
+    runAs: {}
+    # Resources of each container of build pods. Omit a value, or set resources to {}, for no request or limit.
+    resources:
+      requests:
+        cpu: 10m
+        memory: 250Mi
+      limits:
+        cpu: "2"
+        memory: 1Gi
   buildkit:
     image: moby/buildkit:rootless
     resources: {}

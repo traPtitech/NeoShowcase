@@ -38,6 +38,10 @@
 {{- $.Values.global.image.repository }}{{ $.Values.global.image.prefix }}migrate:{{ include "app-version" $ }}
 {{- end }}
 
+{{- define "builder.build-namespace" -}}
+{{- $.Values.builder.buildpack.namespace | default (print $.Release.Namespace "-build") }}
+{{- end }}
+
 {{- define "config-hash" }}
 {{- include (print $.Template.BasePath "/config.yaml") $ | sha256sum }}
 {{- end }}
