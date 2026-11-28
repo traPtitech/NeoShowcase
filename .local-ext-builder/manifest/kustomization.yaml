@@ -1,5 +1,6 @@
 resources:
   - builder-deployment.yaml
+  - builder-rbac.yaml
   - coredns-configmap.yaml
 
 configMapGenerator:

@@ -11,7 +11,6 @@ import (
 	"github.com/google/wire"
 	"github.com/samber/oops"
 	builder2 "github.com/traPtitech/neoshowcase/cmd/builder"
-	"github.com/traPtitech/neoshowcase/cmd/buildpack-helper"
 	"github.com/traPtitech/neoshowcase/cmd/controller"
 	"github.com/traPtitech/neoshowcase/cmd/gateway"
 	giteaintegration2 "github.com/traPtitech/neoshowcase/cmd/gitea-integration"
@@ -57,7 +56,7 @@ func NewAuthDev(c Config) (component, error) {
 	return server, nil
 }
 
-func newBuilder(c Config) (component, error) {
+func newBuilderK8s(c Config) (component, error) {
 	client, err := provideBuildkitClient(c)
 	if err != nil {
 		return nil, err
@@ -71,11 +70,63 @@ func newBuilder(c Config) (component, error) {
 		return nil, err
 	}
 	controllerBuilderServiceClient := provideControllerBuilderServiceClient(c, tokenAuthInterceptor)
-	componentsConfig := c.Components
-	mainBuilderConfig := componentsConfig.Builder
-	buildpackConfig := mainBuilderConfig.Buildpack
-	buildpackHelperServiceClient := provideBuildpackHelperClient(c)
-	buildpackBackend := buildpack.NewBuildpackBackend(buildpackConfig, buildpackHelperServiceClient)
+	buildpackConfig := provideBuildpackConfig(c)
+	restConfig, err := rest.InClusterConfig()
+	if err != nil {
+		return nil, err
+	}
+	clientset, err := kubernetes.NewForConfig(restConfig)
+	if err != nil {
+		return nil, err
+	}
+	options, err := provideK8sRunnerOptions(c, builderConfig)
+	if err != nil {
+		return nil, err
+	}
+	runner, err := provideK8sRunner(restConfig, clientset, options)
+	if err != nil {
+		return nil, err
+	}
+	buildpackBackend := buildpack.NewBuildpackBackend(buildpackConfig, runner)
+	serviceImpl, err := builder.NewService(builderConfig, controllerBuilderServiceClient, client, buildpackBackend)
+	if err != nil {
+		return nil, err
+	}
+	server := &builder2.Server{
+		Buildkit: client,
+		Builder:  serviceImpl,
+	}
+	return server, nil
+}
+
+func newBuilderDocker(c Config) (component, error) {
+	client, err := provideBuildkitClient(c)
+	if err != nil {
+		return nil, err
+	}
+	builderConfig, err := provideBuilderConfig(c)
+	if err != nil {
+		return nil, err
+	}
+	tokenAuthInterceptor, err := provideTokenAuthInterceptor(c)
+	if err != nil {
+		return nil, err
+	}
+	controllerBuilderServiceClient := provideControllerBuilderServiceClient(c, tokenAuthInterceptor)
+	buildpackConfig := provideBuildpackConfig(c)
+	clientClient, err := dockerimpl.NewClientFromEnv()
+	if err != nil {
+		return nil, err
+	}
+	options, err := provideDockerRunnerOptions(c)
+	if err != nil {
+		return nil, err
+	}
+	runner, err := provideDockerRunner(clientClient, options)
+	if err != nil {
+		return nil, err
+	}
+	buildpackBackend := buildpack.NewBuildpackBackend(buildpackConfig, runner)
 	serviceImpl, err := builder.NewService(builderConfig, controllerBuilderServiceClient, client, buildpackBackend)
 	if err != nil {
 		return nil, err
@@ -101,15 +152,6 @@ func newMockBuilder(c Config) (component, error) {
 	server := &builder2.Server{
 		Buildkit: client,
 		Builder:  builderServiceMock,
-	}
-	return server, nil
-}
-
-func NewBuildpackHelper(c Config) (component, error) {
-	buildpackHelperServiceHandler := grpc.NewBuildpackHelperService()
-	apiServer := provideBuildpackHelperServer(c, buildpackHelperServiceHandler)
-	server := &buildpackhelper.Server{
-		Helper: apiServer,
 	}
 	return server, nil
 }
@@ -473,10 +515,14 @@ func NewSSGen(c Config) (component, error) {
 
 // wire.go:
 
-var providers = wire.NewSet(apiserver.NewService, cdservice.NewAppDeployHelper, cdservice.NewContainerStateMutator, cdservice.NewService, versioned.NewForConfig, cleaner.NewService, commitfetcher.NewService, dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, dockerimpl.NewClientFromEnv, dockerimpl.NewDockerBackend, giteaintegration.NewIntegration, grpc.NewAPIServiceServer, grpc.NewAuthInterceptor, grpc.NewLogInterceptor, grpc.NewBuildpackHelperService, provideBuildpackHelperClient, grpc.NewCacheInterceptor, grpc.NewControllerService, grpc.NewControllerServiceClient, grpc.NewControllerBuilderService, grpc.NewGiteaIntegrationService, provideTokenAuthInterceptor,
+var providers = wire.NewSet(apiserver.NewService, cdservice.NewAppDeployHelper, cdservice.NewContainerStateMutator, cdservice.NewService, versioned.NewForConfig, cleaner.NewService, commitfetcher.NewService, dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, dockerimpl.NewClientFromEnv, dockerimpl.NewDockerBackend, giteaintegration.NewIntegration, grpc.NewAPIServiceServer, grpc.NewAuthInterceptor, grpc.NewLogInterceptor, grpc.NewCacheInterceptor, grpc.NewControllerService, grpc.NewControllerServiceClient, grpc.NewControllerBuilderService, grpc.NewGiteaIntegrationService, provideTokenAuthInterceptor,
 	provideControllerBuilderServiceClient, grpc.NewControllerSSGenService, grpc.NewControllerSSGenServiceClient, healthcheck.NewServer, k8simpl.NewK8SBackend, kubernetes.NewForConfig, logstream.NewService, repofetcher.NewService, repository.New, repository.NewApplicationRepository, repository.NewArtifactRepository, repository.NewRuntimeImageRepository, repository.NewBuildRepository, repository.NewEnvironmentRepository, repository.NewGitRepositoryRepository, repository.NewRepositoryCommitRepository, repository.NewUserRepository, repository.NewWebsiteRepository, rest.InClusterConfig, v1alpha1.NewForConfig, ssgen.NewGeneratorService, sshserver.NewSSHServer, systeminfo.NewService, builder.NewService, webhook.NewReceiver, provideRepositoryPrivateKey, domain.IntoPublicKey, git.NewService, registry.NewClient, observability.NewMetricsServer, observability.NewControllerMetrics, provideStorage,
 	provideAuthDevServer,
-	provideBuildpackHelperServer, buildpack.NewBuildpackBackend, provideDiscoverer, discovery.NewCluster, provideBuilderConfig,
+	provideBuildpackConfig,
+	provideK8sRunnerOptions,
+	provideK8sRunner,
+	provideDockerRunnerOptions,
+	provideDockerRunner, buildpack.NewBuildpackBackend, provideDiscoverer, discovery.NewCluster, provideBuilderConfig,
 	provideBuildkitClient,
 	provideSystemInfoConfig,
 	provideControllerServer,
@@ -494,8 +540,17 @@ var providers = wire.NewSet(apiserver.NewService, cdservice.NewAppDeployHelper, 
 func NewBuilder(c Config) (component, error) {
 	if c.Components.Builder.Mock {
 		return newMockBuilder(c)
-	} else {
-		return newBuilder(c)
+	}
+	switch runtime := c.Components.Builder.Buildpack.Runtime; runtime {
+	case "":
+		return nil, oops.New("components.builder.buildpack.runtime is required: set it to k8s to run builds as pods, " +
+			"or to docker to run them as containers (which needs the Docker socket in the builder)")
+	case "k8s", "kubernetes":
+		return newBuilderK8s(c)
+	case "docker":
+		return newBuilderDocker(c)
+	default:
+		return nil, oops.Errorf("invalid components.builder.buildpack.runtime: %q (supported values: k8s, docker)", runtime)
 	}
 }
 

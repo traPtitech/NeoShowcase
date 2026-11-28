@@ -1,0 +1,14 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ $.Release.Name }}-builder
+  namespace: {{ include "builder.build-namespace" $ }}
+
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ $.Release.Name }}-builder
+subjects:
+  - kind: ServiceAccount
+    namespace: {{ $.Release.Namespace }}
+    name: {{ $.Release.Name }}-builder

@@ -114,52 +114,6 @@ func (BuilderResponse_Type) EnumDescriptor() ([]byte, []int) {
 	return file_neoshowcase_protobuf_controller_proto_rawDescGZIP(), []int{12, 0}
 }
 
-type HelperExecResponse_Type int32
-
-const (
-	HelperExecResponse_LOG       HelperExecResponse_Type = 0
-	HelperExecResponse_EXIT_CODE HelperExecResponse_Type = 1
-)
-
-// Enum value maps for HelperExecResponse_Type.
-var (
-	HelperExecResponse_Type_name = map[int32]string{
-		0: "LOG",
-		1: "EXIT_CODE",
-	}
-	HelperExecResponse_Type_value = map[string]int32{
-		"LOG":       0,
-		"EXIT_CODE": 1,
-	}
-)
-
-func (x HelperExecResponse_Type) Enum() *HelperExecResponse_Type {
-	p := new(HelperExecResponse_Type)
-	*p = x
-	return p
-}
-
-func (x HelperExecResponse_Type) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (HelperExecResponse_Type) Descriptor() protoreflect.EnumDescriptor {
-	return file_neoshowcase_protobuf_controller_proto_enumTypes[2].Descriptor()
-}
-
-func (HelperExecResponse_Type) Type() protoreflect.EnumType {
-	return &file_neoshowcase_protobuf_controller_proto_enumTypes[2]
-}
-
-func (x HelperExecResponse_Type) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use HelperExecResponse_Type.Descriptor instead.
-func (HelperExecResponse_Type) EnumDescriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_controller_proto_rawDescGZIP(), []int{16, 0}
-}
-
 type SSGenRequest_Type int32
 
 const (
@@ -187,11 +141,11 @@ func (x SSGenRequest_Type) String() string {
 }
 
 func (SSGenRequest_Type) Descriptor() protoreflect.EnumDescriptor {
-	return file_neoshowcase_protobuf_controller_proto_enumTypes[3].Descriptor()
+	return file_neoshowcase_protobuf_controller_proto_enumTypes[2].Descriptor()
 }
 
 func (SSGenRequest_Type) Type() protoreflect.EnumType {
-	return &file_neoshowcase_protobuf_controller_proto_enumTypes[3]
+	return &file_neoshowcase_protobuf_controller_proto_enumTypes[2]
 }
 
 func (x SSGenRequest_Type) Number() protoreflect.EnumNumber {
@@ -200,7 +154,7 @@ func (x SSGenRequest_Type) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use SSGenRequest_Type.Descriptor instead.
 func (SSGenRequest_Type) EnumDescriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_controller_proto_rawDescGZIP(), []int{17, 0}
+	return file_neoshowcase_protobuf_controller_proto_rawDescGZIP(), []int{13, 0}
 }
 
 type GiteaIntegrationRequest_Type int32
@@ -230,11 +184,11 @@ func (x GiteaIntegrationRequest_Type) String() string {
 }
 
 func (GiteaIntegrationRequest_Type) Descriptor() protoreflect.EnumDescriptor {
-	return file_neoshowcase_protobuf_controller_proto_enumTypes[4].Descriptor()
+	return file_neoshowcase_protobuf_controller_proto_enumTypes[3].Descriptor()
 }
 
 func (GiteaIntegrationRequest_Type) Type() protoreflect.EnumType {
-	return &file_neoshowcase_protobuf_controller_proto_enumTypes[4]
+	return &file_neoshowcase_protobuf_controller_proto_enumTypes[3]
 }
 
 func (x GiteaIntegrationRequest_Type) Number() protoreflect.EnumNumber {
@@ -243,7 +197,7 @@ func (x GiteaIntegrationRequest_Type) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use GiteaIntegrationRequest_Type.Descriptor instead.
 func (GiteaIntegrationRequest_Type) EnumDescriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_controller_proto_rawDescGZIP(), []int{18, 0}
+	return file_neoshowcase_protobuf_controller_proto_rawDescGZIP(), []int{14, 0}
 }
 
 type AddressInfo struct {
@@ -1023,260 +977,6 @@ func (*BuilderResponse_Connected) isBuilderResponse_Body() {}
 
 func (*BuilderResponse_Settled) isBuilderResponse_Body() {}
 
-type CopyFileTreeRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Destination   string                 `protobuf:"bytes,1,opt,name=destination,proto3" json:"destination,omitempty"`
-	TarContent    []byte                 `protobuf:"bytes,2,opt,name=tar_content,json=tarContent,proto3" json:"tar_content,omitempty"` // TODO: stream contents?
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *CopyFileTreeRequest) Reset() {
-	*x = CopyFileTreeRequest{}
-	mi := &file_neoshowcase_protobuf_controller_proto_msgTypes[13]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *CopyFileTreeRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CopyFileTreeRequest) ProtoMessage() {}
-
-func (x *CopyFileTreeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_controller_proto_msgTypes[13]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CopyFileTreeRequest.ProtoReflect.Descriptor instead.
-func (*CopyFileTreeRequest) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_controller_proto_rawDescGZIP(), []int{13}
-}
-
-func (x *CopyFileTreeRequest) GetDestination() string {
-	if x != nil {
-		return x.Destination
-	}
-	return ""
-}
-
-func (x *CopyFileTreeRequest) GetTarContent() []byte {
-	if x != nil {
-		return x.TarContent
-	}
-	return nil
-}
-
-type HelperExecEnv struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Key           string                 `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
-	Value         string                 `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *HelperExecEnv) Reset() {
-	*x = HelperExecEnv{}
-	mi := &file_neoshowcase_protobuf_controller_proto_msgTypes[14]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *HelperExecEnv) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*HelperExecEnv) ProtoMessage() {}
-
-func (x *HelperExecEnv) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_controller_proto_msgTypes[14]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use HelperExecEnv.ProtoReflect.Descriptor instead.
-func (*HelperExecEnv) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_controller_proto_rawDescGZIP(), []int{14}
-}
-
-func (x *HelperExecEnv) GetKey() string {
-	if x != nil {
-		return x.Key
-	}
-	return ""
-}
-
-func (x *HelperExecEnv) GetValue() string {
-	if x != nil {
-		return x.Value
-	}
-	return ""
-}
-
-type HelperExecRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	WorkDir       string                 `protobuf:"bytes,1,opt,name=work_dir,json=workDir,proto3" json:"work_dir,omitempty"`
-	Cmd           []string               `protobuf:"bytes,2,rep,name=cmd,proto3" json:"cmd,omitempty"`
-	Envs          []*HelperExecEnv       `protobuf:"bytes,3,rep,name=envs,proto3" json:"envs,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *HelperExecRequest) Reset() {
-	*x = HelperExecRequest{}
-	mi := &file_neoshowcase_protobuf_controller_proto_msgTypes[15]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *HelperExecRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*HelperExecRequest) ProtoMessage() {}
-
-func (x *HelperExecRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_controller_proto_msgTypes[15]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use HelperExecRequest.ProtoReflect.Descriptor instead.
-func (*HelperExecRequest) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_controller_proto_rawDescGZIP(), []int{15}
-}
-
-func (x *HelperExecRequest) GetWorkDir() string {
-	if x != nil {
-		return x.WorkDir
-	}
-	return ""
-}
-
-func (x *HelperExecRequest) GetCmd() []string {
-	if x != nil {
-		return x.Cmd
-	}
-	return nil
-}
-
-func (x *HelperExecRequest) GetEnvs() []*HelperExecEnv {
-	if x != nil {
-		return x.Envs
-	}
-	return nil
-}
-
-type HelperExecResponse struct {
-	state protoimpl.MessageState  `protogen:"open.v1"`
-	Type  HelperExecResponse_Type `protobuf:"varint,1,opt,name=type,proto3,enum=neoshowcase.protobuf.HelperExecResponse_Type" json:"type,omitempty"`
-	// Types that are valid to be assigned to Body:
-	//
-	//	*HelperExecResponse_Log
-	//	*HelperExecResponse_ExitCode
-	Body          isHelperExecResponse_Body `protobuf_oneof:"body"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *HelperExecResponse) Reset() {
-	*x = HelperExecResponse{}
-	mi := &file_neoshowcase_protobuf_controller_proto_msgTypes[16]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *HelperExecResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*HelperExecResponse) ProtoMessage() {}
-
-func (x *HelperExecResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_controller_proto_msgTypes[16]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use HelperExecResponse.ProtoReflect.Descriptor instead.
-func (*HelperExecResponse) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_controller_proto_rawDescGZIP(), []int{16}
-}
-
-func (x *HelperExecResponse) GetType() HelperExecResponse_Type {
-	if x != nil {
-		return x.Type
-	}
-	return HelperExecResponse_LOG
-}
-
-func (x *HelperExecResponse) GetBody() isHelperExecResponse_Body {
-	if x != nil {
-		return x.Body
-	}
-	return nil
-}
-
-func (x *HelperExecResponse) GetLog() []byte {
-	if x != nil {
-		if x, ok := x.Body.(*HelperExecResponse_Log); ok {
-			return x.Log
-		}
-	}
-	return nil
-}
-
-func (x *HelperExecResponse) GetExitCode() int32 {
-	if x != nil {
-		if x, ok := x.Body.(*HelperExecResponse_ExitCode); ok {
-			return x.ExitCode
-		}
-	}
-	return 0
-}
-
-type isHelperExecResponse_Body interface {
-	isHelperExecResponse_Body()
-}
-
-type HelperExecResponse_Log struct {
-	Log []byte `protobuf:"bytes,2,opt,name=log,proto3,oneof"`
-}
-
-type HelperExecResponse_ExitCode struct {
-	ExitCode int32 `protobuf:"varint,3,opt,name=exit_code,json=exitCode,proto3,oneof"`
-}
-
-func (*HelperExecResponse_Log) isHelperExecResponse_Body() {}
-
-func (*HelperExecResponse_ExitCode) isHelperExecResponse_Body() {}
-
 type SSGenRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Type          SSGenRequest_Type      `protobuf:"varint,1,opt,name=type,proto3,enum=neoshowcase.protobuf.SSGenRequest_Type" json:"type,omitempty"`
@@ -1286,7 +986,7 @@ type SSGenRequest struct {
 
 func (x *SSGenRequest) Reset() {
 	*x = SSGenRequest{}
-	mi := &file_neoshowcase_protobuf_controller_proto_msgTypes[17]
+	mi := &file_neoshowcase_protobuf_controller_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1298,7 +998,7 @@ func (x *SSGenRequest) String() string {
 func (*SSGenRequest) ProtoMessage() {}
 
 func (x *SSGenRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_controller_proto_msgTypes[17]
+	mi := &file_neoshowcase_protobuf_controller_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1311,7 +1011,7 @@ func (x *SSGenRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SSGenRequest.ProtoReflect.Descriptor instead.
 func (*SSGenRequest) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_controller_proto_rawDescGZIP(), []int{17}
+	return file_neoshowcase_protobuf_controller_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *SSGenRequest) GetType() SSGenRequest_Type {
@@ -1330,7 +1030,7 @@ type GiteaIntegrationRequest struct {
 
 func (x *GiteaIntegrationRequest) Reset() {
 	*x = GiteaIntegrationRequest{}
-	mi := &file_neoshowcase_protobuf_controller_proto_msgTypes[18]
+	mi := &file_neoshowcase_protobuf_controller_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1342,7 +1042,7 @@ func (x *GiteaIntegrationRequest) String() string {
 func (*GiteaIntegrationRequest) ProtoMessage() {}
 
 func (x *GiteaIntegrationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_controller_proto_msgTypes[18]
+	mi := &file_neoshowcase_protobuf_controller_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1355,7 +1055,7 @@ func (x *GiteaIntegrationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GiteaIntegrationRequest.ProtoReflect.Descriptor instead.
 func (*GiteaIntegrationRequest) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_controller_proto_rawDescGZIP(), []int{18}
+	return file_neoshowcase_protobuf_controller_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *GiteaIntegrationRequest) GetType() GiteaIntegrationRequest_Type {
@@ -1377,7 +1077,7 @@ type ImageConfig_RegistryConfig struct {
 
 func (x *ImageConfig_RegistryConfig) Reset() {
 	*x = ImageConfig_RegistryConfig{}
-	mi := &file_neoshowcase_protobuf_controller_proto_msgTypes[19]
+	mi := &file_neoshowcase_protobuf_controller_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1389,7 +1089,7 @@ func (x *ImageConfig_RegistryConfig) String() string {
 func (*ImageConfig_RegistryConfig) ProtoMessage() {}
 
 func (x *ImageConfig_RegistryConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_controller_proto_msgTypes[19]
+	mi := &file_neoshowcase_protobuf_controller_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1499,25 +1199,6 @@ const file_neoshowcase_protobuf_controller_proto_rawDesc = "" +
 	"\x04Type\x12\r\n" +
 	"\tCONNECTED\x10\x00\x12\x11\n" +
 	"\rBUILD_SETTLED\x10\x01B\x06\n" +
-	"\x04body\"X\n" +
-	"\x13CopyFileTreeRequest\x12 \n" +
-	"\vdestination\x18\x01 \x01(\tR\vdestination\x12\x1f\n" +
-	"\vtar_content\x18\x02 \x01(\fR\n" +
-	"tarContent\"7\n" +
-	"\rHelperExecEnv\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value\"y\n" +
-	"\x11HelperExecRequest\x12\x19\n" +
-	"\bwork_dir\x18\x01 \x01(\tR\aworkDir\x12\x10\n" +
-	"\x03cmd\x18\x02 \x03(\tR\x03cmd\x127\n" +
-	"\x04envs\x18\x03 \x03(\v2#.neoshowcase.protobuf.HelperExecEnvR\x04envs\"\xb2\x01\n" +
-	"\x12HelperExecResponse\x12A\n" +
-	"\x04type\x18\x01 \x01(\x0e2-.neoshowcase.protobuf.HelperExecResponse.TypeR\x04type\x12\x12\n" +
-	"\x03log\x18\x02 \x01(\fH\x00R\x03log\x12\x1d\n" +
-	"\texit_code\x18\x03 \x01(\x05H\x00R\bexitCode\"\x1e\n" +
-	"\x04Type\x12\a\n" +
-	"\x03LOG\x10\x00\x12\r\n" +
-	"\tEXIT_CODE\x10\x01B\x06\n" +
 	"\x04body\"_\n" +
 	"\fSSGenRequest\x12;\n" +
 	"\x04type\x18\x01 \x01(\x0e2'.neoshowcase.protobuf.SSGenRequest.TypeR\x04type\"\x12\n" +
@@ -1550,10 +1231,7 @@ const file_neoshowcase_protobuf_controller_proto_rawDesc = "" +
 	"\fSaveArtifact\x12).neoshowcase.protobuf.SaveArtifactRequest\x1a\x16.google.protobuf.Empty\x12Q\n" +
 	"\fSaveBuildLog\x12).neoshowcase.protobuf.SaveBuildLogRequest\x1a\x16.google.protobuf.Empty\x12Y\n" +
 	"\x10SaveRuntimeImage\x12-.neoshowcase.protobuf.SaveRuntimeImageRequest\x1a\x16.google.protobuf.Empty\x12a\n" +
-	"\x0eConnectBuilder\x12%.neoshowcase.protobuf.BuilderResponse\x1a$.neoshowcase.protobuf.BuilderRequest(\x010\x012\xc8\x01\n" +
-	"\x16BuildpackHelperService\x12Q\n" +
-	"\fCopyFileTree\x12).neoshowcase.protobuf.CopyFileTreeRequest\x1a\x16.google.protobuf.Empty\x12[\n" +
-	"\x04Exec\x12'.neoshowcase.protobuf.HelperExecRequest\x1a(.neoshowcase.protobuf.HelperExecResponse0\x012f\n" +
+	"\x0eConnectBuilder\x12%.neoshowcase.protobuf.BuilderResponse\x1a$.neoshowcase.protobuf.BuilderRequest(\x010\x012f\n" +
 	"\x16ControllerSSGenService\x12L\n" +
 	"\fConnectSSGen\x12\x16.google.protobuf.Empty\x1a\".neoshowcase.protobuf.SSGenRequest0\x012Q\n" +
 	"\x17GiteaIntegrationService\x126\n" +
@@ -1572,118 +1250,107 @@ func file_neoshowcase_protobuf_controller_proto_rawDescGZIP() []byte {
 	return file_neoshowcase_protobuf_controller_proto_rawDescData
 }
 
-var file_neoshowcase_protobuf_controller_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
-var file_neoshowcase_protobuf_controller_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
+var file_neoshowcase_protobuf_controller_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
+var file_neoshowcase_protobuf_controller_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
 var file_neoshowcase_protobuf_controller_proto_goTypes = []any{
 	(BuilderRequest_Type)(0),           // 0: neoshowcase.protobuf.BuilderRequest.Type
 	(BuilderResponse_Type)(0),          // 1: neoshowcase.protobuf.BuilderResponse.Type
-	(HelperExecResponse_Type)(0),       // 2: neoshowcase.protobuf.HelperExecResponse.Type
-	(SSGenRequest_Type)(0),             // 3: neoshowcase.protobuf.SSGenRequest.Type
-	(GiteaIntegrationRequest_Type)(0),  // 4: neoshowcase.protobuf.GiteaIntegrationRequest.Type
-	(*AddressInfo)(nil),                // 5: neoshowcase.protobuf.AddressInfo
-	(*ImageConfig)(nil),                // 6: neoshowcase.protobuf.ImageConfig
-	(*BuilderSystemInfo)(nil),          // 7: neoshowcase.protobuf.BuilderSystemInfo
-	(*BuildLogPortion)(nil),            // 8: neoshowcase.protobuf.BuildLogPortion
-	(*SaveArtifactRequest)(nil),        // 9: neoshowcase.protobuf.SaveArtifactRequest
-	(*SaveBuildLogRequest)(nil),        // 10: neoshowcase.protobuf.SaveBuildLogRequest
-	(*SaveRuntimeImageRequest)(nil),    // 11: neoshowcase.protobuf.SaveRuntimeImageRequest
-	(*RepositoryPrivate)(nil),          // 12: neoshowcase.protobuf.RepositoryPrivate
-	(*StartBuildRequest)(nil),          // 13: neoshowcase.protobuf.StartBuildRequest
-	(*BuilderRequest)(nil),             // 14: neoshowcase.protobuf.BuilderRequest
-	(*ConnectedBody)(nil),              // 15: neoshowcase.protobuf.ConnectedBody
-	(*BuildSettled)(nil),               // 16: neoshowcase.protobuf.BuildSettled
-	(*BuilderResponse)(nil),            // 17: neoshowcase.protobuf.BuilderResponse
-	(*CopyFileTreeRequest)(nil),        // 18: neoshowcase.protobuf.CopyFileTreeRequest
-	(*HelperExecEnv)(nil),              // 19: neoshowcase.protobuf.HelperExecEnv
-	(*HelperExecRequest)(nil),          // 20: neoshowcase.protobuf.HelperExecRequest
-	(*HelperExecResponse)(nil),         // 21: neoshowcase.protobuf.HelperExecResponse
-	(*SSGenRequest)(nil),               // 22: neoshowcase.protobuf.SSGenRequest
-	(*GiteaIntegrationRequest)(nil),    // 23: neoshowcase.protobuf.GiteaIntegrationRequest
-	(*ImageConfig_RegistryConfig)(nil), // 24: neoshowcase.protobuf.ImageConfig.RegistryConfig
-	(*Artifact)(nil),                   // 25: neoshowcase.protobuf.Artifact
-	(*Repository)(nil),                 // 26: neoshowcase.protobuf.Repository
-	(*Application)(nil),                // 27: neoshowcase.protobuf.Application
-	(*ApplicationEnvVars)(nil),         // 28: neoshowcase.protobuf.ApplicationEnvVars
-	(*Build)(nil),                      // 29: neoshowcase.protobuf.Build
-	(*BuildIdRequest)(nil),             // 30: neoshowcase.protobuf.BuildIdRequest
-	(BuildStatus)(0),                   // 31: neoshowcase.protobuf.BuildStatus
-	(*emptypb.Empty)(nil),              // 32: google.protobuf.Empty
-	(*RepositoryIdRequest)(nil),        // 33: neoshowcase.protobuf.RepositoryIdRequest
-	(*ApplicationIdRequest)(nil),       // 34: neoshowcase.protobuf.ApplicationIdRequest
-	(*SystemInfo)(nil),                 // 35: neoshowcase.protobuf.SystemInfo
-	(*BuildLog)(nil),                   // 36: neoshowcase.protobuf.BuildLog
+	(SSGenRequest_Type)(0),             // 2: neoshowcase.protobuf.SSGenRequest.Type
+	(GiteaIntegrationRequest_Type)(0),  // 3: neoshowcase.protobuf.GiteaIntegrationRequest.Type
+	(*AddressInfo)(nil),                // 4: neoshowcase.protobuf.AddressInfo
+	(*ImageConfig)(nil),                // 5: neoshowcase.protobuf.ImageConfig
+	(*BuilderSystemInfo)(nil),          // 6: neoshowcase.protobuf.BuilderSystemInfo
+	(*BuildLogPortion)(nil),            // 7: neoshowcase.protobuf.BuildLogPortion
+	(*SaveArtifactRequest)(nil),        // 8: neoshowcase.protobuf.SaveArtifactRequest
+	(*SaveBuildLogRequest)(nil),        // 9: neoshowcase.protobuf.SaveBuildLogRequest
+	(*SaveRuntimeImageRequest)(nil),    // 10: neoshowcase.protobuf.SaveRuntimeImageRequest
+	(*RepositoryPrivate)(nil),          // 11: neoshowcase.protobuf.RepositoryPrivate
+	(*StartBuildRequest)(nil),          // 12: neoshowcase.protobuf.StartBuildRequest
+	(*BuilderRequest)(nil),             // 13: neoshowcase.protobuf.BuilderRequest
+	(*ConnectedBody)(nil),              // 14: neoshowcase.protobuf.ConnectedBody
+	(*BuildSettled)(nil),               // 15: neoshowcase.protobuf.BuildSettled
+	(*BuilderResponse)(nil),            // 16: neoshowcase.protobuf.BuilderResponse
+	(*SSGenRequest)(nil),               // 17: neoshowcase.protobuf.SSGenRequest
+	(*GiteaIntegrationRequest)(nil),    // 18: neoshowcase.protobuf.GiteaIntegrationRequest
+	(*ImageConfig_RegistryConfig)(nil), // 19: neoshowcase.protobuf.ImageConfig.RegistryConfig
+	(*Artifact)(nil),                   // 20: neoshowcase.protobuf.Artifact
+	(*Repository)(nil),                 // 21: neoshowcase.protobuf.Repository
+	(*Application)(nil),                // 22: neoshowcase.protobuf.Application
+	(*ApplicationEnvVars)(nil),         // 23: neoshowcase.protobuf.ApplicationEnvVars
+	(*Build)(nil),                      // 24: neoshowcase.protobuf.Build
+	(*BuildIdRequest)(nil),             // 25: neoshowcase.protobuf.BuildIdRequest
+	(BuildStatus)(0),                   // 26: neoshowcase.protobuf.BuildStatus
+	(*emptypb.Empty)(nil),              // 27: google.protobuf.Empty
+	(*RepositoryIdRequest)(nil),        // 28: neoshowcase.protobuf.RepositoryIdRequest
+	(*ApplicationIdRequest)(nil),       // 29: neoshowcase.protobuf.ApplicationIdRequest
+	(*SystemInfo)(nil),                 // 30: neoshowcase.protobuf.SystemInfo
+	(*BuildLog)(nil),                   // 31: neoshowcase.protobuf.BuildLog
 }
 var file_neoshowcase_protobuf_controller_proto_depIdxs = []int32{
-	24, // 0: neoshowcase.protobuf.ImageConfig.registry:type_name -> neoshowcase.protobuf.ImageConfig.RegistryConfig
-	6,  // 1: neoshowcase.protobuf.BuilderSystemInfo.image_config:type_name -> neoshowcase.protobuf.ImageConfig
-	25, // 2: neoshowcase.protobuf.SaveArtifactRequest.artifact:type_name -> neoshowcase.protobuf.Artifact
-	26, // 3: neoshowcase.protobuf.RepositoryPrivate.repo:type_name -> neoshowcase.protobuf.Repository
-	12, // 4: neoshowcase.protobuf.StartBuildRequest.repo:type_name -> neoshowcase.protobuf.RepositoryPrivate
-	27, // 5: neoshowcase.protobuf.StartBuildRequest.app:type_name -> neoshowcase.protobuf.Application
-	28, // 6: neoshowcase.protobuf.StartBuildRequest.app_envs:type_name -> neoshowcase.protobuf.ApplicationEnvVars
-	29, // 7: neoshowcase.protobuf.StartBuildRequest.build:type_name -> neoshowcase.protobuf.Build
+	19, // 0: neoshowcase.protobuf.ImageConfig.registry:type_name -> neoshowcase.protobuf.ImageConfig.RegistryConfig
+	5,  // 1: neoshowcase.protobuf.BuilderSystemInfo.image_config:type_name -> neoshowcase.protobuf.ImageConfig
+	20, // 2: neoshowcase.protobuf.SaveArtifactRequest.artifact:type_name -> neoshowcase.protobuf.Artifact
+	21, // 3: neoshowcase.protobuf.RepositoryPrivate.repo:type_name -> neoshowcase.protobuf.Repository
+	11, // 4: neoshowcase.protobuf.StartBuildRequest.repo:type_name -> neoshowcase.protobuf.RepositoryPrivate
+	22, // 5: neoshowcase.protobuf.StartBuildRequest.app:type_name -> neoshowcase.protobuf.Application
+	23, // 6: neoshowcase.protobuf.StartBuildRequest.app_envs:type_name -> neoshowcase.protobuf.ApplicationEnvVars
+	24, // 7: neoshowcase.protobuf.StartBuildRequest.build:type_name -> neoshowcase.protobuf.Build
 	0,  // 8: neoshowcase.protobuf.BuilderRequest.type:type_name -> neoshowcase.protobuf.BuilderRequest.Type
-	13, // 9: neoshowcase.protobuf.BuilderRequest.start_build:type_name -> neoshowcase.protobuf.StartBuildRequest
-	30, // 10: neoshowcase.protobuf.BuilderRequest.cancel_build:type_name -> neoshowcase.protobuf.BuildIdRequest
-	31, // 11: neoshowcase.protobuf.BuildSettled.status:type_name -> neoshowcase.protobuf.BuildStatus
+	12, // 9: neoshowcase.protobuf.BuilderRequest.start_build:type_name -> neoshowcase.protobuf.StartBuildRequest
+	25, // 10: neoshowcase.protobuf.BuilderRequest.cancel_build:type_name -> neoshowcase.protobuf.BuildIdRequest
+	26, // 11: neoshowcase.protobuf.BuildSettled.status:type_name -> neoshowcase.protobuf.BuildStatus
 	1,  // 12: neoshowcase.protobuf.BuilderResponse.type:type_name -> neoshowcase.protobuf.BuilderResponse.Type
-	15, // 13: neoshowcase.protobuf.BuilderResponse.connected:type_name -> neoshowcase.protobuf.ConnectedBody
-	16, // 14: neoshowcase.protobuf.BuilderResponse.settled:type_name -> neoshowcase.protobuf.BuildSettled
-	19, // 15: neoshowcase.protobuf.HelperExecRequest.envs:type_name -> neoshowcase.protobuf.HelperExecEnv
-	2,  // 16: neoshowcase.protobuf.HelperExecResponse.type:type_name -> neoshowcase.protobuf.HelperExecResponse.Type
-	3,  // 17: neoshowcase.protobuf.SSGenRequest.type:type_name -> neoshowcase.protobuf.SSGenRequest.Type
-	4,  // 18: neoshowcase.protobuf.GiteaIntegrationRequest.type:type_name -> neoshowcase.protobuf.GiteaIntegrationRequest.Type
-	32, // 19: neoshowcase.protobuf.ControllerService.GetSystemInfo:input_type -> google.protobuf.Empty
-	33, // 20: neoshowcase.protobuf.ControllerService.FetchRepository:input_type -> neoshowcase.protobuf.RepositoryIdRequest
-	34, // 21: neoshowcase.protobuf.ControllerService.RegisterBuild:input_type -> neoshowcase.protobuf.ApplicationIdRequest
-	32, // 22: neoshowcase.protobuf.ControllerService.SyncDeployments:input_type -> google.protobuf.Empty
-	30, // 23: neoshowcase.protobuf.ControllerService.DiscoverBuildLogInstance:input_type -> neoshowcase.protobuf.BuildIdRequest
-	30, // 24: neoshowcase.protobuf.ControllerService.StreamBuildLog:input_type -> neoshowcase.protobuf.BuildIdRequest
-	32, // 25: neoshowcase.protobuf.ControllerService.StartBuild:input_type -> google.protobuf.Empty
-	30, // 26: neoshowcase.protobuf.ControllerService.CancelBuild:input_type -> neoshowcase.protobuf.BuildIdRequest
-	30, // 27: neoshowcase.protobuf.ControllerService.DiscoverBuildLogLocal:input_type -> neoshowcase.protobuf.BuildIdRequest
-	32, // 28: neoshowcase.protobuf.ControllerService.StartBuildLocal:input_type -> google.protobuf.Empty
-	32, // 29: neoshowcase.protobuf.ControllerService.SyncDeploymentsLocal:input_type -> google.protobuf.Empty
-	30, // 30: neoshowcase.protobuf.ControllerService.CancelBuildLocal:input_type -> neoshowcase.protobuf.BuildIdRequest
-	32, // 31: neoshowcase.protobuf.ControllerBuilderService.GetBuilderSystemInfo:input_type -> google.protobuf.Empty
-	30, // 32: neoshowcase.protobuf.ControllerBuilderService.PingBuild:input_type -> neoshowcase.protobuf.BuildIdRequest
-	8,  // 33: neoshowcase.protobuf.ControllerBuilderService.StreamBuildLog:input_type -> neoshowcase.protobuf.BuildLogPortion
-	9,  // 34: neoshowcase.protobuf.ControllerBuilderService.SaveArtifact:input_type -> neoshowcase.protobuf.SaveArtifactRequest
-	10, // 35: neoshowcase.protobuf.ControllerBuilderService.SaveBuildLog:input_type -> neoshowcase.protobuf.SaveBuildLogRequest
-	11, // 36: neoshowcase.protobuf.ControllerBuilderService.SaveRuntimeImage:input_type -> neoshowcase.protobuf.SaveRuntimeImageRequest
-	17, // 37: neoshowcase.protobuf.ControllerBuilderService.ConnectBuilder:input_type -> neoshowcase.protobuf.BuilderResponse
-	18, // 38: neoshowcase.protobuf.BuildpackHelperService.CopyFileTree:input_type -> neoshowcase.protobuf.CopyFileTreeRequest
-	20, // 39: neoshowcase.protobuf.BuildpackHelperService.Exec:input_type -> neoshowcase.protobuf.HelperExecRequest
-	32, // 40: neoshowcase.protobuf.ControllerSSGenService.ConnectSSGen:input_type -> google.protobuf.Empty
-	32, // 41: neoshowcase.protobuf.GiteaIntegrationService.Sync:input_type -> google.protobuf.Empty
-	35, // 42: neoshowcase.protobuf.ControllerService.GetSystemInfo:output_type -> neoshowcase.protobuf.SystemInfo
-	32, // 43: neoshowcase.protobuf.ControllerService.FetchRepository:output_type -> google.protobuf.Empty
-	32, // 44: neoshowcase.protobuf.ControllerService.RegisterBuild:output_type -> google.protobuf.Empty
-	32, // 45: neoshowcase.protobuf.ControllerService.SyncDeployments:output_type -> google.protobuf.Empty
-	5,  // 46: neoshowcase.protobuf.ControllerService.DiscoverBuildLogInstance:output_type -> neoshowcase.protobuf.AddressInfo
-	36, // 47: neoshowcase.protobuf.ControllerService.StreamBuildLog:output_type -> neoshowcase.protobuf.BuildLog
-	32, // 48: neoshowcase.protobuf.ControllerService.StartBuild:output_type -> google.protobuf.Empty
-	32, // 49: neoshowcase.protobuf.ControllerService.CancelBuild:output_type -> google.protobuf.Empty
-	5,  // 50: neoshowcase.protobuf.ControllerService.DiscoverBuildLogLocal:output_type -> neoshowcase.protobuf.AddressInfo
-	32, // 51: neoshowcase.protobuf.ControllerService.StartBuildLocal:output_type -> google.protobuf.Empty
-	32, // 52: neoshowcase.protobuf.ControllerService.SyncDeploymentsLocal:output_type -> google.protobuf.Empty
-	32, // 53: neoshowcase.protobuf.ControllerService.CancelBuildLocal:output_type -> google.protobuf.Empty
-	7,  // 54: neoshowcase.protobuf.ControllerBuilderService.GetBuilderSystemInfo:output_type -> neoshowcase.protobuf.BuilderSystemInfo
-	32, // 55: neoshowcase.protobuf.ControllerBuilderService.PingBuild:output_type -> google.protobuf.Empty
-	32, // 56: neoshowcase.protobuf.ControllerBuilderService.StreamBuildLog:output_type -> google.protobuf.Empty
-	32, // 57: neoshowcase.protobuf.ControllerBuilderService.SaveArtifact:output_type -> google.protobuf.Empty
-	32, // 58: neoshowcase.protobuf.ControllerBuilderService.SaveBuildLog:output_type -> google.protobuf.Empty
-	32, // 59: neoshowcase.protobuf.ControllerBuilderService.SaveRuntimeImage:output_type -> google.protobuf.Empty
-	14, // 60: neoshowcase.protobuf.ControllerBuilderService.ConnectBuilder:output_type -> neoshowcase.protobuf.BuilderRequest
-	32, // 61: neoshowcase.protobuf.BuildpackHelperService.CopyFileTree:output_type -> google.protobuf.Empty
-	21, // 62: neoshowcase.protobuf.BuildpackHelperService.Exec:output_type -> neoshowcase.protobuf.HelperExecResponse
-	22, // 63: neoshowcase.protobuf.ControllerSSGenService.ConnectSSGen:output_type -> neoshowcase.protobuf.SSGenRequest
-	32, // 64: neoshowcase.protobuf.GiteaIntegrationService.Sync:output_type -> google.protobuf.Empty
-	42, // [42:65] is the sub-list for method output_type
-	19, // [19:42] is the sub-list for method input_type
-	19, // [19:19] is the sub-list for extension type_name
-	19, // [19:19] is the sub-list for extension extendee
-	0,  // [0:19] is the sub-list for field type_name
+	14, // 13: neoshowcase.protobuf.BuilderResponse.connected:type_name -> neoshowcase.protobuf.ConnectedBody
+	15, // 14: neoshowcase.protobuf.BuilderResponse.settled:type_name -> neoshowcase.protobuf.BuildSettled
+	2,  // 15: neoshowcase.protobuf.SSGenRequest.type:type_name -> neoshowcase.protobuf.SSGenRequest.Type
+	3,  // 16: neoshowcase.protobuf.GiteaIntegrationRequest.type:type_name -> neoshowcase.protobuf.GiteaIntegrationRequest.Type
+	27, // 17: neoshowcase.protobuf.ControllerService.GetSystemInfo:input_type -> google.protobuf.Empty
+	28, // 18: neoshowcase.protobuf.ControllerService.FetchRepository:input_type -> neoshowcase.protobuf.RepositoryIdRequest
+	29, // 19: neoshowcase.protobuf.ControllerService.RegisterBuild:input_type -> neoshowcase.protobuf.ApplicationIdRequest
+	27, // 20: neoshowcase.protobuf.ControllerService.SyncDeployments:input_type -> google.protobuf.Empty
+	25, // 21: neoshowcase.protobuf.ControllerService.DiscoverBuildLogInstance:input_type -> neoshowcase.protobuf.BuildIdRequest
+	25, // 22: neoshowcase.protobuf.ControllerService.StreamBuildLog:input_type -> neoshowcase.protobuf.BuildIdRequest
+	27, // 23: neoshowcase.protobuf.ControllerService.StartBuild:input_type -> google.protobuf.Empty
+	25, // 24: neoshowcase.protobuf.ControllerService.CancelBuild:input_type -> neoshowcase.protobuf.BuildIdRequest
+	25, // 25: neoshowcase.protobuf.ControllerService.DiscoverBuildLogLocal:input_type -> neoshowcase.protobuf.BuildIdRequest
+	27, // 26: neoshowcase.protobuf.ControllerService.StartBuildLocal:input_type -> google.protobuf.Empty
+	27, // 27: neoshowcase.protobuf.ControllerService.SyncDeploymentsLocal:input_type -> google.protobuf.Empty
+	25, // 28: neoshowcase.protobuf.ControllerService.CancelBuildLocal:input_type -> neoshowcase.protobuf.BuildIdRequest
+	27, // 29: neoshowcase.protobuf.ControllerBuilderService.GetBuilderSystemInfo:input_type -> google.protobuf.Empty
+	25, // 30: neoshowcase.protobuf.ControllerBuilderService.PingBuild:input_type -> neoshowcase.protobuf.BuildIdRequest
+	7,  // 31: neoshowcase.protobuf.ControllerBuilderService.StreamBuildLog:input_type -> neoshowcase.protobuf.BuildLogPortion
+	8,  // 32: neoshowcase.protobuf.ControllerBuilderService.SaveArtifact:input_type -> neoshowcase.protobuf.SaveArtifactRequest
+	9,  // 33: neoshowcase.protobuf.ControllerBuilderService.SaveBuildLog:input_type -> neoshowcase.protobuf.SaveBuildLogRequest
+	10, // 34: neoshowcase.protobuf.ControllerBuilderService.SaveRuntimeImage:input_type -> neoshowcase.protobuf.SaveRuntimeImageRequest
+	16, // 35: neoshowcase.protobuf.ControllerBuilderService.ConnectBuilder:input_type -> neoshowcase.protobuf.BuilderResponse
+	27, // 36: neoshowcase.protobuf.ControllerSSGenService.ConnectSSGen:input_type -> google.protobuf.Empty
+	27, // 37: neoshowcase.protobuf.GiteaIntegrationService.Sync:input_type -> google.protobuf.Empty
+	30, // 38: neoshowcase.protobuf.ControllerService.GetSystemInfo:output_type -> neoshowcase.protobuf.SystemInfo
+	27, // 39: neoshowcase.protobuf.ControllerService.FetchRepository:output_type -> google.protobuf.Empty
+	27, // 40: neoshowcase.protobuf.ControllerService.RegisterBuild:output_type -> google.protobuf.Empty
+	27, // 41: neoshowcase.protobuf.ControllerService.SyncDeployments:output_type -> google.protobuf.Empty
+	4,  // 42: neoshowcase.protobuf.ControllerService.DiscoverBuildLogInstance:output_type -> neoshowcase.protobuf.AddressInfo
+	31, // 43: neoshowcase.protobuf.ControllerService.StreamBuildLog:output_type -> neoshowcase.protobuf.BuildLog
+	27, // 44: neoshowcase.protobuf.ControllerService.StartBuild:output_type -> google.protobuf.Empty
+	27, // 45: neoshowcase.protobuf.ControllerService.CancelBuild:output_type -> google.protobuf.Empty
+	4,  // 46: neoshowcase.protobuf.ControllerService.DiscoverBuildLogLocal:output_type -> neoshowcase.protobuf.AddressInfo
+	27, // 47: neoshowcase.protobuf.ControllerService.StartBuildLocal:output_type -> google.protobuf.Empty
+	27, // 48: neoshowcase.protobuf.ControllerService.SyncDeploymentsLocal:output_type -> google.protobuf.Empty
+	27, // 49: neoshowcase.protobuf.ControllerService.CancelBuildLocal:output_type -> google.protobuf.Empty
+	6,  // 50: neoshowcase.protobuf.ControllerBuilderService.GetBuilderSystemInfo:output_type -> neoshowcase.protobuf.BuilderSystemInfo
+	27, // 51: neoshowcase.protobuf.ControllerBuilderService.PingBuild:output_type -> google.protobuf.Empty
+	27, // 52: neoshowcase.protobuf.ControllerBuilderService.StreamBuildLog:output_type -> google.protobuf.Empty
+	27, // 53: neoshowcase.protobuf.ControllerBuilderService.SaveArtifact:output_type -> google.protobuf.Empty
+	27, // 54: neoshowcase.protobuf.ControllerBuilderService.SaveBuildLog:output_type -> google.protobuf.Empty
+	27, // 55: neoshowcase.protobuf.ControllerBuilderService.SaveRuntimeImage:output_type -> google.protobuf.Empty
+	13, // 56: neoshowcase.protobuf.ControllerBuilderService.ConnectBuilder:output_type -> neoshowcase.protobuf.BuilderRequest
+	17, // 57: neoshowcase.protobuf.ControllerSSGenService.ConnectSSGen:output_type -> neoshowcase.protobuf.SSGenRequest
+	27, // 58: neoshowcase.protobuf.GiteaIntegrationService.Sync:output_type -> google.protobuf.Empty
+	38, // [38:59] is the sub-list for method output_type
+	17, // [17:38] is the sub-list for method input_type
+	17, // [17:17] is the sub-list for extension type_name
+	17, // [17:17] is the sub-list for extension extendee
+	0,  // [0:17] is the sub-list for field type_name
 }
 
 func init() { file_neoshowcase_protobuf_controller_proto_init() }
@@ -1701,19 +1368,15 @@ func file_neoshowcase_protobuf_controller_proto_init() {
 		(*BuilderResponse_Connected)(nil),
 		(*BuilderResponse_Settled)(nil),
 	}
-	file_neoshowcase_protobuf_controller_proto_msgTypes[16].OneofWrappers = []any{
-		(*HelperExecResponse_Log)(nil),
-		(*HelperExecResponse_ExitCode)(nil),
-	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_neoshowcase_protobuf_controller_proto_rawDesc), len(file_neoshowcase_protobuf_controller_proto_rawDesc)),
-			NumEnums:      5,
-			NumMessages:   20,
+			NumEnums:      4,
+			NumMessages:   16,
 			NumExtensions: 0,
-			NumServices:   5,
+			NumServices:   4,
 		},
 		GoTypes:           file_neoshowcase_protobuf_controller_proto_goTypes,
 		DependencyIndexes: file_neoshowcase_protobuf_controller_proto_depIdxs,

@@ -27,11 +27,35 @@ data:
         buildkit:
           address: unix:///run/buildkit/buildkitd.sock
         buildpack:
-          helper:
-            address: http://localhost:1235
-            listenPort: 1235
-          remoteDir: /workspace
+          {{- with $.Values.builder.buildpack }}
+          runtime: k8s
+          {{- with .image }}
+          image: {{ . }}
+          {{- end }}
+          {{- with .imagePullPolicy }}
+          imagePullPolicy: {{ . }}
+          {{- end }}
+          {{- with .runAs }}
+          runAs:
+            {{- . | toYaml | nindent 12 }}
+          {{- end }}
           platformAPI: "0.11"
+          k8s:
+            namespace: {{ include "builder.build-namespace" $ }}
+            resources:
+              {{- .resources | toYaml | nindent 14 }}
+            {{- with $.Values.builder.nodeSelector }}
+            nodeSelector:
+              {{- range $key, $value := . }}
+              - key: {{ $key }}
+                value: {{ $value | quote }}
+              {{- end }}
+            {{- end }}
+            {{- with $.Values.builder.tolerations }}
+            tolerations:
+              {{- . | toYaml | nindent 14 }}
+            {{- end }}
+          {{- end }}
         controller:
           url: http://{{ $.Release.Name }}-controller.{{ $.Release.Namespace }}.svc.cluster.local:10000
 

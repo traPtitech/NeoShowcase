@@ -20,6 +20,7 @@ spec:
         checksum/buildkit-config: {{ include "buildkit-config-hash" $ | quote }}
         checksum/known-hosts: {{ include "known-hosts-hash" $ | quote }}
     spec:
+      serviceAccountName: {{ $.Release.Name }}-builder
       enableServiceLinks: false
       {{- if .nodeSelector }}
       nodeSelector:
@@ -35,8 +36,6 @@ spec:
       {{- end }}
 
       volumes:
-        - name: ns-bin
-          emptyDir: {}
         - name: socket
           emptyDir: {}
         - name: config
@@ -52,39 +51,7 @@ spec:
         {{- $.Values.common.additionalVolumes | toYaml | nindent 8 }}
         {{- end }}
 
-      initContainers:
-        - name: buildpack-install
-          image: {{ include "image.builder" $ }}
-          imagePullPolicy: {{ .imagePullPolicy | default $.Values.global.image.pullPolicy }}
-          command:
-            - cp
-            - /app/ns
-            - /ns-bin
-          volumeMounts:
-            - mountPath: /ns-bin
-              name: ns-bin
-
       containers:
-        - name: buildpack
-          image: {{ .buildpack.image }}
-          imagePullPolicy: {{ .buildpack.imagePullPolicy | default $.Values.global.image.pullPolicy }}
-          command:
-            - /ns-bin/ns
-            - buildpack-helper
-          args:
-            - --loglevel=debug
-            - --config=/opt/config/ns.yaml
-          volumeMounts:
-            - mountPath: /ns-bin
-              name: ns-bin
-            - mountPath: /opt/config/ns.yaml
-              name: config
-              subPath: ns.yaml
-          {{- if .buildpack.resources }}
-          resources:
-            {{- .buildpack.resources | toYaml | nindent 12 }}
-          {{- end }}
-
         - name: buildkit
           image: {{ .buildkit.image }}
           imagePullPolicy: {{ .buildkit.imagePullPolicy | default $.Values.global.image.pullPolicy }}

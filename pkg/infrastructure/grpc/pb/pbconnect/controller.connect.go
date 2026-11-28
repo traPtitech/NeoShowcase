@@ -17,8 +17,6 @@ const (
 	ControllerServiceName = "neoshowcase.protobuf.ControllerService"
 	// ControllerBuilderServiceName is the fully-qualified name of the ControllerBuilderService service.
 	ControllerBuilderServiceName = "neoshowcase.protobuf.ControllerBuilderService"
-	// BuildpackHelperServiceName is the fully-qualified name of the BuildpackHelperService service.
-	BuildpackHelperServiceName = "neoshowcase.protobuf.BuildpackHelperService"
 	// ControllerSSGenServiceName is the fully-qualified name of the ControllerSSGenService service.
 	ControllerSSGenServiceName = "neoshowcase.protobuf.ControllerSSGenService"
 	// GiteaIntegrationServiceName is the fully-qualified name of the GiteaIntegrationService service.
@@ -90,12 +88,6 @@ const (
 	// ControllerBuilderServiceConnectBuilderProcedure is the procedure name of the
 	// ControllerBuilderService's ConnectBuilder RPC.
 	ControllerBuilderServiceConnectBuilderProcedure = "/neoshowcase.protobuf.ControllerBuilderService/ConnectBuilder"
-	// BuildpackHelperServiceCopyFileTreeProcedure is the procedure name of the BuildpackHelperService's
-	// CopyFileTree RPC.
-	BuildpackHelperServiceCopyFileTreeProcedure = "/neoshowcase.protobuf.BuildpackHelperService/CopyFileTree"
-	// BuildpackHelperServiceExecProcedure is the procedure name of the BuildpackHelperService's Exec
-	// RPC.
-	BuildpackHelperServiceExecProcedure = "/neoshowcase.protobuf.BuildpackHelperService/Exec"
 	// ControllerSSGenServiceConnectSSGenProcedure is the procedure name of the ControllerSSGenService's
 	// ConnectSSGen RPC.
 	ControllerSSGenServiceConnectSSGenProcedure = "/neoshowcase.protobuf.ControllerSSGenService/ConnectSSGen"
@@ -950,144 +942,6 @@ func (h controllerBuilderServiceHandler) saveRuntimeImage(ctx context.Context, _
 
 func (h controllerBuilderServiceHandler) connectBuilder(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
 	return h.svc.ConnectBuilder(ctx, ControllerBuilderServiceConnectBuilderServerStream{stream: stream})
-}
-
-var (
-	buildpackHelperServiceCopyFileTreeSpec = sync.OnceValue(func() connect.Spec {
-		return connect.Spec{
-			StreamType: connect.StreamTypeUnary,
-			Schema:     pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("BuildpackHelperService").Methods().ByName("CopyFileTree"),
-			Procedure:  BuildpackHelperServiceCopyFileTreeProcedure,
-		}
-	})
-	buildpackHelperServiceExecSpec = sync.OnceValue(func() connect.Spec {
-		return connect.Spec{
-			StreamType: connect.StreamTypeServer,
-			Schema:     pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("BuildpackHelperService").Methods().ByName("Exec"),
-			Procedure:  BuildpackHelperServiceExecProcedure,
-		}
-	})
-)
-
-// BuildpackHelperServiceClient is a client for the neoshowcase.protobuf.BuildpackHelperService
-// service.
-type BuildpackHelperServiceClient interface {
-	CopyFileTree(context.Context, *pb.CopyFileTreeRequest) (*emptypb.Empty, error)
-	Exec(context.Context, *pb.HelperExecRequest) (BuildpackHelperServiceExecClientStream, error)
-}
-
-// NewBuildpackHelperServiceClient constructs a client for the
-// neoshowcase.protobuf.BuildpackHelperService service. Multiple service clients may share a single
-// connect.Client.
-func NewBuildpackHelperServiceClient(client *connect.Client) BuildpackHelperServiceClient {
-	return &buildpackHelperServiceClient{client: client}
-}
-
-// BuildpackHelperServiceExecClientStream is the client stream for the BuildpackHelperService's Exec
-// RPC.
-type BuildpackHelperServiceExecClientStream struct {
-	stream connect.ClientStream
-}
-
-// Receive returns the next response message from the server.
-func (s BuildpackHelperServiceExecClientStream) Receive() (*pb.HelperExecResponse, error) {
-	var res pb.HelperExecResponse
-	if err := s.stream.Receive(&res); err != nil {
-		return nil, err
-	}
-	return &res, nil
-}
-
-// Close releases the stream's resources. It is idempotent and is typically deferred to clean up a
-// stream abandoned before io.EOF.
-func (s BuildpackHelperServiceExecClientStream) Close() error {
-	return s.stream.Close()
-}
-
-// BuildpackHelperServiceHandler is an implementation of the
-// neoshowcase.protobuf.BuildpackHelperService service.
-type BuildpackHelperServiceHandler interface {
-	CopyFileTree(context.Context, *pb.CopyFileTreeRequest) (*emptypb.Empty, error)
-	Exec(context.Context, *pb.HelperExecRequest, BuildpackHelperServiceExecServerStream) error
-}
-
-// RegisterBuildpackHelperServiceHandler registers svc as the
-// neoshowcase.protobuf.BuildpackHelperService implementation on server.
-func RegisterBuildpackHelperServiceHandler(server *connect.Server, svc BuildpackHelperServiceHandler) {
-	adapter := buildpackHelperServiceHandler{svc: svc}
-	server.Register(
-		connect.Method{Spec: buildpackHelperServiceCopyFileTreeSpec(), Handler: adapter.copyFileTree},
-		connect.Method{Spec: buildpackHelperServiceExecSpec(), Handler: adapter.exec},
-	)
-}
-
-// BuildpackHelperServiceExecServerStream is the server stream for the BuildpackHelperService's Exec
-// RPC.
-type BuildpackHelperServiceExecServerStream struct {
-	stream connect.ServerStream
-}
-
-// SendHeaders flushes the response headers without a message. The first Send does this implicitly.
-func (s BuildpackHelperServiceExecServerStream) SendHeaders() error {
-	return s.stream.SendHeaders()
-}
-
-// Send sends a response message to the client.
-func (s BuildpackHelperServiceExecServerStream) Send(res *pb.HelperExecResponse) error {
-	return s.stream.Send(res)
-}
-
-// UnimplementedBuildpackHelperServiceHandler returns CodeUnimplemented from all methods.
-type UnimplementedBuildpackHelperServiceHandler struct{}
-
-func (UnimplementedBuildpackHelperServiceHandler) CopyFileTree(context.Context, *pb.CopyFileTreeRequest) (*emptypb.Empty, error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, "neoshowcase.protobuf.BuildpackHelperService.CopyFileTree is not implemented")
-}
-
-func (UnimplementedBuildpackHelperServiceHandler) Exec(context.Context, *pb.HelperExecRequest, BuildpackHelperServiceExecServerStream) error {
-	return connect.NewError(connect.CodeUnimplemented, "neoshowcase.protobuf.BuildpackHelperService.Exec is not implemented")
-}
-
-type buildpackHelperServiceClient struct {
-	client *connect.Client
-}
-
-func (c *buildpackHelperServiceClient) CopyFileTree(ctx context.Context, req *pb.CopyFileTreeRequest) (*emptypb.Empty, error) {
-	var res emptypb.Empty
-	if err := c.client.CallUnary(ctx, buildpackHelperServiceCopyFileTreeSpec(), req, &res); err != nil {
-		return nil, err
-	}
-	return &res, nil
-}
-
-func (c *buildpackHelperServiceClient) Exec(ctx context.Context, req *pb.HelperExecRequest) (BuildpackHelperServiceExecClientStream, error) {
-	stream, err := c.client.CallServerStream(ctx, buildpackHelperServiceExecSpec(), req)
-	if err != nil {
-		return BuildpackHelperServiceExecClientStream{}, err
-	}
-	return BuildpackHelperServiceExecClientStream{stream: stream}, nil
-}
-
-type buildpackHelperServiceHandler struct{ svc BuildpackHelperServiceHandler }
-
-func (h buildpackHelperServiceHandler) copyFileTree(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
-	var req pb.CopyFileTreeRequest
-	if err := stream.Receive(&req); err != nil {
-		return err
-	}
-	res, err := h.svc.CopyFileTree(ctx, &req)
-	if err != nil {
-		return err
-	}
-	return stream.Send(res)
-}
-
-func (h buildpackHelperServiceHandler) exec(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
-	var req pb.HelperExecRequest
-	if err := stream.Receive(&req); err != nil {
-		return err
-	}
-	return h.svc.Exec(ctx, &req, BuildpackHelperServiceExecServerStream{stream: stream})
 }
 
 var (

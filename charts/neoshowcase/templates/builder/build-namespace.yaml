@@ -1,0 +1,5 @@
+# Buildpack builds run in a pod per build, created in this namespace.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ include "builder.build-namespace" $ }}

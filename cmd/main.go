@@ -112,7 +112,6 @@ func main() {
 	rootCommand.AddCommand(
 		componentCommand("auth-dev", NewAuthDev, ""),
 		componentCommand("builder", NewBuilder, ""),
-		componentCommand("buildpack-helper", NewBuildpackHelper, ""),
 		componentCommand("controller", NewController, ""),
 		componentCommand("gateway", NewGateway, ""),
 		componentCommand("gitea-integration", NewGiteaIntegration, `Synchronizes gitea user / organization repositories and its owners with configured interval.
