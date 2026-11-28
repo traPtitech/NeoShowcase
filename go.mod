@@ -17,6 +17,7 @@ require (
 	github.com/bep/debounce v1.2.1
 	github.com/cert-manager/cert-manager v1.21.3
 	github.com/coder/websocket v1.8.15
+	github.com/containerd/errdefs v1.0.0
 	github.com/docker/cli v29.9.2+incompatible
 	github.com/friendsofgo/errors v0.9.2
 	github.com/gliderlabs/ssh v0.3.8
@@ -97,7 +98,6 @@ require (
 	github.com/containerd/containerd/api v1.12.0 // indirect
 	github.com/containerd/containerd/v2 v2.4.2 // indirect
 	github.com/containerd/continuity v0.5.0 // indirect
-	github.com/containerd/errdefs v1.0.0 // indirect
 	github.com/containerd/errdefs/pkg v0.3.0 // indirect
 	github.com/containerd/log v0.2.0 // indirect
 	github.com/containerd/log/otel v0.1.0 // indirect
