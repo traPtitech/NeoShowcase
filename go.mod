@@ -17,6 +17,7 @@ require (
 	github.com/bep/debounce v1.2.1
 	github.com/cert-manager/cert-manager v1.21.3
 	github.com/coder/websocket v1.8.15
+	github.com/containerd/errdefs v1.0.0
 	github.com/docker/cli v29.9.2+incompatible
 	github.com/friendsofgo/errors v0.9.2
 	github.com/gliderlabs/ssh v0.3.8
@@ -61,6 +62,7 @@ require (
 	k8s.io/apiextensions-apiserver v0.37.2
 	k8s.io/apimachinery v0.37.2
 	k8s.io/client-go v0.37.2
+	k8s.io/utils v0.0.0-20260626114624-be93311217bd
 )
 
 require (
@@ -97,7 +99,6 @@ require (
 	github.com/containerd/containerd/api v1.12.0 // indirect
 	github.com/containerd/containerd/v2 v2.4.2 // indirect
 	github.com/containerd/continuity v0.5.0 // indirect
-	github.com/containerd/errdefs v1.0.0 // indirect
 	github.com/containerd/errdefs/pkg v0.3.0 // indirect
 	github.com/containerd/log v0.2.0 // indirect
 	github.com/containerd/log/otel v0.1.0 // indirect
@@ -258,7 +259,6 @@ require (
 	k8s.io/klog/v2 v2.140.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20260721132016-d427ff9ee9ad // indirect
 	k8s.io/streaming v0.37.2 // indirect
-	k8s.io/utils v0.0.0-20260626114624-be93311217bd // indirect
 	sigs.k8s.io/gateway-api v1.6.3 // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
